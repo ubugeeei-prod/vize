@@ -1,4 +1,4 @@
-use super::JsxFile;
+use super::JsxL2Ir;
 use crate::file::{Reference, ScopeId, ScriptUnitId};
 use crate::resolution::SyntaxKind;
 use core::ops::Range;
@@ -17,24 +17,24 @@ pub(super) struct Record<'a> {
 /// A node query always borrows the actual owning source, File and syntax.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::{JsxFile, JsxNode};
-/// fn forge<'f, 'a>(owner: &'f JsxFile<'a>) { let _ = JsxNode { owner, index: 0 }; }
+/// use vize_l2::lang::js::{JsxL2Ir, JsxNode};
+/// fn forge<'f, 'a>(owner: &'f JsxL2Ir<'a>) { let _ = JsxNode { owner, index: 0 }; }
 /// ```
 #[derive(Clone, Copy)]
 pub struct JsxNode<'f, 'a> {
-    owner: &'f JsxFile<'a>,
+    owner: &'f JsxL2Ir<'a>,
     index: usize,
 }
 
 impl<'f, 'a> JsxNode<'f, 'a> {
-    pub(super) fn new(owner: &'f JsxFile<'a>, index: usize) -> Self {
+    pub(super) fn new(owner: &'f JsxL2Ir<'a>, index: usize) -> Self {
         Self { owner, index }
     }
     fn record(self) -> Option<&'f Record<'a>> {
         self.owner.records.get(self.index)
     }
     #[must_use]
-    pub fn owner(self) -> &'f JsxFile<'a> {
+    pub fn owner(self) -> &'f JsxL2Ir<'a> {
         self.owner
     }
     /// Preorder position inside this owner; never a cross-owner admission key.
@@ -99,7 +99,7 @@ impl<'f, 'a> JsxNode<'f, 'a> {
 
 /// Preorder subtree endpoints permit direct-child iteration without an AST pass.
 pub struct JsxChildren<'f, 'a> {
-    owner: &'f JsxFile<'a>,
+    owner: &'f JsxL2Ir<'a>,
     next: usize,
     end: usize,
 }

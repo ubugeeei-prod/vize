@@ -14,7 +14,7 @@ use vize_l1::embed::{
 };
 use vize_l2::{
     file::L2Ir,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
     query::{BindingRef, Model},
 };
 
@@ -87,7 +87,7 @@ pub(super) fn run(
     } else {
         program
     };
-    let Ok(mut producer) = FileProducer::new(&arena, snapshot.source()) else {
+    let Ok(mut producer) = L2IrProducer::new(&arena, snapshot.source()) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };
     let mut intrinsic_tags = intrinsic::Tags::default();

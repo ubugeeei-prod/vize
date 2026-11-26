@@ -1,6 +1,6 @@
 //! Whole original root If observations, with explicit target mode and no guessed goldens.
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileConditionalState, op::Op};
+use vize_l2::{expr::ExprRef, file::NativeL2IrConditionalState, op::Op};
 
 #[test]
 fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<(), String> {
@@ -106,7 +106,7 @@ fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<
                 let [record] = file.native_conditionals() else {
                     return Err(cstr!("{id}: one original conditional record"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let NativeL2IrConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normal completed If attachment"));
                 };
                 require!(

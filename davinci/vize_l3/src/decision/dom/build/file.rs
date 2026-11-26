@@ -1,7 +1,7 @@
 //! Admit the actual private factory resolution, without another AST walk.
 
 use super::{DomBuilder, DomExpressionAnalysis, DomUnsupported, ValueKind};
-use crate::decision::dom::file::{DomFileExpression, matches_expression};
+use crate::decision::dom::file::{DomL2IrExpression, matches_expression};
 use crate::decision::dom::vue::policy::FileReads;
 use crate::decision::dom::vue::{VueReadKind, VueRenderExpression, VueRenderRead};
 use alloc::vec::Vec;
@@ -105,7 +105,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
         };
         self.facts
             .file_expressions
-            .insert(node, DomFileExpression { resolution });
+            .insert(node, DomL2IrExpression { resolution });
         if R::RECORD {
             self.facts.vue_expressions.insert(
                 node,

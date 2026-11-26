@@ -5,7 +5,7 @@ use vize_l0::Allocator;
 use vize_l2::{
     file::vue::ExposureIssueKind,
     lang::js::{
-        CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope,
+        CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
         SetupIssue, SetupIssueKind, StatementEvent, VueSetup,
     },
 };
@@ -86,7 +86,7 @@ fn selected_child_custody_refuses_another_original_component_even_in_same_source
 }
 
 struct Interrupt;
-impl<'a> FileObserver<'a> for Interrupt {
+impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
     fn unit(&mut self, _: &vize_l2::file::ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
@@ -109,7 +109,7 @@ fn actual_declaration_interruption_cannot_become_a_whole_primitive_setup_receipt
     let original = NativeSfcLintOwner::parse_in(&arena, SOURCE).unwrap();
     let script = original.l1ir().admitted().unwrap().setup().unwrap();
     let program = original.syntax().admitted_program().unwrap();
-    let mut producer = FileProducer::new(&arena, SOURCE).unwrap();
+    let mut producer = L2IrProducer::new(&arena, SOURCE).unwrap();
     let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let input =
             ProgramInput::checked(program, script.block(), script.container_index()).unwrap();
@@ -131,7 +131,7 @@ fn actual_declaration_interruption_cannot_become_a_whole_primitive_setup_receipt
         [(
             0,
             script_span(SOURCE),
-            vize_l2::file::FileIssueKind::InterruptedProgram
+            vize_l2::file::L2IrIssueKind::InterruptedProgram
         )]
     );
     assert_eq!(file.issues(), []);

@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::{BindingOp, OnOp, Op, Region},
 };
 use vize_l3::decision::{dom::PropertyRole, template::build_template_dom_decisions};
@@ -22,7 +22,7 @@ use vize_l4::{
     write::{NoLinks, Recorded},
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

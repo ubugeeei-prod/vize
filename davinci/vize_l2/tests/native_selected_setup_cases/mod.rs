@@ -9,7 +9,7 @@ use vize_l1::{
     },
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 mod accepted;
 mod primitive_strings;
 mod refusal;
@@ -38,7 +38,7 @@ fn owner<'a>(
     .ok_or("selected template")?;
     NativeTemplateOwner::new(selected).map_err(|_| "owner")
 }
-fn complete<'a>(owner: NativeTemplateOwner<'a>) -> Result<NativeTemplateFile<'a>, &'static str> {
+fn complete<'a>(owner: NativeTemplateOwner<'a>) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut owner = core::hint::black_box(owner);
     {
         let mut walk = owner.begin().map_err(|_| "native begin")?;

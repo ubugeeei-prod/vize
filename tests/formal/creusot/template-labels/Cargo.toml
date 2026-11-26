@@ -1,0 +1,14 @@
+[package]
+name = "vize_patina_template_labels_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_patina/src/rules/facts/max_template_complexity/original/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

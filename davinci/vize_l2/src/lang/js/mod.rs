@@ -11,16 +11,16 @@ pub mod interpolation;
 pub use crate::file::region::native::NativeTemplateWalk;
 pub use file::native::{
     NativeScopedTemplateIssue, NativeScopedTemplateIssueKind, NativeScopedTemplateView,
-    NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateFile,
-    NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner, NativeTemplateView,
+    NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateIssue,
+    NativeTemplateIssueKind, NativeTemplateL2Ir, NativeTemplateOwner, NativeTemplateView,
     RejectedNativeTemplateOwner,
 };
 pub use file::observer::{
-    CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent, SyntaxEvent,
+    CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
 pub use file::ordinary::{OrdinaryEmptyScript, OrdinaryIssue, OrdinaryIssueKind, VueOrdinaryEmpty};
 pub use file::setup::{SetupAnnotation, SetupIssue, SetupIssueKind, SetupPrimitiveType, VueSetup};
-pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+pub use file::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
 pub use file::{
     ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
     OriginalModuleSources,
@@ -35,5 +35,5 @@ pub use handler::{
     HandlerInput, HandlerInputErrorKind, NativeHandlerInput, RejectedHandlerInput,
     RejectedNativeHandlerInput,
 };
-pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};
-pub use jsx_body::{JsxMarkupFile, JsxMarkupIssue, JsxMarkupIssueKind, RejectedJsxMarkupFile};
+pub use jsx_body::{JsxChildren, JsxL2Ir, JsxL2IrError, JsxL2IrProducer, JsxNode, RejectedJsxL2Ir};
+pub use jsx_body::{JsxMarkupIssue, JsxMarkupIssueKind, JsxMarkupL2Ir, RejectedJsxMarkupL2Ir};

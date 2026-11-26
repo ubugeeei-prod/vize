@@ -8,7 +8,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, NativeFileInterpolationState},
+    file::{DeclarationKind, NativeL2IrInterpolationState},
     lang::js::NativeSelectedSetup,
     scope::ScopeOrigin,
 };
@@ -128,7 +128,7 @@ fn actual_key_role_keeps_its_original_parameter_scope_occurrence_and_canonical_r
         let [record] = file.native_interpolations() else {
             panic!("one original interpolation");
         };
-        let NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("actual canonical interpolation");
         };
         let expression = analysis.expression(node).unwrap();
@@ -177,7 +177,7 @@ fn key_receipt_refuses_equal_foreign_files_copied_occurrences_value_roles_and_fo
     let [record] = file.native_interpolations() else {
         panic!("one interpolation");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
         panic!("attached");
     };
     let resolution = file.expression(node).unwrap();

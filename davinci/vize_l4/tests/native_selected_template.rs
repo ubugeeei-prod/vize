@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -63,7 +63,7 @@ fn owner<'a>(
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "original root begin")?;

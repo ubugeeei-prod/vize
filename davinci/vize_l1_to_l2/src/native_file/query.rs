@@ -3,7 +3,7 @@
 use super::NativeSfc;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileResolution, L2Ir, Reference, ReferenceTarget, ScopeId},
+    file::{BindingRef, L2Ir, L2IrResolution, Reference, ReferenceTarget, ScopeId},
     query::{Model, PositionQueryError},
     resolution::{Occurrence, Usage},
 };
@@ -20,7 +20,7 @@ pub enum NativePositionQueryError {
 #[derive(Clone, Copy)]
 enum Site<'o, 'a> {
     Script(&'o Reference),
-    Template(FileResolution<'o, 'a>, &'o Occurrence<'a>),
+    Template(L2IrResolution<'o, 'a>, &'o Occurrence<'a>),
 }
 
 /// A genuine original use, its authored spelling and actual File stay borrowed.

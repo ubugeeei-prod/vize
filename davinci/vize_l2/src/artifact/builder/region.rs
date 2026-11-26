@@ -79,7 +79,7 @@ impl<'a> RegionBuilder<'_, 'a> {
     pub(crate) fn native_model(
         &mut self,
         input: &crate::lang::js::NativeModelInput<'a>,
-        kind: crate::file::NativeFileModelKind,
+        kind: crate::file::NativeL2IrModelKind,
     ) -> Result<(NodeId, core::ptr::NonNull<crate::op::ModelOp<'a>>), L2TemplateError> {
         self.builder.native_model(input, kind)
     }

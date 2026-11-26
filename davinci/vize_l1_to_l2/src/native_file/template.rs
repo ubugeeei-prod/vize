@@ -3,7 +3,7 @@ use crate::native::{
     NativeComponent, NativeEmbed, NativeHole, NativeProduced, NativeVueConstructionError,
     NativeVueProduced, PendingNativeComponent, RejectedNativeComponent,
 };
-use crate::vue_file::{VueFileIssue, VueFileProducer};
+use crate::vue_file::{VueL2IrIssue, VueL2IrProducer};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, diag::Diagnostic};
 use vize_l1::{
@@ -20,7 +20,7 @@ pub enum NativeTemplateOutcome<'a> {
     Produced(NativeVueProduced<'a>),
     FactoryRefused {
         component: NativeComponent<'a>,
-        issue: VueFileIssue,
+        issue: VueL2IrIssue,
     },
     ComponentRejected(Box<RejectedNativeComponent<'a>>),
     FileUnavailable(NativeComponent<'a>),
@@ -169,7 +169,7 @@ impl<'a> NativeTemplateObservation<'a> {
     }
     pub(super) fn construct(
         &mut self,
-        producer: Option<&mut VueFileProducer<'a>>,
+        producer: Option<&mut VueL2IrProducer<'a>>,
         issues: &mut Vec<NativeSfcIssue>,
     ) {
         if self.pending.is_none() {

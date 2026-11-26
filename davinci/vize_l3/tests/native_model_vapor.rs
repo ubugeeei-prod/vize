@@ -8,7 +8,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, NativeFileModelState},
+    file::{DeclarationKind, NativeL2IrModelState},
     op::InterpolationOp,
     resolution::Usage,
 };
@@ -71,7 +71,7 @@ fn original_models_retain_their_write_owner_and_neutral_analysis_cannot_promote_
         assert!(original.accepts_element(*node, element));
         assert_eq!(
             original.state(),
-            NativeFileModelState::Admitted(model.resolution().node())
+            NativeL2IrModelState::Admitted(model.resolution().node())
         );
         let occurrence = model.occurrence().ok_or("original occurrence")?;
         let binding = model.binding().ok_or("actual binding")?;

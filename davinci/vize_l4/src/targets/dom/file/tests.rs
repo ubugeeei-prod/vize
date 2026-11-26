@@ -11,7 +11,7 @@ use vize_l0::{Allocator, Span};
 use vize_l2::{
     expr::ExprRef,
     file::TemplateScope,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l3::decision::build_dom_file_decisions;
 
@@ -19,10 +19,10 @@ use vize_l3::decision::build_dom_file_decisions;
 fn equal_numeric_nodes_do_not_authorize_a_foreign_retained_literal() {
     let arena = Allocator::default();
     let source = "<p>{{'same'}}</p>";
-    let mut first = FileProducer::new(&arena, source).unwrap();
+    let mut first = L2IrProducer::new(&arena, source).unwrap();
     let first_native = support::construct(&arena, source, source, &mut first, TemplateScope::Root);
     let first = first.finish().unwrap();
-    let mut second = FileProducer::new(&arena, source).unwrap();
+    let mut second = L2IrProducer::new(&arena, source).unwrap();
     let second_native =
         support::construct(&arena, source, source, &mut second, TemplateScope::Root);
     let second = second.finish().unwrap();
@@ -81,7 +81,7 @@ fn equal_binding_ids_keep_real_owners_and_reference_refusal_is_atomic() {
     let arena = Allocator::default();
     let source = "<script setup>const msg = 'literal';</script><template>{{msg}}</template>";
     let (syntax, block) = support::script(&arena, source, "const msg = 'literal';");
-    let mut first = FileProducer::new(&arena, source).unwrap();
+    let mut first = L2IrProducer::new(&arena, source).unwrap();
     first
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -96,7 +96,7 @@ fn equal_binding_ids_keep_real_owners_and_reference_refusal_is_atomic() {
         TemplateScope::LastUnit,
     );
     let first = first.finish().unwrap();
-    let mut second = FileProducer::new(&arena, source).unwrap();
+    let mut second = L2IrProducer::new(&arena, source).unwrap();
     second
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),

@@ -35,7 +35,7 @@ fn caught_header_unwind_keeps_first_original_handler_and_cannot_revive_completio
     let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let mut builder = FileBuilder::new(&arena, source).unwrap();
+    let mut builder = L2IrBuilder::new(&arena, source).unwrap();
     let mut state = NativeRouteState::Scripts;
     {
         let mut walk = NativeTemplateWalk::new(&selected, &mut builder, &mut state, None).unwrap();

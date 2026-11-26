@@ -5,7 +5,7 @@ use vize_l0::{Span, String, cstr};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l1_to_l2::native_file::{NativeSelectedSfcIssueKind, NativeSelectedSfcObservation};
 use vize_l2::{
-    file::{L2Ir, NativeFileAttributeValueState},
+    file::{L2Ir, NativeL2IrAttributeValueState},
     op::Op,
     walk::NodeRef,
 };
@@ -207,7 +207,7 @@ fn joined_values<'owner, 'arena>(
     let mut values = Vec::new();
     for (index, record) in file.native_attribute_values().iter().enumerate() {
         let (node, slot) = match record.state() {
-            NativeFileAttributeValueState::Attached { node, slot } => (Some(node), Some(slot)),
+            NativeL2IrAttributeValueState::Attached { node, slot } => (Some(node), Some(slot)),
             _ => (None, None),
         };
         values.push(
@@ -221,7 +221,7 @@ fn joined_values<'owner, 'arena>(
     let visit_error = file.artifact().visit_nodes(&mut |node, current| {
         let NodeRef::Op(Op::Element(element)) = current else { return; };
         for (index, record) in file.native_attribute_values().iter().enumerate() {
-            let NativeFileAttributeValueState::Attached { node: actual, slot } = record.state()
+            let NativeL2IrAttributeValueState::Attached { node: actual, slot } = record.state()
             else { continue; };
             if actual != node { continue; }
             let Some(joined) = facts.value(index,element,slot) else { continue; };

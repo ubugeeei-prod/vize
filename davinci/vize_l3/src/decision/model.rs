@@ -4,8 +4,8 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, FileResolution, InitializerKind, L2Ir, Namespace, NativeFileModelKind,
-        NativeFileModelState,
+        DeclarationKind, InitializerKind, L2Ir, L2IrResolution, Namespace, NativeL2IrModelKind,
+        NativeL2IrModelState,
     },
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Usage,
@@ -20,7 +20,7 @@ pub(super) fn checked<'owner, 'arena>(
     node: NodeId,
     binding: &'owner BindingOp<'arena>,
     model: &'owner ModelOp<'arena>,
-) -> Option<FileResolution<'owner, 'arena>> {
+) -> Option<L2IrResolution<'owner, 'arena>> {
     let [actual_binding] = element.bindings.as_slice() else {
         return None;
     };
@@ -33,7 +33,7 @@ pub(super) fn checked<'owner, 'arena>(
         return None;
     }
     let original = l2ir.native_model(node)?;
-    if original.state() != NativeFileModelState::Admitted(node)
+    if original.state() != NativeL2IrModelState::Admitted(node)
         || !original.accepts(model)
         || !original.accepts_element(element_node, element)
         || original.element_node() != Some(element_node)
@@ -42,8 +42,8 @@ pub(super) fn checked<'owner, 'arena>(
         return None;
     }
     match original.kind()? {
-        NativeFileModelKind::Text if element.attributes.is_empty() => {}
-        NativeFileModelKind::Checkbox => {
+        NativeL2IrModelKind::Text if element.attributes.is_empty() => {}
+        NativeL2IrModelKind::Checkbox => {
             let [attribute] = element.attributes.as_slice() else {
                 return None;
             };

@@ -203,6 +203,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_glyph_line_breaks_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "vize_l0_coordinates_proofs"
 version = "0.0.0"
 dependencies = [
@@ -276,6 +283,13 @@ dependencies = [
 
 [[package]]
 name = "vize_patina_content_model_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_patina_template_labels_proofs"
 version = "0.0.0"
 dependencies = [
  "creusot-std",

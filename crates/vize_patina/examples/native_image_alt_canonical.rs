@@ -8,7 +8,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::lang::js::JsxL2IrProducer;
 use vize_patina::native::canonical::NativeCanonicalLint;
 
 fn main() -> Result<()> {
@@ -51,11 +51,11 @@ fn main() -> Result<()> {
     for (kind, representation) in [
         (
             oxc_span::SourceType::jsx(),
-            "JSX JsxMarkupFile same-Program canonical File",
+            "JSX JsxMarkupL2Ir same-Program canonical File",
         ),
         (
             oxc_span::SourceType::tsx(),
-            "TSX JsxMarkupFile same-Program canonical File",
+            "TSX JsxMarkupL2Ir same-Program canonical File",
         ),
     ] {
         let source = vize_l0::cstr!("const view = {body};");
@@ -64,7 +64,7 @@ fn main() -> Result<()> {
         let block = SourceRoot::new(&source)
             .map_err(|error| failure(&vize_l0::cstr!("native source refused: {error:?}")))?
             .whole_block();
-        let mut producer = JsxFileProducer::new(&a, original, block, 0).map_err(|error| {
+        let mut producer = JsxL2IrProducer::new(&a, original, block, 0).map_err(|error| {
             failure(&vize_l0::cstr!(
                 "native Program refused: {:?}",
                 error.error()

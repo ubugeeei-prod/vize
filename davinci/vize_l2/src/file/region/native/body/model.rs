@@ -3,8 +3,8 @@
 use super::super::model::ObservedModel;
 use super::{NativeVisibility, header};
 use crate::artifact::RegionBuilder;
-use crate::file::region::FileRegion;
-use crate::file::{NativeFileModelKind, NativeFileModelState, TemplateBody, TemplateChildRegion};
+use crate::file::region::L2IrRegion;
+use crate::file::{NativeL2IrModelKind, NativeL2IrModelState, TemplateBody, TemplateChildRegion};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
@@ -17,7 +17,7 @@ pub(super) fn construct<'a: 'b, 'b, R>(
     span: Span,
     header: header::Header<'a>,
     observed: ObservedModel,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -36,7 +36,7 @@ where
             return Err(Kind::UnsupportedChild);
         }
         let kind = if header.attributes.is_empty() {
-            NativeFileModelKind::Text
+            NativeL2IrModelKind::Text
         } else {
             let record = file
                 .facts
@@ -56,7 +56,7 @@ where
             {
                 return Err(Kind::UnsupportedChild);
             }
-            NativeFileModelKind::Checkbox
+            NativeL2IrModelKind::Checkbox
         };
         let header = header.resolve_handlers(file)?;
         let mut model_result = Err(Kind::IncompleteChildren);
@@ -83,7 +83,7 @@ where
             .ok_or(Kind::InvalidEvent)?;
         record.element = Some((element, pointer));
         record.kind = Some(kind);
-        record.state = NativeFileModelState::Admitted(model);
+        record.state = NativeL2IrModelState::Admitted(model);
         #[cfg(test)]
         super::super::model::tests::after_close();
         Ok(element)
@@ -94,14 +94,14 @@ where
             .native_models_mut()
             .get_mut(observed.index)
             .ok_or(Kind::InvalidEvent)?
-            .state = NativeFileModelState::Refused(kind);
+            .state = NativeL2IrModelState::Refused(kind);
     }
     result
 }
 
 struct ModelBody<'result> {
     index: usize,
-    kind: NativeFileModelKind,
+    kind: NativeL2IrModelKind,
     result: &'result mut Result<NodeId, Kind>,
 }
 

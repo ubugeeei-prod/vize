@@ -59,7 +59,7 @@ fn each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies() {
             };
             assert!(matches!(
                 conditional.state(),
-                NativeFileConditionalState::Refused(_)
+                NativeL2IrConditionalState::Refused(_)
             ));
             assert!(conditional.original.is_none());
             assert!(conditional.else_input().is_some());
@@ -151,7 +151,7 @@ fn late_second_policy_refusal_keeps_the_admitted_first_prefix_and_both_actual_in
     };
     assert_eq!(
         conditional.state(),
-        NativeFileConditionalState::Refused(Kind::UnsupportedChild)
+        NativeL2IrConditionalState::Refused(Kind::UnsupportedChild)
     );
     assert!(conditional.original.is_none());
     assert!(conditional.else_input().unwrap().body_node().is_none());
@@ -212,7 +212,7 @@ fn caught_late_pair_unwind_keeps_admitted_queryable_rows_but_denies_complete_sel
     let [conditional] = file.native_conditionals() else {
         panic!("pending original pair")
     };
-    assert_eq!(conditional.state(), NativeFileConditionalState::Pending);
+    assert_eq!(conditional.state(), NativeL2IrConditionalState::Pending);
     assert!(conditional.original.is_none());
     let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
         panic!("real closed If")

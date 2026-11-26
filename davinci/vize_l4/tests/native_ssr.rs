@@ -2,7 +2,7 @@ use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::NativeComponent;
 use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
-use vize_l2::lang::js::FileProducer;
+use vize_l2::lang::js::L2IrProducer;
 use vize_l3::decision::ssr::{SsrUnsupported, build_ssr_file_decisions};
 use vize_l3::decision::{build_decisions, policy::TargetPolicy};
 use vize_l4::module::{ModuleParts, RenderFunctionName, assemble, assemble_template};
@@ -25,7 +25,7 @@ impl TemplatePolicy for DiagnosticValues {
 fn native_file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::L2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().block(source, 0).unwrap();
     let component = NativeComponent::parse_in(arena, block).unwrap();
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     {
         // This genuine lower File guard records normal end; it confers no
         // original SFC custody, script role or runtime expression exposure.

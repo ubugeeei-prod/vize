@@ -53,13 +53,13 @@ pub struct VueDeclaration {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum VueFileIssueKind {
+pub enum VueL2IrIssueKind {
     DuplicateRole,
     OrdinaryAfterSetup,
     ScriptAfterTemplate,
     DuplicateTemplate,
     PreviousIssues,
-    InvalidProgram(vize_l2::file::FileIssueKind),
+    InvalidProgram(vize_l2::file::L2IrIssueKind),
     SetupExport,
     UnsupportedOptions,
     UnsupportedCall { optional: bool },
@@ -69,9 +69,9 @@ pub enum VueFileIssueKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct VueFileIssue {
+pub struct VueL2IrIssue {
     pub span: Span,
     pub unit: Option<ScriptUnitId>,
     pub scope: Option<ScopeId>,
-    pub kind: VueFileIssueKind,
+    pub kind: VueL2IrIssueKind,
 }

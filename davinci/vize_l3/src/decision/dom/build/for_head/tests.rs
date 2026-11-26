@@ -12,11 +12,11 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::Op,
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -70,11 +70,11 @@ fn private_join_refuses_foreign_file_and_wrong_canonical_node() {
     assert!(join(file, node, original).is_ok());
     assert!(matches!(
         join(foreign_file, node, original),
-        Err(DomUnsupported::FileForHead)
+        Err(DomUnsupported::L2IrForHead)
     ));
     assert!(matches!(
         join(file, NodeId::from_index(1).unwrap(), original),
-        Err(DomUnsupported::FileForHead)
+        Err(DomUnsupported::L2IrForHead)
     ));
     let head = file.for_head_for(original).unwrap();
     let foreign_head = foreign_file.for_head_for(foreign).unwrap();

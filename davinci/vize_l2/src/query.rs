@@ -13,7 +13,7 @@ mod template;
 
 pub use crate::file::BindingRef;
 /// Vocabulary a question or an answer names: lookup namespaces and refusals.
-pub use crate::file::{FileIssue, FileIssueKind, Namespace, TemplateIssue};
+pub use crate::file::{L2IrIssue, L2IrIssueKind, Namespace, TemplateIssue};
 pub use position::{PositionQueryError, ReferenceRef, ScopeRef};
 pub use template::{
     HandlerLocalRef, TemplateQueryError, TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,

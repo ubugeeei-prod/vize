@@ -46,6 +46,12 @@ export const overrides: Record<string, RuleExample> = {
     vue('<script setup>const message = "Hello";</script>\n<template>{{ missing }}</template>'),
     vue('<script setup>const message = "Hello";</script>\n<template>{{ message }}</template>'),
     "crates/vize_patina/src/rules/vue/no_undefined_refs.rs",
+    {
+      ruleOptions: { globals: ["formatCount"] },
+      note: "`globals` lists names a build step defines for every template, such as `unplugin-auto-import` imports. In a Nuxt project, `vize lint` reads the auto-imports from the generated `.nuxt/types/imports.d.ts` and adds them, so they need no entry; until `nuxi prepare` has generated that file, the rule is skipped with a notice. Names are exact. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
+      noteJa:
+        "`globals` には、`unplugin-auto-import` の自動インポートなど、ビルド時にすべてのテンプレートで使えるようになる名前を指定します。Nuxt プロジェクトでは、生成済みの `.nuxt/types/imports.d.ts` から自動インポートの名前を `vize lint` が読み取って加えるため、指定は不要です。`nuxi prepare` がこのファイルを生成するまでは、通知を表示してこのルールを省略します。名前は完全一致で照合します。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。",
+    },
   ),
   "vue/no-use-v-else-with-v-for": pair(
     template(

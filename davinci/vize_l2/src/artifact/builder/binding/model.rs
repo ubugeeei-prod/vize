@@ -2,7 +2,7 @@
 
 use super::super::{Builder, L2TemplateError, Owner, check};
 use crate::expr::ExprRef;
-use crate::file::NativeFileModelKind;
+use crate::file::NativeL2IrModelKind;
 use crate::lang::js::NativeModelInput;
 use crate::op::{Attribute, BindingContract, BindingOp, ModelOp, Namespace};
 use vize_l0::{Box, id::NodeId};
@@ -11,7 +11,7 @@ impl<'a> Builder<'a> {
     pub(in crate::artifact::builder) fn native_model(
         &mut self,
         input: &NativeModelInput<'a>,
-        kind: NativeFileModelKind,
+        kind: NativeL2IrModelKind,
     ) -> Result<(NodeId, core::ptr::NonNull<ModelOp<'a>>), L2TemplateError> {
         let span = input.attribute_span().ok_or(L2TemplateError::InvalidSpan {
             node: None,
@@ -26,8 +26,8 @@ impl<'a> Builder<'a> {
             .last()
             .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         if !matches!(&frame.owner, Owner::Element { tag: "input", namespace: Namespace::Html, attributes } if match kind {
-            NativeFileModelKind::Text => attributes.is_empty(),
-            NativeFileModelKind::Checkbox => matches!(attributes.as_slice(), [attribute] if attribute.name == "type" && attribute.value == Some("checkbox")),
+            NativeL2IrModelKind::Text => attributes.is_empty(),
+            NativeL2IrModelKind::Checkbox => matches!(attributes.as_slice(), [attribute] if attribute.name == "type" && attribute.value == Some("checkbox")),
         }) || !frame.bindings.is_empty()
         {
             return Err(L2TemplateError::BindingWithoutOwner { span });

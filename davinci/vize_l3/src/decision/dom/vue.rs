@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::L2Template,
-    file::{BindingRef, FileResolution, L2Ir, vue::VueExposure},
+    file::{BindingRef, L2Ir, L2IrResolution, vue::VueExposure},
     resolution::Occurrence,
 };
 
@@ -59,7 +59,7 @@ impl<'owner, 'arena> VueRenderRead<'owner, 'arena> {
 
 /// Construction publishes the complete ordered read list or no row.
 pub struct VueRenderExpression<'owner, 'arena> {
-    pub(in crate::decision::dom) resolution: FileResolution<'owner, 'arena>,
+    pub(in crate::decision::dom) resolution: L2IrResolution<'owner, 'arena>,
     pub(in crate::decision::dom) reads: Vec<VueRenderRead<'owner, 'arena>>,
     pub(in crate::decision::dom) value: ValueKind,
 }
@@ -76,7 +76,7 @@ impl core::fmt::Debug for VueRenderExpression<'_, '_> {
 
 impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
     #[must_use]
-    pub fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
 
@@ -117,9 +117,9 @@ impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
 /// ```
 /// The checked access rows have no mutable or neutral conversion:
 /// ```compile_fail
-/// use vize_l3::decision::{FileAnalysis, dom::vue::VueRenderAnalysis};
+/// use vize_l3::decision::{DomL2IrAnalysis, dom::vue::VueRenderAnalysis};
 /// fn discard<'v,'f,'d,'p,'a>(result: VueRenderAnalysis<'v,'f,'d,'p,'a>)
-///     -> FileAnalysis<'f,'a> { result.analysis }
+///     -> DomL2IrAnalysis<'f,'a> { result.analysis }
 /// ```
 pub struct VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena> {
     exposure: &'view VueExposure<'owner, 'descriptor, 'program, 'arena>,

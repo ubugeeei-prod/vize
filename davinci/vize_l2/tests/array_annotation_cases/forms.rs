@@ -1,5 +1,5 @@
 use super::{
-    Allocator, FileIssueKind, Parser, PositionQueryError, SourceRoot, SourceType, cstr, lower,
+    Allocator, L2IrIssueKind, Parser, PositionQueryError, SourceRoot, SourceType, cstr, lower,
 };
 use vize_l2::query::Model;
 
@@ -83,7 +83,7 @@ fn named_recursive_and_nonflat_type_children_keep_whole_file_incomplete() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax),
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax),
             "{source}"
         );
         assert!(matches!(
@@ -122,7 +122,7 @@ fn context_and_unsupported_siblings_cannot_borrow_array_completeness() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax)
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax)
         );
     }
 }

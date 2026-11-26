@@ -18,7 +18,7 @@ use super::contract::{
 };
 use super::{MacroKind, lookup, unwrap_ts};
 use crate::file::{ScopeId, ScriptUnit};
-use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 use alloc::vec::Vec;
 use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
@@ -111,7 +111,7 @@ pub enum SetupAnalysisIncomplete {
 }
 
 /// Collects the facts of one `<script setup>` Program from its top-level
-/// statement events. Pass it to `FileProducer::program_observed`, then
+/// statement events. Pass it to `L2IrProducer::program_observed`, then
 /// [`Self::finish`].
 #[derive(Debug, Default)]
 pub struct SetupObserver<'a> {
@@ -277,7 +277,7 @@ fn authored(base: u32, span: oxc_span::Span, overflow: &mut bool) -> Span {
     }
 }
 
-impl<'a> FileObserver<'a> for SetupObserver<'a> {
+impl<'a> L2IrObserver<'a> for SetupObserver<'a> {
     type Checkpoint = SetupCheckpoint;
 
     fn unit(&mut self, unit: &ScriptUnit) {

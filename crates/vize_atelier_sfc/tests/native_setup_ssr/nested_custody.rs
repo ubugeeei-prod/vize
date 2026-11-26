@@ -1,6 +1,6 @@
 //! Every original nested negative's custody law, now required on accepted output.
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeSelectedSetup, op::Op,
+    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeSelectedSetup, op::Op,
 };
 
 pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
@@ -18,7 +18,7 @@ pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
     let [record] = file.native_interpolations() else {
         panic!("{name}: exact original input missing")
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
         panic!("{name}: genuine interpolation admission missing")
     };
     assert!(core::ptr::eq(

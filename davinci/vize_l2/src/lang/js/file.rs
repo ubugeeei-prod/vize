@@ -2,7 +2,7 @@
 
 use crate::artifact::L2TemplateError;
 use crate::file::{
-    FileBuilder, FileIssueKind, L2Ir, RejectedFile, ScopeId, ScriptProfile, ScriptUnitId,
+    L2Ir, L2IrBuilder, L2IrIssueKind, RejectedL2Ir, ScopeId, ScriptProfile, ScriptUnitId,
 };
 use crate::file::{TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::resolution::source::ProgramReferenceSource;
@@ -21,7 +21,7 @@ pub(crate) mod ordinary;
 pub(crate) mod setup;
 mod walk;
 use guard::ProgramWalkGuard;
-use observer::{FileObserver, NoObserver};
+use observer::{L2IrObserver, NoObserver};
 
 /// Which actual lexical boundary this language unit introduces.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,7 +34,7 @@ pub enum ProgramScope {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProgramInputError {
     pub span: Span,
-    pub kind: FileIssueKind,
+    pub kind: L2IrIssueKind,
 }
 
 /// Whole original syntax, checked against its complete source block/profile.
@@ -86,10 +86,10 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             || program.source_type != source_type
             || admitted.options() != ParseOptions::default()
         {
-            return Err(reject(FileIssueKind::InvalidProfile));
+            return Err(reject(L2IrIssueKind::InvalidProfile));
         }
         if !core::ptr::eq(admitted.source(), block.source()) {
-            return Err(reject(FileIssueKind::InvalidSource));
+            return Err(reject(L2IrIssueKind::InvalidSource));
         }
         let references = ProgramReferenceSource::checked(
             admitted,
@@ -97,9 +97,9 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             block.span(),
             source_type,
         )
-        .map_err(|_| reject(FileIssueKind::InvalidSource))?;
+        .map_err(|_| reject(L2IrIssueKind::InvalidSource))?;
         let index =
-            u32::try_from(container_index).map_err(|_| reject(FileIssueKind::BindingLimit))?;
+            u32::try_from(container_index).map_err(|_| reject(L2IrIssueKind::BindingLimit))?;
         Ok(Self {
             references,
             #[cfg(feature = "lexical-arrow-initializers")]
@@ -116,16 +116,16 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
 }
 
 /// Sole source of file-local declarations from original admitted observations.
-pub struct FileProducer<'a> {
+pub struct L2IrProducer<'a> {
     #[cfg(feature = "lexical-arrow-initializers")]
     lexical_arrow_initializers: bool,
-    builder: FileBuilder<'a>,
+    builder: L2IrBuilder<'a>,
 }
 
-impl<'a> FileProducer<'a> {
+impl<'a> L2IrProducer<'a> {
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         Ok(Self {
-            builder: FileBuilder::new(allocator, source)?,
+            builder: L2IrBuilder::new(allocator, source)?,
             #[cfg(feature = "lexical-arrow-initializers")]
             lexical_arrow_initializers: false,
         })
@@ -140,7 +140,7 @@ impl<'a> FileProducer<'a> {
             .map(|(unit, _)| unit)
     }
 
-    pub fn program_observed<O: FileObserver<'a>>(
+    pub fn program_observed<O: L2IrObserver<'a>>(
         &mut self,
         input: ProgramInput<'_, 'a>,
         scope: ProgramScope,
@@ -149,7 +149,7 @@ impl<'a> FileProducer<'a> {
         if !core::ptr::eq(input.block.root_source(), self.builder.source) {
             return Err(ProgramInputError {
                 span: input.block.span(),
-                kind: FileIssueKind::InvalidSource,
+                kind: L2IrIssueKind::InvalidSource,
             });
         }
         #[cfg(feature = "lexical-arrow-initializers")]
@@ -167,13 +167,13 @@ impl<'a> FileProducer<'a> {
         ) else {
             return Err(ProgramInputError {
                 span: input.block.span(),
-                kind: FileIssueKind::DuplicateUnit,
+                kind: L2IrIssueKind::DuplicateUnit,
             });
         };
         let Some(mut guard) = ProgramWalkGuard::new(&mut self.builder.facts) else {
             return Err(ProgramInputError {
                 span: input.block.span(),
-                kind: FileIssueKind::InvalidSpan,
+                kind: L2IrIssueKind::InvalidSpan,
             });
         };
         #[cfg(feature = "lexical-arrow-initializers")]
@@ -192,7 +192,7 @@ impl<'a> FileProducer<'a> {
         {
             guard
                 .facts()
-                .issue(unit, input.block.span(), FileIssueKind::InvalidProfile);
+                .issue(unit, input.block.span(), L2IrIssueKind::InvalidProfile);
         } else {
             walk::program(&input, guard.facts(), unit, lexical_scope, observer);
         }
@@ -200,7 +200,7 @@ impl<'a> FileProducer<'a> {
         Ok((unit, lexical_scope))
     }
 
-    pub fn finish(self) -> Result<L2Ir<'a>, RejectedFile<'a>> {
+    pub fn finish(self) -> Result<L2Ir<'a>, RejectedL2Ir<'a>> {
         self.builder.finish()
     }
 
@@ -217,11 +217,11 @@ impl<'a> FileProducer<'a> {
     }
 
     #[must_use]
-    pub fn issues(&self) -> &[crate::file::FileIssue] {
+    pub fn issues(&self) -> &[crate::file::L2IrIssue] {
         &self.builder.facts.issues
     }
 
-    pub fn interrupted_programs(&self) -> impl Iterator<Item = crate::file::FileIssue> + '_ {
+    pub fn interrupted_programs(&self) -> impl Iterator<Item = crate::file::L2IrIssue> + '_ {
         self.builder
             .facts
             .units
@@ -234,7 +234,7 @@ impl<'a> FileProducer<'a> {
         &mut self,
         selection: TemplateScope,
         policy: P,
-    ) -> Result<TemplateRegion<'_, 'a, P>, FileIssueKind> {
+    ) -> Result<TemplateRegion<'_, 'a, P>, L2IrIssueKind> {
         let scope = match selection {
             TemplateScope::Root => ScopeId(0),
             TemplateScope::LastUnit => {
@@ -242,7 +242,7 @@ impl<'a> FileProducer<'a> {
                     .facts
                     .units
                     .last()
-                    .ok_or(FileIssueKind::InvalidSpan)?
+                    .ok_or(L2IrIssueKind::InvalidSpan)?
                     .scope
             }
         };
@@ -268,7 +268,7 @@ impl ProgramInput<'_, '_> {
 }
 
 #[cfg(feature = "lexical-arrow-initializers")]
-impl FileProducer<'_> {
+impl L2IrProducer<'_> {
     /// Enable lexical arrow initializers in each admitted original Program of this file.
     pub fn enable_lexical_arrow_initializers(&mut self) {
         self.lexical_arrow_initializers = true;

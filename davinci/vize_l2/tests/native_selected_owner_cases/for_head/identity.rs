@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 
 #[test]
 fn duplicate_original_for_headers_never_mint_and_keep_every_already_observed_owner()
@@ -65,7 +65,7 @@ fn duplicate_original_for_headers_never_mint_and_keep_every_already_observed_own
         !file
             .template_issues()
             .iter()
-            .any(|issue| issue.kind == FileIssueKind::DuplicateDeclaration),
+            .any(|issue| issue.kind == L2IrIssueKind::DuplicateDeclaration),
     )?;
     Ok(())
 }

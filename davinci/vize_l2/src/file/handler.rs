@@ -22,7 +22,7 @@ pub(crate) struct PendingHandler<'a> {
 
 /// Complete original observations remain readable after a header refusal.
 #[derive(Debug)]
-pub enum RejectedFileHandler<'a> {
+pub enum RejectedL2IrHandler<'a> {
     Observation(AttributeHandlerFailure<'a>),
     Syntax(Box<RejectedNativeHandlerInput<'a>>),
     Resolution {
@@ -33,14 +33,14 @@ pub enum RejectedFileHandler<'a> {
 
 /// A short query borrow retains the actual File; an equal node ID is insufficient.
 /// ```compile_fail
-/// use vize_l2::file::{L2Ir, FileHandler};
+/// use vize_l2::file::{L2Ir, L2IrHandler};
 /// use vize_l2::op::HandlerId;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>, id: HandlerId) {
-///     let _ = FileHandler { l2ir, id };
+///     let _ = L2IrHandler { l2ir, id };
 /// }
 /// ```
 #[derive(Clone, Copy)]
-pub struct FileHandler<'f, 'a> {
+pub struct L2IrHandler<'f, 'a> {
     l2ir: &'f L2Ir<'a>,
     id: HandlerId,
 }
@@ -48,20 +48,20 @@ pub struct FileHandler<'f, 'a> {
 impl<'a> L2Ir<'a> {
     /// Numeric file-local lookup only; use `handler_for` to join an actual On.
     #[must_use]
-    pub fn handler(&self, id: HandlerId) -> Option<FileHandler<'_, 'a>> {
+    pub fn handler(&self, id: HandlerId) -> Option<L2IrHandler<'_, 'a>> {
         self.facts.handlers.get(id.node())?;
-        Some(FileHandler { l2ir: self, id })
+        Some(L2IrHandler { l2ir: self, id })
     }
     /// Join the exact checked attached On allocation with this actual File.
     /// Equal IDs, spans, fields or an On copied from another File do not join.
     #[must_use]
-    pub fn handler_for(&self, on: &OnOp<'a>) -> Option<FileHandler<'_, 'a>> {
+    pub fn handler_for(&self, on: &OnOp<'a>) -> Option<L2IrHandler<'_, 'a>> {
         let id = on.handler.and_then(OnHandlerRef::body)?;
         let handler = self.handler(id)?;
         handler.accepts_on(on).then_some(handler)
     }
     #[must_use]
-    pub fn rejected_handlers(&self) -> &[RejectedFileHandler<'a>] {
+    pub fn rejected_handlers(&self) -> &[RejectedL2IrHandler<'a>] {
         &self.facts.rejected_handlers
     }
     /// Original observations parked before a fallible header/handler walk.
@@ -76,7 +76,7 @@ impl<'a> L2Ir<'a> {
     }
 }
 
-impl<'f, 'a> FileHandler<'f, 'a> {
+impl<'f, 'a> L2IrHandler<'f, 'a> {
     #[must_use]
     pub fn accepts_on(self, on: &OnOp<'a>) -> bool {
         self.l2ir
@@ -106,7 +106,7 @@ impl<'f, 'a> FileHandler<'f, 'a> {
         core::ptr::eq(self.l2ir, binding.l2ir())
     }
     #[must_use]
-    pub fn same_owner(self, other: FileHandler<'_, '_>) -> bool {
+    pub fn same_owner(self, other: L2IrHandler<'_, '_>) -> bool {
         core::ptr::eq(self.l2ir, other.l2ir)
     }
 }

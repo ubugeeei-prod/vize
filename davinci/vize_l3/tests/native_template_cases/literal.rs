@@ -1,14 +1,14 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
 use vize_l2::{
     expr::ExprRef,
-    lang::js::{NativeInterpolationInput, NativeTemplateFile},
+    lang::js::{NativeInterpolationInput, NativeTemplateL2Ir},
 };
 use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
 
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

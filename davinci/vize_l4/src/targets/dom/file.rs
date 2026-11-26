@@ -2,7 +2,7 @@
 
 use vize_l0::id::NodeId;
 use vize_l2::{expr::ExprRef, file::L2Ir, resolution::Occurrence};
-use vize_l3::decision::{FileAnalysis, dom::DomAnalysis, template::TemplateDomAnalysis};
+use vize_l3::decision::{DomL2IrAnalysis, dom::DomAnalysis, template::TemplateDomAnalysis};
 
 use super::expression::ExpressionWriter;
 use super::{DomError, DomErrorKind, encode};
@@ -27,7 +27,7 @@ use crate::write::{LinkSink, Writer};
 /// use vize_l4::{targets::dom::emit_file, write::NoLinks};
 /// fn substitute(analysis: &DecisionAnalysis<'_, '_>) { let _ = emit_file::<NoLinks>(analysis); }
 /// ```
-pub fn emit_file<L: LinkSink>(analysis: &FileAnalysis<'_, '_>) -> Result<Writer<L>, DomError> {
+pub fn emit_file<L: LinkSink>(analysis: &DomL2IrAnalysis<'_, '_>) -> Result<Writer<L>, DomError> {
     encode(
         analysis.artifact().source(),
         analysis.policy(),
@@ -50,9 +50,9 @@ pub fn emit_file<L: LinkSink>(analysis: &FileAnalysis<'_, '_>) -> Result<Writer<
 ///
 /// A neutral File analysis cannot stand in for selected-root completion:
 /// ```compile_fail
-/// use vize_l3::decision::FileAnalysis;
+/// use vize_l3::decision::DomL2IrAnalysis;
 /// use vize_l4::{targets::dom::emit_template, write::NoLinks};
-/// fn substitute(analysis: &FileAnalysis<'_, '_>) {
+/// fn substitute(analysis: &DomL2IrAnalysis<'_, '_>) {
 ///     let _ = emit_template::<NoLinks>(analysis);
 /// }
 /// ```

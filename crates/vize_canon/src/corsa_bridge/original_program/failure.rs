@@ -217,14 +217,14 @@ fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> vize_l2::file:
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     };
-    use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+    use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
     let block = SourceRoot::new(source).unwrap().whole_block();
     let syntax = parse_program_once(
         arena,
         EmbedSource::authored(source, block.span()).unwrap(),
         ProgramOptions::module(lang),
     );
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 17).unwrap(),

@@ -1,45 +1,64 @@
 use super::{MarkupDocumentVisitor, MarkupElement, MarkupRule};
+use crate::lent_walk::{self, LentNodes};
 use oxc_ast::ast::{
     Expression, JSXAttributeItem, JSXAttributeValue, JSXElement, JSXExpressionContainer,
     JSXFragment, Program,
 };
-use oxc_ast_visit::{
-    Visit,
-    walk::{
-        walk_expression, walk_jsx_element, walk_jsx_expression_container, walk_jsx_fragment,
-        walk_program,
-    },
-};
-use std::marker::PhantomData;
 
-struct NestedDriver<'visitor, 'a, F: ?Sized> {
+/// Hands each outermost JSX element or fragment to `visitor` without walking
+/// into it; the markup recursion visits what it contains.
+struct Roots<'visitor, F> {
     visitor: &'visitor mut F,
     offset: u32,
-    _marker: PhantomData<&'a ()>,
 }
 
-impl<'a, F: ?Sized> NestedDriver<'_, 'a, F>
-where
-    F: FnMut(MarkupElement<'a>),
-{
-    fn visit_element(&mut self, element: MarkupElement<'a>) {
-        (self.visitor)(element);
+impl<'a, F: FnMut(MarkupElement<'a>)> LentNodes<'a> for Roots<'_, F> {
+    #[inline]
+    fn enter_jsx_element(&mut self, element: &'a JSXElement<'a>) -> bool {
+        (self.visitor)(MarkupElement::from_jsx_element(element, self.offset));
+        false
+    }
+
+    #[inline]
+    fn enter_jsx_fragment(&mut self, fragment: &'a JSXFragment<'a>) -> bool {
+        (self.visitor)(MarkupElement::from_jsx_fragment(fragment, self.offset));
+        false
     }
 }
 
-impl<'a, F: ?Sized> Visit<'a> for NestedDriver<'_, 'a, F>
+/// Hands every JSX element and fragment to `enter` before its contents and to
+/// `exit` after them.
+struct Tree<'enter, 'exit, FEnter, FExit> {
+    offset: u32,
+    enter: &'enter mut FEnter,
+    exit: &'exit mut FExit,
+}
+
+impl<'a, FEnter, FExit> LentNodes<'a> for Tree<'_, '_, FEnter, FExit>
 where
-    F: FnMut(MarkupElement<'a>),
+    FEnter: FnMut(MarkupElement<'a>),
+    FExit: FnMut(MarkupElement<'a>),
 {
-    fn visit_jsx_element(&mut self, it: &JSXElement<'a>) {
-        self.visit_element(MarkupElement::from_jsx_element(it as *const _, self.offset));
+    #[inline]
+    fn enter_jsx_element(&mut self, element: &'a JSXElement<'a>) -> bool {
+        (self.enter)(MarkupElement::from_jsx_element(element, self.offset));
+        true
     }
 
-    fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
-        self.visit_element(MarkupElement::from_jsx_fragment(
-            it as *const _,
-            self.offset,
-        ));
+    #[inline]
+    fn leave_jsx_element(&mut self, element: &'a JSXElement<'a>) {
+        (self.exit)(MarkupElement::from_jsx_element(element, self.offset));
+    }
+
+    #[inline]
+    fn enter_jsx_fragment(&mut self, fragment: &'a JSXFragment<'a>) -> bool {
+        (self.enter)(MarkupElement::from_jsx_fragment(fragment, self.offset));
+        true
+    }
+
+    #[inline]
+    fn leave_jsx_fragment(&mut self, fragment: &'a JSXFragment<'a>) {
+        (self.exit)(MarkupElement::from_jsx_fragment(fragment, self.offset));
     }
 }
 
@@ -49,38 +68,23 @@ pub(super) fn walk_jsx_program<'a>(
     enter: &mut impl FnMut(MarkupElement<'a>),
     exit: &mut impl FnMut(MarkupElement<'a>),
 ) {
-    struct JsxMarkupWalker<'enter, 'exit, FEnter, FExit> {
-        offset: u32,
-        enter: &'enter mut FEnter,
-        exit: &'exit mut FExit,
-    }
+    lent_walk::walk_program(
+        &mut Tree {
+            offset,
+            enter,
+            exit,
+        },
+        program,
+    );
+}
 
-    impl<'ast, FEnter, FExit> Visit<'ast> for JsxMarkupWalker<'_, '_, FEnter, FExit>
-    where
-        FEnter: FnMut(MarkupElement<'ast>),
-        FExit: FnMut(MarkupElement<'ast>),
-    {
-        fn visit_jsx_element(&mut self, it: &JSXElement<'ast>) {
-            let element = MarkupElement::from_jsx_element(it as *const _, self.offset);
-            (self.enter)(element);
-            walk_jsx_element(self, it);
-            (self.exit)(element);
-        }
-
-        fn visit_jsx_fragment(&mut self, it: &JSXFragment<'ast>) {
-            let element = MarkupElement::from_jsx_fragment(it as *const _, self.offset);
-            (self.enter)(element);
-            walk_jsx_fragment(self, it);
-            (self.exit)(element);
-        }
-    }
-
-    let mut walker = JsxMarkupWalker {
-        offset,
-        enter,
-        exit,
-    };
-    walk_program(&mut walker, program);
+/// Each outermost JSX element or fragment of `program`, in source order.
+pub(super) fn walk_program_roots<'a>(
+    program: &'a Program<'a>,
+    offset: u32,
+    visitor: &mut impl FnMut(MarkupElement<'a>),
+) {
+    lent_walk::walk_program(&mut Roots { visitor, offset }, program);
 }
 
 pub(super) fn visit_expression_container_roots<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized>(
@@ -98,12 +102,7 @@ pub(super) fn walk_expression_container_roots<'a>(
     offset: u32,
     visitor: &mut impl FnMut(MarkupElement<'a>),
 ) {
-    let mut driver = NestedDriver {
-        visitor,
-        offset,
-        _marker: PhantomData,
-    };
-    walk_jsx_expression_container(&mut driver, container);
+    lent_walk::walk_jsx_expression_container(&mut Roots { visitor, offset }, container);
 }
 
 fn walk_expression_roots<'a>(
@@ -111,12 +110,7 @@ fn walk_expression_roots<'a>(
     offset: u32,
     visitor: &mut impl FnMut(MarkupElement<'a>),
 ) {
-    let mut driver = NestedDriver {
-        visitor,
-        offset,
-        _marker: PhantomData,
-    };
-    walk_expression(&mut driver, expression);
+    lent_walk::walk_expression(&mut Roots { visitor, offset }, expression);
 }
 
 fn walk_attribute_value_roots<'a>(
@@ -130,16 +124,10 @@ fn walk_attribute_value_roots<'a>(
             walk_expression_container_roots(container, offset, visitor);
         }
         JSXAttributeValue::Element(element) => {
-            visitor(MarkupElement::from_jsx_element(
-                &raw const **element,
-                offset,
-            ));
+            visitor(MarkupElement::from_jsx_element(element, offset));
         }
         JSXAttributeValue::Fragment(fragment) => {
-            visitor(MarkupElement::from_jsx_fragment(
-                &raw const **fragment,
-                offset,
-            ));
+            visitor(MarkupElement::from_jsx_fragment(fragment, offset));
         }
     }
 }

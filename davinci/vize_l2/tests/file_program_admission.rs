@@ -3,8 +3,8 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::syntax::{EmbedHole, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]
 fn actual_nonfatal_recovery_cannot_supply_a_public_file_program_input() {
@@ -46,7 +46,7 @@ fn original_native_owner_supplies_the_live_short_admission_and_keeps_observation
         syntax.admitted_program().unwrap().program(),
         actual_ast
     ));
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let unit = producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 4).unwrap(),
@@ -88,7 +88,7 @@ fn nondefault_actual_options_cannot_be_substituted_with_a_compiler_profile() {
         assert!(observed.diagnostics().is_empty());
         assert!(matches!(
             ProgramInput::checked(observed.admitted().unwrap(), block, 0),
-            Err(error) if error.kind == FileIssueKind::InvalidProfile
+            Err(error) if error.kind == L2IrIssueKind::InvalidProfile
         ));
     }
 }
@@ -103,6 +103,6 @@ fn inferred_module_does_not_replace_the_original_unambiguous_profile() {
     assert!(admitted.source_type().is_unambiguous());
     assert!(matches!(
         ProgramInput::checked(admitted, SourceRoot::new(source).unwrap().whole_block(), 0),
-        Err(error) if error.kind == FileIssueKind::InvalidProfile
+        Err(error) if error.kind == L2IrIssueKind::InvalidProfile
     ));
 }

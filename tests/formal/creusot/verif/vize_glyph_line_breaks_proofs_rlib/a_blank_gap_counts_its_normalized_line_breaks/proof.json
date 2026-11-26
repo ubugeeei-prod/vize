@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_blank_gap_counts_its_normalized_line_breaks": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      },
+      "vc_whitespace_gap_line_breaks": {
+        "prover": "alt-ergo",
+        "time": 0.004
+      }
+    }
+  }
+}

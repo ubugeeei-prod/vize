@@ -5,7 +5,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::{NativeTemplateOutcome, lower_sfc_native};
-use vize_l1_to_l2::vue_file::VueFileIssueKind;
+use vize_l1_to_l2::vue_file::VueL2IrIssueKind;
 
 #[test]
 fn real_sfc_constructor_tagged_and_dynamic_import_keep_originals_without_admission() {
@@ -60,7 +60,7 @@ fn real_sfc_constructor_tagged_and_dynamic_import_keep_originals_without_admissi
                 .unwrap()
                 .issues()
                 .iter()
-                .any(|issue| issue.kind == VueFileIssueKind::UnsupportedInvocation)
+                .any(|issue| issue.kind == VueL2IrIssueKind::UnsupportedInvocation)
         );
         let NativeTemplateOutcome::FactoryRefused { component, .. } =
             observed.template().unwrap().outcome()

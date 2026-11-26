@@ -1,7 +1,7 @@
 use super::{Allocator, Kind, check, descriptor, equal, owner, selected, syntax};
 use vize_l0::Span;
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileHandler},
+    file::{L2IrIssueKind, RejectedL2IrHandler},
     op::{BindingOp, OnHandlerRef, Op},
     resolution::HandlerBindingRef,
 };
@@ -185,9 +185,9 @@ fn actual_header_syntax_and_semantic_refusals_keep_complete_owners_and_precise_r
         equal(
             kind,
             if body.contains("missing") {
-                FileIssueKind::UnresolvedReference
+                L2IrIssueKind::UnresolvedReference
             } else {
-                FileIssueKind::UnsupportedSyntax
+                L2IrIssueKind::UnsupportedSyntax
             },
         )?;
         let output = original.finish();
@@ -198,10 +198,10 @@ fn actual_header_syntax_and_semantic_refusals_keep_complete_owners_and_precise_r
             return Err("retained rejection");
         };
         match rejected {
-            RejectedFileHandler::Resolution { input, .. } => {
+            RejectedL2IrHandler::Resolution { input, .. } => {
                 equal(input.operand().raw_value(), body)?
             }
-            RejectedFileHandler::Syntax(input) => {
+            RejectedL2IrHandler::Syntax(input) => {
                 equal(input.operand().raw_value(), body)?;
                 let syntax = input.operand().syntax();
                 equal(syntax.source().text(), body)?;

@@ -5,7 +5,7 @@ use davinci_test_support::native_dom_file as support;
 use vize_l0::Allocator;
 use vize_l2::{
     file::TemplateScope,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l3::decision::build_dom_file_decisions;
 use vize_l4::{
@@ -26,7 +26,7 @@ fn complete_file_literal_property_modules_keep_comments_trivia_and_authentic_own
         }
         let arena = Allocator::default();
         let source = reference["source"].as_str().unwrap();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         let (syntax, block) = support::script(&arena, source, reference["setup"].as_str().unwrap());
         producer
             .program(

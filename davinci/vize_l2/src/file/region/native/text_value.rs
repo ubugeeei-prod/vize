@@ -2,7 +2,7 @@
 
 use super::{NativeVisibility, RootRegion};
 use crate::file::NativeTextValuePolicyError as Policy;
-use crate::file::{NativeFileTextValue, NativeFileTextValueState as State};
+use crate::file::{NativeL2IrTextValue, NativeL2IrTextValueState as State};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use vize_l0::id::NodeId;
 use vize_l1::markup::{ChildView, SelectedTemplateComponent, TokenStatus};
@@ -23,7 +23,7 @@ pub(super) fn construct<'a>(
     #[cfg(test)]
     interruption::before_observe();
     let observation = selected.observe_text_value(child.reborrow());
-    region.facts.native_text_values.push(NativeFileTextValue {
+    region.facts.native_text_values.push(NativeL2IrTextValue {
         observation,
         state: State::Pending,
         text: None,

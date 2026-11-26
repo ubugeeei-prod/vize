@@ -1,9 +1,9 @@
 use super::observe;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{FileIssueKind, ScriptUnit};
+use vize_l2::file::{L2IrIssueKind, ScriptUnit};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, InvocationEvent, ModuleSourceErrorKind,
+    CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, L2IrProducer, ModuleSourceErrorKind,
     ProgramInput, ProgramScope, StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -14,7 +14,7 @@ enum Fault {
     RejectInvocation,
 }
 struct Observer(Fault);
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
@@ -50,7 +50,7 @@ fn original_import_rows_and_dynamic_observations_survive_unwind_without_completi
         let block = SourceRoot::new(source).unwrap().whole_block();
         let original = observe(&arena, block, SourceType::mjs());
         let input = ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer.program_observed(input, ProgramScope::Module, &mut Observer(fault))
         }));
@@ -77,7 +77,7 @@ fn rejected_original_dynamic_callback_keeps_refusal_after_resolution_rollback() 
     let source = "import 'before'; import('dynamic');";
     let block = SourceRoot::new(source).unwrap().whole_block();
     let original = observe(&arena, block, SourceType::mjs());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program_observed(
             ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(),
@@ -89,7 +89,7 @@ fn rejected_original_dynamic_callback_keeps_refusal_after_resolution_rollback() 
     assert!(
         file.issues()
             .iter()
-            .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax)
+            .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax)
     );
     assert!(file.references().is_empty());
     assert_eq!(file.imports().len(), 1);

@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{NativeFileConditionalState, NativeFileInterpolationState},
+    file::{NativeL2IrConditionalState, NativeL2IrInterpolationState},
     op::Op,
     resolution::Usage,
 };
@@ -125,7 +125,7 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                 let [condition_record] = file.native_conditionals() else {
                     return Err(cstr!("{id}: one original condition"));
                 };
-                let NativeFileConditionalState::Admitted(if_node) = condition_record.state() else {
+                let NativeL2IrConditionalState::Admitted(if_node) = condition_record.state() else {
                     return Err(cstr!("{id}: normally closed If"));
                 };
                 require!(
@@ -159,7 +159,7 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                 let [text_record] = file.native_interpolations() else {
                     return Err(cstr!("{id}: one original text input"));
                 };
-                let NativeFileInterpolationState::Admitted(text_node) = text_record.state() else {
+                let NativeL2IrInterpolationState::Admitted(text_node) = text_record.state() else {
                     return Err(cstr!("{id}: normally minted text"));
                 };
                 let syntax = text_record.input().operand().syntax();

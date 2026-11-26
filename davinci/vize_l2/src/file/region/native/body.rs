@@ -2,7 +2,7 @@
 
 use super::{NativeVisibility, handler::ObservedHandler};
 use crate::artifact::{ComponentFactory, RegionBuilder};
-use crate::file::region::FileRegion;
+use crate::file::region::L2IrRegion;
 use crate::file::{TemplateBody, TemplateChildRegion};
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
@@ -19,7 +19,7 @@ mod model;
 pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -30,7 +30,7 @@ where
 fn construct_guarded<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -76,7 +76,7 @@ where
 fn element<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     original: ElementView<'_, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -132,7 +132,7 @@ pub(super) fn element_prepared<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     span: Span,
     mut header: header::Header<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -155,7 +155,7 @@ pub(super) fn element_ready<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     span: Span,
     header: header::ReadyHeader<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,

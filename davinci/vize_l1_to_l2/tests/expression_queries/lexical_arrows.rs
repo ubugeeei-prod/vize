@@ -12,7 +12,7 @@ use vize_l1_to_l2::native_file::{
 };
 use vize_l2::{
     file::{DeclarationKind, InitializerKind, L2Ir},
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
     query::Model,
 };
 
@@ -33,7 +33,7 @@ fn standalone<'a>(
     let parse = Parser::new(arena.as_oxc(), source, ty).parse_observed();
     let block = SourceRoot::new(source).ok()?.whole_block();
     let input = ProgramInput::checked(parse.admitted()?, block, 0).ok()?;
-    let mut producer = FileProducer::new(arena, source).ok()?;
+    let mut producer = L2IrProducer::new(arena, source).ok()?;
     producer
         .program(
             if arrows {

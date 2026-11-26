@@ -9,7 +9,7 @@
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
 use vize_l0::Span;
 use vize_l2::file::{L2Ir, ScriptUnit};
-use vize_l2::lang::js::JsxFile;
+use vize_l2::lang::js::JsxL2Ir;
 
 #[cfg(feature = "component-projection")]
 mod component;
@@ -134,23 +134,23 @@ pub fn project_program_no_links<'file, 'arena>(
 /// ```
 /// The original owning body cannot be dropped while its projection is live:
 /// ```compile_fail
-/// use vize_l2::lang::js::JsxFile;
+/// use vize_l2::lang::js::JsxL2Ir;
 /// use vize_l4::targets::ts::project_jsx_program;
-/// fn discard(owner: JsxFile<'_>) {
+/// fn discard(owner: JsxL2Ir<'_>) {
 ///     let projection = project_jsx_program(&owner).unwrap();
 ///     drop(owner);
 ///     let _ = projection.document();
 /// }
 /// ```
 pub fn project_jsx_program<'file, 'arena>(
-    owner: &'file JsxFile<'arena>,
+    owner: &'file JsxL2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     project::<Recorded, true>(owner.l2ir())
 }
 
 /// Identical JSX/TSX output without links; diagnostic mapping refuses it.
 pub fn project_jsx_program_no_links<'file, 'arena>(
-    owner: &'file JsxFile<'arena>,
+    owner: &'file JsxL2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     project::<NoLinks, true>(owner.l2ir())
 }

@@ -4,7 +4,7 @@ use super::super::{DomBuilder, DomExpressionAnalysis};
 use crate::decision::dom::vue::{VueReadKind, policy::FileReads};
 use vize_l2::{
     expr::JsExpr,
-    file::{BindingRef, FileResolution},
+    file::{BindingRef, L2IrResolution},
     op::Op,
     resolution::{ForAliasRole, Occurrence, Usage},
 };
@@ -14,7 +14,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
 {
     pub(in crate::decision::dom::build) fn for_alias(
         &self,
-        resolution: FileResolution<'owner, 'arena>,
+        resolution: L2IrResolution<'owner, 'arena>,
         expression: &JsExpr<'arena>,
         occurrence: &Occurrence<'arena>,
         binding: BindingRef<'owner, 'arena>,
@@ -171,7 +171,7 @@ mod tests {
         let [record] = file.native_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let resolution = file.expression(node).unwrap();
@@ -279,7 +279,7 @@ mod tests {
         let [record] = file.native_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let head = file.for_head_for(original).unwrap();

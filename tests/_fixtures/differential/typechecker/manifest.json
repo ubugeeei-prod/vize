@@ -64085,6 +64085,55 @@
       }
     },
     {
+      "id": "typechecker/nuxt-referenced-import-manifest-template-ref/default-layout",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-referenced-import-manifest-template-ref/app/pages/index.vue.txt",
+          "sha256": "773c3248714e977e5958477100487353ce894451fd8ee1bc5295cc22b2e0bb7b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-referenced-import-manifest-template-ref/imports.d.ts.txt",
+          "sha256": "7b3607c1df6088b2b20cd6e69150f24418b0eb10813afe1831c8113a3b246e6a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-referenced-import-manifest-template-ref/nuxt.d.ts.txt",
+          "sha256": "89e1c149bade77028d9ba9e3dc0517ec3374a4ae63bec10e06a13f69c124adcb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-referenced-import-manifest-template-ref/tsconfig.app.json.txt",
+          "sha256": "f9ff9405102815f7138e1ace9c6a150bf075b719ffdf932d42e97500fa68c92d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-referenced-import-manifest-template-ref/tsconfig.json.txt",
+          "sha256": "08d13d665dc53e5aa3516c0c93ad1435e151be510eaa4db7299c2fbd811e1056",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_nuxt_manifest_ambient_cli::a_manifest_reached_only_through_nuxt_references_owns_use_template_ref; Nuxt 4 default layout under `vize check`: the root tsconfig only references `.nuxt/tsconfig.app.json`, and `.nuxt/types/imports.d.ts` is reached solely through `nuxt.d.ts`. Nuxt detection supplies the manifest as stubs, which own the global `useTemplateRef`. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/options-api-inherited-template-members/declared-member-types",
       "state": "active",
       "targets": [

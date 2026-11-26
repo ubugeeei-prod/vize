@@ -20,8 +20,7 @@
 //! - **OXC** — a JSX/TSX program read straight from the OXC AST.
 //!
 //! Every wrapper is `Copy` and holds a shared reference into the backing arena
-//! (or, for OXC, a raw pointer into the program kept alive for the lint pass —
-//! see the `jsx_*_ref` SAFETY notes). Names and values are `&str` slices that
+//! or the borrowed OXC program. Names and values are `&str` slices that
 //! borrow the original source; nothing allocates unless a rule explicitly asks
 //! for normalized owned data (e.g. [`MarkupElement::direct_text_content`]).
 //!
@@ -287,27 +286,6 @@ impl<'a> MarkupDocument<'a> {
     pub fn visit_with<R: MarkupRule + ?Sized>(&self, rule: &R, ctx: &mut MarkupContext<'_, 'a>) {
         MarkupDocumentVisitor::new(rule, ctx).run(self);
     }
-}
-
-/// Reborrow a stack [`L2Markup`] header at a lint context's arena lifetime.
-///
-/// Lowering owns its artifact on the stack (`LintL2Template`, a JSX
-/// [`vize_atelier_jsx::LowerOutput`]). [`MarkupContext`] ties element borrows
-/// to that arena lifetime, which a local header cannot name. The header's
-/// slices point at arena bytes or the caller's source. The caller keeps the
-/// header (and the artifact it views) alive for the whole walk and does not
-/// store the document or any element past it.
-///
-/// # Safety
-/// Safe to call only when `markup` stays borrowed for every use of the
-/// returned reference. Extending the lifetime is a lie the type system
-/// cannot see; dropping the header first is undefined.
-pub(crate) unsafe fn reborrow_markup<'a>(markup: &L2Markup<'_>) -> &'a L2Markup<'a> {
-    // SAFETY: the caller keeps `markup` (and the artifact it views) borrowed
-    // for every use of the returned reference. The header is not stored.
-    // Lifetimes are erased on pointers, so widening is a transmute; provenance
-    // is unchanged.
-    unsafe { std::mem::transmute::<&L2Markup<'_>, &'a L2Markup<'a>>(markup) }
 }
 
 #[inline]

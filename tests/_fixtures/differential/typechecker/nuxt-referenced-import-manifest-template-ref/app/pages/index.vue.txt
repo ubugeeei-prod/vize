@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const el = useTemplateRef("el")
+
+onMounted(() => {
+  console.log(el.value?.tagName)
+})
+</script>
+
+<template>
+  <main ref="el">page</main>
+</template>

@@ -24,7 +24,7 @@ pub mod template;
 pub mod vapor;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
-pub use dom::{FileAnalysis, build_dom_file_decisions};
+pub use dom::{DomL2IrAnalysis, build_dom_file_decisions};
 
 use policy::TargetPolicy;
 

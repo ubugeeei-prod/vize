@@ -258,7 +258,7 @@ fn original_typed_ref_call_keeps_full_diagnostic_and_actual_original_file_refusa
     let error = NativeSfcLintOwner::parse_in(&arena, source).err().unwrap();
     assert_eq!(
         format!("{error:?}"),
-        "FileIssues { issues: [FileIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }"
+        "FileIssues { issues: [L2IrIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }"
     );
     for locale in LOCALES {
         let original = Linter::with_preset(crate::LintPreset::Incremental)

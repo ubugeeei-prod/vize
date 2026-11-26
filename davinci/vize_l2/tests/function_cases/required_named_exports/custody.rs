@@ -2,8 +2,8 @@ use super::*;
 use oxc_ast::ast::{Declaration, Statement};
 use oxc_parser::ParseOptions;
 use vize_l0::{Span, String};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{JsxFileProducer, ProgramInput};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{JsxL2IrProducer, ProgramInput};
 use vize_l2::query::Model;
 
 #[test]
@@ -86,7 +86,7 @@ fn genuine_named_tsx_owner_move_and_requery_keep_actual_export_and_original_frag
     let block = SourceRoot::new(source).unwrap().whole_block();
     let parsed = Parser::new(&arena, source, SourceType::tsx().with_module(true)).parse_observed();
     let body = parsed.admitted().unwrap().program().body.as_ptr();
-    let mut producer = JsxFileProducer::new(&arena, parsed, block, 7)
+    let mut producer = JsxL2IrProducer::new(&arena, parsed, block, 7)
         .unwrap_or_else(|r| panic!("original TSX: {:?}", r.error()));
     producer.walk().unwrap();
     let owner = Box::new(
@@ -158,7 +158,7 @@ fn equal_source_foreign_arenas_and_nondefault_profiles_never_replace_named_expor
     assert!(core::ptr::eq(y.l2ir(), &right));
     assert!(!core::ptr::eq(x.l2ir(), y.l2ir()));
     assert!(
-        matches!(ProgramInput::checked(a.admitted().unwrap(), SourceRoot::new(&foreign).unwrap().whole_block(), 7), Err(issue) if issue.kind==FileIssueKind::InvalidSource && issue.span==Span::new(0,source.len() as u32))
+        matches!(ProgramInput::checked(a.admitted().unwrap(), SourceRoot::new(&foreign).unwrap().whole_block(), 7), Err(issue) if issue.kind==L2IrIssueKind::InvalidSource && issue.span==Span::new(0,source.len() as u32))
     );
     let changed = Parser::new(&arena, &source, SourceType::ts().with_module(true))
         .with_options(ParseOptions {
@@ -167,7 +167,7 @@ fn equal_source_foreign_arenas_and_nondefault_profiles_never_replace_named_expor
         })
         .parse_observed();
     assert!(
-        matches!(ProgramInput::checked(changed.admitted().unwrap(), SourceRoot::new(&source).unwrap().whole_block(), 7), Err(issue) if issue.kind==FileIssueKind::InvalidProfile && issue.span==Span::new(0,source.len() as u32))
+        matches!(ProgramInput::checked(changed.admitted().unwrap(), SourceRoot::new(&source).unwrap().whole_block(), 7), Err(issue) if issue.kind==L2IrIssueKind::InvalidProfile && issue.span==Span::new(0,source.len() as u32))
     );
     assert!(left.is_complete() && right.is_complete());
 }

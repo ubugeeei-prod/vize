@@ -3,9 +3,9 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{FileIssueKind, L2Ir, ScriptUnit};
+use vize_l2::file::{L2Ir, L2IrIssueKind, ScriptUnit};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, InvocationEvent, ProgramInput,
+    CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, L2IrProducer, ProgramInput,
     ProgramScope, StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -42,7 +42,7 @@ impl Observer {
     }
 }
 
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, unit: &ScriptUnit) {
         self.initial = Some(unit.has_invocations());
@@ -76,7 +76,7 @@ fn observe_file<'a>(
         .map_err(|_| "original source root")?
         .whole_block();
     let input = ProgramInput::checked(admitted, block, 0).map_err(|_| "original Program input")?;
-    let mut producer = FileProducer::new(arena, source).map_err(|_| "File owner")?;
+    let mut producer = L2IrProducer::new(arena, source).map_err(|_| "File owner")?;
     let mut observer = Observer {
         mode,
         observed: false,
@@ -158,7 +158,7 @@ fn actual_invocation_callback_unwind_preserves_the_true_observation() -> TestRes
         require(observer.observed && interrupted, "actual callback unwind")?;
         require(!file.is_complete(), "interrupted File remains incomplete")?;
         require(
-            unit.interruption().map(|issue| issue.kind) == Some(FileIssueKind::InterruptedProgram),
+            unit.interruption().map(|issue| issue.kind) == Some(L2IrIssueKind::InterruptedProgram),
             "actual unit interruption retained",
         )?;
     }
@@ -190,7 +190,7 @@ fn subtree_rollback_does_not_erase_original_invocations() -> TestResult {
         require(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax),
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax),
             "actual rejected subtree diagnostic retained",
         )?;
     }
@@ -219,7 +219,7 @@ fn interruption_before_invocation_leaves_false_without_certifying_absence() -> T
         "false receipt does not grant completeness",
     )?;
     require(
-        unit.interruption().map(|issue| issue.kind) == Some(FileIssueKind::InterruptedProgram),
+        unit.interruption().map(|issue| issue.kind) == Some(L2IrIssueKind::InterruptedProgram),
         "actual early interruption retained",
     )?;
     Ok(())

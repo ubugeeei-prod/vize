@@ -70,12 +70,12 @@ pub enum ModuleSourceKind {
 /// use oxc_parser::Parser;
 /// use oxc_span::SourceType;
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+/// use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 /// let arena = Allocator::default();
 /// let source = "import 'x';";
 /// let block = SourceRoot::new(source).unwrap().whole_block();
 /// let original = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
-/// let mut producer = FileProducer::new(&arena, source).unwrap();
+/// let mut producer = L2IrProducer::new(&arena, source).unwrap();
 /// producer.program(ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(), ProgramScope::Module).unwrap();
 /// let file = producer.finish().unwrap();
 /// let view = file.original_module_sources(ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap()).unwrap();

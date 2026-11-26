@@ -57,7 +57,7 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
         self.setup.l2ir()
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner vize_l2::lang::js::NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner vize_l2::lang::js::NativeTemplateL2Ir<'arena> {
         self.template.owner()
     }
     #[must_use]

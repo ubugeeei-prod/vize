@@ -1,4 +1,4 @@
-use super::{MarkupBinding, MarkupBindingInner, jsx_attribute_ref};
+use super::{MarkupBinding, MarkupBindingInner};
 use crate::rules::a11y::helpers::string_literal_value;
 use oxc_ast::ast::{JSXAttributeValue, JSXExpression};
 
@@ -10,10 +10,7 @@ impl<'a> MarkupBinding<'a> {
             return Some(value);
         }
         if let MarkupBindingInner::Jsx { node, .. } = self.inner
-            && let Some(JSXAttributeValue::ExpressionContainer(container)) =
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                &unsafe { jsx_attribute_ref(node) }.value
+            && let Some(JSXAttributeValue::ExpressionContainer(container)) = &node.value
             && let JSXExpression::StringLiteral(value) = &container.expression
         {
             return Some(value.value.as_str());

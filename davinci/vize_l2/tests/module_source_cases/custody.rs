@@ -1,8 +1,8 @@
 use super::{lower, observe};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{FileProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
 
 #[test]
 fn equal_text_foreign_allocations_and_same_buffer_reparses_cannot_replace_original_body() {
@@ -18,7 +18,7 @@ fn equal_text_foreign_allocations_and_same_buffer_reparses_cannot_replace_origin
         matches!(file.original_module_sources(ProgramInput::checked(foreign_owner.admitted().unwrap(), foreign_block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::Source)
     );
     assert!(
-        matches!(ProgramInput::checked(foreign_owner.admitted().unwrap(), block, 0), Err(error) if error.kind == FileIssueKind::InvalidSource)
+        matches!(ProgramInput::checked(foreign_owner.admitted().unwrap(), block, 0), Err(error) if error.kind == L2IrIssueKind::InvalidSource)
     );
     let reparsed = observe(&arena, block, SourceType::mjs());
     assert!(
@@ -58,7 +58,7 @@ fn real_sibling_units_and_root_extents_do_not_join_by_content_or_numeric_id() {
         .unwrap();
     let original = observe(&arena, first, SourceType::mjs());
     let sibling = observe(&arena, second, SourceType::mjs());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     for (owner, block, index) in [(&original, first, 2), (&sibling, second, 5)] {
         producer
             .program(
@@ -102,7 +102,7 @@ fn duplicate_unit_refusal_preserves_original_rows_and_cannot_mint_complete_sourc
     let source = "import 'a'; import 'a';";
     let block = SourceRoot::new(source).unwrap().whole_block();
     let original = observe(&arena, block, SourceType::mjs());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(),
@@ -110,7 +110,7 @@ fn duplicate_unit_refusal_preserves_original_rows_and_cannot_mint_complete_sourc
         )
         .unwrap();
     assert!(
-        matches!(producer.program(ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(), ProgramScope::Module), Err(error) if error.kind == FileIssueKind::DuplicateUnit)
+        matches!(producer.program(ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(), ProgramScope::Module), Err(error) if error.kind == L2IrIssueKind::DuplicateUnit)
     );
     let file = producer.finish().unwrap();
     assert_eq!(file.imports().len(), 2);

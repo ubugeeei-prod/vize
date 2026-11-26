@@ -13,7 +13,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::{Op, OriginalForOp},
 };
 use vize_l3::decision::{
@@ -51,7 +51,7 @@ fn prepared<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a
     owner
 }
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let mut owner = prepared(arena, source);
     {
         let mut walk = owner.begin().unwrap();
@@ -63,7 +63,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
     core::hint::black_box(owner.finish())
 }
 
-fn first<'f, 'a>(owner: &'f NativeTemplateFile<'a>) -> &'f OriginalForOp<'a> {
+fn first<'f, 'a>(owner: &'f NativeTemplateL2Ir<'a>) -> &'f OriginalForOp<'a> {
     let [Op::OriginalFor(original)] = owner.file().unwrap().artifact().root().ops.as_slice() else {
         panic!("actual original For")
     };

@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 type Test = Result<(), &'static str>;
 fn check(value: bool) -> Test {
     if value {
@@ -21,7 +21,7 @@ fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
     prepared: bool,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

@@ -16,7 +16,7 @@ use vize_l1::{
 use vize_l2::{
     file::{DeclarationKind, Namespace},
     lang::js::{
-        FileProducer, NativeSetupIssueKind, NativeTemplateIssueKind, NativeTemplateOwner,
+        L2IrProducer, NativeSetupIssueKind, NativeTemplateIssueKind, NativeTemplateOwner,
         ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
     },
 };
@@ -47,7 +47,7 @@ fn a_complete_optional_function_never_grants_primitive_setup_or_ordinary_eligibi
     );
     let original = syntax.admitted_program().unwrap();
     let body = original.program().body.as_ptr();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(original, script.block(), script.container_index()).unwrap(),

@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateIssueKind, NativeTemplateOwner},
+    lang::js::{NativeTemplateIssueKind, NativeTemplateL2Ir, NativeTemplateOwner},
     op::Op,
 };
 use vize_l3::decision::{
@@ -57,7 +57,7 @@ fn owner<'a>(
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut owner = owner(arena, source)?;
     {
         let mut walk = owner.begin().map_err(|_| "begin")?;

@@ -135,11 +135,11 @@ impl ScriptUnit {
     }
     /// Actual unit interruption is separate from the stored syntax issue slice.
     #[must_use]
-    pub fn interruption(&self) -> Option<FileIssue> {
-        (self.walk == ProgramWalkState::Interrupted).then_some(FileIssue {
+    pub fn interruption(&self) -> Option<L2IrIssue> {
+        (self.walk == ProgramWalkState::Interrupted).then_some(L2IrIssue {
             unit: self.id,
             span: self.span,
-            kind: FileIssueKind::InterruptedProgram,
+            kind: L2IrIssueKind::InterruptedProgram,
         })
     }
 }
@@ -309,14 +309,14 @@ pub struct Import {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct FileIssue {
+pub struct L2IrIssue {
     pub unit: ScriptUnitId,
     pub span: Span,
-    pub kind: FileIssueKind,
+    pub kind: L2IrIssueKind,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FileIssueKind {
+pub enum L2IrIssueKind {
     InvalidSource,
     InvalidProfile,
     InvalidSpan,
@@ -336,5 +336,5 @@ pub enum FileIssueKind {
 pub struct TemplateIssue {
     pub node: Option<vize_l0::id::NodeId>,
     pub span: Span,
-    pub kind: FileIssueKind,
+    pub kind: L2IrIssueKind,
 }

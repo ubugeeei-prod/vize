@@ -1,6 +1,6 @@
 //! Actual template rows share the full File binding domain without script IDs.
 
-use super::{FileIssueKind, L2Script, Names, Scope, ScopeId, TemplateIssue};
+use super::{L2IrIssueKind, L2Script, Names, Scope, ScopeId, TemplateIssue};
 use crate::file::for_head::{TemplateDeclaration, TemplateDeclarationRow};
 use crate::op::OriginalForId;
 use crate::resolution::{BindingId, ForAliasRole};
@@ -23,7 +23,7 @@ impl<'a> L2Script<'a> {
         owner: OriginalForId,
         parent: ScopeId,
         span: Span,
-    ) -> Result<ScopeId, FileIssueKind> {
+    ) -> Result<ScopeId, L2IrIssueKind> {
         let reject = |facts: &mut Self, kind| {
             facts.template_issues.push(TemplateIssue {
                 node: Some(owner.node()),
@@ -37,10 +37,10 @@ impl<'a> L2Script<'a> {
             .get(parent.index() as usize)
             .is_some_and(|scope| scope.id == parent)
         {
-            return Err(reject(self, FileIssueKind::InvalidSpan));
+            return Err(reject(self, L2IrIssueKind::InvalidSpan));
         }
         let index = u32::try_from(self.scopes.len())
-            .map_err(|_| reject(self, FileIssueKind::BindingLimit))?;
+            .map_err(|_| reject(self, L2IrIssueKind::BindingLimit))?;
         let id = ScopeId(index);
         self.scopes.push(Scope {
             id,
@@ -55,33 +55,33 @@ impl<'a> L2Script<'a> {
         &mut self,
         owner: OriginalForId,
         role: ForAliasRole,
-    ) -> Result<BindingId, FileIssueKind> {
+    ) -> Result<BindingId, L2IrIssueKind> {
         let record = self
             .for_heads
             .get(owner.node())
-            .ok_or(FileIssueKind::InvalidSpan)?;
+            .ok_or(L2IrIssueKind::InvalidSpan)?;
         let (original, previous) = match role {
             ForAliasRole::Value => (Some(record.resolution.value_declaration()), record.value),
             ForAliasRole::Key => (record.resolution.key_declaration(), record.key),
         };
         if previous.is_some() {
-            return Err(FileIssueKind::DuplicateDeclaration);
+            return Err(L2IrIssueKind::DuplicateDeclaration);
         }
-        let original = original.ok_or(FileIssueKind::InvalidSpan)?;
+        let original = original.ok_or(L2IrIssueKind::InvalidSpan)?;
         let name = original.fact().name();
         let scope = record.scope;
         let index = u32::try_from(self.template_declarations.len())
-            .map_err(|_| FileIssueKind::BindingLimit)?;
+            .map_err(|_| L2IrIssueKind::BindingLimit)?;
         let raw = u32::MAX - index;
         if self.declarations.len() > raw as usize {
-            return Err(FileIssueKind::BindingLimit);
+            return Err(L2IrIssueKind::BindingLimit);
         }
         let names = self
             .names
             .get_mut(scope.index() as usize)
-            .ok_or(FileIssueKind::InvalidSpan)?;
+            .ok_or(L2IrIssueKind::InvalidSpan)?;
         if names.value_names.contains_key(name) {
-            return Err(FileIssueKind::DuplicateDeclaration);
+            return Err(L2IrIssueKind::DuplicateDeclaration);
         }
         let id = BindingId::new(raw);
         names.value_names.insert(String::from(name), id);
@@ -90,7 +90,7 @@ impl<'a> L2Script<'a> {
         let record = self
             .for_heads
             .get_mut(owner.node())
-            .ok_or(FileIssueKind::InvalidSpan)?;
+            .ok_or(L2IrIssueKind::InvalidSpan)?;
         match role {
             ForAliasRole::Value => record.value = Some(id),
             ForAliasRole::Key => record.key = Some(id),

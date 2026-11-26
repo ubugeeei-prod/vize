@@ -2,8 +2,8 @@
 
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
-use crate::file::NativeFileInterpolationFailure;
-use crate::file::region::FileRegion;
+use crate::file::NativeL2IrInterpolationFailure;
+use crate::file::region::L2IrRegion;
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind};
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
@@ -12,7 +12,7 @@ use vize_l1::markup::{ChildView, SelectedTemplateComponent, SurfaceChild};
 pub(in crate::file::region::native) fn construct<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -35,7 +35,7 @@ where
                 region
                     .facts
                     .native_interpolation_failures
-                    .push(NativeFileInterpolationFailure { span, failure });
+                    .push(NativeL2IrInterpolationFailure { span, failure });
                 #[cfg(test)]
                 super::interruption::after_failure_park();
                 Err(Kind::InterpolationPreparation { span, kind })

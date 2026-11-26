@@ -1,7 +1,7 @@
 //! Only the named exact original class header becomes normally complete.
 use super::{Allocator, check, equal, owner};
 use vize_l0::Span;
-use vize_l2::{file::NativeFileAttributeValueState, op::Op};
+use vize_l2::{file::NativeL2IrAttributeValueState, op::Op};
 
 pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'static str> {
     equal(
@@ -41,7 +41,7 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
     equal(file.native_attribute_values().len(), 2)?;
     for (index, expected) in [(0, ("data-first", "kept")), (1, ("class", "a  b"))] {
         let record = &file.native_attribute_values()[index];
-        let NativeFileAttributeValueState::Attached { node, slot } = record.state() else {
+        let NativeL2IrAttributeValueState::Attached { node, slot } = record.state() else {
             return Err("original attached value");
         };
         equal(node.index(), 1)?;

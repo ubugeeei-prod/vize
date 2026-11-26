@@ -13,20 +13,20 @@ use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     file::L2Ir,
-    lang::js::{NativeTemplateFile, NativeTemplateIssue, NativeTemplateView},
+    lang::js::{NativeTemplateIssue, NativeTemplateL2Ir, NativeTemplateView},
     op::Op,
     walk::{NodeEvent, NodeRef},
 };
 
 /// Original SSR render facts and the selected File that owns their nodes and attributes.
 pub struct ServerRenderAnalysis<'owner, 'arena> {
-    owner: &'owner NativeTemplateFile<'arena>,
+    owner: &'owner NativeTemplateL2Ir<'arena>,
     l2ir: &'owner L2Ir<'arena>,
     attributes: OriginalAttributeAnalysis<'owner, 'arena>,
     facts: SsrAnalysis<'owner, 'arena>,
 }
 impl<'owner, 'arena> ServerRenderAnalysis<'owner, 'arena> {
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.owner
     }
     pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
@@ -94,7 +94,7 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
 
     fn finish(
         self,
-        owner: &'owner NativeTemplateFile<'arena>,
+        owner: &'owner NativeTemplateL2Ir<'arena>,
         l2ir: &'owner L2Ir<'arena>,
     ) -> Result<ServerRenderAnalysis<'owner, 'arena>, DecisionBuildError> {
         let attributes = self
@@ -219,7 +219,7 @@ fn visit<T>(
 /// Produce the original DOM analysis and the facts consumed by the SSR writer.
 /// Each policy owns its attribute cursor and keeps its own refusal.
 pub fn build_client_server_decisions<'owner, 'arena>(
-    owner: &'owner NativeTemplateFile<'arena>,
+    owner: &'owner NativeTemplateL2Ir<'arena>,
 ) -> Result<ClientServerDecisions<'owner, 'arena>, NativeTemplateIssue> {
     let view = owner.view()?;
     if owner.selected().has_styles() {

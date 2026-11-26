@@ -6,7 +6,7 @@ use crate::{
     write::{LinkSink, Writer},
 };
 use vize_l0::{String, cstr, id::NodeId};
-use vize_l2::{file::NativeFileModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
+use vize_l2::{file::NativeL2IrModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
 use vize_l3::decision::vapor::{SelectedSetupVaporAnalysis, VaporModel};
 
 pub(super) fn write<'owner, 'arena, L: LinkSink>(
@@ -41,8 +41,8 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     let helpers = fresh(analysis.setup(), "__vizeModelRuntime")?;
     let value = fresh(analysis.setup(), "__vizeModelValue")?;
     let apply = match kind {
-        NativeFileModelKind::Text => "applyTextModel",
-        NativeFileModelKind::Checkbox => "applyCheckboxModel",
+        NativeL2IrModelKind::Text => "applyTextModel",
+        NativeL2IrModelKind::Checkbox => "applyCheckboxModel",
     };
     for name in [apply, "unref", "isRef", "template"] {
         helper(prelude, runtime, name)?;
@@ -55,7 +55,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     prelude.push(" = { apply: _");
     prelude.push(apply);
     prelude.push(", read: _unref, isRef: _isRef }\n");
-    if kind == NativeFileModelKind::Checkbox {
+    if kind == NativeL2IrModelKind::Checkbox {
         let value = analysis
             .l2ir()
             .native_attribute_value_for(0, element, 0)

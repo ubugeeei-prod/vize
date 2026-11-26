@@ -2,7 +2,7 @@ use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock};
 use vize_l2::file::L2Ir;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 mod coverage;
 mod custody;
@@ -35,7 +35,7 @@ fn lower<'a>(
     index: usize,
 ) -> L2Ir<'a> {
     let input = ProgramInput::checked(original.admitted().unwrap(), block, index).unwrap();
-    let mut producer = FileProducer::new(arena, block.root_source()).unwrap();
+    let mut producer = L2IrProducer::new(arena, block.root_source()).unwrap();
     producer.program(input, ProgramScope::Module).unwrap();
     let file = producer.finish().unwrap();
     assert!(file.is_complete(), "actual original File must complete");

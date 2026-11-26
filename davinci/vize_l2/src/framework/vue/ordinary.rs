@@ -7,7 +7,7 @@
 
 use super::setup::{Bindings, SetupBinding};
 use crate::file::{ScopeId, ScriptUnit};
-use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 
 /// A normal-script binding uses the same template access classification as a
@@ -96,7 +96,7 @@ impl<'a> OrdinaryObserver<'a> {
     }
 }
 
-impl<'a> FileObserver<'a> for OrdinaryObserver<'a> {
+impl<'a> L2IrObserver<'a> for OrdinaryObserver<'a> {
     type Checkpoint = OrdinaryCheckpoint;
 
     fn unit(&mut self, unit: &ScriptUnit) {

@@ -10,8 +10,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]
 fn copied_and_foreign_whole_source_are_rejected_before_any_unit_or_binding_mint() -> LawResult {
@@ -25,7 +25,7 @@ fn copied_and_foreign_whole_source_are_rejected_before_any_unit_or_binding_mint(
         SourceRoot::new(copy.as_str()).required()?.whole_block(),
         0,
     );
-    assert_eq!(copied.err().required()?.kind, FileIssueKind::InvalidSource);
+    assert_eq!(copied.err().required()?.kind, L2IrIssueKind::InvalidSource);
     let input = ProgramInput::checked(
         parsed.admitted().required()?,
         SourceRoot::new(source).required()?.whole_block(),
@@ -33,14 +33,14 @@ fn copied_and_foreign_whole_source_are_rejected_before_any_unit_or_binding_mint(
     )
     .required()?;
     assert_eq!(input.source_type(), SourceType::jsx());
-    let mut foreign = FileProducer::new(&arena, copy.as_str()).required()?;
+    let mut foreign = L2IrProducer::new(&arena, copy.as_str()).required()?;
     assert_eq!(
         foreign
             .program(input, ProgramScope::Module)
             .err()
             .required()?
             .kind,
-        FileIssueKind::InvalidSource
+        L2IrIssueKind::InvalidSource
     );
     let file = foreign.finish().required()?;
     assert_eq!(file.units().len(), 0);
@@ -64,7 +64,7 @@ fn short_source_blocks_do_not_rebrand_a_complete_original_jsx_program() -> LawRe
             .err()
             .required()?
             .kind,
-        FileIssueKind::InvalidSource
+        L2IrIssueKind::InvalidSource
     );
     assert!(core::ptr::eq(
         parsed.admitted().required()?.program().source_text,
@@ -87,7 +87,7 @@ fn original_nonmodule_jsx_profile_remains_an_explicit_profile_refusal() -> LawRe
             .iter()
             .map(|issue| issue.kind)
             .collect::<Vec<_>>(),
-        [FileIssueKind::InvalidProfile]
+        [L2IrIssueKind::InvalidProfile]
     );
     assert_eq!(file.bindings().count(), 0);
     assert_eq!(file.references().len(), 0);
@@ -114,6 +114,6 @@ fn default_unambiguous_tsx_profile_keeps_its_original_admission_refusal() -> Law
         SourceRoot::new(source).required()?.whole_block(),
         0,
     );
-    assert_eq!(input.err().required()?.kind, FileIssueKind::InvalidProfile);
+    assert_eq!(input.err().required()?.kind, L2IrIssueKind::InvalidProfile);
     Ok(())
 }

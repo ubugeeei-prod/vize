@@ -6,7 +6,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use std::{hint::black_box, time::Instant};
 use vize_l0::{Allocator, SourceRoot, String, append, profiler::global_profiler};
-use vize_l2::{analysis::template_complexity, lang::js::JsxFileProducer};
+use vize_l2::{analysis::template_complexity, lang::js::JsxL2IrProducer};
 
 fn parse_us(value: u128) -> f64 {
     value as f64 / 1000.0
@@ -61,7 +61,7 @@ fn main() -> Result<(), &'static str> {
         let parsed = at.elapsed().as_nanos();
         let at = Instant::now();
         let mut producer =
-            JsxFileProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
+            JsxL2IrProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
         producer.walk().map_err(|_| "walk")?;
         let walked = at.elapsed().as_nanos();
         let at = Instant::now();

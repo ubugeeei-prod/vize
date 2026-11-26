@@ -1,6 +1,6 @@
 use super::*;
 use vize_l2::file::ScriptUnit;
-use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use vize_l2::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use vize_l2::resolution::ResolutionErrorKind;
 
 struct Interrupt {
@@ -8,7 +8,7 @@ struct Interrupt {
     stop: usize,
     seen: usize,
 }
-impl<'a> FileObserver<'a> for Interrupt {
+impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {
         if self.unit {
@@ -44,7 +44,7 @@ fn incomplete_callbacks_before_at_and_after_the_original_export_never_seal()
                 script.container_index(),
             )
             .map_err(|_| "input")?;
-            let mut producer = FileProducer::new(&arena, &source).map_err(|_| "File")?;
+            let mut producer = L2IrProducer::new(&arena, &source).map_err(|_| "File")?;
             let mut observer = Interrupt {
                 unit: point.is_none(),
                 stop: point.unwrap_or(0),

@@ -1,8 +1,8 @@
-use super::{VueDemand, VueFileProducer, VueProgramError};
+use super::{VueDemand, VueL2IrProducer, VueProgramError};
 use vize_l0::Allocator;
 use vize_l1::container::vue::{ScriptPrograms, ScriptRole};
 
-impl<'a> VueFileProducer<'a> {
+impl<'a> VueL2IrProducer<'a> {
     /// Attach Vue observers to the Programs retained by this descriptor. Each
     /// present script supplies lexical facts even if no framework observer was
     /// requested for its role. Other tools can borrow the same L1 syntax.

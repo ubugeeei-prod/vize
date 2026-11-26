@@ -17,7 +17,7 @@ fn trim_model_retains_its_original_attribute_binding_and_same_file_readwrite_own
         let [record] = file.native_models() else {
             panic!("actual model")
         };
-        let NativeFileModelState::Admitted(node) = record.state() else {
+        let NativeL2IrModelState::Admitted(node) = record.state() else {
             panic!("closed")
         };
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -81,7 +81,7 @@ fn late_trim_model_header_refusal_keeps_the_modifier_but_publishes_no_model_allo
     let [record] = file.native_models() else {
         panic!("retained original")
     };
-    assert_eq!(record.state(), NativeFileModelState::Pending);
+    assert_eq!(record.state(), NativeL2IrModelState::Pending);
     assert_eq!(
         record.input().operand().trim_span().unwrap().slice(source),
         "trim"
@@ -109,7 +109,7 @@ fn trim_without_a_mutable_binding_still_refuses_before_any_attached_model() {
     };
     assert_eq!(
         record.state(),
-        NativeFileModelState::Refused(Kind::UnsupportedChild)
+        NativeL2IrModelState::Refused(Kind::UnsupportedChild)
     );
     assert_eq!(
         record.input().operand().trim_span().unwrap().slice(source),

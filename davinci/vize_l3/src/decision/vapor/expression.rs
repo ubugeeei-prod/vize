@@ -5,7 +5,7 @@ use oxc_ast::ast::Expression;
 use vize_l0::id::NodeId;
 use vize_l2::{
     expr::{ExprRef, JsExpr},
-    file::{DeclarationKind, FileResolution, InitializerKind, Namespace},
+    file::{DeclarationKind, InitializerKind, L2IrResolution, Namespace},
     lang::js::NativeSelectedSetup,
     op::InterpolationOp,
     resolution::Usage,
@@ -22,7 +22,7 @@ pub enum VaporValueKind {
 /// A genuine node's original resolution, not a caller-supplied binding list.
 #[derive(Clone, Copy)]
 pub struct VaporExpression<'owner, 'arena> {
-    resolution: FileResolution<'owner, 'arena>,
+    resolution: L2IrResolution<'owner, 'arena>,
     kind: VaporValueKind,
 }
 impl core::fmt::Debug for VaporExpression<'_, '_> {
@@ -35,7 +35,7 @@ impl core::fmt::Debug for VaporExpression<'_, '_> {
 }
 impl<'owner, 'arena> VaporExpression<'owner, 'arena> {
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
     #[must_use]

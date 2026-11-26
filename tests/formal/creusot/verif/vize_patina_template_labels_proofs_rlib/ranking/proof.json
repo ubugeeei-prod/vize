@@ -1,0 +1,4 @@
+{
+  "profile": [],
+  "proofs": { "Coma": { "vc_ranking_T": { "prover": "z3", "time": 0.006 } } }
+}

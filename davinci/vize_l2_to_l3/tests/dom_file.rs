@@ -4,7 +4,7 @@ mod dom_file_support;
 use dom_file_support::{construct, script};
 use vize_l0::Allocator;
 use vize_l2::file::TemplateScope;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l3::decision::dom::{DomDependency, DomUnsupported, ValueKind};
 use vize_l3::decision::{DecisionBuildError, build_dom_file_decisions, policy::TargetPolicy};
 
@@ -18,7 +18,7 @@ fn genuine_file_rows_keep_original_ast_coordinates_scope_and_dynamic_facts() {
         "const msg = 'hello'; const styles = 'color:red';",
     )
     .unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -77,7 +77,7 @@ fn genuine_file_rows_keep_original_ast_coordinates_scope_and_dynamic_facts() {
 fn authored_entity_literal_keeps_exact_resolution_and_zero_reference_semantics() {
     let arena = Allocator::default();
     let source = "<p :title=\"'a &amp; b'\">{{'日本語'}}</p>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let native = construct(&arena, source, source, &mut producer, TemplateScope::Root).unwrap();
     assert!(native.is_supported());
     let file = producer.finish().unwrap();
@@ -112,7 +112,7 @@ fn actual_nested_unit_shadowing_uses_recorded_scope_without_context_fallback() {
     let source = "<script>const msg = 'outer';</script><script setup>const msg = 'inner';</script><template>{{msg}}</template>";
     let (ordinary, ordinary_block) = script(&arena, source, "const msg = 'outer';").unwrap();
     let (setup, setup_block) = script(&arena, source, "const msg = 'inner';").unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let ordinary_unit = producer
         .program(
             ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 0).unwrap(),
@@ -164,7 +164,7 @@ fn missing_child_local_rejects_incomplete_file_before_returning_analysis() {
         "function f(x) { const local = x; return local; }",
     )
     .unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -193,7 +193,7 @@ fn missing_child_local_rejects_incomplete_file_before_returning_analysis() {
 fn complete_zero_reference_nonliteral_does_not_gain_constant_or_runtime_eligibility() {
     let arena = Allocator::default();
     let source = "<p :title=\"[]\"/>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let native = construct(&arena, source, source, &mut producer, TemplateScope::Root).unwrap();
     assert!(native.is_supported());
     let file = producer.finish().unwrap();
@@ -223,7 +223,7 @@ fn equal_numeric_nodes_and_bindings_keep_distinct_file_owners_and_original_ast_r
     let arena = Allocator::default();
     let source = "<script setup>const msg = 'hello';</script><template>{{msg}}</template>";
     let (syntax, block) = script(&arena, source, "const msg = 'hello';").unwrap();
-    let mut first = FileProducer::new(&arena, source).unwrap();
+    let mut first = L2IrProducer::new(&arena, source).unwrap();
     first
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -239,7 +239,7 @@ fn equal_numeric_nodes_and_bindings_keep_distinct_file_owners_and_original_ast_r
     )
     .unwrap();
     let first = first.finish().unwrap();
-    let mut second = FileProducer::new(&arena, source).unwrap();
+    let mut second = L2IrProducer::new(&arena, source).unwrap();
     second
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),

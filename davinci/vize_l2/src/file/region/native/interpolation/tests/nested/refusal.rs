@@ -62,7 +62,7 @@ fn late_nested_holes_and_missing_bindings_keep_prefix_and_whole_failed_observati
             check(syntax.hole().is_none())?;
             check(syntax.expression().is_some())?;
             check(file.template_issues().iter().any(|issue| {
-                issue.kind == crate::file::FileIssueKind::UnresolvedReference
+                issue.kind == crate::file::L2IrIssueKind::UnresolvedReference
                     && issue.span.slice(source.as_str()) == "missing"
             }))?;
         } else {

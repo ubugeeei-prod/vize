@@ -173,7 +173,7 @@ fn original_literal_for_collection_keeps_value_owner_but_refuses_unchanged_colle
         check(matches!(
             issue.kind,
             Kind::For {
-                kind: crate::file::FileIssueKind::UnsupportedSyntax,
+                kind: crate::file::L2IrIssueKind::UnsupportedSyntax,
                 ..
             }
         ))?;
@@ -189,7 +189,7 @@ fn original_literal_for_collection_keeps_value_owner_but_refuses_unchanged_colle
         record.observation().ok_or("whole value")?.source().text(),
         "&lt;",
     )?;
-    let [crate::file::RejectedFileFor::Syntax(refusal)] = file.rejected_for_heads() else {
+    let [crate::file::RejectedL2IrFor::Syntax(refusal)] = file.rejected_for_heads() else {
         return Err("genuine original collection syntax refusal");
     };
     same(

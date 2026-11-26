@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l2::{
-    file::FileIssueKind,
+    file::L2IrIssueKind,
     query::{Model, PositionQueryError},
     resolution::Usage,
 };
@@ -256,7 +256,7 @@ fn original_refused_assembly_cannot_mint_a_query_view_from_partial_file_facts() 
             assert!(
                 issues
                     .iter()
-                    .any(|issue| issue.kind == FileIssueKind::UnresolvedReference
+                    .any(|issue| issue.kind == L2IrIssueKind::UnresolvedReference
                         && issue.span == spelling(source, "external", 0))
             );
         }

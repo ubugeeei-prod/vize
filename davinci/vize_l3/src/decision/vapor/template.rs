@@ -1,27 +1,27 @@
 //! Genuine original template completion retains its lower owner through L3.
 
-use super::{VaporAnalysis, VaporFileAnalysis};
+use super::{VaporAnalysis, VaporL2IrAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::L2Template,
     file::L2Ir,
-    lang::js::{NativeTemplateFile, NativeTemplateView},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateView},
 };
 
 /// Only a moved original template completion can authorize native Vapor output.
 ///
 /// Complete neutral File analysis cannot construct this capability:
 /// ```compile_fail
-/// use vize_l3::decision::vapor::{VaporFileAnalysis, TemplateVaporAnalysis};
-/// fn promote(analysis: VaporFileAnalysis<'_, '_>) {
+/// use vize_l3::decision::vapor::{VaporL2IrAnalysis, TemplateVaporAnalysis};
+/// fn promote(analysis: VaporL2IrAnalysis<'_, '_>) {
 ///     let _ = TemplateVaporAnalysis { analysis };
 /// }
 /// ```
 /// Its original lower owner remains live until the analysis is released:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
 /// use vize_l3::decision::vapor::build_template_vapor_decisions;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: NativeTemplateL2Ir<'_>) {
 ///     let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = analysis.owner();
@@ -35,12 +35,12 @@ use vize_l2::{
 /// ```
 pub struct TemplateVaporAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    analysis: VaporFileAnalysis<'owner, 'arena>,
+    analysis: VaporL2IrAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.view.owner()
     }
     #[must_use]

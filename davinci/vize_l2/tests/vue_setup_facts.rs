@@ -21,7 +21,7 @@ use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{
     MACROS, MacroCall, MacroKind, SetupAnalysisIncomplete, SetupObserver,
 };
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 /// Files where Croquis disagrees with Vue, which is the authority. Croquis
 /// records no macro in an object-pattern declarator except `defineProps`;
@@ -211,7 +211,7 @@ fn one_observer_refuses_a_second_program() {
         },
     );
     let view = descriptor.admitted().expect("descriptor");
-    let mut producer = FileProducer::new(&arena, descriptor.source()).expect("producer");
+    let mut producer = L2IrProducer::new(&arena, descriptor.source()).expect("producer");
     let mut observer = SetupObserver::new();
     for script in [view.ordinary(), view.setup()].into_iter().flatten() {
         let syntax = parse_program_once(

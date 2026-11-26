@@ -9,7 +9,7 @@ use vize_l2::framework::vue::{
     OrdinaryAnalysis, OrdinaryAnalysisIncomplete, OrdinaryObserver, ReactiveSource,
     SetupBindingKind,
 };
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 fn observe(source: &str) -> Option<OrdinaryAnalysis> {
     let arena = Allocator::default();
@@ -25,7 +25,7 @@ fn observe(source: &str) -> Option<OrdinaryAnalysis> {
         0,
     )
     .ok()?;
-    let mut producer = FileProducer::new(&arena, source).ok()?;
+    let mut producer = L2IrProducer::new(&arena, source).ok()?;
     let mut observer = OrdinaryObserver::new();
     producer
         .program_observed(input, ProgramScope::Module, &mut observer)

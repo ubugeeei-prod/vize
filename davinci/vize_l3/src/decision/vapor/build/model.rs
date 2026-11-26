@@ -4,7 +4,7 @@ use super::VaporBuilder;
 use crate::decision::vapor::{VaporPart, VaporUnsupported, model};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::NativeFileModelState,
+    file::NativeL2IrModelState,
     op::{BindingOp, ElementOp, ModelOp},
 };
 
@@ -16,7 +16,7 @@ impl<'owner, 'arena> VaporBuilder<'_, 'owner, 'arena> {
         let [original] = setup.l2ir().native_models() else {
             return false;
         };
-        let NativeFileModelState::Admitted(model_node) = original.state() else {
+        let NativeL2IrModelState::Admitted(model_node) = original.state() else {
             return false;
         };
         let [binding @ BindingOp::Model(model)] = element.bindings.as_slice() else {
@@ -67,7 +67,7 @@ impl<'owner, 'arena> VaporBuilder<'_, 'owner, 'arena> {
         let [original] = setup.l2ir().native_models() else {
             return;
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let NativeL2IrModelState::Admitted(node) = original.state() else {
             return;
         };
         if self.facts.parts.iter().any(|part| {

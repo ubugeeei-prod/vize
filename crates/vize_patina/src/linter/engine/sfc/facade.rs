@@ -105,6 +105,10 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
 pub(in crate::linter::engine) struct Dispatch<'a> {
     pub root: &'a RootNode<'a>,
     pub l2: &'a crate::markup::LintInput<'a>,
+    /// Where the facade keeps the L2 header it builds. The caller owns the
+    /// slot, so the header lives as long as the lint context and the document
+    /// can borrow it for `'a`. It stays empty when no facade rule runs.
+    pub header: &'a mut Option<crate::markup::L2Markup<'a>>,
     pub analysis: Option<&'a Croquis>,
     pub rules: &'static [&'static str],
     pub rule_count: usize,
@@ -156,10 +160,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
             }
         }
     }
-    let markup = input.l2.markup();
-    // SAFETY: the local header lives to the end of this function, and the
-    // document and visitor built from it are dropped before it.
-    let markup = unsafe { crate::markup::reborrow_markup(&markup) };
+    let markup = &*input.header.insert(input.l2.markup());
     let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
     if let Some(analysis) = input.analysis {
         document = document.with_analysis(analysis);

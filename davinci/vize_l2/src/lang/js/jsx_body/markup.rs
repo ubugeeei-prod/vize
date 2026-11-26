@@ -3,7 +3,7 @@
 //! No parser, AST walker, foreign File, or caller-provided node list participates.
 //! This first static HTML family grants analysis authority, not JSX module output.
 
-use super::{JsxFile, JsxFileError, JsxFileProducer, RejectedJsxFile};
+use super::{JsxL2Ir, JsxL2IrError, JsxL2IrProducer, RejectedJsxL2Ir};
 use crate::artifact::L2TemplateError;
 use crate::file::L2Ir;
 use alloc::{boxed::Box, vec::Vec};
@@ -15,7 +15,7 @@ mod whitespace;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsxMarkupIssueKind {
-    File(JsxFileError),
+    File(JsxL2IrError),
     Artifact(L2TemplateError),
     InvalidRecord,
     RootExpression,
@@ -39,16 +39,16 @@ pub struct JsxMarkupIssue {
 /// Actual native canonical markup and all original same-Program facts together.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::{JsxFile, JsxMarkupFile};
-/// fn forge(owner: JsxFile<'_>) { let _ = JsxMarkupFile { owner }; }
+/// use vize_l2::lang::js::{JsxL2Ir, JsxMarkupL2Ir};
+/// fn forge(owner: JsxL2Ir<'_>) { let _ = JsxMarkupL2Ir { owner }; }
 /// ```
-pub struct JsxMarkupFile<'a> {
-    owner: JsxFile<'a>,
+pub struct JsxMarkupL2Ir<'a> {
+    owner: JsxL2Ir<'a>,
 }
 
-impl<'a> JsxMarkupFile<'a> {
+impl<'a> JsxMarkupL2Ir<'a> {
     #[must_use]
-    pub fn owner(&self) -> &JsxFile<'a> {
+    pub fn owner(&self) -> &JsxL2Ir<'a> {
         &self.owner
     }
 
@@ -76,19 +76,19 @@ impl<'a> JsxMarkupFile<'a> {
 
 /// A typed whole-view refusal retains the actual completed or rejected owner.
 /// Unsupported syntax is checked before any canonical markup is written.
-pub struct RejectedJsxMarkupFile<'a> {
-    owner: Result<JsxFile<'a>, Box<RejectedJsxFile<'a>>>,
+pub struct RejectedJsxMarkupL2Ir<'a> {
+    owner: Result<JsxL2Ir<'a>, Box<RejectedJsxL2Ir<'a>>>,
     issues: Vec<JsxMarkupIssue>,
 }
 
-impl<'a> RejectedJsxMarkupFile<'a> {
+impl<'a> RejectedJsxMarkupL2Ir<'a> {
     #[must_use]
-    pub fn owner(&self) -> Option<&JsxFile<'a>> {
+    pub fn owner(&self) -> Option<&JsxL2Ir<'a>> {
         self.owner.as_ref().ok()
     }
 
     #[must_use]
-    pub fn rejected_owner(&self) -> Option<&RejectedJsxFile<'a>> {
+    pub fn rejected_owner(&self) -> Option<&RejectedJsxL2Ir<'a>> {
         self.owner.as_ref().err().map(Box::as_ref)
     }
 
@@ -98,13 +98,13 @@ impl<'a> RejectedJsxMarkupFile<'a> {
     }
 }
 
-impl<'a> JsxFileProducer<'a> {
+impl<'a> JsxL2IrProducer<'a> {
     /// Seal the original-owning static HTML family into its canonical File.
     ///
     /// Dynamic expressions, component/foreign namespaces, directives, spreads,
     /// and values requiring JSX normalization refuse this whole view.
     /// Ordinary script expressions remain in their genuine original File facts.
-    pub fn finish_markup(mut self) -> Result<JsxMarkupFile<'a>, Box<RejectedJsxMarkupFile<'a>>> {
+    pub fn finish_markup(mut self) -> Result<JsxMarkupL2Ir<'a>, Box<RejectedJsxMarkupL2Ir<'a>>> {
         let span = self.block.span();
         let (roots, mut issues) = profile!(
             "l2.jsx_markup.prepare",
@@ -132,8 +132,8 @@ impl<'a> JsxFileProducer<'a> {
             });
         }
         match owner {
-            Ok(owner) if issues.is_empty() => Ok(JsxMarkupFile { owner }),
-            owner => Err(Box::new(RejectedJsxMarkupFile { owner, issues })),
+            Ok(owner) if issues.is_empty() => Ok(JsxMarkupL2Ir { owner }),
+            owner => Err(Box::new(RejectedJsxMarkupL2Ir { owner, issues })),
         }
     }
 }

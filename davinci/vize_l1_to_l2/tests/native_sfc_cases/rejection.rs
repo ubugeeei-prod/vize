@@ -1,7 +1,7 @@
 use super::support::options;
 use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::{NativeSfcIssueKind, NativeTemplateOutcome, lower_sfc_native};
-use vize_l1_to_l2::vue_file::VueFileIssueKind;
+use vize_l1_to_l2::vue_file::VueL2IrIssueKind;
 
 #[test]
 fn actual_uv_recovery_retains_diagnostics_and_does_not_gain_admission() {
@@ -69,7 +69,7 @@ fn setup_export_preserves_file_facts_and_original_unconstructed_template() {
         rejected
             .issues()
             .iter()
-            .any(|issue| issue.kind == VueFileIssueKind::SetupExport)
+            .any(|issue| issue.kind == VueL2IrIssueKind::SetupExport)
     );
     assert_eq!(rejected.file().unwrap().units().len(), 1);
     let NativeTemplateOutcome::FactoryRefused { component, .. } =
@@ -103,7 +103,7 @@ fn unadmitted_macro_remains_typed_and_keeps_original_parser_owner() {
             .unwrap()
             .issues()
             .iter()
-            .any(|issue| matches!(issue.kind, VueFileIssueKind::UnsupportedCall { .. }))
+            .any(|issue| matches!(issue.kind, VueL2IrIssueKind::UnsupportedCall { .. }))
     );
     assert!(
         observed

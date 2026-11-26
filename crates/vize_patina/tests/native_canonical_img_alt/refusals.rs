@@ -2,7 +2,7 @@ use super::support::{jsx, options};
 use vize_carton::i18n::{Locale, translator};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1_to_l2::native_file::{NativeSfcIssue, NativeSfcIssueKind, lower_sfc_native};
-use vize_l2::lang::js::{JsxFileProducer, JsxMarkupIssueKind};
+use vize_l2::lang::js::{JsxL2IrProducer, JsxMarkupIssueKind};
 use vize_patina::native::canonical::{NativeCanonicalLint, NativeCanonicalLintRefusal};
 
 #[test]
@@ -136,7 +136,7 @@ fn same_program_nonzero_blocks_keep_full_authored_bytes_and_utf16_positions() {
             }
             .with_module(true);
             let original = oxc_parser::Parser::new(&a, text, kind).parse_observed();
-            let mut producer = JsxFileProducer::new(&a, original, block, 0)
+            let mut producer = JsxL2IrProducer::new(&a, original, block, 0)
                 .unwrap_or_else(|_| panic!("native block"));
             producer.walk().unwrap();
             let owner = producer
@@ -208,7 +208,7 @@ fn jsx_dynamic_values_spreads_and_entities_refuse_before_query_construction() {
             oxc_parser::Parser::new(&a, &source, oxc_span::SourceType::tsx().with_module(true))
                 .parse_observed();
         let block = SourceRoot::new(&source).unwrap().whole_block();
-        let mut producer = JsxFileProducer::new(&a, original, block, 0)
+        let mut producer = JsxL2IrProducer::new(&a, original, block, 0)
             .unwrap_or_else(|_| panic!("original Program"));
         producer.walk().unwrap();
         let Err(refused) = producer.finish_markup() else {

@@ -10,7 +10,7 @@
 use vize_l0::{Allocator, FxHashMap, SourceRoot, Span, String, ToCompactString, camelize, profile};
 use vize_l1::embed::{EmbedSource, syntax::parse_program_once};
 use vize_l2::framework::vue::{OptionMemberKind, OptionsObserver};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 use crate::compile::setup_facts::program_options;
 use crate::types::{BindingMetadata, BindingType};
@@ -44,7 +44,7 @@ fn observe(content: &str, lang: Option<&str>) -> Option<BindingMetadata> {
     let block = SourceRoot::new(content).ok()?.whole_block();
     let input = ProgramInput::checked(syntax.admitted_program()?, block, 0).ok()?;
     let mut observer = OptionsObserver::new();
-    FileProducer::new(&arena, content)
+    L2IrProducer::new(&arena, content)
         .ok()?
         .program_observed(input, ProgramScope::Nested, &mut observer)
         .ok()?;

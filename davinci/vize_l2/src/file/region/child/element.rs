@@ -1,12 +1,12 @@
 //! Original receiver retains only the transient actual canonical allocation.
 
-use super::{FileRegion, TemplateBody, TemplateChildRegion, TemplatePolicy};
+use super::{L2IrRegion, TemplateBody, TemplateChildRegion, TemplatePolicy};
 use crate::artifact::{ElementAllocation, L2TemplateError, RegionBuilder};
 use crate::op::{Attribute, Namespace};
 use core::{marker::PhantomData, ops::DerefMut};
 use vize_l0::{Span, id::NodeId};
 
-impl<'a: 'b, 'b, R, P> FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,
@@ -31,7 +31,7 @@ where
             region.native_element(tag, namespace, attributes, span, |child, node| {
                 body.run(
                     &mut TemplateChildRegion {
-                        inner: FileRegion {
+                        inner: L2IrRegion {
                             region: child,
                             facts,
                             scope: *scope,

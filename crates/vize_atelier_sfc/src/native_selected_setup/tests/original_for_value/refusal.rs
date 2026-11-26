@@ -65,7 +65,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
         let [interpolation] = file.native_interpolations() else {
             panic!("one original Vue interpolation, never literal braces");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = interpolation.state()
+        let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = interpolation.state()
         else {
             panic!("normally attached original interpolation");
         };
@@ -129,7 +129,7 @@ fn display_helper_alias_keeps_original_lower_reserved_alias_owner() {
         .map(|file| file.rejected_for_heads())
         .or_else(|| owner.rejected_file().map(|file| file.rejected_for_heads()))
         .unwrap();
-    let [vize_l2::file::RejectedFileFor::Resolution { input, error }] = rejected else {
+    let [vize_l2::file::RejectedL2IrFor::Resolution { input, error }] = rejected else {
         panic!("whole reserved alias input");
     };
     assert_eq!(
@@ -184,7 +184,7 @@ fn syntax_hole_keeps_whole_for_setup_and_original_body_without_read_admission() 
     };
     assert_eq!(
         record.state(),
-        vize_l2::file::NativeFileInterpolationState::Refused(
+        vize_l2::file::NativeL2IrInterpolationState::Refused(
             vize_l2::lang::js::NativeTemplateIssueKind::Interpolation(
                 vize_l2::lang::js::NativeInterpolationInputError::Hole(
                     vize_l1::embed::syntax::EmbedHole::Syntax

@@ -31,7 +31,7 @@ fn caught_conditional_unwind_cannot_reuse_the_cursor_or_publish_partial_if_owner
                 let [record] = walk.root.facts.native_conditionals() else {
                     panic!("parked original");
                 };
-                assert_eq!(record.state(), NativeFileConditionalState::Pending);
+                assert_eq!(record.state(), NativeL2IrConditionalState::Pending);
                 assert_eq!(record.scope(), parent);
                 assert!(record.original.is_none());
                 assert_eq!(record.input().operand().raw_value(), "ready");
@@ -59,7 +59,7 @@ fn caught_conditional_unwind_cannot_reuse_the_cursor_or_publish_partial_if_owner
             let [record] = rejected.native_conditionals() else {
                 panic!("whole pending input");
             };
-            assert_eq!(record.state(), NativeFileConditionalState::Pending);
+            assert_eq!(record.state(), NativeL2IrConditionalState::Pending);
             assert!(record.original.is_none());
             let [Op::If(original)] = rejected.artifact().parts.root.ops.as_slice() else {
                 panic!("retained pending If");
@@ -96,7 +96,7 @@ fn caught_conditional_unwind_cannot_reuse_the_cursor_or_publish_partial_if_owner
                     panic!("real closed If");
                 };
                 assert!(!record.accepts(original));
-                assert_eq!(record.state(), NativeFileConditionalState::Pending);
+                assert_eq!(record.state(), NativeL2IrConditionalState::Pending);
             } else {
                 assert!(file.artifact().root().ops.is_empty());
                 assert_eq!(file.artifact().node_count(), 0);

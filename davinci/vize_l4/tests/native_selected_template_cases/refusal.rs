@@ -1,7 +1,7 @@
 use crate::{check, completed, equal, owner};
 use vize_l0::{Allocator, Span};
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileHandler},
+    file::{L2IrIssueKind, RejectedL2IrHandler},
     lang::js::NativeTemplateIssueKind as Kind,
     op::Op,
     resolution::ResolutionErrorKind,
@@ -44,7 +44,7 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
                     .map_err(|_| "authored offset")?;
                 Kind::Handler {
                     span: Span::new(start, start + 7),
-                    kind: FileIssueKind::UnresolvedReference,
+                    kind: L2IrIssueKind::UnresolvedReference,
                 }
             } else {
                 Kind::UnsupportedChild
@@ -79,7 +79,7 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
         equal(prefix.content, "prefix")?;
         check(file.template_interruption().is_some())?;
         if rejected == "@click='handler'" {
-            let [RejectedFileHandler::Resolution { input, error }] = file.rejected_handlers()
+            let [RejectedL2IrHandler::Resolution { input, error }] = file.rejected_handlers()
             else {
                 return Err("whole original unresolved handler");
             };

@@ -2,11 +2,11 @@
 //! each observer receives its own checkpoint before either observes the subtree.
 
 use super::{
-    CallEvent, DeclaredEvent, FileObserver, InvocationEvent, ResolutionErrorKind, ScriptUnit,
+    CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, ResolutionErrorKind, ScriptUnit,
     StatementEvent, SyntaxEvent,
 };
 
-impl<'a, A: FileObserver<'a>, B: FileObserver<'a>> FileObserver<'a> for (A, B) {
+impl<'a, A: L2IrObserver<'a>, B: L2IrObserver<'a>> L2IrObserver<'a> for (A, B) {
     type Checkpoint = (A::Checkpoint, B::Checkpoint);
 
     fn unit(&mut self, unit: &ScriptUnit) {

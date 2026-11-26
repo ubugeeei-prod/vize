@@ -1,6 +1,6 @@
 //! Normally owned original preparation, joined only to its real Text mint.
 
-use super::{L2Ir, RejectedFile};
+use super::{L2Ir, RejectedL2Ir};
 use crate::{lang::js::NativeTemplateIssueKind, op::TextOp};
 use core::ptr::NonNull;
 use vize_l0::id::NodeId;
@@ -19,7 +19,7 @@ pub enum NativeTextValuePolicyError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileTextValueState {
+pub enum NativeL2IrTextValueState {
     Pending,
     Attached(NodeId),
     Refused(NativeTemplateIssueKind),
@@ -28,22 +28,22 @@ pub enum NativeFileTextValueState {
 /// Whole results remain normally owned on failure and caught unwind.
 /// This row alone grants no File completion or native output profile.
 /// ```compile_fail
-/// use vize_l2::file::NativeFileTextValue;
+/// use vize_l2::file::NativeL2IrTextValue;
 /// fn clone<T: Clone>() {}
-/// clone::<NativeFileTextValue<'static>>();
+/// clone::<NativeL2IrTextValue<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l2::file::{NativeFileTextValue, NativeFileTextValueState};
-/// let _ = NativeFileTextValue {
-///     observation: panic!(), state: NativeFileTextValueState::Pending, text: None,
+/// use vize_l2::file::{NativeL2IrTextValue, NativeL2IrTextValueState};
+/// let _ = NativeL2IrTextValue {
+///     observation: panic!(), state: NativeL2IrTextValueState::Pending, text: None,
 /// };
 /// ```
-pub struct NativeFileTextValue<'a> {
+pub struct NativeL2IrTextValue<'a> {
     pub(crate) observation: Result<TextValue<'a>, TextValueFailure<'a>>,
-    pub(crate) state: NativeFileTextValueState,
+    pub(crate) state: NativeL2IrTextValueState,
     pub(crate) text: Option<NonNull<TextOp<'a>>>,
 }
-impl<'a> NativeFileTextValue<'a> {
+impl<'a> NativeL2IrTextValue<'a> {
     #[must_use]
     pub fn observation(&self) -> Option<&TextValue<'a>> {
         self.observation.as_ref().ok()
@@ -53,7 +53,7 @@ impl<'a> NativeFileTextValue<'a> {
         self.observation.as_ref().err()
     }
     #[must_use]
-    pub const fn state(&self) -> NativeFileTextValueState {
+    pub const fn state(&self) -> NativeL2IrTextValueState {
         self.state
     }
 }
@@ -61,21 +61,21 @@ impl<'a> NativeFileTextValue<'a> {
 /// Same actual File, NodeId and arena Text allocation, with whole preparation.
 /// Equal bytes, a numeric node or a copied Text cannot construct this view.
 /// ```compile_fail
-/// use vize_l2::{file::{L2Ir, FileTextValue}, op::TextOp};
+/// use vize_l2::{file::{L2Ir, L2IrTextValue}, op::TextOp};
 /// use vize_l0::id::NodeId;
 /// fn forge<'f, 'a>(l2ir: &'f L2Ir<'a>, text: &'f TextOp<'a>) {
-///     let _ = FileTextValue { l2ir, text, node: NodeId::FIRST };
+///     let _ = L2IrTextValue { l2ir, text, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
-pub struct FileTextValue<'f, 'a> {
+pub struct L2IrTextValue<'f, 'a> {
     l2ir: &'f L2Ir<'a>,
     text: &'f TextOp<'a>,
     node: NodeId,
 }
 impl<'a> L2Ir<'a> {
     #[must_use]
-    pub fn native_text_values(&self) -> &[NativeFileTextValue<'a>] {
+    pub fn native_text_values(&self) -> &[NativeL2IrTextValue<'a>] {
         &self.facts.native_text_values
     }
     /// Attached diagnostic prefixes remain readable even in incomplete Files.
@@ -85,13 +85,13 @@ impl<'a> L2Ir<'a> {
         &'f self,
         node: NodeId,
         text: &'f TextOp<'a>,
-    ) -> Option<FileTextValue<'f, 'a>> {
+    ) -> Option<L2IrTextValue<'f, 'a>> {
         let [record] = self.facts.native_text_values.as_slice() else {
             return None;
         };
         let observation = record.observation()?;
         let source = observation.source();
-        if record.state != NativeFileTextValueState::Attached(node)
+        if record.state != NativeL2IrTextValueState::Attached(node)
             || record.text != Some(NonNull::from(text))
             || !self.artifact().contains_node(node)
             || !core::ptr::eq(source.authored_root(), self.artifact().source())
@@ -100,20 +100,20 @@ impl<'a> L2Ir<'a> {
         {
             return None;
         }
-        Some(FileTextValue {
+        Some(L2IrTextValue {
             l2ir: self,
             text,
             node,
         })
     }
 }
-impl<'a> RejectedFile<'a> {
+impl<'a> RejectedL2Ir<'a> {
     #[must_use]
-    pub fn native_text_values(&self) -> &[NativeFileTextValue<'a>] {
+    pub fn native_text_values(&self) -> &[NativeL2IrTextValue<'a>] {
         &self.facts.native_text_values
     }
 }
-impl<'f, 'a> FileTextValue<'f, 'a> {
+impl<'f, 'a> L2IrTextValue<'f, 'a> {
     #[must_use]
     pub const fn l2ir(self) -> &'f L2Ir<'a> {
         self.l2ir

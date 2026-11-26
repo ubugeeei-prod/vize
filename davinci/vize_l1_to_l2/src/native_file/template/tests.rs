@@ -3,7 +3,7 @@ extern crate std;
 use super::{NativeTemplateObservation, NativeTemplateOutcome, prepare};
 use crate::native::{NativeVueConstructionError, Point, Probe};
 use crate::native_file::{NativeScriptObservation, NativeSfcIssue, NativeSfcIssueKind, script};
-use crate::vue_file::{VueFileIssueKind, VueFileProducer};
+use crate::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
 use alloc::vec::Vec;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{
@@ -15,14 +15,14 @@ use vize_l1::{
     embed::Lang,
     markup::SurfaceParseOptions,
 };
-use vize_l2::{artifact::Builder, file::FileIssueKind};
+use vize_l2::{artifact::Builder, file::L2IrIssueKind};
 
 fn row<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (
     NativeTemplateObservation<'a>,
-    VueFileProducer<'a>,
+    VueL2IrProducer<'a>,
     Vec<NativeScriptObservation<'a>>,
     Vec<NativeSfcIssue>,
 ) {
@@ -36,7 +36,7 @@ fn row<'a>(
         },
     );
     let view = descriptor.admitted().unwrap();
-    let mut producer = VueFileProducer::new(allocator, source).unwrap();
+    let mut producer = VueL2IrProducer::new(allocator, source).unwrap();
     let mut issues = Vec::new();
     let scripts = [view.ordinary(), view.setup()]
         .into_iter()
@@ -140,7 +140,7 @@ fn sole_sfc_row_survives_real_native_unwinds_and_repeat_factory_refusal() {
         assert_eq!(template.embeds().as_ptr(), embeds);
         assert!(matches!(issues.last().unwrap().kind,
             NativeSfcIssueKind::TemplateFactory(issue)
-                if issue.kind == VueFileIssueKind::DuplicateTemplate));
+                if issue.kind == VueL2IrIssueKind::DuplicateTemplate));
         if let Some(original) = ast {
             assert!(core::ptr::eq(
                 original,
@@ -175,7 +175,7 @@ fn sole_sfc_row_survives_real_native_unwinds_and_repeat_factory_refusal() {
             (None, Some(file)) => (file.template_interruption().unwrap(), file.source()),
             _ => panic!("one genuine partial File owner"),
         };
-        assert_eq!(interruption.kind, FileIssueKind::InterruptedTemplate);
+        assert_eq!(interruption.kind, L2IrIssueKind::InterruptedTemplate);
         assert_eq!(interruption.span, template.block().span());
         assert!(core::ptr::eq(retained_source, source));
     }

@@ -1,6 +1,6 @@
 use super::{
     NativeComponent, NativeVueConstructionError, NativeWalkState, PendingNativeComponent,
-    VueFileProducer,
+    VueL2IrProducer,
 };
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::{
@@ -36,7 +36,7 @@ fn actual_setup_profile_drives_ts_without_a_caller_template_language() {
         EmbedSource::authored(source, script_block.span()).unwrap(),
         ProgramOptions::module(Lang::Ts),
     );
-    let mut producer = VueFileProducer::new(&a, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&a, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap())
         .unwrap();
@@ -69,7 +69,7 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
         NativeComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let span = component.block().span();
     let mut pending = PendingNativeComponent::from_component(component);
-    let mut producer = VueFileProducer::new(&a, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&a, source).unwrap();
     {
         let mut region = producer.template_region().unwrap();
         let walk = region.begin_native_walk(span).unwrap();
@@ -96,7 +96,7 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
         &[vize_l2::file::TemplateIssue {
             node: None,
             span,
-            kind: vize_l2::file::FileIssueKind::ActiveTemplateWalk
+            kind: vize_l2::file::L2IrIssueKind::ActiveTemplateWalk
         }]
     );
 }

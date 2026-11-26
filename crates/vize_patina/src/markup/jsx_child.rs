@@ -7,15 +7,13 @@ use oxc_ast::ast::{
 impl<'a> MarkupNode<'a> {
     pub(super) fn from_jsx_child(child: &'a JSXChild<'a>, offset: u32) -> Self {
         match child {
-            JSXChild::Text(text) => Self::Text(MarkupText::from_jsx(&raw const **text, offset)),
-            JSXChild::Element(element) => Self::Element(MarkupElement::from_jsx_element(
-                &raw const **element,
-                offset,
-            )),
-            JSXChild::Fragment(fragment) => Self::Element(MarkupElement::from_jsx_fragment(
-                &raw const **fragment,
-                offset,
-            )),
+            JSXChild::Text(text) => Self::Text(MarkupText::from_jsx(text, offset)),
+            JSXChild::Element(element) => {
+                Self::Element(MarkupElement::from_jsx_element(element, offset))
+            }
+            JSXChild::Fragment(fragment) => {
+                Self::Element(MarkupElement::from_jsx_fragment(fragment, offset))
+            }
             JSXChild::ExpressionContainer(container) => match &container.expression {
                 JSXExpression::EmptyExpression(_) => {
                     Self::Comment(span_to_range(container.span, offset))

@@ -110,7 +110,7 @@ impl JsxDialect {
 
 /// The facts of one module that every render root lowers against.
 #[derive(Debug, Clone, Copy)]
-pub struct JsxFile<'a, 's> {
+pub struct JsxL2Ir<'a, 's> {
     /// The whole module, which every span indexes.
     pub source: &'a str,
     /// The module's semantic pass: component tags resolve through it.
@@ -155,7 +155,7 @@ pub enum JsxRefusal {
 struct Cx<'a, 's> {
     allocator: &'a Allocator,
     dialect: JsxDialect,
-    file: JsxFile<'a, 's>,
+    file: JsxL2Ir<'a, 's>,
     op_count: u32,
     next_scope: u32,
     scopes: SideTable<ScopeAnalysis>,
@@ -212,7 +212,7 @@ const fn span(span: oxc_span::Span) -> Span {
 /// `file` holds the facts of the module the root belongs to.
 pub fn lower_component<'a>(
     allocator: &'a Allocator,
-    file: &JsxFile<'a, '_>,
+    file: &JsxL2Ir<'a, '_>,
     dialect: &JsxDialect,
     component: JsxComponent<'a>,
     root: JsxRoot<'_, '_>,

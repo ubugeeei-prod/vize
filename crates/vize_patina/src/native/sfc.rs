@@ -10,7 +10,7 @@ use vize_l1::{
 };
 use vize_l2::{
     artifact::L2TemplateError,
-    file::FileIssue,
+    file::L2IrIssue,
     lang::js::{ProgramInputError, SetupIssue},
 };
 
@@ -92,9 +92,9 @@ pub enum NativeSfcLintRefusal {
     /// The semantic file retained unresolved issues or interrupted programs.
     FileIssues {
         /// File issues retained by the producer.
-        issues: Vec<FileIssue>,
+        issues: Vec<L2IrIssue>,
         /// Issues attached to interrupted program production.
-        interruptions: Vec<FileIssue>,
+        interruptions: Vec<L2IrIssue>,
     },
     /// The original setup block cannot form a checked Vue setup view.
     Setup(SetupIssue),

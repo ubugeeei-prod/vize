@@ -5,8 +5,8 @@ use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::L2Template,
-    file::{BindingRef, FileResolution, L2Ir},
-    lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
+    file::{BindingRef, L2Ir, L2IrResolution},
+    lang::js::{NativeSelectedSetup, NativeTemplateL2Ir, NativeTemplateView},
     resolution::Occurrence,
 };
 
@@ -39,7 +39,7 @@ impl<'owner, 'arena> SsrSetupRead<'owner, 'arena> {
 
 /// Complete original resolution and read list published together or absent.
 pub struct SsrSetupExpression<'owner, 'arena> {
-    pub(super) resolution: FileResolution<'owner, 'arena>,
+    pub(super) resolution: L2IrResolution<'owner, 'arena>,
     pub(super) access: SsrSetupAccess<'owner, 'arena>,
 }
 
@@ -60,7 +60,7 @@ impl core::fmt::Debug for SsrSetupExpression<'_, '_> {
 }
 impl<'owner, 'arena> SsrSetupExpression<'owner, 'arena> {
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
     #[must_use]
@@ -109,7 +109,7 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
         self.setup.l2ir()
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.template.owner()
     }
     #[must_use]

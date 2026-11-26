@@ -3,8 +3,8 @@
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
 use crate::file::handler::{HandlerRecord, PendingHandler};
-use crate::file::region::{FileRegion, Lookup};
-use crate::file::{FileIssueKind, RejectedFileHandler};
+use crate::file::region::{L2IrRegion, Lookup};
+use crate::file::{L2IrIssueKind, RejectedL2IrHandler};
 use crate::lang::js::{NativeHandlerInput, file::native::NativeTemplateIssueKind as Kind};
 use crate::resolution::{ResolutionErrorKind, resolve_handler_facts};
 use core::ops::DerefMut;
@@ -20,7 +20,7 @@ pub(super) struct PreparedHandler {
     pub(super) index: usize,
 }
 
-impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
+impl<'a: 'b, 'b, R> L2IrRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
@@ -36,15 +36,15 @@ where
         if !core::ptr::eq(block.root_source(), self.source)
             || !core::ptr::eq(selected.component(), attribute.component())
         {
-            return Err(self.handler_error(name_span, FileIssueKind::InvalidSource));
+            return Err(self.handler_error(name_span, L2IrIssueKind::InvalidSource));
         }
         let operand = match selected.observe_attribute_handler(attribute.reborrow()) {
             Ok(operand) => operand,
             Err(error) => {
                 self.facts
                     .rejected_handlers
-                    .push(RejectedFileHandler::Observation(error));
-                return Err(self.handler_error(name_span, FileIssueKind::UnsupportedSyntax));
+                    .push(RejectedL2IrHandler::Observation(error));
+                return Err(self.handler_error(name_span, L2IrIssueKind::UnsupportedSyntax));
             }
         };
         let value_span = operand.value_span();
@@ -67,8 +67,8 @@ where
             Err(error) => {
                 self.facts
                     .rejected_handlers
-                    .push(RejectedFileHandler::Syntax(error));
-                return Err(self.handler_error(value_span, FileIssueKind::UnsupportedSyntax));
+                    .push(RejectedL2IrHandler::Syntax(error));
+                return Err(self.handler_error(value_span, L2IrIssueKind::UnsupportedSyntax));
             }
         };
         let index = self.facts.pending_handlers.len();
@@ -91,7 +91,7 @@ where
             .admitted_for(selected, attribute)
             .is_none()
         {
-            return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
+            return Err(self.handler_error(value_span, L2IrIssueKind::InvalidSource));
         }
         #[cfg(test)]
         super::interruption_tests::after_park();
@@ -164,14 +164,14 @@ where
                     .authored_covering_span(error.span)
                     .unwrap_or(value_span);
                 let kind = match error.kind {
-                    ResolutionErrorKind::MissingBinding => FileIssueKind::UnresolvedReference,
-                    ResolutionErrorKind::InvalidSpan => FileIssueKind::InvalidSpan,
-                    ResolutionErrorKind::TraversalLimit => FileIssueKind::BindingLimit,
-                    ResolutionErrorKind::UnsupportedSyntax => FileIssueKind::UnsupportedSyntax,
+                    ResolutionErrorKind::MissingBinding => L2IrIssueKind::UnresolvedReference,
+                    ResolutionErrorKind::InvalidSpan => L2IrIssueKind::InvalidSpan,
+                    ResolutionErrorKind::TraversalLimit => L2IrIssueKind::BindingLimit,
+                    ResolutionErrorKind::UnsupportedSyntax => L2IrIssueKind::UnsupportedSyntax,
                 };
                 self.facts
                     .rejected_handlers
-                    .push(RejectedFileHandler::Resolution {
+                    .push(RejectedL2IrHandler::Resolution {
                         input: alloc::boxed::Box::new(input),
                         error,
                     });
@@ -184,7 +184,7 @@ where
             .get_mut(index)
             .ok_or(Kind::InvalidEvent)?;
         let Some(resolution) = facts.join(&mut pending.input) else {
-            return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
+            return Err(self.handler_error(value_span, L2IrIssueKind::InvalidSource));
         };
         pending.resolution = Some(resolution);
         Ok(PreparedHandler { index })
@@ -216,7 +216,7 @@ where
             .ok_or(Kind::InvalidEvent)?;
         let span = pending.span;
         if pending.scope != self.scope {
-            return Err(self.handler_error(span, FileIssueKind::InvalidSource));
+            return Err(self.handler_error(span, L2IrIssueKind::InvalidSource));
         }
         self.with_walk(span, |file| {
             let resolution = file
@@ -253,7 +253,7 @@ where
         })
     }
 
-    fn handler_error(&mut self, span: Span, kind: FileIssueKind) -> Kind {
+    fn handler_error(&mut self, span: Span, kind: L2IrIssueKind) -> Kind {
         let _ = self.reject(span, kind);
         Kind::Handler { span, kind }
     }

@@ -6,7 +6,7 @@
 
 use vize_l0::{Span, diag::MessageLookup};
 use vize_l1_to_l2::native_file::NativeSfc;
-use vize_l2::{file::L2Ir, lang::js::JsxMarkupFile, op::Op, walk::NodeRef};
+use vize_l2::{file::L2Ir, lang::js::JsxMarkupL2Ir, op::Op, walk::NodeRef};
 
 use super::{NativeLintFinding, tabindex_no_positive};
 
@@ -65,7 +65,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
 
     /// Borrow only the checked same-Program static JSX canonical view.
     /// Original comments require the host's suppression authority and refuse.
-    pub fn from_jsx(owner: &'o JsxMarkupFile<'a>) -> Result<Self, NativeCanonicalLintRefusal> {
+    pub fn from_jsx(owner: &'o JsxMarkupL2Ir<'a>) -> Result<Self, NativeCanonicalLintRefusal> {
         if let Some(comment) = owner.owner().observation().comments().first() {
             let base = owner
                 .l2ir()

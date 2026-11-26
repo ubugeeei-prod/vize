@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_insertion_adds_one_row_T": { "prover": "z3", "time": 0.016 }
+    }
+  }
+}

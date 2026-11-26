@@ -48,7 +48,7 @@ fn const_global_import_nested_and_type_namespace_are_not_mutable_setup_model_tar
         let [record] = file.native_models() else {
             panic!("whole original Model before target refusal")
         };
-        assert_eq!(record.state(), NativeFileModelState::Refused(error));
+        assert_eq!(record.state(), NativeL2IrModelState::Refused(error));
         assert!(record.input().expression().is_some());
         assert!(record.input().attribute_span().is_some());
         assert!(
@@ -71,7 +71,7 @@ fn const_global_import_nested_and_type_namespace_are_not_mutable_setup_model_tar
             assert!(
                 file.template_issues()
                     .iter()
-                    .any(|issue| issue.kind == crate::file::FileIssueKind::UnresolvedReference)
+                    .any(|issue| issue.kind == crate::file::L2IrIssueKind::UnresolvedReference)
             );
         } else {
             assert_eq!(error, Kind::UnsupportedChild);
@@ -136,9 +136,9 @@ fn actual_root_geometry_and_late_header_failures_keep_inputs_without_publishing_
             assert_eq!(
                 record.state(),
                 if pending {
-                    NativeFileModelState::Pending
+                    NativeL2IrModelState::Pending
                 } else {
-                    NativeFileModelState::Refused(Kind::UnsupportedChild)
+                    NativeL2IrModelState::Refused(Kind::UnsupportedChild)
                 }
             );
             assert_eq!(record.input().operand().raw_value(), "draft");

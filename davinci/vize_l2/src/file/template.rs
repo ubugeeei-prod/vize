@@ -1,6 +1,6 @@
 //! Inline interruption evidence; no diagnostic allocation during unwinding.
 
-use super::{FileIssueKind, TemplateIssue};
+use super::{L2IrIssueKind, TemplateIssue};
 use vize_l0::Span;
 
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +44,7 @@ impl TemplateWalk {
             Self::Interrupted(span) => Some(TemplateIssue {
                 node: None,
                 span,
-                kind: FileIssueKind::InterruptedTemplate,
+                kind: L2IrIssueKind::InterruptedTemplate,
             }),
             _ => None,
         }

@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::NativeFileInterpolationState;
+use vize_l2::file::NativeL2IrInterpolationState;
 
 const SOURCE: &str = "<script setup>let count=2</script><template><i v-for='count in count'>{{count}}</i></template>";
 
@@ -32,7 +32,7 @@ fn shadowed_original_parameter_is_the_body_read_and_foreign_equal_ids_never_join
     let [record] = af.native_interpolations() else {
         panic!("body");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
         panic!("attached");
     };
     let analysis = build_selected_setup_dom_decisions(av.setup()).unwrap();

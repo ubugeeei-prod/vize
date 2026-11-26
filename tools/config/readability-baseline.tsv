@@ -7046,7 +7046,6 @@ npm/framework/nuxt/src/options.ts	0	0	0	0	0	1	0
 npm/framework/nuxt/src/runtime/server/dev-stylesheet-links-nitro3.ts	0	0	0	0	0	1	0
 npm/framework/nuxt/src/runtime/server/dev-stylesheet-links.ts	0	0	0	0	0	1	0
 npm/framework/nuxt/src/server-plugins.test.ts	0	0	0	0	0	1	0
-npm/framework/nuxt/src/source-component-transforms.test.ts	0	0	0	2	0	0	0
 npm/framework/nuxt/src/unocss.ts	0	0	0	0	0	0	2
 npm/framework/nuxt/src/utils.test.ts	0	0	0	0	0	1	0
 npm/framework/nuxt/src/utils.ts	0	0	0	0	0	1	0
