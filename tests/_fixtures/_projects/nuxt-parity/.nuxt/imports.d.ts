@@ -9,4 +9,16 @@ declare global {
   const useRoute: () => { path: string; params: Record<string, string> };
 }
 
+// Type auto-imports. Nuxt re-exports each type from inside the global
+// augmentation, and follows it with a bare `import()` so the checker loads the
+// module the re-export names.
+declare global {
+  // @ts-ignore
+  export type { Box, ColorName } from "../composables/states";
+  import("../composables/states");
+  // @ts-ignore
+  export type { ComputedRef, Ref } from "vue";
+  import("vue");
+}
+
 export {};

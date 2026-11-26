@@ -1,0 +1,3 @@
+export interface Chip<Value = string> {
+  value: Value;
+}

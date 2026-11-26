@@ -19,21 +19,27 @@ use crate::commands::project_nuxt::unwrap_expression;
 
 use super::parsing::{default_export_config_object, find_object_property, nuxt_config_source};
 use super::stubs::{
-    declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
+    declared_name, declared_type_name, push_generic_function_stub, push_named_overload_stubs,
+    push_stub,
 };
+use super::type_auto_imports::TypeAutoImports;
 use fallback_values::fallback_value_stubs;
 
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
+    type_auto_imports: &mut TypeAutoImports,
     has_generated_imports: bool,
 ) {
     let mut fallback_names = FxHashSet::default();
-    push_fallback_stub_group(
-        fallback_type_alias_stubs(),
-        stubs,
-        seen_names,
-        &mut fallback_names,
+    // A type the generated manifest re-exports keeps that one declaration. The
+    // re-export carries the real type parameters (`Ref<T, S>`), which these
+    // aliases only approximate, and a second global of the same name is a
+    // duplicate identifier.
+    stubs.extend(
+        fallback_type_alias_stubs().into_iter().filter(|stub| {
+            declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name))
+        }),
     );
     push_stub(
         stubs,
@@ -288,9 +294,9 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
     stubs
 }
 
-/// Type aliases for auto-imported Vue types. Generated `.nuxt` artifacts are
-/// only mined for `declare global` consts and `GlobalComponents` members, so
-/// these aliases have no generated counterpart and are always injected.
+/// Type aliases for auto-imported Vue types, for projects whose generated
+/// manifest does not re-export them: no generated types at all, or a Nuxt
+/// version that predates type auto-imports.
 fn fallback_type_alias_stubs() -> Vec<String> {
     vec![
         "type Composer = any;".into(),
