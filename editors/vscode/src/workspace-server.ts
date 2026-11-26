@@ -22,7 +22,7 @@ export function workspaceServerProbePaths(
   return [
     ...new Set(
       folders.flatMap((folder) =>
-        ancestors(folder).flatMap((directory) => [
+        searchDirectories(folder, folders).flatMap((directory) => [
           path.join(directory, "package.json"),
           path.join(directory, "node_modules", "vize", "package.json"),
           path.join(directory, "node_modules", ".bin", bin),
@@ -44,10 +44,15 @@ export function discoverWorkspaceServers(
   const servers = new Map<string, ServerCandidate>();
   try {
     for (const folder of folders) {
-      const packageRoot = nearestPackageRoot(folder, exists);
-      if (!packageRoot) continue;
+      const directories = searchDirectories(folder, folders);
+      const packageRoot = directories.findIndex((directory) =>
+        exists(path.join(directory, "package.json")),
+      );
+      if (packageRoot < 0) continue;
+      // The package's own directory first, then each parent that may hoist it.
+      const installRoots = directories.slice(packageRoot);
       const serverPath =
-        packageServer(packageRoot, exists) ?? binServer(packageRoot, platform, exists);
+        packageServer(installRoots, exists) ?? binServer(installRoots, platform, exists);
       if (serverPath) {
         const realPath = fs.realpathSync(serverPath);
         // realpath resolves links, but its drive-letter casing may follow the
@@ -73,12 +78,23 @@ export function discoverWorkspaceServers(
   return { candidates: [...servers.values()] };
 }
 
-function nearestPackageRoot(folder: string, exists: Exists): string | undefined {
-  return ancestors(folder).find((directory) => exists(path.join(directory, "package.json")));
+/**
+ * The folder and its ancestors, ending at the outermost workspace folder that
+ * contains it. Trusting a folder says nothing about its parents, and a shared
+ * parent such as a temporary directory holds other people's files.
+ */
+function searchDirectories(folder: string, folders: readonly string[]): string[] {
+  const directories = ancestors(folder);
+  const roots = folders.map((root) => path.resolve(root));
+  let outermost = 0;
+  for (const [index, directory] of directories.entries()) {
+    if (roots.some((root) => path.relative(root, directory) === "")) outermost = index;
+  }
+  return directories.slice(0, outermost + 1);
 }
 
-function packageServer(packageRoot: string, exists: Exists): string | undefined {
-  for (const directory of ancestors(packageRoot)) {
+function packageServer(directories: readonly string[], exists: Exists): string | undefined {
+  for (const directory of directories) {
     const root = path.join(directory, "node_modules", "vize");
     const manifestPath = path.join(root, "package.json");
     if (!exists(manifestPath)) continue;
@@ -98,11 +114,11 @@ function packageServer(packageRoot: string, exists: Exists): string | undefined 
 }
 
 function binServer(
-  packageRoot: string,
+  directories: readonly string[],
   platform: NodeJS.Platform,
   exists: Exists,
 ): string | undefined {
-  for (const directory of ancestors(packageRoot)) {
+  for (const directory of directories) {
     const bin = path.join(
       directory,
       "node_modules",

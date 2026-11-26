@@ -184,7 +184,9 @@ export function createServerDiscovery(
     const pathSeparator = process.platform === "win32" ? ";" : ":";
     const pathDirs = [...pathEnv.split(pathSeparator), ...getImplicitPathDirs()];
     for (const dir of pathDirs) {
-      if (dir) {
+      // An empty or relative entry names a directory under the working
+      // directory, which can be the opened repository.
+      if (path.isAbsolute(dir)) {
         candidates.push({ path: path.join(dir, exeName), source: "path" });
       }
     }

@@ -3,7 +3,16 @@ const { createHash } = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
-const { waitFor } = require("./wait-for.cjs");
+
+// The server info command reports the server the extension selected, if any.
+async function selectedServer() {
+  await vscode.commands.executeCommand("vize.test.waitForConfigurationIdle");
+  try {
+    return await vscode.commands.executeCommand("vize.test.getServerInfo");
+  } catch {
+    return null;
+  }
+}
 
 exports.run = async function run() {
   assert.equal(vscode.workspace.isTrusted, false);
@@ -21,35 +30,16 @@ exports.run = async function run() {
     vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, "App.vue"),
   );
   await vscode.window.showTextDocument(document);
-  const server = await waitFor(
-    async () => {
-      try {
-        return await vscode.commands.executeCommand("vize.test.getServerInfo");
-      } catch {
-        return undefined;
-      }
-    },
-    (value) => value?.status === "ready" && value.source === "configured",
-    "safe configured server in Restricted Mode",
-    60_000,
-  );
-  assert.equal(
-    path.relative(
-      fs.realpathSync(server.path),
-      fs.realpathSync(process.env.VIZE_TEST_SAFE_SERVER_PATH),
-    ),
-    "",
-  );
-  assert.equal(server.workspaceFallbackReason, "Workspace servers skipped in Restricted Mode.");
+  // The language server waits for trust: neither the user's configured server
+  // nor anything in the workspace runs, and a manual restart changes nothing.
+  assert.equal(await selectedServer(), null);
+  await vscode.commands.executeCommand("vize.restartServer");
+  const server = await selectedServer();
+  assert.equal(server, null);
+  assert.equal(fs.existsSync(process.env.VIZE_TEST_SAFE_SERVER_LOG), false);
   assert.equal(fs.existsSync(process.env.VIZE_TEST_FORBIDDEN_SERVER_MARKER), false);
-  const hover = await vscode.commands.executeCommand("vize.test.executeLspRequest", {
-    method: "textDocument/hover",
-    params: { textDocument: { uri: document.uri.toString() }, position: { line: 1, character: 8 } },
-  });
-  assert.ok(hover?.contents, `safe server must answer real hover: ${JSON.stringify(hover)}`);
   fs.writeFileSync(
     process.env.VIZE_TEST_RESTRICTED_RESULT,
-    JSON.stringify({ installedExtensionPath, server, hover }, null, 2) + "\n",
+    JSON.stringify({ installedExtensionPath, server }, null, 2) + "\n",
   );
-  await vscode.commands.executeCommand("vize.disable");
 };
