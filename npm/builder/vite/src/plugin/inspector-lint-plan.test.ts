@@ -103,7 +103,7 @@ void test("lint-plan handler emits guarded JSON and forwards a normalized reques
   const response = new MemoryResponse();
   let received: unknown;
   await handleInspectorLintPlanRequest(
-    { method: "GET", url: `${VIZE_INSPECTOR_LINT_PLAN_ENDPOINT}?file=app.vue` },
+    { method: "GET", url: `${VIZE_INSPECTOR_LINT_PLAN_ENDPOINT}?file=app.vue`, headers: {} },
     response,
     (request) => {
       received = request;
@@ -125,7 +125,7 @@ void test("lint-plan handler emits guarded JSON and forwards a normalized reques
 void test("lint-plan handler supports HEAD and rejects other methods", async () => {
   const head = new MemoryResponse();
   await handleInspectorLintPlanRequest(
-    { method: "HEAD", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT },
+    { method: "HEAD", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT, headers: {} },
     head,
     () => ({ ok: true }),
     silentLogger,
@@ -136,7 +136,7 @@ void test("lint-plan handler supports HEAD and rejects other methods", async () 
 
   const post = new MemoryResponse();
   await handleInspectorLintPlanRequest(
-    { method: "POST", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT },
+    { method: "POST", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT, headers: {} },
     post,
     () => ({ ok: true }),
     silentLogger,
@@ -148,7 +148,7 @@ void test("lint-plan handler supports HEAD and rejects other methods", async () 
 void test("lint-plan handler hides provider failures", async () => {
   const response = new MemoryResponse();
   await handleInspectorLintPlanRequest(
-    { method: "GET", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT },
+    { method: "GET", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT, headers: {} },
     response,
     () => {
       throw new Error("do not expose this path");
@@ -163,11 +163,61 @@ void test("lint-plan handler hides provider failures", async () => {
 void test("lint-plan handler bounds provider responses", async () => {
   const response = new MemoryResponse();
   await handleInspectorLintPlanRequest(
-    { method: "GET", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT },
+    { method: "GET", url: VIZE_INSPECTOR_LINT_PLAN_ENDPOINT, headers: {} },
     response,
     () => ({ value: "x".repeat(4 * 1024 * 1024) }),
     silentLogger,
   );
   assert.equal(response.statusCode, 413);
   assert.deepEqual(JSON.parse(response.body ?? ""), { error: "inspector_response_too_large" });
+});
+
+void test("lint-plan handler refuses requests from another site before asking the provider", async () => {
+  let asked = 0;
+  for (const headers of [
+    { host: "localhost:5173", "sec-fetch-site": "cross-site" },
+    { host: "localhost:5173", origin: "https://other.example" },
+  ]) {
+    const response = new MemoryResponse();
+    await handleInspectorLintPlanRequest(
+      { method: "GET", url: `${VIZE_INSPECTOR_LINT_PLAN_ENDPOINT}?fresh=1`, headers },
+      response,
+      () => {
+        asked += 1;
+        return {};
+      },
+      silentLogger,
+    );
+    assert.equal(response.statusCode, 403);
+    assert.deepEqual(JSON.parse(response.body ?? ""), { error: "cross_site_request" });
+  }
+  assert.equal(asked, 0);
+});
+
+void test("lint-plan handler rebuilds the plan for same-origin requests only", async () => {
+  const host = "localhost:5173";
+  const rebuilds = async (headers: Record<string, string>) => {
+    const response = new MemoryResponse();
+    let fresh: boolean | undefined;
+    await handleInspectorLintPlanRequest(
+      { method: "GET", url: `${VIZE_INSPECTOR_LINT_PLAN_ENDPOINT}?file=app.vue&fresh=1`, headers },
+      response,
+      (request) => {
+        fresh = request.fresh;
+        return { files: request.files };
+      },
+      silentLogger,
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body ?? ""), { files: ["app.vue"] });
+    return fresh;
+  };
+
+  assert.equal(await rebuilds({ host, "sec-fetch-site": "same-origin" }), true);
+  assert.equal(await rebuilds({ host, "sec-fetch-site": "none" }), true);
+  assert.equal(await rebuilds({ host, origin: `http://${host}` }), true);
+  // Another port of this machine is the same site, and a bare request names no origin.
+  assert.equal(await rebuilds({ host, "sec-fetch-site": "same-site" }), false);
+  assert.equal(await rebuilds({ host }), false);
+  assert.equal(await rebuilds({}), false);
 });
