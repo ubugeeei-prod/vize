@@ -3,7 +3,7 @@
 
 use crate::template::MAX_ELEMENT_NESTING_DEPTH;
 use crate::{Allocator, FormatOptions, GlyphFormatter, format_sfc};
-use vize_l0::css_nesting::MAX_CSS_NESTING_DEPTH;
+use vize_l1::css::nesting::MAX_CSS_NESTING_DEPTH;
 
 const UNFORMATTED_SCRIPT: &str = "<script setup>\nconst a=1\n</script>\n";
 const FORMATTED_SCRIPT: &str = "<script setup>\nconst a = 1;\n</script>\n";

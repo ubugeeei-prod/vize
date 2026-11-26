@@ -9,7 +9,7 @@
 //! supports: every line is indented once per level.
 
 use vize_l0::String;
-use vize_l0::css_nesting::MAX_CSS_NESTING_DEPTH;
+use vize_l1::css::nesting::MAX_CSS_NESTING_DEPTH;
 
 /// What one line contributes, scanned outside comments and strings.
 #[derive(Clone, Copy, Default)]
