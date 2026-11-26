@@ -7,6 +7,7 @@ import { glob } from "tinyglobby";
 
 import type { VizePluginState } from "./state.ts";
 import { installInspectorLintPlanMiddleware } from "./inspector-lint-plan.ts";
+import { isCrossSiteRequest } from "./inspector-request.ts";
 
 export const VIZE_INSPECTOR_GRAPH_ENDPOINT = "/__vize/inspector/graph";
 
@@ -57,14 +58,52 @@ export function installInspectorGraphMiddleware(
   devServer: ViteDevServer,
   state: Pick<VizePluginState, "ignorePatterns" | "logger" | "root" | "scanPatterns">,
 ): void {
+  // A server that does not watch (`server.watch: null`) has no event to end a graph's life.
+  const watch: unknown = (devServer.config as { server?: { watch?: unknown } }).server?.watch;
+  const graph = createInspectorGraphCache(() => createInspectorGraphPayload(state), watch !== null);
+  devServer.watcher.on("all", () => graph.invalidate());
   devServer.middlewares.use((req, res, next) => {
     if (!isInspectorGraphRequest(req.url)) {
       next();
       return;
     }
 
-    void handleInspectorGraphRequest(req, res, state);
+    void handleInspectorGraphRequest(req, res, state, graph);
   });
+}
+
+export interface InspectorGraphCache {
+  get(): Promise<VizeInspectorGraphPayload>;
+  invalidate(): void;
+}
+
+/**
+ * One graph per filesystem state. A build globs and reads the whole project,
+ * so concurrent requests share the running one and later requests reuse its
+ * graph until `invalidate` reports a change. With `keep` off only the running
+ * build is shared.
+ */
+export function createInspectorGraphCache(
+  build: () => Promise<VizeInspectorGraphPayload>,
+  keep = true,
+): InspectorGraphCache {
+  let current: Promise<VizeInspectorGraphPayload> | undefined;
+  return {
+    get() {
+      if (current) return current;
+      const building = build();
+      current = building;
+      const forget = () => {
+        if (current === building) current = undefined;
+      };
+      // A failed build is asked again by the next request.
+      building.then(keep ? undefined : forget, forget);
+      return building;
+    },
+    invalidate() {
+      current = undefined;
+    },
+  };
 }
 
 export async function createInspectorGraphPayload(
@@ -159,15 +198,20 @@ function statFile(filePath: string): Stats | null {
 async function handleInspectorGraphRequest(
   req: IncomingMessage,
   res: ServerResponse,
-  state: Pick<VizePluginState, "ignorePatterns" | "logger" | "root" | "scanPatterns">,
+  state: Pick<VizePluginState, "logger">,
+  graph: InspectorGraphCache,
 ): Promise<void> {
+  if (isCrossSiteRequest(req)) {
+    sendJson(res, 403, { error: "cross_site_request" });
+    return;
+  }
   if (req.method !== "GET" && req.method !== "HEAD") {
     sendJson(res, 405, { error: "method_not_allowed" });
     return;
   }
 
   try {
-    const payload = await createInspectorGraphPayload(state);
+    const payload = await graph.get();
     sendJson(res, 200, payload, req.method === "HEAD");
   } catch (error) {
     state.logger.error("Failed to build inspector graph:", error);

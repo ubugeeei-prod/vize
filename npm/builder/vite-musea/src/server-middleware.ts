@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import type { ArtFileInfo } from "./types/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
-import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
+import { decodeUrlComponent, HttpError, isLocalRequest, resolveUrlPathInside } from "./security.js";
 import { variantComponentNames } from "./variant-bindings.js";
 import { previewModuleId } from "./preview-module-id.js";
 import {
@@ -62,7 +62,7 @@ async function tryLoadSourceGalleryHtml(
   devServer: ViteDevServer,
   url: string,
   basePath: string,
-  devSessionToken: string,
+  devSessionToken: string | undefined,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
   toolbar?: ResolvedMuseaToolbarControl[],
@@ -90,7 +90,7 @@ async function tryLoadSourceGalleryHtml(
 
 async function generateFallbackGalleryHtml(
   basePath: string,
-  devSessionToken: string,
+  devSessionToken: string | undefined,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
   toolbar?: ResolvedMuseaToolbarControl[],
@@ -142,11 +142,13 @@ export interface MiddlewareContext {
 }
 
 export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareContext): void {
-  const { basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar, artFiles } = ctx;
+  const { basePath, themeConfig, tokenPreviewConfig, toolbar, artFiles } = ctx;
 
   // --- Gallery SPA route ---
   devServer.middlewares.use(basePath, async (req, res, next) => {
     const url = req.url || "/";
+    // Only local pages can write, so other readers get the gallery without the token.
+    const devSessionToken = isLocalRequest(req) ? ctx.devSessionToken : undefined;
 
     if (
       url === "/" ||

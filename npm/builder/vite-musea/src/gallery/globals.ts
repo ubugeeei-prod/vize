@@ -43,7 +43,7 @@ export function generateGalleryGlobalsScript(globals: MuseaGalleryGlobals): stri
 
 export function generateDevGlobalsScript(
   basePath: string,
-  devSessionToken: string,
+  devSessionToken: string | undefined,
   themeConfig?: MuseaGalleryGlobals["themeConfig"],
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
   toolbar?: ResolvedMuseaToolbarControl[],

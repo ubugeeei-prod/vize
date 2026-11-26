@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const el = ref(0)
+</script>
+
+<template>
+  <p>{{ el }} {{ 'ref="el"' }}</p>
+</template>

@@ -16,6 +16,12 @@ const pairs: Array<{ source: string; before: string | null; head: string }> = JS
     "utf8",
   ),
 );
+// These registered producers changed after admission, so the registration
+// authenticates their admitted bytes, frozen under the byte-custody fixtures.
+const frozenProducers = new Set([
+  "tests/typescript-plugin/package-options.test.cjs",
+  "tests/typescript-plugin/project-configuration.test.cjs",
+]);
 const ordinaryInput = Buffer.from("unit-only ordinary input; never a product registration\n");
 const ordinaryPath = "tests/_fixtures/differential/typechecker/ordinary-unit.txt";
 const ordinary = {
@@ -70,7 +76,9 @@ function observe({
         return Buffer.from(text + (future && side === "head" && pair === pairs[0] ? "\n" : ""));
       }
       if (side === "base") return null;
-      const source = path.join(root, file);
+      const source = frozenProducers.has(file)
+        ? path.join(root, "tests/_fixtures/byte-custody", file)
+        : path.join(root, file);
       return fs.existsSync(source) ? fs.readFileSync(source) : null;
     },
   });

@@ -269,3 +269,16 @@ fn reads_every_composition_api_module_eslint_plugin_vue_traces() {
         0,
     );
 }
+
+#[test]
+fn an_undeclared_factory_spelling_is_not_vue() {
+    assert_copies("const count = ref(0)\nconst copy = count.value\n", 0);
+}
+
+#[test]
+fn a_nested_function_shadows_the_imported_factory() {
+    assert_copies(
+        "import { ref } from 'vue'\nfunction calc() {\n  function ref(value) { return { value } }\n  const count = ref(0)\n  const inner = count.value\n}\nconst live = ref(0)\nconst copy = live.value\n",
+        1,
+    );
+}

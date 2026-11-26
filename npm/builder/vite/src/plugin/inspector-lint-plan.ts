@@ -6,6 +6,7 @@ import type {
   VizeInspectorLintPlanProvider,
   VizeInspectorLintPlanRequest,
 } from "../inspector-types.ts";
+import { isCrossSiteRequest, isSameOriginRequest } from "./inspector-request.ts";
 import type { VizePluginState } from "./state.ts";
 
 export const VIZE_INSPECTOR_LINT_PLAN_ENDPOINT = "/__vize/inspector/lint-plan";
@@ -102,12 +103,16 @@ export function parseInspectorLintPlanRequest(
 }
 
 export async function handleInspectorLintPlanRequest(
-  req: Pick<IncomingMessage, "method" | "url">,
+  req: Pick<IncomingMessage, "method" | "url" | "headers">,
   res: InspectorResponse,
   provider: VizeInspectorLintPlanProvider,
   logger: Pick<Console, "error">,
   base = "/",
 ): Promise<void> {
+  if (isCrossSiteRequest(req)) {
+    sendJson(res, 403, { error: "cross_site_request" });
+    return;
+  }
   if (req.method !== "GET" && req.method !== "HEAD") {
     res.setHeader("allow", "GET, HEAD");
     sendJson(res, 405, { error: "method_not_allowed" });
@@ -125,7 +130,9 @@ export async function handleInspectorLintPlanRequest(
   }
 
   try {
-    const payload = await provider(parsed.request);
+    // A rebuild rewrites the generated config, so only the server's own pages ask for one.
+    const fresh = parsed.request.fresh && isSameOriginRequest(req);
+    const payload = await provider({ ...parsed.request, fresh });
     sendJson(res, 200, payload, req.method === "HEAD");
   } catch (error) {
     logger.error("Failed to build inspector lint plan:", error);
