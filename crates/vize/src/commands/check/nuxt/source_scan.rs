@@ -35,6 +35,7 @@ pub(super) fn collect_source_auto_import_stubs(
     type_auto_imports: &mut TypeAutoImports,
 ) {
     let mut imports = FxHashMap::default();
+    let mut type_modules = Vec::new();
     let mut types = Vec::new();
     for (root, stubs_values) in nuxt_auto_import_roots(cwd) {
         let walker = WalkBuilder::new(root)
@@ -57,10 +58,12 @@ pub(super) fn collect_source_auto_import_stubs(
                 collect_source_auto_imports(path, &ret.program.body, &mut imports);
             }
             if let Some(module) = type_module_specifier(path) {
-                collect_source_type_auto_imports(&ret.program.body, module.as_str(), &mut types);
+                collect_source_type_auto_imports(&ret.program.body, type_modules.len(), &mut types);
+                type_modules.push(module);
             }
         }
     }
+    let type_modules = unambiguous_specifiers(type_modules);
 
     let mut imports: Vec<_> = imports.into_iter().collect();
     imports.sort_by(|left, right| left.0.cmp(&right.0));
@@ -80,10 +83,48 @@ pub(super) fn collect_source_auto_import_stubs(
 
     // Sorted so a name that two files export resolves to the same file on
     // every run, whatever order the directory walk yields them in.
+    let mut types = types
+        .into_iter()
+        .filter_map(|(name, module)| Some((name, type_modules.get(module)?.as_str())))
+        .collect::<Vec<_>>();
     types.sort();
     for (name, module) in types {
-        type_auto_imports.reexport(module.as_str(), name.as_str(), name.as_str());
+        type_auto_imports.reexport(module, name.as_str(), name.as_str());
     }
+}
+
+/// One scanned module that can export types.
+struct TypeModule {
+    /// The spelling TypeScript resolves to the file, without a TypeScript
+    /// extension where one is not needed.
+    specifier: String,
+    /// The file's own path, extension included.
+    file: String,
+}
+
+/// The specifier each module is re-exported from. Files that share a
+/// specifier (`model.ts` and `model.tsx`) would all resolve to whichever one
+/// TypeScript tries first, so each of those is named by its own path.
+fn unambiguous_specifiers(modules: Vec<TypeModule>) -> Vec<String> {
+    let mut counts = FxHashMap::<&str, usize>::default();
+    for module in &modules {
+        *counts.entry(module.specifier.as_str()).or_default() += 1;
+    }
+    let shared = counts
+        .into_iter()
+        .filter(|(_, count)| *count > 1)
+        .map(|(specifier, _)| specifier.to_compact_string())
+        .collect::<FxHashSet<_>>();
+    modules
+        .into_iter()
+        .map(|module| {
+            if shared.contains(&module.specifier) {
+                module.file
+            } else {
+                module.specifier
+            }
+        })
+        .collect()
 }
 
 /// The directories Nuxt scans for auto-imports, and whether this fallback
@@ -126,9 +167,9 @@ fn is_script_source(path: &Path) -> bool {
 /// extensionless path resolves to `.ts`, `.tsx` and `.d.ts`; the
 /// format-specific extensions are imported by their JavaScript spelling.
 /// A JavaScript module exports no types, so it has no specifier here.
-fn type_module_specifier(path: &Path) -> Option<String> {
+fn type_module_specifier(path: &Path) -> Option<TypeModule> {
     let path = path.to_str()?;
-    [
+    let specifier = [
         (".d.ts", ""),
         (".d.mts", ".mjs"),
         (".d.cts", ".cjs"),
@@ -141,17 +182,21 @@ fn type_module_specifier(path: &Path) -> Option<String> {
     .find_map(|(suffix, replacement)| {
         let stem = path.strip_suffix(suffix)?;
         Some(cstr!("{stem}{replacement}").replace('\\', "/").into())
+    })?;
+    Some(TypeModule {
+        specifier,
+        file: path.replace('\\', "/").into(),
     })
 }
 
 fn collect_source_type_auto_imports(
     statements: &[Statement<'_>],
-    module: &str,
-    types: &mut Vec<(String, String)>,
+    module: usize,
+    types: &mut Vec<(String, usize)>,
 ) {
     let mut push = |name: &str| {
         if is_ts_identifier(name) {
-            types.push((name.to_compact_string(), module.to_compact_string()));
+            types.push((name.to_compact_string(), module));
         }
     };
     for statement in statements {

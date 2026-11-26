@@ -187,25 +187,58 @@ impl VirtualProject {
             return None;
         }
         let relative = path.strip_prefix(&self.project_root).ok()?;
-        const EXTENSIONS: [&str; 6] = ["", ".ts", ".tsx", ".mts", "/index.ts", "/index.tsx"];
-        let mirrored = EXTENSIONS.iter().any(|extension| {
-            let mut candidate = path.as_os_str().to_os_string();
-            candidate.push(extension);
-            let candidate = std::path::PathBuf::from(candidate);
-            let mut virtual_candidate = self.virtual_root.join(relative).into_os_string();
-            virtual_candidate.push(extension);
-            candidate.is_file()
-                && self
-                    .original_index
-                    .get(&candidate)
-                    .is_some_and(|virtual_path| virtual_path.as_os_str() == virtual_candidate)
-        });
+        let mirrored = mirror_candidates(specifier)
+            .into_iter()
+            .any(|(stem, extension)| self.mirrors_at_same_path(stem, extension));
         mirrored.then(|| {
             let mut rendered = CompactString::from("./");
             rendered.push_str(&relative.to_string_lossy().replace('\\', "/"));
             rendered
         })
     }
+
+    /// Whether the project file `{stem}{extension}` exists and is mirrored
+    /// at the same path under the virtual root.
+    fn mirrors_at_same_path(&self, stem: &str, extension: &str) -> bool {
+        let Ok(relative) = std::path::Path::new(stem).strip_prefix(&self.project_root) else {
+            return false;
+        };
+        let mut candidate = std::ffi::OsString::from(stem);
+        candidate.push(extension);
+        let candidate = std::path::PathBuf::from(candidate);
+        let mut virtual_candidate = self.virtual_root.join(relative).into_os_string();
+        virtual_candidate.push(extension);
+        candidate.is_file()
+            && self
+                .original_index
+                .get(&candidate)
+                .is_some_and(|virtual_path| virtual_path.as_os_str() == virtual_candidate)
+    }
+}
+
+/// The files a specifier can name, as `(stem, extension)`: the path itself,
+/// and the TypeScript files TypeScript resolves it to. A `.mjs` or `.cjs`
+/// specifier is how a `.mts` or `.cts` module, or its declaration, is
+/// imported; an extensionless one also names a `.d.ts`.
+fn mirror_candidates(specifier: &str) -> Vec<(&str, &'static str)> {
+    if let Some(stem) = specifier.strip_suffix(".mjs") {
+        return vec![(specifier, ""), (stem, ".mts"), (stem, ".d.mts")];
+    }
+    if let Some(stem) = specifier.strip_suffix(".cjs") {
+        return vec![(specifier, ""), (stem, ".cts"), (stem, ".d.cts")];
+    }
+    [
+        "",
+        ".ts",
+        ".tsx",
+        ".mts",
+        ".d.ts",
+        "/index.ts",
+        "/index.tsx",
+    ]
+    .into_iter()
+    .map(|extension| (specifier, extension))
+    .collect()
 }
 
 /// The byte range of the next quoted module specifier at or after `from`:

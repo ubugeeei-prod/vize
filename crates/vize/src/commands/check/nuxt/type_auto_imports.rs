@@ -48,6 +48,15 @@ impl TypeAutoImports {
         if !self.claim(exported) {
             return;
         }
+        // A Windows path resolved against the generated directory keeps its
+        // separators as `/`, which TypeScript reads the same way and which
+        // the virtual project's mirror lookup still matches. Elsewhere a
+        // backslash is part of a file name and is escaped when rendered.
+        let specifier = if std::path::MAIN_SEPARATOR == '\\' {
+            specifier.replace('\\', "/").to_compact_string()
+        } else {
+            specifier.to_compact_string()
+        };
         let export = if local == exported {
             exported.to_compact_string()
         } else {
@@ -56,12 +65,10 @@ impl TypeAutoImports {
         match self
             .modules
             .iter_mut()
-            .find(|(module, _)| module.as_str() == specifier)
+            .find(|(module, _)| *module == specifier)
         {
             Some((_, exports)) => exports.push(export),
-            None => self
-                .modules
-                .push((specifier.to_compact_string(), vec![export])),
+            None => self.modules.push((specifier, vec![export])),
         }
     }
 
@@ -74,6 +81,7 @@ impl TypeAutoImports {
         let mut body = String::from("declare global {\n");
         for (specifier, exports) in &self.modules {
             let quote = if specifier.contains('\'') { '"' } else { '\'' };
+            let literal = string_literal_body(specifier);
             body.push_str("  export type { ");
             for (index, export) in exports.iter().enumerate() {
                 if index > 0 {
@@ -81,12 +89,34 @@ impl TypeAutoImports {
                 }
                 body.push_str(export.as_str());
             }
-            body.push_str(cstr!(" }} from {quote}{specifier}{quote}\n").as_str());
-            body.push_str(cstr!("  import({quote}{specifier}{quote})\n").as_str());
+            body.push_str(cstr!(" }} from {quote}{literal}{quote}\n").as_str());
+            body.push_str(cstr!("  import({quote}{literal}{quote})\n").as_str());
         }
         body.push_str("}\n");
         Some(render_module_augmentation_stub(body.as_str()))
     }
+}
+
+/// `specifier` spelled as the inside of a string literal. The parsed
+/// declaration hands over the decoded value, so a Windows path's backslashes
+/// would otherwise start escape sequences, and `\u` is not even a valid one.
+/// Both quote characters stay as they are: the caller picks the delimiter the
+/// specifier does not hold.
+fn string_literal_body(specifier: &str) -> String {
+    let mut literal = String::with_capacity(specifier.len());
+    for ch in specifier.chars() {
+        match ch {
+            '\\' => literal.push_str("\\\\"),
+            '\n' => literal.push_str("\\n"),
+            '\r' => literal.push_str("\\r"),
+            '\t' => literal.push_str("\\t"),
+            ch if ch.is_control() => {
+                literal.push_str(cstr!("\\u{:04x}", u32::from(ch)).as_str());
+            }
+            ch => literal.push(ch),
+        }
+    }
+    literal
 }
 
 #[cfg(test)]
@@ -159,6 +189,35 @@ mod tests {
                  export type { A } from \"/it's/types\"\n  \
                  import(\"/it's/types\")\n\
                  }\n"
+            )
+        );
+    }
+
+    #[test]
+    fn backslashes_and_control_characters_are_escaped() {
+        let mut types = TypeAutoImports::default();
+        types.reexport("C:\\repo\\types\\user", "User", "User");
+        types.reexport("/odd\tname\u{1b}/it's", "Odd", "Odd");
+        // A Windows separator becomes `/`; elsewhere it is a file name byte.
+        let user = if std::path::MAIN_SEPARATOR == '\\' {
+            "C:/repo/types/user"
+        } else {
+            "C:\\\\repo\\\\types\\\\user"
+        };
+
+        assert_eq!(
+            types.render_stub().as_deref(),
+            Some(
+                vize_l0::cstr!(
+                    "// @vize-module-augmentation\n\
+                     declare global {{\n  \
+                     export type {{ User }} from '{user}'\n  \
+                     import('{user}')\n  \
+                     export type {{ Odd }} from \"/odd\\tname\\u001b/it's\"\n  \
+                     import(\"/odd\\tname\\u001b/it's\")\n\
+                     }}\n"
+                )
+                .as_str()
             )
         );
     }

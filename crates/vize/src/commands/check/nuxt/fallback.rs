@@ -25,22 +25,27 @@ use super::stubs::{
 use super::type_auto_imports::TypeAutoImports;
 use fallback_values::fallback_value_stubs;
 
+/// The fallback type aliases whose names no other stub has claimed, claiming
+/// them in turn.
+///
+/// The caller runs this after the source scan, so a type the project exports
+/// itself (its own `Component`) keeps its declaration. Generated re-exports
+/// retain their existing precedence over fallback aliases.
+pub(super) fn claim_fallback_type_alias_stubs(
+    type_auto_imports: &mut TypeAutoImports,
+) -> Vec<String> {
+    fallback_type_alias_stubs()
+        .into_iter()
+        .filter(|stub| declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name)))
+        .collect()
+}
+
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
-    type_auto_imports: &mut TypeAutoImports,
     has_generated_imports: bool,
 ) {
     let mut fallback_names = FxHashSet::default();
-    // A type the generated manifest re-exports keeps that one declaration. The
-    // re-export carries the real type parameters (`Ref<T, S>`), which these
-    // aliases only approximate, and a second global of the same name is a
-    // duplicate identifier.
-    stubs.extend(
-        fallback_type_alias_stubs().into_iter().filter(|stub| {
-            declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name))
-        }),
-    );
     push_stub(
         stubs,
         seen_names,

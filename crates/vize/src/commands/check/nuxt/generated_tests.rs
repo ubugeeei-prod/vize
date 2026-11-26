@@ -354,8 +354,8 @@ declare global {
 
 /// Without generated types the fallback scans the directories Nuxt would.
 /// A type found there is re-exported from its module, generics included,
-/// instead of collapsing to `any`; a name the fallback aliases already declare
-/// keeps that alias.
+/// instead of collapsing to `any`. A type the project exports itself keeps
+/// its declaration over the fallback alias of the same name.
 #[test]
 fn reexports_scanned_source_types_without_a_generated_manifest() {
     let project_root = unique_case_dir("type-reexports-source-scan");
@@ -371,7 +371,7 @@ fn reexports_scanned_source_types_without_a_generated_manifest() {
     .unwrap();
     std::fs::write(
         project_root.join("app/types/box.ts"),
-        "export interface Box<T> { value: T }\ntype Hidden = string;\nexport { type Hidden as Shown };\nexport type Ref = never;\n",
+        "export interface Box<T> { value: T }\ntype Hidden = string;\nexport { type Hidden as Shown };\nexport type Ref = never;\nexport interface Component { custom: string }\n",
     )
     .unwrap();
     std::fs::write(
@@ -388,7 +388,6 @@ fn reexports_scanned_source_types_without_a_generated_manifest() {
         type_stubs(&options),
         vec![
             "type Composer = any;",
-            "type Ref<T = any> = import('vue').Ref<T>;",
             "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
             "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
             "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
@@ -396,16 +395,61 @@ fn reexports_scanned_source_types_without_a_generated_manifest() {
             "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
             "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
             "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
-            "type Component = import('vue').Component;",
             format!(
                 "// @vize-module-augmentation\n\
                  declare global {{\n  \
-                 export type {{ Box, Shown }} from '{root}/app/types/box'\n  \
+                 export type {{ Box, Component, Ref, Shown }} from '{root}/app/types/box'\n  \
                  import('{root}/app/types/box')\n  \
                  export type {{ ColorName }} from '{root}/app/composables/states'\n  \
                  import('{root}/app/composables/states')\n  \
                  export type {{ SharedUser }} from '{root}/shared/types/user'\n  \
                  import('{root}/shared/types/user')\n\
+                 }}\n"
+            )
+            .as_str(),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+/// Files that share a stem would share the extensionless specifier, which
+/// resolves to `model.ts` for both; each is named by its own path instead,
+/// while a stem only one file has keeps the extensionless form.
+#[test]
+fn scanned_files_sharing_a_stem_are_named_by_their_own_paths() {
+    let project_root = unique_case_dir("type-reexports-shared-stem");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("app/types")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    for (file, source) in [
+        ("model.ts", "export type ModelA = string;\n"),
+        ("model.tsx", "export type ModelB = number;\n"),
+        ("user.ts", "export type User = { id: number };\n"),
+    ] {
+        std::fs::write(project_root.join("app/types").join(file), source).unwrap();
+    }
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let root = project_root.to_string_lossy().replace('\\', "/");
+
+    let reexports = type_stubs(&options)
+        .into_iter()
+        .filter(|stub| stub.starts_with("// @vize-module-augmentation"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        reexports,
+        vec![
+            format!(
+                "// @vize-module-augmentation\n\
+                 declare global {{\n  \
+                 export type {{ ModelA }} from '{root}/app/types/model.ts'\n  \
+                 import('{root}/app/types/model.ts')\n  \
+                 export type {{ ModelB }} from '{root}/app/types/model.tsx'\n  \
+                 import('{root}/app/types/model.tsx')\n  \
+                 export type {{ User }} from '{root}/app/types/user'\n  \
+                 import('{root}/app/types/user')\n\
                  }}\n"
             )
             .as_str(),
