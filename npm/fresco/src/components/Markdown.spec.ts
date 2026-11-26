@@ -91,3 +91,64 @@ test("renders styled inline spans through the canonical SFC", () => {
   assert.equal(textNodes[6]?.props.fg, "yellow");
   mounted.unmount();
 });
+
+function inlineSpans(source: string) {
+  const lines = renderMarkdown(source, { linkFg: "blue" });
+  assert.equal(lines.length, 1);
+  return lines[0]?.spans;
+}
+
+test("renders inline links with and without a title", () => {
+  const label = (text: string) => ({ text, fg: "blue", underline: true });
+  const target = (url: string) => ({ text: ` (${url})`, dim: true });
+
+  assert.deepEqual(inlineSpans("[guide](https://example.test/a?b=1#c)"), [
+    label("guide"),
+    target("https://example.test/a?b=1#c"),
+  ]);
+  assert.deepEqual(inlineSpans('See [the guide](/docs  "Read me") now'), [
+    { text: "See " },
+    label("the guide"),
+    target("/docs"),
+    { text: " now" },
+  ]);
+  assert.deepEqual(inlineSpans("[a](b)[c](d)"), [label("a"), target("b"), label("c"), target("d")]);
+  assert.deepEqual(inlineSpans("[[nested](url)"), [label("[nested"), target("url")]);
+  assert.deepEqual(inlineSpans("[label](one(two)"), [label("label"), target("one(two")]);
+  assert.deepEqual(inlineSpans('[label](url"quoted")'), [label("label"), target('url"quoted"')]);
+  assert.deepEqual(inlineSpans('[label](url\u00a0\t"title")'), [label("label"), target("url")]);
+});
+
+test("leaves bracketed text that is not a link as plain text", () => {
+  for (const source of [
+    "[]",
+    "[](url)",
+    "[label]",
+    "[label] (url)",
+    "[label]()",
+    "[label]( url)",
+    "[label](url",
+    "[label](url title)",
+    '[label](url "title)',
+    '[label](url "title" )',
+    '[label](url "a" "b")',
+  ]) {
+    assert.deepEqual(inlineSpans(source), [{ text: source }], source);
+  }
+});
+
+test("long runs of unmatched link syntax are scanned once", () => {
+  for (const source of [
+    "[".repeat(40_000),
+    `${"[".repeat(40_000)}]`,
+    "[a](".repeat(10_000),
+    `${"[a](".repeat(10_000)} )`,
+    `${"[a](".repeat(10_000)}x${" ".repeat(20_000)}y`,
+  ]) {
+    const started = performance.now();
+    const spans = inlineSpans(source);
+    const elapsed = performance.now() - started;
+    assert.deepEqual(spans, [{ text: source }]);
+    assert.ok(elapsed < 1_000, `${source.slice(0, 8)}… took ${Math.round(elapsed)}ms`);
+  }
+});

@@ -36,6 +36,12 @@ import { getLastRenderLayouts, updateLastRenderLayouts } from "./layoutMetrics.j
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import { routeAndPublishMouseInput as routeMouseEvent } from "./mouseRouting.js";
 import { normalizeInputEvent } from "./nativeInput.js";
+import {
+  appendOutput,
+  captureStaticOutput,
+  normalizeOutput,
+  renderPlainOutput,
+} from "./plain-output.js";
 import type {
   CompositionEvent,
   FocusEvent,
@@ -51,7 +57,7 @@ import {
   type FrescoNode,
 } from "./renderer.js";
 import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
-import { isStaticItemNode, isStaticNode } from "./staticNodes.js";
+import { isStaticNode } from "./staticNodes.js";
 import { detectInteractiveMode, initializeTerminal } from "./terminalLifecycle.js";
 
 export type {
@@ -244,76 +250,6 @@ function createRootElement(width = "100%", height = "100%"): FrescoElement {
   };
 }
 
-function nodeText(node: FrescoNode): string {
-  if (node.text !== undefined) return node.text;
-  const propText = node.props.text ?? node.props.content;
-  if (typeof propText === "string" || typeof propText === "number") return String(propText);
-  if (node.type === "input") {
-    const value = node.props.value;
-    const placeholder = node.props.placeholder;
-    if (typeof value === "string" || typeof value === "number") return String(value);
-    if (typeof placeholder === "string" || typeof placeholder === "number")
-      return String(placeholder);
-  }
-  return "";
-}
-
-function joinOutput(parts: string[], separator = "\n"): string {
-  return parts.filter(Boolean).join(separator);
-}
-
-function treeToString(node: FrescoNode, options: { skipStatic?: boolean } = {}): string {
-  if (options.skipStatic && isStaticNode(node)) return "";
-
-  const ownText = nodeText(node);
-  const childOutput = node.children.map((child) => treeToString(child, options));
-
-  if (node.type === "text" || node.type === "input") {
-    return `${ownText}${childOutput.join("")}`;
-  }
-
-  const style = (node.props.style ?? {}) as Record<string, unknown>;
-  const flexDirection = style.flexDirection ?? style.flex_direction;
-  const separator = flexDirection === "column" ? "\n" : "";
-  return joinOutput(childOutput, separator);
-}
-
-function normalizeOutput(output: string): string {
-  return output.endsWith("\n") ? output.slice(0, -1) : output;
-}
-
-function appendOutput(previous: string, next: string): string {
-  const normalized = normalizeOutput(next);
-  if (!normalized) return previous;
-  return previous ? `${previous}\n${normalized}` : normalized;
-}
-
-function captureStaticOutput(node: FrescoNode, renderedStaticItems: Map<number, number>): string {
-  const output: string[] = [];
-
-  function visit(current: FrescoNode) {
-    if (isStaticNode(current)) {
-      const renderedItems = renderedStaticItems.get(current.id) ?? 0;
-      const staticItems = current.children.filter(isStaticItemNode);
-      const nextItems = staticItems.slice(renderedItems);
-      const nextOutput = joinOutput(
-        nextItems.map((child) => treeToString(child)),
-        "\n",
-      );
-      if (nextOutput) output.push(nextOutput);
-      renderedStaticItems.set(current.id, staticItems.length);
-      return;
-    }
-
-    for (const child of current.children) {
-      visit(child);
-    }
-  }
-
-  visit(node);
-  return joinOutput(output, "\n");
-}
-
 function createStaticOutputNode(output: string): FrescoElement | null {
   const normalized = normalizeOutput(output);
   if (!normalized) return null;
@@ -375,10 +311,6 @@ function createRenderTree(root: FrescoElement, staticOutput: string): FrescoElem
   }
 
   return dynamicRoot;
-}
-
-function renderPlainOutput(root: FrescoNode, staticOutput: string): string {
-  return joinOutput([staticOutput, treeToString(root, { skipStatic: true })], "\n");
 }
 
 function updateAppSize(context: UseAppReturn | null, width: number, height: number) {
