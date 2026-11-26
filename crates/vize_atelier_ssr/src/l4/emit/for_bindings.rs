@@ -1,5 +1,6 @@
 //! Source-owned binder facts shared with the native expression transformer.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::steps::erase_typescript_params;
 use vize_l0::{FxHashSet, String, id::NodeId};
 use vize_l2::op::ForOp;
@@ -10,7 +11,7 @@ use vize_l4::targets::dom::artifact::{
 use super::{Emitter, Result};
 use crate::codegen::helpers::extract_destructure_params;
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     pub(super) fn enter_for_bindings(
         &mut self,
         for_op: &ForOp<'_>,
@@ -52,7 +53,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     }
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// Alias patterns as emitted inside their own scope: defaults and computed
     /// keys read the component context, the pattern's names stay local.
     pub(super) fn for_alias_texts(

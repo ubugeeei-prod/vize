@@ -1,5 +1,6 @@
 //! Conditional and loop VNode expressions in SSR slot fallback branches.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::super::helpers::{branch_fragment, collect_for_scoped_params, loop_children};
 use super::props::quoted_js_string;
 use super::vnode::has_vnode_array_child;
@@ -9,7 +10,7 @@ use super::{
 };
 use vize_atelier_core::ForNode;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     pub(super) fn vnode_if_expression(
         &mut self,
         if_node: &vize_atelier_core::IfNode<'a>,
@@ -175,8 +176,8 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn single_for_child_key_expression(
-    ctx: &mut SsrCodegenContext<'_>,
+fn single_for_child_key_expression<M: RenderMapMode>(
+    ctx: &mut SsrCodegenContext<'_, M>,
     for_node: &ForNode,
 ) -> Option<String> {
     let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
@@ -188,7 +189,7 @@ fn single_for_child_key_expression(
         .find_map(|prop| key_prop_expression(ctx, prop))
 }
 
-fn key_prop_expression(ctx: &mut SsrCodegenContext<'_>, prop: &PropNode) -> Option<String> {
+fn key_prop_expression<M: RenderMapMode>(ctx: &mut SsrCodegenContext<'_, M>, prop: &PropNode) -> Option<String> {
     match prop {
         PropNode::Attribute(attr) if attr.name == "key" => Some(
             attr.value

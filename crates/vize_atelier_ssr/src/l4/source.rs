@@ -1,5 +1,6 @@
 //! The SSR source bridge through the native level artifacts.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
 
 use super::{
@@ -32,7 +33,7 @@ fn unprojectable_tables(request: &SsrL4Request<'_>) -> bool {
 
 /// Lower `source` through L1->L2->L3, build the SSR string plan from the
 /// shared partition facts, and emit from it when the surface is admitted.
-pub(crate) fn select_ssr_lane(
+pub(crate) fn select_ssr_lane<M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -45,7 +46,7 @@ pub(crate) fn select_ssr_lane(
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit_plain(allocator, source, request)
+            lower_and_emit_plain::<M>(allocator, source, request)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -54,7 +55,7 @@ pub(crate) fn select_ssr_lane(
     selection
 }
 
-fn lower_and_emit_plain(
+fn lower_and_emit_plain<M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -106,7 +107,7 @@ fn lower_and_emit_plain(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2_plain(
+    select::select_from_l2_plain::<M>(
         allocator,
         &artifact,
         request.options,
@@ -153,7 +154,7 @@ fn lower_and_emit_plain(
 /// `v-model` passes and malformed slot props, which the legacy transform
 /// reports. A decline is not this compile's lane, so only an emitted
 /// selection is recorded. The shared lane above is left exactly as it was.
-pub(crate) fn select_ssr_lane_direct(
+pub(crate) fn select_ssr_lane_direct<M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -163,7 +164,7 @@ pub(crate) fn select_ssr_lane_direct(
     }
     let selection = profile!(
         "atelier.ssr.template.s4_direct",
-        lower_and_emit_direct(allocator, source, request)
+        lower_and_emit_direct::<M>(allocator, source, request)
     );
     if matches!(selection, SsrL4Selection::Emitted(_)) {
         record_selection(&selection);
@@ -171,7 +172,7 @@ pub(crate) fn select_ssr_lane_direct(
     selection
 }
 
-fn lower_and_emit_direct(
+fn lower_and_emit_direct<M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -217,7 +218,7 @@ fn lower_and_emit_direct(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    let selection = select::select_from_l2_plain(
+    let selection = select::select_from_l2_plain::<M>(
         allocator,
         &artifact,
         request.options,
@@ -285,7 +286,7 @@ fn slot_and_model_passes_are_silent(s2: &mut vize_l1_to_l2::Lowered<'_>, is_ts: 
     s2.diagnostics.is_empty()
 }
 
-pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
+pub(crate) fn select_ssr_lane_captured<C: CaptureSink, M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -299,7 +300,7 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit(allocator, source, request, capture)
+            lower_and_emit::<C, M>(allocator, source, request, capture)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -308,7 +309,7 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
     selection
 }
 
-fn lower_and_emit<C: CaptureSink>(
+fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -372,7 +373,7 @@ fn lower_and_emit<C: CaptureSink>(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2(
+    select::select_from_l2::<C, M>(
         allocator,
         &artifact,
         request.options,

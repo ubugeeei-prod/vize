@@ -1,11 +1,12 @@
 //! SSR root and fallthrough child-list emission.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::SsrCodegenContext;
 use super::css_vars::RootCssVars;
 use super::helpers::single_fallthrough_child_index;
 use vize_atelier_core::TemplateChildNode;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process root-level children and inherit `_attrs` into a single renderable
     /// root, matching Vue's fallthrough attrs behavior for SSR.
     pub(crate) fn process_root_children(

@@ -5,6 +5,7 @@ mod destructure;
 mod escape;
 mod match_scope;
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, RuntimeHelper, TemplateChildNode,
     TextNode,
@@ -15,7 +16,7 @@ pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_para
 pub(crate) use escape::{escape_html, escape_html_attr};
 use vize_l0::{String, ToCompactString};
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process a list of children nodes
     pub(crate) fn process_children(
         &mut self,
@@ -255,11 +256,19 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    /// Push a `v-for` alias. Its node has no location, so with a map
-    /// requested an alias written unchanged maps to the slice of the template
-    /// it was parsed from. It makes the one recording check
-    /// [`Self::push_expression`] makes and nothing else without a map.
+    /// Push a `v-for` alias, as [`Self::push_expression`] does. Its node has
+    /// no location, so a composed map anchors an alias written unchanged at
+    /// the slice of the template it was parsed from.
+    #[inline(always)]
     fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+        if M::COMPOSED {
+            self.push_composed_for_alias(alias);
+        } else {
+            self.push_expression(alias);
+        }
+    }
+
+    fn push_composed_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
         match alias {
             vize_atelier_core::ExpressionNode::Simple(simple) => {
                 let content = self.strip_ctx_for_scoped_params(simple.content);

@@ -2,6 +2,7 @@
 //! and the directive reference `resolveSetupReference` / `_resolveDirective`
 //! pick (`@vue/compiler-ssr` 3.5's `buildDirectiveArgs`).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::quoted_js_string;
 use super::{
     DirectiveNode, ExpressionNode, RuntimeHelper, SsrCodegenContext, String, ToCompactString, cstr,
@@ -9,7 +10,7 @@ use super::{
 use vize_atelier_core::BindingType;
 use vize_l0::{camelize, capitalize};
 
-impl SsrCodegenContext<'_> {
+impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])` with
     /// `buildDirectiveArgs`' `void 0` padding.
     pub(super) fn directive_props(&mut self, dir: &DirectiveNode) -> String {

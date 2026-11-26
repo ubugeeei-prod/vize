@@ -1,6 +1,7 @@
 //! Region navigation over the flat plan: open/close pairing, direct child
 //! ranges, and the legacy child-list shape of a region.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::{Emitter, Result, text};
 use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
@@ -59,7 +60,7 @@ impl RegionShape {
     }
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// Describe the child list starting at `from`, up to its closing segment.
     pub(super) fn scan_region(&self, from: usize) -> Result<RegionShape> {
         let mut shape = RegionShape {

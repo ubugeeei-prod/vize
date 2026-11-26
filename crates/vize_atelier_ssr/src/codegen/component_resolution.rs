@@ -1,9 +1,10 @@
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 use super::SsrCodegenContext;
 
-impl SsrCodegenContext<'_> {
+impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
         let Some(component_name) = self.component_name.as_deref() else {
             return false;

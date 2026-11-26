@@ -13,6 +13,7 @@ mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
 
+use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
@@ -77,7 +78,7 @@ impl SsrSfcContext {
 }
 
 /// SSR codegen context
-pub struct SsrCodegenContext<'a> {
+pub struct SsrCodegenContext<'a, M: RenderMapMode = PlainRenderMap> {
     pub(crate) allocator: &'a Allocator,
     pub(crate) options: &'a SsrCompilerOptions,
     /// Current component name for opt-in experimental self references.
@@ -120,6 +121,8 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) temps: u32,
     /// Where the render body starts, so temp declarations land there.
     body_start: usize,
+    /// The render map this walker records (see [`RenderMapMode`]).
+    render_map: core::marker::PhantomData<M>,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -133,6 +136,19 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     pub fn new_with_experimental_options(
+        allocator: &'a Allocator,
+        options: &'a SsrCompilerOptions,
+        source: &'a str,
+        experimental_options: SsrCompilerExperimentalOptions,
+    ) -> Self {
+        Self::with_render_map(allocator, options, source, experimental_options)
+    }
+}
+
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+    /// [`SsrCodegenContext::new_with_experimental_options`] for the render
+    /// map mode `M`.
+    pub(crate) fn with_render_map(
         allocator: &'a Allocator,
         options: &'a SsrCompilerOptions,
         source: &'a str,
@@ -166,6 +182,7 @@ impl<'a> SsrCodegenContext<'a> {
             source_map_filename,
             temps: 0,
             body_start: 0,
+            render_map: core::marker::PhantomData,
         }
     }
 
@@ -249,8 +266,13 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            self.out
-                .source_map(self.source_map_filename.as_str(), self.source)
+            if M::COMPOSED {
+                self.out
+                    .composed_source_map(self.source_map_filename.as_str(), self.source)
+            } else {
+                self.out
+                    .source_map(self.source_map_filename.as_str(), self.source)
+            }
         });
         let code = self.out.into_string();
 

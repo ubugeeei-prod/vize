@@ -1,6 +1,7 @@
 //! The L2 -> L3 -> string plan -> emission half of the SSR L4 lane, shared by
 //! the template compile path and callers that build L2 themselves (JSX).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, cstr};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
@@ -32,7 +33,7 @@ pub(super) struct L2Artifact<'s, 'a> {
     clippy::too_many_arguments,
     reason = "L2 analysis, independent SFC runtime metadata and capture"
 )]
-pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
+pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
@@ -97,7 +98,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         Ok(exprs) => exprs,
         Err(reason) => return SsrL4Selection::Legacy(reason),
     };
-    let mut ctx = SsrCodegenContext::new_with_experimental_options(
+    let mut ctx = SsrCodegenContext::<M>::with_render_map(
         allocator,
         options,
         artifact.source,
@@ -116,7 +117,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
 }
 
 /// Preserve the ordinary no-sink L2 to L4 ABI. Opt-in capture uses the sibling above.
-pub(super) fn select_from_l2_plain<'a, 'e>(
+pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
@@ -171,7 +172,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         Ok(exprs) => exprs,
         Err(reason) => return SsrL4Selection::Legacy(reason),
     };
-    let mut ctx = SsrCodegenContext::new_with_experimental_options(
+    let mut ctx = SsrCodegenContext::<M>::with_render_map(
         allocator,
         options,
         artifact.source,

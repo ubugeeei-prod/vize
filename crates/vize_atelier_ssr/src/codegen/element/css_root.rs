@@ -1,5 +1,6 @@
 //! Suspense root-child emission, shared with ordinary SSR roots.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::super::css_vars::RootCssVars;
 use super::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext};
 use vize_atelier_core::TemplateChildNode;
@@ -19,7 +20,7 @@ fn template_slot<'n, 'a>(
     })
 }
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process Vue's built-in <Suspense> component.
     ///
     /// The SSR renderer has a dedicated helper for Suspense. Rendering it through

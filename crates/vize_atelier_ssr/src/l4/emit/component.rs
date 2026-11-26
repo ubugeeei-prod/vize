@@ -2,7 +2,9 @@
 //! `ssrRenderTeleport`, `ssrRenderSuspense`, and the transparent
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -142,7 +144,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
     Ok(())
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     pub(super) fn component(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
@@ -209,25 +211,22 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
-        // The callee maps to the authored tag, as the AST walker's does. Each
-        // arm makes the one recording check a spanned push of the callee
-        // makes: a setup binding is anchored as it is written, and a resolved
-        // name carries its own anchor.
-        match binding {
-            Some(binding) => {
-                self.ctx.push_indent();
-                self.ctx.push("_push(_ssrRenderComponent(");
-                self.ctx.push_mapped(&binding, component.span.start + 1);
+        // The resolved name maps to the authored tag, as the AST walker's does.
+        let callee = match binding {
+            // A composed map anchors a setup binding read at the authored tag.
+            Some(binding) if M::COMPOSED => {
+                let mut callee = EmitDocument::default();
+                callee.push_mapped(&binding, component.span.start + 1);
+                callee
             }
-            None => {
-                let callee = self
-                    .ctx
-                    .component_callee(name, Some(component.span.start + 1));
-                self.ctx.push_indent();
-                self.ctx.push("_push(_ssrRenderComponent(");
-                self.ctx.push_spanned(&callee);
-            }
-        }
+            Some(binding) => EmitDocument::from(binding),
+            None => self
+                .ctx
+                .component_callee(name, Some(component.span.start + 1)),
+        };
+        self.ctx.push_indent();
+        self.ctx.push("_push(_ssrRenderComponent(");
+        self.ctx.push_spanned(&callee);
         self.ctx.push(", ");
         self.ctx.push(&props);
         self.ctx.push(", ");

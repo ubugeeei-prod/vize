@@ -1,5 +1,6 @@
 //! SSR compile lane and its optional native stage observation.
 
+use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
     Parser, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
@@ -21,7 +22,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
     context: SsrSfcContext,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_captured_with_runtime(
+    compile_ssr_inner_captured_with_runtime::<C, PlainRenderMap>(
         allocator,
         source,
         options,
@@ -38,7 +39,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
     clippy::too_many_arguments,
     reason = "SFC metadata, generated runtime and capture"
 )]
-pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink>(
+pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -53,7 +54,7 @@ pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink>(
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
     let lane = SsrLane::Selected;
-    compile_ssr_on_lane_captured(
+    compile_ssr_on_lane_captured::<C, M>(
         allocator,
         source,
         options,
@@ -71,7 +72,7 @@ pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink>(
     clippy::too_many_arguments,
     reason = "SFC metadata, lane and opt-in capture"
 )]
-fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
+fn compile_ssr_on_lane_captured<'a, C: CaptureSink, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -132,7 +133,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     }
 
     let selection = match lane {
-        SsrLane::Selected => l4::select_ssr_lane_captured(
+        SsrLane::Selected => l4::select_ssr_lane_captured::<C, M>(
             allocator,
             source,
             &SsrL4Request {
@@ -213,7 +214,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 SsrL4Selection::Legacy(_) => {}
                 SsrL4Selection::Emitted(_) => {}
             }
-            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            let mut codegen_ctx = SsrCodegenContext::<M>::with_render_map(
                 allocator,
                 &codegen_options,
                 source,

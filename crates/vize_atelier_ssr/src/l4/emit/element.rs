@@ -2,6 +2,7 @@
 //! directives own (`v-html`, `v-text`, `<textarea v-model>`,
 //! `<select v-model>`), and the end tag.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::cstr;
 use vize_l2::op as l2;
@@ -33,7 +34,7 @@ enum Content<'r, 'a> {
     SelectModel(&'r l2::ModelOp<'a>),
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     pub(super) fn element(
         &mut self,
         open: SsrStringSegment<'r, 'a>,

@@ -5,12 +5,13 @@
 //! the content itself has several roots, so the server output lines up node
 //! for node with the client's scope expression and hydrates without mismatch.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{ForNode, TemplateChildNode};
 
 use super::{collect_for_scoped_params, rendered_child_count};
 use crate::codegen::SsrCodegenContext;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     pub(crate) fn process_match_scope(
         &mut self,
         for_node: &ForNode<'a>,

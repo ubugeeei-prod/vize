@@ -1,6 +1,7 @@
 //! Native `v-model` realizations: `checked` / `value` attributes on inputs,
 //! the dynamic-type helper, and `selected` on options of a modelled select.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -27,7 +28,7 @@ pub(super) fn admit(model: &l2::ModelOp<'_>, _tag: &str) -> Result<()> {
 }
 
 /// The walker removes this model before codegen.
-pub(super) fn dropped(em: &Emitter<'_, '_, '_, '_, '_, '_>, model: &l2::ModelOp<'_>) -> bool {
+pub(super) fn dropped<M: RenderMapMode>(em: &Emitter<'_, '_, '_, '_, '_, '_, M>, model: &l2::ModelOp<'_>) -> bool {
     dropped_read(model) || alias_model(em, model)
 }
 
@@ -35,12 +36,12 @@ fn dropped_read(model: &l2::ModelOp<'_>) -> bool {
     model.argument.is_some()
 }
 
-fn alias_model(em: &Emitter<'_, '_, '_, '_, '_, '_>, model: &l2::ModelOp<'_>) -> bool {
+fn alias_model<M: RenderMapMode>(em: &Emitter<'_, '_, '_, '_, '_, '_, M>, model: &l2::ModelOp<'_>) -> bool {
     let name = model.contract.read.source().trim();
     !name.is_empty() && em.scoped_params.iter().any(|frame| frame.contains(name))
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     fn model_read(&self, model: &l2::ModelOp<'_>) -> Result<String> {
         self.expr(&model.contract.read, TransformContent::Decoded)
     }
@@ -96,8 +97,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
 }
 
 /// `process_v_model_on_element` at the directive's authored position.
-pub(super) fn emit_inline(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+pub(super) fn emit_inline<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
     attached: &Attached<'_, '_>,
     model: &l2::ModelOp<'_>,
     tag: &str,
@@ -151,8 +152,8 @@ pub(super) fn emit_inline(
 
 /// `collect_v_model_element_attr` on the fallthrough root: a prop entry, or
 /// the read handed to `_ssrGetDynamicModelProps` for a dynamic `:type`.
-pub(super) fn collect_root(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+pub(super) fn collect_root<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
     attached: &Attached<'_, '_>,
     model: &l2::ModelOp<'_>,
     tag: &str,
@@ -196,8 +197,8 @@ pub(super) fn collect_root(
 }
 
 /// `selected` on an `<option>` inside a `<select v-model>`.
-pub(super) fn emit_option_selected(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+pub(super) fn emit_option_selected<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
     attached: &Attached<'_, '_>,
 ) -> Result<()> {
     let Some(model) = em.select_models.last().cloned() else {

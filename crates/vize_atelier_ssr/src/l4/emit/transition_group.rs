@@ -1,5 +1,6 @@
 //! The original group tag and attachments on the selected string-plan path.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -31,7 +32,7 @@ pub(super) fn admit_directives(
     Ok(())
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     pub(super) fn transition_group(
         &mut self,
         attached: &Attached<'_, '_>,

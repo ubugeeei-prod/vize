@@ -6,6 +6,7 @@
 //! lanes register that helper and carry `_: 2 /* DYNAMIC */` on the base
 //! object. The VNode expression form lives in `vnode_create_slots`.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -36,7 +37,7 @@ pub(super) struct Entry {
     pub(super) spec: SlotSpec,
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// `is_dynamic_slot_source` for the content child at `start`.
     pub(super) fn dynamic_slot_source(&self, start: usize) -> Result<Option<Dynamic>> {
         let segment = self.segment(start)?;

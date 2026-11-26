@@ -1,12 +1,13 @@
 //! Built-ins the server renders as their children.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 use crate::codegen::SsrCodegenContext;
 use crate::codegen::css_vars::RootCssVars;
 use crate::codegen::helpers::single_fallthrough_child_index;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// `<Transition>` and `<KeepAlive>` are client-side concerns: the server
     /// renders their children in place, and a single child is still the root
     /// that inherits the component's fallthrough attrs. Resolving them as user

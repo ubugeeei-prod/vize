@@ -7,6 +7,7 @@
 //! `_ssrGetDirectiveProps(...)` per custom directive. A directive (or a merged
 //! `<textarea>`) may own the element's content through a `_temp` binding.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -63,7 +64,7 @@ fn has_static_type(attached: &Attached<'_, '_>) -> bool {
     })
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// `_ssrRenderAttrs(props[, "tag"])` plus temp-owned content. The cursor
     /// sits on the element's first child.
     pub(super) fn merged_attrs(
@@ -317,8 +318,8 @@ fn assigned(temp: &str, merged: &EmitDocument) -> EmitDocument {
 
 /// A static attribute's props-object entry with its key and value anchored
 /// at the authored tokens, as the AST walker builds it.
-fn static_entry(
-    em: &Emitter<'_, '_, '_, '_, '_, '_>,
+fn static_entry<M: RenderMapMode>(
+    em: &Emitter<'_, '_, '_, '_, '_, '_, M>,
     attr: &l2::Attribute<'_>,
     name: &str,
     value: &str,

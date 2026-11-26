@@ -54,7 +54,7 @@ pub fn compare_ssr_lanes(
             crate::stage_options::parser_options(options),
         )
         .parse_with_frozen_elements();
-        let selection = select_ssr_lane(
+        let selection = select_ssr_lane::<vize_atelier_core::codegen::PlainRenderMap>(
             &allocator,
             source,
             &SsrL4Request {

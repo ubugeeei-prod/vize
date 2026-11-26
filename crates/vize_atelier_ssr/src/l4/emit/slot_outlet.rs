@@ -1,5 +1,6 @@
 //! `<slot>` outlets: `_ssrRenderSlot(_ctx.$slots, name, props, fallback, ...)`.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -64,7 +65,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
     Ok(())
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     pub(super) fn slot_outlet(
         &mut self,
         open: SsrStringSegment<'r, 'a>,

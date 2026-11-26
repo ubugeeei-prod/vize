@@ -1,5 +1,6 @@
 //! VNode fallback props and slot outlets.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -30,7 +31,7 @@ fn bound_key(name: &str, modifiers: &[&str]) -> String {
     name.to_compact_string()
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// `build_plain_vnode_props_with_key`: static attributes and `v-bind`
     /// only (other directives render nothing in the fallback), the optional
     /// loop key first and the scoped-style id last.

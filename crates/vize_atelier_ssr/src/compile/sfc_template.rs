@@ -1,5 +1,6 @@
 //! The SFC SSR template entry and its direct lane.
 
+use vize_atelier_core::codegen::{ComposedRenderMap, PlainRenderMap, RenderMapMode};
 use vize_atelier_core::{
     CompilerError,
     options::{CustomElementMatcher, TemplateSyntaxMode},
@@ -39,6 +40,40 @@ pub fn compile_ssr_sfc_template(
     codegen_options: &vize_atelier_core::CodegenOptions,
     direct: bool,
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
+    let compile = if experimental_options.source_map {
+        // The SFC assembly composes this map into the component's.
+        sfc_template_with_map::<ComposedRenderMap>
+    } else {
+        sfc_template_with_map::<PlainRenderMap>
+    };
+    compile(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        codegen_options,
+        direct,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata, existing codegen options and the lane request"
+)]
+fn sfc_template_with_map<M: RenderMapMode>(
+    allocator: &Allocator,
+    source: &str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    codegen_options: &vize_atelier_core::CodegenOptions,
+    direct: bool,
+) -> (Vec<CompilerError>, SsrCodegenResult) {
     #[cfg(feature = "legacy-differential")]
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
@@ -46,7 +81,7 @@ pub fn compile_ssr_sfc_template(
     let runtime_module_name = codegen_options.runtime_module_name.as_str();
     if direct
         && lane == SsrLane::Selected
-        && let Some(result) = emit_on_direct_lane(
+        && let Some(result) = emit_on_direct_lane::<M>(
             allocator,
             source,
             &options,
@@ -59,7 +94,7 @@ pub fn compile_ssr_sfc_template(
     {
         return (Vec::new(), result);
     }
-    let (_, errors, result) = compile_ssr_on_lane_with_runtime(
+    let (_, errors, result) = compile_ssr_on_lane_with_runtime::<M>(
         allocator,
         source,
         options,
@@ -82,7 +117,7 @@ pub fn compile_ssr_sfc_template(
     clippy::too_many_arguments,
     reason = "SFC metadata and the generated runtime"
 )]
-pub(crate) fn emit_on_direct_lane(
+pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
     allocator: &Allocator,
     source: &str,
     options: &SsrCompilerOptions,
@@ -92,7 +127,7 @@ pub(crate) fn emit_on_direct_lane(
     context: SsrSfcContext,
     runtime_module_name: &str,
 ) -> Option<SsrCodegenResult> {
-    let selection = l4::select_ssr_lane_direct(
+    let selection = l4::select_ssr_lane_direct::<M>(
         allocator,
         source,
         &SsrL4Request {
@@ -114,7 +149,7 @@ pub(crate) fn emit_on_direct_lane(
     {
         let full_path = || {
             let oracle = Allocator::new();
-            let (_, errors, full) = compile_ssr_on_lane_with_runtime(
+            let (_, errors, full) = compile_ssr_on_lane_with_runtime::<M>(
                 &oracle,
                 source,
                 options.clone(),

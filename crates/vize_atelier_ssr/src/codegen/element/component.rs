@@ -2,6 +2,7 @@
 
 mod dynamic;
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{is_dynamic_component_tag, is_simple_identifier, quoted_js_string};
 use super::{
     ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
@@ -9,7 +10,7 @@ use super::{
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, extract_destructure_params,
 };
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Emit a component render call, including built-in SSR special cases.
     pub(super) fn process_component(
         &mut self,
@@ -59,7 +60,12 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_indent();
         self.push("_push(_ssrRenderComponent(");
         if let Some(binding_expr) = setup_binding.as_deref() {
-            self.push_anchored(binding_expr, el.loc.span.start + 1);
+            if M::COMPOSED {
+                // A composed map anchors the read at the authored tag.
+                self.push_anchored(binding_expr, el.loc.span.start + 1);
+            } else {
+                self.push(binding_expr);
+            }
         } else {
             let callee = self.component_callee(tag, Some(el.loc.span.start + 1));
             self.push_spanned(&callee);

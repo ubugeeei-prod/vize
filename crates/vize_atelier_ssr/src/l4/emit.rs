@@ -30,6 +30,7 @@ mod vnode_control;
 mod vnode_create_slots;
 mod vnode_props;
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
@@ -61,8 +62,8 @@ pub(super) struct PlanFacts<'s, 'a> {
 }
 
 /// Write the render body for `plan` into `ctx`.
-pub(super) fn emit_plan<'r, 'a>(
-    ctx: &mut SsrCodegenContext<'_>,
+pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
+    ctx: &mut SsrCodegenContext<'_, M>,
     plan: &SsrStringPlan<'r, 'a>,
     facts: &PlanFacts<'_, 'a>,
     exprs: &mut TransformExpressions<'_>,
@@ -94,10 +95,10 @@ pub(super) fn emit_plan<'r, 'a>(
     Ok(())
 }
 
-struct Emitter<'p, 'r, 'a, 'c, 'x, 'e> {
+struct Emitter<'p, 'r, 'a, 'c, 'x, 'e, M: RenderMapMode> {
     segments: &'p [SsrStringSegment<'r, 'a>],
     pos: usize,
-    ctx: &'c mut SsrCodegenContext<'x>,
+    ctx: &'c mut SsrCodegenContext<'x, M>,
     facts: &'p PlanFacts<'p, 'a>,
     exprs: &'p mut TransformExpressions<'e>,
     /// The legacy walker's codegen scope: `v-for` / slot destructure params
@@ -129,7 +130,7 @@ const PLAIN: Flags = Flags {
     css_vars: false,
 };
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// `process_children_with_fallthrough_attrs` over the plan: emit the
     /// child list at the cursor up to (not including) its closing segment.
     fn children(&mut self, flags: Flags) -> Result<()> {

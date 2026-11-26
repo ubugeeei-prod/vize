@@ -1,5 +1,6 @@
 //! Plain HTML element SSR emission and element-only directives.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{is_static_named_prop, merge_prop_values, quoted_js_string};
 use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
@@ -8,7 +9,7 @@ use super::{
 
 mod input_model;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process a plain HTML element
     pub(super) fn process_plain_element(&mut self, el: &ElementNode<'a>, attrs: bool, css: bool) {
         let tag = &el.tag;

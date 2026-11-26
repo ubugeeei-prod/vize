@@ -3,6 +3,7 @@
 //! Slot names map to their authored `v-slot` argument and each slot function
 //! opens at the authored element carrying the slot (Davinci P3-9).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::{is_valid_js_identifier, quoted_js_string};
@@ -14,7 +15,7 @@ use super::{
 
 use vize_atelier_core::ForNode;
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     pub(super) fn process_component_slot_property<'node>(
         &mut self,
         name: &str,

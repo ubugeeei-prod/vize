@@ -1,11 +1,12 @@
 //! SSR input property and model expressions.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, cstr, quoted_js_string,
 };
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Get an attribute value from an element
     pub(crate) fn get_element_attr_value(&self, el: &ElementNode, name: &str) -> Option<String> {
         use vize_atelier_core::PropNode;

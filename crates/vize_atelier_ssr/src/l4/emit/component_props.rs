@@ -1,6 +1,7 @@
 //! Component prop bags: source-ordered segments that never cross a spread or
 //! dynamic-key boundary (the legacy `build_component_props` shape).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::expr::ExprRef;
@@ -24,7 +25,7 @@ enum Segment {
     Spread(String),
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// A `v-bind` / `v-on` key: bare identifiers retain their original context
     /// spelling; non-identifiers use the existing scope/binding-aware provider.
     pub(super) fn dynamic_key(&self, name: &DynamicName<'_>) -> Result<String> {
@@ -93,7 +94,7 @@ fn bound_key(name: &str, modifiers: &[&str]) -> String {
     name.to_compact_string()
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// The component's prop bag, or `null` when it has no prop segments.
     pub(super) fn component_props(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
         self.component_props_with_css_vars(attached, false)

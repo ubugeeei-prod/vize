@@ -1,5 +1,6 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, is_dynamic_component_tag, normalize_prop_entries,
     quoted_js_string, transform_bound_prop_key, wrap_call,
@@ -21,7 +22,7 @@ enum TextPart {
     Dynamic,
 }
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     pub(super) fn vnode_children_expression(
         &mut self,
         children: &[TemplateChildNode<'a>],

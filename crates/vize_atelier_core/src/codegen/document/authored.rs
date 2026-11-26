@@ -6,7 +6,7 @@
 
 use vize_l0::Span;
 
-use super::{EmitDocument, expression_links};
+use super::EmitDocument;
 
 /// Where `authored` starts in `source_text`, when it is a slice of it: the
 /// same bytes at the same addresses. A node holds such a slice until a
@@ -18,30 +18,6 @@ pub fn authored_offset(authored: &str, source_text: &str) -> Option<u32> {
 }
 
 impl EmitDocument {
-    /// [`Self::push_expression`], then `follow` with the document and the
-    /// offset the expression ends at. `follow` runs only while a map is
-    /// recorded, inside the check the expression already makes: it is where
-    /// an emitter anchors the text it writes next with no check of its own.
-    #[inline]
-    pub fn push_expression_then(
-        &mut self,
-        code: &str,
-        span: Span,
-        source_text: &str,
-        follow: impl FnOnce(&mut Self, u32),
-    ) {
-        if self.recording {
-            let base = self.cursor();
-            self.links.extend(
-                expression_links(code, span, source_text)
-                    .iter()
-                    .map(|link| link.rebased(base)),
-            );
-            follow(self, base + code.len() as u32);
-        }
-        self.text.push_str(code);
-    }
-
     /// Append `code`, written from the node text `authored`. Written
     /// unchanged from a slice of `source_text`, it maps to where that slice
     /// was authored.
@@ -59,13 +35,6 @@ impl EmitDocument {
         if let Some(source) = authored_offset(authored, source_text).filter(|_| code == authored) {
             self.anchor(source);
         }
-    }
-
-    /// Anchor the last `written` bytes, which carry no link of their own, at
-    /// the authored byte `source`.
-    pub fn anchor_written(&mut self, written: u32, source: u32) {
-        let at = self.cursor() - written;
-        self.record(Span::new(at, at), Span::new(source, source), None);
     }
 
     /// Anchor the byte that will be written at `generated`, an offset this

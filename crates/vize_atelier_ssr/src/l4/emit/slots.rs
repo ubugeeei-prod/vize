@@ -1,5 +1,6 @@
 //! Component slot functions render the push form and VNode fallback.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString};
 use vize_l2::op::{self as l2, DynamicName};
@@ -108,7 +109,7 @@ pub(super) fn slot_pattern(
         .map(|params| exprs.params(quote_padded(file, params.source(), params.span()))))
 }
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// Read the typed value once in the current component/slot/loop scope.
     pub(super) fn forwarded_slots(
         &self,

@@ -8,12 +8,13 @@
 //! requested nothing is recorded and every part stays link-free, so the
 //! emitted bytes are identical either way (TS-11).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_l0::Span;
 
 use super::{SsrCodegenContext, TemplatePart};
 
-impl SsrCodegenContext<'_> {
+impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
     /// Whether this compile records a source map.
     pub(crate) fn spans_enabled(&self) -> bool {
         self.out.is_recording()
@@ -68,18 +69,6 @@ impl SsrCodegenContext<'_> {
     /// Write an emitted expression authored at `span` directly.
     pub(crate) fn push_expression_text(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, self.source);
-    }
-
-    /// [`Self::push_expression_text`], then `follow` with the document and
-    /// the offset the expression ends at, inside the same recording check.
-    pub(crate) fn push_expression_text_then(
-        &mut self,
-        code: &str,
-        span: Span,
-        follow: impl FnOnce(&mut EmitDocument, u32),
-    ) {
-        self.out
-            .push_expression_then(code, span, self.source, follow);
     }
 
     /// An emitted expression authored at `span`, anchored when maps are on.

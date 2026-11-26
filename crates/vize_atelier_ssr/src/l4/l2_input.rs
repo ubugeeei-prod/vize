@@ -168,7 +168,7 @@ fn select_l2_lane_with_experimental_options<'a>(
         },
         diagnostics: 0,
     };
-    select_from_l2_plain(
+    select_from_l2_plain::<vize_atelier_core::codegen::PlainRenderMap>(
         allocator,
         &artifact,
         options,

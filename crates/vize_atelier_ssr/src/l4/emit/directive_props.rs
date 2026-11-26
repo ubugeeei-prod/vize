@@ -1,6 +1,7 @@
 //! `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])` for a
 //! custom directive on a merged element (`buildDirectiveArgs` padding).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
@@ -9,7 +10,7 @@ use vize_l4::targets::dom::artifact::TransformContent;
 use super::{Emitter, Result};
 use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])`.
     pub(super) fn directive_props(&mut self, directive: &l2::VueDirectiveOp<'_>) -> Result<String> {
         self.ctx.use_ssr_helper(RuntimeHelper::SsrGetDirectiveProps);

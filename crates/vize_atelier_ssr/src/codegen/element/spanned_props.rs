@@ -7,6 +7,7 @@
 //! exactly as [`component_props_object`](super::props::component_props_object)
 //! does while keeping those anchors.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{
     AttributeNode, DirectiveNode, ExpressionNode, codegen::document::EmitDocument,
 };
@@ -64,7 +65,7 @@ pub(crate) fn bound_entry(
     entry
 }
 
-impl SsrCodegenContext<'_> {
+impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
     /// A statically keyed `v-bind` entry; with maps on, the key maps to the
     /// authored argument (when emitted verbatim) and the value to its
     /// expression.

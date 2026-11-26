@@ -10,6 +10,7 @@
 //! `_ssrGetDirectiveProps(...)` per custom directive after everything else.
 //! A directive may also own the element's content through a `_temp` binding.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, is_static_named_prop, normalize_prop_entries,
     quoted_js_string,
@@ -56,7 +57,7 @@ fn has_directive(el: &ElementNode, name: &str) -> bool {
         .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == name))
 }
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     fn collect_v_model_element_attr(
         &mut self,
         el: &ElementNode,

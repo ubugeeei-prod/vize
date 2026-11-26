@@ -1,6 +1,7 @@
 //! Attached-segment admission and the inline `name="value"` attribute shape
 //! of non-root elements.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::expr::ExprRef;
@@ -186,7 +187,7 @@ fn show_value<'r, 'a>(attached: &Attached<'r, 'a>) -> Option<&'r ExprRef<'a>> {
     })
 }
 
-impl Emitter<'_, '_, '_, '_, '_, '_> {
+impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
     /// A rewritten `v-bind` value anchored at its authored expression: the
     /// directive's quoted value, or the expanded shorthand's expression.
     pub(super) fn bound_expression(&self, code: &str, bind: &Bind<'_, '_>) -> EmitDocument {
@@ -207,8 +208,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
 }
 
 /// Non-root element attributes, in authored order.
-pub(super) fn emit_inline(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+pub(super) fn emit_inline<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
     attached: &Attached<'_, '_>,
     tag: &str,
 ) -> Result<()> {

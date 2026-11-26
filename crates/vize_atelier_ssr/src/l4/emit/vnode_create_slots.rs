@@ -1,6 +1,7 @@
 //! The VNode fallback's `createSlots` expression: the same entries as the
 //! push form, with `_withCtx((params) => [children])` slot functions.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
 use vize_l4::targets::dom::artifact::TransformContent;
@@ -10,7 +11,7 @@ use super::slots::ComponentSlots;
 use super::{Emitter, Result};
 use crate::l4::AdmissionFailure;
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     /// The VNode fallback's `_createSlots({ ... }, [ ... ])` expression.
     pub(super) fn vnode_create_slots(&mut self, slots: &ComponentSlots) -> Result<String> {
         self.ctx.use_core_helper(RuntimeHelper::CreateSlots);

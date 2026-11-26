@@ -20,7 +20,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
         !errors.iter().any(|error| !error.is_recoverable()),
         "{errors:?}"
     );
-    select_ssr_lane(
+    select_ssr_lane::<vize_atelier_core::codegen::PlainRenderMap>(
         &allocator,
         source,
         &SsrL4Request {

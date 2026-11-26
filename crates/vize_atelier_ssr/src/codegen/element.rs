@@ -18,6 +18,7 @@ mod transparent_builtin;
 mod vnode;
 mod vnode_control;
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
     RuntimeHelper, TemplateChildNode,
@@ -80,7 +81,7 @@ pub(super) struct ComponentTemplateSlot<'node, 'a> {
     children: &'node [TemplateChildNode<'a>],
 }
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process an element node
     pub(crate) fn process_element_with_fallthrough_attrs(
         &mut self,
@@ -128,7 +129,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn append_for_aliases(ctx: &mut SsrCodegenContext<'_>, out: &mut String, for_node: &ForNode) {
+fn append_for_aliases<M: RenderMapMode>(ctx: &mut SsrCodegenContext<'_, M>, out: &mut String, for_node: &ForNode) {
     let mut has_alias = false;
     for alias in [
         for_node.value_alias.as_ref(),

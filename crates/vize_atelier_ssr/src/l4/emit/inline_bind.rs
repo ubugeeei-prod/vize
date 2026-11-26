@@ -3,6 +3,7 @@
 //! attributes, and `_ssrRenderAttr` with the name anchored at the authored
 //! argument.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, cstr};
@@ -12,8 +13,8 @@ use super::spans::argument_start;
 use super::{Emitter, Result};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
 
-pub(super) fn emit(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+pub(super) fn emit<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
     attached: &Attached<'_, '_>,
     bind: &Bind<'_, '_>,
     name: Option<&str>,

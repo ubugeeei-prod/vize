@@ -1,5 +1,6 @@
 //! Slot outlet SSR emission and slot prop collection.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
     static_slot_outlet_prop_key, transform_slot_outlet_bound_prop_key,
@@ -9,7 +10,7 @@ use super::{
     String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
 
-impl<'a> SsrCodegenContext<'a> {
+impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Process a slot outlet (<slot>)
     pub(super) fn process_slot_outlet(&mut self, el: &ElementNode<'a>) {
         self.flush_push();

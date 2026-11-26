@@ -1,5 +1,6 @@
 //! Builtin writers over the original SSR string-plan regions.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
@@ -10,7 +11,7 @@ use crate::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind}
 use super::spans::expression_span;
 use super::{Emitter, Flags, Result, plan_source};
 
-impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     pub(super) fn suspense(&mut self, flags: Flags) -> Result<()> {
         let children = self.direct_children(self.pos)?;
         let separate = children.iter().any(|&start| {

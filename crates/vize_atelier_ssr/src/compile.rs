@@ -3,6 +3,7 @@ use crate::{
     SsrSfcContext,
     l4::{self, SsrL4Request, SsrL4Selection},
 };
+use vize_atelier_core::codegen::{ComposedRenderMap, PlainRenderMap, RenderMapMode};
 use vize_atelier_core::{
     CompilerError, ErrorCode, Namespace, RootNode,
     lane::transform_with_frozen_elements,
@@ -211,7 +212,7 @@ pub fn compile_ssr_with_sfc_context_and_codegen_options<'a>(
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
     let lane = SsrLane::Selected;
-    compile_ssr_on_lane_with_runtime(
+    compile_ssr_on_lane_with_runtime::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -241,7 +242,21 @@ pub fn compile_ssr_with_sfc_context_codegen_options_and_capture<'a, C: CaptureSi
     codegen_options: &vize_atelier_core::CodegenOptions,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    inner::compile_ssr_inner_captured_with_runtime(
+    if experimental_options.source_map {
+        // The SFC assembly composes this map into the component's.
+        return inner::compile_ssr_inner_captured_with_runtime::<C, ComposedRenderMap>(
+            allocator,
+            source,
+            options,
+            template_syntax,
+            custom_elements,
+            experimental_options,
+            context,
+            codegen_options.runtime_module_name.as_str(),
+            capture,
+        );
+    }
+    inner::compile_ssr_inner_captured_with_runtime::<C, PlainRenderMap>(
         allocator,
         source,
         options,
@@ -358,7 +373,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
     context: SsrSfcContext,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_on_lane_with_runtime(
+    compile_ssr_on_lane_with_runtime::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -375,7 +390,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
     clippy::too_many_arguments,
     reason = "private SFC metadata, selected lane and generated runtime"
 )]
-fn compile_ssr_on_lane_with_runtime<'a>(
+pub(crate) fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -412,7 +427,7 @@ fn compile_ssr_on_lane_with_runtime<'a>(
     }
 
     let selection = match lane {
-        SsrLane::Selected => l4::select_ssr_lane(
+        SsrLane::Selected => l4::select_ssr_lane::<M>(
             allocator,
             source,
             &SsrL4Request {
@@ -461,7 +476,7 @@ fn compile_ssr_on_lane_with_runtime<'a>(
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
             }
-            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            let mut codegen_ctx = SsrCodegenContext::<M>::with_render_map(
                 allocator,
                 &codegen_options,
                 source,
