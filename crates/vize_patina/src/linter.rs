@@ -31,6 +31,19 @@ mod severity;
 pub(crate) mod sfc_scripts;
 
 pub use config::{LintResult, Linter, SharedTypeSources};
+
+/// Whether `rule_name` can report on a plain `.js` or `.ts` module, which
+/// [`Linter::lint_script`] lints with the builtin script rules and, when type
+/// aware, the plain-module rules only.
+pub fn rule_runs_on_plain_scripts(rule_name: &str) -> bool {
+    #[cfg(not(target_arch = "wasm32"))]
+    if native_type_aware::PLAIN_MODULE_RULES.contains(&rule_name) {
+        return true;
+    }
+    script_rules::builtin_script_rules()
+        .iter()
+        .any(|rule| rule.name == rule_name)
+}
 #[cfg(not(target_arch = "wasm32"))]
 pub use engine::PreparedLint;
 pub(crate) use engine::{MacroTypeResolution, ReadDemand, analyze_descriptor_for_lint};

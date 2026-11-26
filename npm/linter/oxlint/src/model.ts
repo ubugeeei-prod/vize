@@ -43,6 +43,8 @@ export interface PatinaRuleMeta {
   fixable: boolean;
   defaultSeverity: "error" | "warning";
   presets: PatinaPreset[];
+  /** Whether the rule can report on a plain `.js` or `.ts` module. Older bindings leave it out. */
+  plainScripts?: boolean;
 }
 
 /** Existing native parser geometry. Every offset and column is a UTF-8 byte count. */

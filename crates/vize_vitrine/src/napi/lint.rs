@@ -263,6 +263,7 @@ pub fn get_patina_rules() -> Result<Value> {
                 "fixable": rule.fixable,
                 "defaultSeverity": rule.default_severity,
                 "presets": rule.presets,
+                "plainScripts": vize_patina::rule_runs_on_plain_scripts(rule.name),
             }))
             .collect::<Vec<_>>()
     ))

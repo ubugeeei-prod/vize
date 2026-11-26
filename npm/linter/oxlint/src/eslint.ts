@@ -1,6 +1,6 @@
 import { definePlugin, defineRule, eslintCompatPlugin, type Context } from "@oxlint/plugins";
 import { getPatinaRules } from "./binding.js";
-import { isPatinaFile } from "./file-kinds.js";
+import { isPatinaFile, isPlainScriptFile } from "./file-kinds.js";
 import { formatPatinaMessage } from "./format.js";
 import { loadBinding } from "./native.js";
 import oxlintPlugin from "./plugin.js";
@@ -111,6 +111,7 @@ const rules = Object.fromEntries(
           },
           Program(program) {
             if (!isPatinaFile(context.physicalFilename)) return;
+            if (rule.plainScripts === false && isPlainScriptFile(context.physicalFilename)) return;
             const preset = getActivePreset(getVizeSettings(context));
             if (
               preset !== "incremental" &&

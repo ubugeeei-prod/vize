@@ -59,6 +59,10 @@ const RULE_NO_UNSAFE_TEMPLATE_BINDING: &str = "type/no-unsafe-template-binding";
 const RULE_STRICT_BOOLEAN: &str = "type/strict-boolean-expressions";
 const RULE_NO_REACTIVITY_LOSS: &str = "type/no-reactivity-loss";
 
+/// The rules [`plain_module`] runs on a plain TypeScript module.
+pub(super) const PLAIN_MODULE_RULES: &[&str] =
+    &[RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS];
+
 pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
     RULE_REQUIRE_TYPED_PROPS,
     RULE_REQUIRE_TYPED_EMITS,
