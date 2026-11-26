@@ -1,6 +1,6 @@
 // Embedded by the native loader. The nearest installed project Vite owns loading.
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
-import { mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import { createRequire, globalPaths } from "node:module";
 import * as nodeModule from "node:module";
 import { tmpdir } from "node:os";
@@ -416,6 +416,7 @@ export async function importConfigModuleWithDependencies(
     let temporary;
     try {
       temporary = await realpath(await mkdtemp(join(tmpdir(), "vize-config-module-")));
+      await mkdir(join(temporary, "node_modules"), { mode: 0o700 }); // Vite imports its bundle from here.
     } catch (error) {
       finishAdapter();
       throw error;

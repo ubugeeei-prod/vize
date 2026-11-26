@@ -32,3 +32,16 @@ pub mod ready;
 pub mod reduce;
 pub mod repro;
 pub mod upgrade;
+
+/// Stack reserved for each parallel worker. A worker parses and walks one
+/// authored file whose nesting the author does not bound; the reservation is
+/// address space, and only the pages a file needs are committed.
+pub(crate) const WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
+
+/// Give the global worker pool [`WORKER_STACK_BYTES`] stacks unless a command
+/// has already sized it.
+pub(crate) fn start_worker_pool() {
+    let _ = rayon::ThreadPoolBuilder::new()
+        .stack_size(WORKER_STACK_BYTES)
+        .build_global();
+}

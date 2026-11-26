@@ -1,18 +1,25 @@
 use std::path::{Path, PathBuf};
 
-pub(super) fn find_vscode_vsix() -> Option<PathBuf> {
-    let repo_source = PathBuf::from("editors/vscode");
-    let exe_source = std::env::current_exe()
-        .ok()
-        .and_then(|p| p.parent().map(|p| p.join("../../editors/vscode")))
-        .unwrap_or_default();
+/// The `editors/<name>` directory of the checkout this binary was built in
+/// (`<checkout>/target/<profile>/vize`), when there is one.
+///
+/// Extension sources are located from the binary and never from the current
+/// directory: what a user installs into their editor must not depend on which
+/// project they happen to run the command in.
+fn checkout_editor_dir(name: &str) -> Option<PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let dir = exe.parent()?.join("../../editors").join(name);
+    dir.is_dir().then_some(dir)
+}
 
-    find_vscode_vsix_in_locations([
-        repo_source.join("dist"),
-        repo_source,
-        exe_source.join("dist"),
-        exe_source,
-    ])
+/// The VS Code extension sources of this binary's own checkout.
+pub(super) fn vscode_source_dir() -> Option<PathBuf> {
+    checkout_editor_dir("vscode")
+}
+
+pub(super) fn find_vscode_vsix() -> Option<PathBuf> {
+    let source = vscode_source_dir()?;
+    find_vscode_vsix_in_locations([source.join("dist"), source])
 }
 
 pub(super) fn find_vscode_vsix_in_locations(
@@ -45,13 +52,7 @@ pub(super) fn is_vsix_file(path: &Path) -> bool {
 }
 
 pub(super) fn find_zed_extension_source() -> Option<PathBuf> {
-    find_zed_extension_source_in_locations([
-        PathBuf::from("editors/zed"),
-        std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.join("../../editors/zed")))
-            .unwrap_or_default(),
-    ])
+    find_zed_extension_source_in_locations(checkout_editor_dir("zed"))
 }
 
 pub(super) fn find_zed_extension_source_in_locations(

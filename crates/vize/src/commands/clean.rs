@@ -56,6 +56,7 @@ pub fn run(args: CleanArgs) {
     } else {
         managed_vize_artifact_paths(&root, args.scope)
     };
+    let artifact_paths = retain_project_owned(&root, artifact_paths, args.quiet);
 
     if args.dry_run {
         if !args.quiet {
@@ -113,48 +114,100 @@ fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> io::Result<Vec<P
         paths.extend(force_project_vize_artifact_paths(root)?);
     }
     if matches!(scope, CleanScope::All | CleanScope::NodeModules) {
-        let node_modules_vize = node_modules_vize_dir(root);
-        match fs::read_dir(&node_modules_vize) {
-            Ok(entries) => {
-                for entry in entries {
-                    let entry = entry?;
-                    // Canon is shared dependency storage with project-keyed mutable
-                    // state. Even `--force` may remove only the current project key;
-                    // deleting the parent would erase live state owned by another
-                    // project that happens to share this node_modules tree.
-                    if entry.file_name() != "canon" {
-                        paths.push(entry.path());
-                    }
-                }
-            }
-            // An absent artifact root is an empty one; anything else means the
-            // enumeration is incomplete and must not drive deletions.
-            Err(error) if error.kind() == ErrorKind::NotFound => {}
-            Err(error) => return Err(error),
-        }
+        // Canon is shared dependency storage with project-keyed mutable
+        // state. Even `--force` may remove only the current project key;
+        // deleting the parent would erase live state owned by another
+        // project that happens to share this node_modules tree.
+        paths.extend(non_canon_entries(root, &node_modules_vize_dir(root))?);
     }
     Ok(paths)
 }
 
-fn force_project_vize_artifact_paths(root: &Path) -> io::Result<Vec<PathBuf>> {
-    let project_vize = project_vize_dir(root);
+/// Every entry of an artifact root except `canon`. A root that is, or is
+/// reached through, a symbolic link lists nothing: its entries belong to
+/// whatever the link points at, not to this project.
+fn non_canon_entries(root: &Path, artifact_root: &Path) -> io::Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
-    match fs::read_dir(&project_vize) {
+    if is_symlink(artifact_root) || link_on_the_way(root, artifact_root).is_some() {
+        return Ok(paths);
+    }
+    match fs::read_dir(artifact_root) {
         Ok(entries) => {
             for entry in entries {
                 let entry = entry?;
-                // Canon storage is project-keyed and can contain entries owned by
-                // another checkout that shares the artifact root. Force removes
-                // every non-Canon project artifact, then appends only this
-                // project's current Canon namespace and locks below.
                 if entry.file_name() != "canon" {
                     paths.push(entry.path());
                 }
             }
         }
+        // An absent artifact root is an empty one; anything else means the
+        // enumeration is incomplete and must not drive deletions.
         Err(error) if error.kind() == ErrorKind::NotFound => {}
         Err(error) => return Err(error),
     }
+    Ok(paths)
+}
+
+fn is_symlink(path: &Path) -> bool {
+    fs::symlink_metadata(path).is_ok_and(|metadata| metadata.file_type().is_symlink())
+}
+
+/// The first symbolic link among the directories that lead from `root` to
+/// `path`. The final component is not inspected: `remove_path` unlinks a
+/// link there without following it.
+fn link_on_the_way(root: &Path, path: &Path) -> Option<PathBuf> {
+    let below_root = path.strip_prefix(root).ok()?;
+    let mut current = root.to_path_buf();
+    let mut components = below_root.components().peekable();
+    while let Some(component) = components.next() {
+        if components.peek().is_none() {
+            break;
+        }
+        current.push(component);
+        if is_symlink(&current) {
+            return Some(current);
+        }
+    }
+    None
+}
+
+/// Keep only the artifacts that live in this project. One reached through a
+/// symbolic link (a linked `.vize` or `node_modules`) lives wherever the link
+/// points, and removing it would delete files the project does not own.
+fn retain_project_owned(root: &Path, artifact_paths: Vec<PathBuf>, quiet: bool) -> Vec<PathBuf> {
+    let mut reported: Vec<PathBuf> = Vec::new();
+    let mut note = |link: PathBuf| {
+        if !quiet && !reported.contains(&link) {
+            eprintln!(
+                "Skipped {}: it is a symbolic link, and its target is not this project's to clean",
+                link.display()
+            );
+            reported.push(link);
+        }
+    };
+    for artifact_root in [project_vize_dir(root), node_modules_vize_dir(root)] {
+        if is_symlink(&artifact_root) {
+            note(artifact_root);
+        }
+    }
+    artifact_paths
+        .into_iter()
+        .filter(|path| match link_on_the_way(root, path) {
+            Some(link) => {
+                note(link);
+                false
+            }
+            None => true,
+        })
+        .collect()
+}
+
+fn force_project_vize_artifact_paths(root: &Path) -> io::Result<Vec<PathBuf>> {
+    // Canon storage is project-keyed and can contain entries owned by
+    // another checkout that shares the artifact root. Force removes
+    // every non-Canon project artifact, then appends only this
+    // project's current Canon namespace and locks below.
+    let mut paths = non_canon_entries(root, &project_vize_dir(root))?;
     paths.extend(current_canon_artifact_paths(root));
     Ok(paths)
 }

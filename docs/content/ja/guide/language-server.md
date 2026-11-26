@@ -86,8 +86,9 @@ code --install-extension vize.vize-art
 
 ## Zed
 
-Zed に Vize 拡張機能をインストールします。Vize リポジトリのクローンでは、`vize ide zed --install` が
-`editors/zed` を Zed にコピーします。そのうえで、Zed の `settings.json` でサーバーを選びます。
+`vize ide zed --install` で Zed に Vize 拡張機能をインストールします。リリース版の `vize` は自身の
+バージョンに対応する拡張機能をダウンロードし、Vize リポジトリのクローン内でビルドした `vize` は
+そのクローンの `editors/zed` をコピーします。そのうえで、Zed の `settings.json` でサーバーを選びます。
 
 ```json
 {

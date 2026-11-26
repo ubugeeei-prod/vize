@@ -207,5 +207,6 @@ pub fn run(args: CheckArgs) {
     }
 
     // Otherwise, fall back to direct Corsa execution.
+    super::start_worker_pool();
     runner::run_direct(&args);
 }

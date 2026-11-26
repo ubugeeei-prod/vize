@@ -59,6 +59,11 @@ pub(super) fn search_directories_observed(
     let mut directories = Vec::new();
     let mut current = base.to_path_buf();
     loop {
+        // A config another user left in a shared scratch directory is not
+        // this project's; the search ends there.
+        if automatic && crate::path::is_shared_scratch_directory(&current) {
+            break;
+        }
         directories.push(current.clone());
         if automatic && let Some(observe) = before_read.as_deref_mut() {
             observe(
