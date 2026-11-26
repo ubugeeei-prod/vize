@@ -76,7 +76,7 @@ void test("typed producers retain historical bytes and only the exact registered
   assert.deepEqual(
     custody.map((entry) => entry.historicalPath),
     [
-      ".github/workflows/05-native-diagnostic-dto.yml",
+      ".github/workflows/native-beta-diagnostic-dto.yml",
       "tests/tooling/support/native-beta-dto/prepare-role.mjs",
       "tests/tooling/support/native-beta-dto/provider.mjs",
       "tests/tooling/support/native-beta-dto/audit-wire.mjs",
@@ -84,7 +84,12 @@ void test("typed producers retain historical bytes and only the exact registered
     ],
   );
   for (const entry of custody) {
-    assert.equal(entry.currentPath, entry.historicalPath.replace(/\.mjs$/u, ".ts"));
+    // The workflow kept its producer role through the NN-subject rename.
+    const renamed = entry.historicalPath.replace(
+      ".github/workflows/native-beta-diagnostic-dto.yml",
+      ".github/workflows/05-native-diagnostic-dto.yml",
+    );
+    assert.equal(entry.currentPath, renamed.replace(/\.mjs$/u, ".ts"));
     assert.equal(entry.historicalSha256, hash(fs.readFileSync(entry.archivedPath)));
     assert.equal(entry.currentSha256, hash(fs.readFileSync(entry.currentPath)));
     for (const path of [entry.archivedPath, entry.currentPath]) {

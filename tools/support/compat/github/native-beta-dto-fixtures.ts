@@ -67,7 +67,9 @@ const inputs = [
   "native-beta-diagnostic-dto-10731/actual-beta-wire.json",
   "native-beta-diagnostic-dto-10731/source-pairs.json",
 ];
-const workflow = ".github/workflows/05-native-diagnostic-dto.yml";
+// The producer record names the workflow by its file name before the NN-subject rename.
+const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+const currentWorkflow = ".github/workflows/05-native-diagnostic-dto.yml";
 const producerFiles = [
   workflow,
   "tests/tooling/support/native-beta-dto/prepare-role.mjs",
@@ -118,7 +120,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
   return producerFiles.map((originalPath, index) => {
     const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
     const original = pinned(read, archivedPath, producerHashes[index]);
-    const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
+    const currentPath = index === 0 ? currentWorkflow : originalPath.replace(/\.mjs$/u, ".ts");
     const current = read("head", currentPath);
     require(current !== null, `missing current typed producer: ${currentPath}`);
     const currentInputDependency =
@@ -519,7 +521,7 @@ export function newNativeBetaDtoProtocolCases(
         : actual.includes(
             marker === "expected_refusal" ? "expect_refusal" : marker,
           ), `missing actual observer authority: ${marker}`);
-    const currentJob = read("head", workflow);
+    const currentJob = read("head", currentWorkflow);
     require(currentJob, "missing actual four-role producer workflow");
     const job = workflowPredecessor("05-native-diagnostic-dto", currentJob, (file) =>
       read("head", file),

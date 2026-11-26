@@ -34,7 +34,8 @@ function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: 
   // The record names the workflow by its file name before the NN-subject rename.
   const renamed = path === ".github/workflows/native-beta-diagnostic-dto.yml";
   const actual =
-    read(side, path) ?? (renamed ? read(side, ".github/workflows/05-native-diagnostic-dto.yml") : null);
+    read(side, path) ??
+    (renamed ? read(side, ".github/workflows/05-native-diagnostic-dto.yml") : null);
   assert.ok(actual, `missing ${side} phase contract input: ${path}`);
   const bytes =
     renamed && hash(actual) !== expected
