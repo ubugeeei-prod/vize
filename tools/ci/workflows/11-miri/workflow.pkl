@@ -64,4 +64,32 @@ jobs {
       }
     }
   }
+  // The lent walk restores oxc's callback borrows to the walked root's
+  // lifetime (`vize_patina/src/lent_walk.rs`). Its tests keep every lent node
+  // past the walk, so Miri checks each widened reference under the aliasing
+  // model. Only the `lent_walk::tests` module runs.
+  `patina-lent-walk` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "nightly"
+          components = "miri,rust-src"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "miri-patina"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `target-path` = "target/miri"
+        }
+      }
+      ci.command("Setup Miri", "cargo +nightly miri setup")
+      ci.command("Test the lent walk with Miri", "cargo +nightly miri test -p vize_patina --lib -- lent_walk::tests")
+    }
+  }
 }
