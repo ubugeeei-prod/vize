@@ -67,22 +67,22 @@ jobs:
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - run: vp install --frozen-lockfile --prefer-offline
       - name: Build the actual source native addon and shared rule bridge
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-actual-source-native-addon-and-shared-rule-bridge.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-the-actual-source-native-addon-and-shared-rule-bridge.sh"
       - name: Preserve exact source and dependency authority
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/preserve-exact-source-and-dependency-authority.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/preserve-exact-source-and-dependency-authority.sh"
       - name: Qualify real flat-config consumers, source authority and call counts
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/qualify-real-flat-config-consumers-source-authority-and-call-counts.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/qualify-real-flat-config-consumers-source-authority-and-call-counts.sh"
       - name: Verify no physical SFC reads, including native code
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/verify-no-physical-sfc-reads-including-native-code.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-no-physical-sfc-reads-including-native-code.sh"
       - name: Qualify packed public entries in an isolated consumer
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/qualify-packed-public-entries-in-an-isolated-consumer.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/qualify-packed-public-entries-in-an-isolated-consumer.sh"
       - name: Stage the same source addon for supported Node and TypeScript consumers
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh"
       - name: Share packed exports and source addon without rebuilding native code
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

@@ -1,0 +1,14 @@
+# Run the flat-config consumer, shared routing and legacy export tests with logs as evidence, then profile startup five times.
+use $bin::{node, tee, vp}
+use std::io::to_file
+
+let evidence = $env::VIZE_ESLINT_EVIDENCE
+
+node --test npm/linter/eslint/test/consumer.test.mjs |& tee $"$evidence/consumer.log"
+cd "npm/linter/oxlint" {
+  vp test run src/file-state.test.ts src/batched-rules.test.ts src/active-rule-collection.test.ts |& tee $"$evidence/shared-routing.log"
+}
+node npm/linter/oxlint/src/eslint-acceptance.test.mjs |& tee $"$evidence/legacy-export.log"
+for round in [1, 2, 3, 4, 5] {
+  node npm/linter/eslint/test/startup-profile.mjs | to_file $"$evidence/startup-$round.json"
+}

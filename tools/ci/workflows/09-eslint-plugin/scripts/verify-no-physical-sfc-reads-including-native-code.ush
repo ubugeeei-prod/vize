@@ -1,0 +1,18 @@
+# Trace every file the linted process and its native code open, and verify that no physical SFC was read.
+use $bin::{node, strace, sudo}
+use std::command::exists
+use std::io::to_file
+use std::path::from_source
+
+let evidence = $env::VIZE_ESLINT_EVIDENCE
+let watched_source = $"$env::RUNNER_TEMP/eslint-source-$env::SOURCE_SHA/Disk.vue"
+
+if !(exists strace) {
+  sudo apt-get update
+  sudo apt-get install -y strace
+}
+export VIZE_ESLINT_WATCHED_SOURCE = watched_source
+strace -f -yy -e trace=open,openat,openat2 -o $"$evidence/source-opens.raw.log" \
+  node npm/linter/eslint/test/source-read-probe.mjs $watched_source |
+  to_file $"$evidence/source-read-packets.json"
+node (from_source "verify-no-physical-sfc-reads-including-native-code.ts")

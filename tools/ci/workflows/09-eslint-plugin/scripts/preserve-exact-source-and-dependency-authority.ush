@@ -1,0 +1,7 @@
+# Record the exact source and dependency identities that the plugin's evidence is about.
+use $bin::{node}
+use std::fs::mkdir_p
+use std::path::from_source
+
+mkdir_p $env::VIZE_ESLINT_EVIDENCE
+node (from_source "preserve-exact-source-and-dependency-authority.ts")

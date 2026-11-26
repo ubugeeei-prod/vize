@@ -1,0 +1,5 @@
+# Stage the addon built from this source for each supported Node and TypeScript consumer.
+use $bin::{node}
+use std::path::from_source
+
+node (from_source "stage-the-same-source-addon-for-supported-node-and-typescript-consumers.ts")

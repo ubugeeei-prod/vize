@@ -1,0 +1,21 @@
+# Pack both plugins and qualify their public entries from a consumer that installs only the tarballs.
+use $bin::{cp, node, vp}
+use std::fs::mkdir_p
+use std::io::to_file
+use std::path::from_source
+
+let evidence = $env::VIZE_ESLINT_EVIDENCE
+let consumer = $"$env::RUNNER_TEMP/eslint-packed-$env::SOURCE_SHA"
+
+vp exec pnpm --dir npm/linter/oxlint pack --pack-destination $evidence
+vp exec pnpm --dir npm/linter/eslint pack --pack-destination $evidence
+export VIZE_ESLINT_PACKED_CONSUMER = consumer
+mkdir_p $consumer
+node (from_source "qualify-packed-public-entries-in-an-isolated-consumer.ts")
+cp npm/linter/eslint/test/packed-consumer.mjs $"$consumer/consumer.mjs"
+cd $consumer {
+  node consumer.mjs | to_file $"$evidence/packed-consumer.json"
+}
+cp $"$consumer/package.json" $"$evidence/packed-package.json"
+cp $"$consumer/pnpm-lock.yaml" $"$evidence/packed-pnpm-lock.yaml"
+node (from_source "qualify-packed-public-entries-in-an-isolated-consumer-2.ts")

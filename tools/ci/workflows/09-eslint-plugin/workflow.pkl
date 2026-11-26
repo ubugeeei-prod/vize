@@ -63,32 +63,32 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Build the actual source native addon and shared rule bridge"
-        run = ci.workflowScript("build-the-actual-source-native-addon-and-shared-rule-bridge.sh")
+        run = ci.workflowProgram("build-the-actual-source-native-addon-and-shared-rule-bridge")
       }
       new Dynamic {
         name = "Preserve exact source and dependency authority"
         shell = "bash"
-        run = ci.workflowScript("preserve-exact-source-and-dependency-authority.sh")
+        run = ci.workflowProgram("preserve-exact-source-and-dependency-authority")
       }
       new Dynamic {
         name = "Qualify real flat-config consumers, source authority and call counts"
         shell = "bash"
-        run = ci.workflowScript("qualify-real-flat-config-consumers-source-authority-and-call-counts.sh")
+        run = ci.workflowProgram("qualify-real-flat-config-consumers-source-authority-and-call-counts")
       }
       new Dynamic {
         name = "Verify no physical SFC reads, including native code"
         shell = "bash"
-        run = ci.workflowScript("verify-no-physical-sfc-reads-including-native-code.sh")
+        run = ci.workflowProgram("verify-no-physical-sfc-reads-including-native-code")
       }
       new Dynamic {
         name = "Qualify packed public entries in an isolated consumer"
         shell = "bash"
-        run = ci.workflowScript("qualify-packed-public-entries-in-an-isolated-consumer.sh")
+        run = ci.workflowProgram("qualify-packed-public-entries-in-an-isolated-consumer")
       }
       new Dynamic {
         name = "Stage the same source addon for supported Node and TypeScript consumers"
         shell = "bash"
-        run = ci.workflowScript("stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh")
+        run = ci.workflowProgram("stage-the-same-source-addon-for-supported-node-and-typescript-consumers")
       }
       new Dynamic {
         name = "Share packed exports and source addon without rebuilding native code"
