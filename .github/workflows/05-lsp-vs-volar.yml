@@ -116,7 +116,7 @@ jobs:
       - id: plan
         env:
           FIXTURES: ${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}
-        run: . "${{ env.VIZE_CI_FILES }}/plan.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/plan.sh"
 
   bench:
     name: lsp-vs-volar (${{ matrix.job.name }})
@@ -183,7 +183,7 @@ jobs:
         env:
           JOB: ${{ matrix.job.name }}
           FIXTURE_IDS: ${{ matrix.job.ids }}
-        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/measure.sh"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

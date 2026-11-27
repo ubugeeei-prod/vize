@@ -126,7 +126,7 @@ jobs {
       new Dynamic {
         id = "plan"
         env { FIXTURES = "${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}" }
-        run = ci.workflowScript("plan.sh")
+        run = ci.workflowProgram("plan")
       }
     }
   }
@@ -196,7 +196,7 @@ jobs {
           JOB = "${{ matrix.job.name }}"
           FIXTURE_IDS = "${{ matrix.job.ids }}"
         }
-        run = ci.workflowScript("measure.sh")
+        run = ci.workflowProgram("measure")
       }
       new Dynamic {
         uses = ci.uploadArtifact

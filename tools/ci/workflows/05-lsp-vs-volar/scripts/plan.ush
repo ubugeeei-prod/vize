@@ -1,0 +1,9 @@
+# Plan the benchmark jobs for the requested fixtures; an unknown fixture fails here instead of planning nothing.
+mod "../../../lib/github.ush" as github
+use $bin::{node}
+use std::string::words
+
+let fixtures = [argument for id in words $env::FIXTURES for argument in ["--fixture", id]]
+let jobs = node tools/benchmarks/scripts/lsp-vs-volar.ts --plan $fixtures
+
+github::output jobs $jobs

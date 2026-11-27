@@ -422,20 +422,21 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));
   assert.match(upload ?? "", /^        if: always\(\)$/m);
-  assert.match(workflow, /--meta "head=\$\(git rev-parse HEAD\)"/);
+  assert.match(workflow, /let head = git rev-parse HEAD\n/);
+  assert.match(workflow, /--meta \$"head=\$head"/);
   assert.match(
     workflow,
-    /\[ "\$GITHUB_EVENT_NAME" = pull_request \] && \[ "\$JOB" = scale-giant-sfc \]/,
+    /if \$env::GITHUB_EVENT_NAME == "pull_request" && job == "scale-giant-sfc" \{/,
   );
-  assert.match(workflow, /--rounds "\$rounds" --cycles "\$cycles"/);
+  assert.match(workflow, /--rounds \$rounds \\\n\s+--cycles \$cycles \\/);
   assert.match(workflow, /lsp-vs-volar-convergence\.ts/);
-  assert.match(workflow, /--vize "head-tsrs-fast=\$RUNNER_TEMP\/vize-head"/);
+  assert.match(workflow, /"--vize", \$"head-tsrs-fast=\$temp\/vize-head"/);
   assert.match(workflow, /head-tsrs-fast:CORSA_PATH=\$tsrs_fast/);
   assert.match(workflow, /export TSRS_FAST=1/);
-  assert.match(workflow, /exec "%s" "\$@"/);
-  assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
-  assert.match(workflow, /--tsserver-plugin "head=\$RUNNER_TEMP\/tsserver-plugin"/);
-  assert.match(workflow, /--tsserver-plugin "compare=\$RUNNER_TEMP\/tsserver-plugin-compare"/);
+  assert.match(workflow, /exec \\"\$tools\/\.bin\/tsrs\\" \\"\\\$@\\"/);
+  assert.doesNotMatch(workflow, /--fast \\"\\\$@\\"/);
+  assert.match(workflow, /"--tsserver-plugin", \$"head=\$temp\/tsserver-plugin"/);
+  assert.match(workflow, /"--tsserver-plugin", \$"compare=\$temp\/tsserver-plugin-compare"/);
   // The compare row stages the compare checkout's packages, plugin included.
   assert.match(workflow, /\$"\$env::RUNNER_TEMP\/compare\/npm"/);
   assert.match(

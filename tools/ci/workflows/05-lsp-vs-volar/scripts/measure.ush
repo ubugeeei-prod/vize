@@ -1,0 +1,103 @@
+# Measure the job's fixtures with every vize, Volar and TypeScript row, recording each row's binary and pin.
+mod "../../../lib/github.ush" as github
+use $bin::{chmod, df, free, git, node, taskset}
+use std::env::get
+use std::fs::{read_lines, read_text, write_text}
+use std::string::{to_int, words}
+
+# A `<package> <version>` line of a versions.txt, as `--meta <package>=<version>`.
+fn version_meta(line: String) -> String {
+  let fields = words $line
+  $"${fields[0]}=${fields[1]}"
+}
+
+fn version_metas(versions: String) -> List<String> {
+  [argument for line in read_lines $versions for argument in ["--meta", version_meta $line]]
+}
+
+let temp = $env::RUNNER_TEMP
+let tools = $"$temp/tools/node_modules"
+let job = $env::JOB
+let fixture_ids = words $env::FIXTURE_IDS
+let compare_ref = get COMPARE_REF
+let tsgo_mapper = get TSGO_MAPPER
+
+let mut rounds = $env::ROUNDS
+let mut cycles = $env::CYCLES
+# Keep the 10,000-block SFC in PR correctness coverage without making
+# every benchmark change repeat its full dispatch-only sample budget.
+if $env::GITHUB_EVENT_NAME == "pull_request" && job == "scale-giant-sfc" {
+  rounds = "1"
+  cycles = "1"
+}
+
+# The tsrs-fast rows run Corsa through this wrapper, which turns on tsrs's fast mode.
+let tsrs_fast = $"$temp/tsrs-fast"
+write_text $tsrs_fast $"#!/bin/sh\nexport TSRS_FAST=1\nexec \"$tools/.bin/tsrs\" \"\$@\"\n"
+chmod +x $tsrs_fast
+
+let mut args = [
+  "--vize", $"head=$temp/vize-head",
+  "--vize", $"head-tsrs-fast=$temp/vize-head",
+  "--vize-env", $"head-tsrs-fast:CORSA_PATH=$tsrs_fast",
+]
+for id in fixture_ids {
+  args = args + ["--fixture", id]
+}
+if compare_ref != "" {
+  args = args + [
+    "--vize", $"compare=$temp/vize-compare",
+    "--vize", $"compare-tsrs-fast=$temp/vize-compare",
+    "--vize-env", $"compare-tsrs-fast:CORSA_PATH=$tsrs_fast",
+    "--meta", $"compare=$compare_ref",
+  ]
+}
+if tsgo_mapper != "" {
+  # The mapper row reads the project's own TypeScript native host, not vize's pin.
+  let mapper_modules = $"$temp/mapper/node_modules"
+  args = args + ["--tsgo-mapper", $"$mapper_modules/@typescript/typescript-linux-x64/lib/tsc"]
+  args = args + ["--tsgo-mapper-version", tsgo_mapper, "--mapper-modules", mapper_modules]
+  args = args + version_metas $"$temp/mapper/versions.txt"
+}
+for assignment in words (get VIZE_ENV) {
+  args = args + ["--vize-env", $"head:$assignment", "--meta", $"env=$assignment"]
+  args = args + ["--vize-env", $"head-tsrs-fast:$assignment"]
+  if compare_ref != "" {
+    args = args + ["--vize-env", $"compare:$assignment", "--vize-env", $"compare-tsrs-fast:$assignment"]
+  }
+}
+if (get TSSERVER_PLUGIN) == "true" {
+  args = args + ["--tsserver-plugin", $"head=$temp/tsserver-plugin"]
+  if compare_ref != "" {
+    args = args + ["--tsserver-plugin", $"compare=$temp/tsserver-plugin-compare"]
+  }
+}
+args = args + version_metas $"$temp/tools/versions.txt"
+# Below 16 GiB available the session is killed and reported, so no server takes the runner down.
+args = args + ["--memory-reserve-gib", "16", "--meta", "memory-reserve=16GiB"]
+
+free -g
+df -h /tmp $temp
+let cpus = $env::CPUS
+# taskset numbers the CPUs from 0. `+ -1` because a bare `-` is a word, not subtraction.
+let last_cpu = to_int $cpus + -1
+let head = git rev-parse HEAD
+taskset -c $"0-$last_cpu" node tools/benchmarks/scripts/lsp-vs-volar.ts $args \
+  --tsgo $"$tools/@typescript/typescript-linux-x64/lib/tsc" \
+  --volar-root $"$temp/tools" \
+  --fixtures-dir $"$temp/projects" \
+  --rounds $rounds \
+  --cycles $cycles \
+  --meta $"head=$head" \
+  --meta $"cpus=$cpus" \
+  --meta $"rounds=$rounds" \
+  --meta $"cycles=$cycles" \
+  --out $"lsp-vs-volar-$job.md" \
+  --json $"lsp-vs-volar-$job.json" \
+  --logs $"lsp-vs-volar-logs-$job"
+github::summary (read_text $"lsp-vs-volar-$job.md")
+if fixture_ids.contains("scale-5k") {
+  node tools/benchmarks/scripts/lsp-vs-volar-convergence.ts \
+    --json $"lsp-vs-volar-$job.json" \
+    --fixture scale-5k
+}
