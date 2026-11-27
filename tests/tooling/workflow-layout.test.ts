@@ -94,7 +94,7 @@ function workflowRunnerLabels(
     const sourceRunner = sourceRunnerChanges.find(
       (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
     );
-    if (sourceRunner?.after === value["runs-on"]) return [];
+    if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
     if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
@@ -182,6 +182,9 @@ jobs:
 });
 
 test("the validation pool accepts only exact reviewed source job selectors", () => {
+  const missing = "jobs:\n  planner: {}\n";
+  assert.throws(() => workflowRunnerLabels(missing, ["planner"], "unreviewed.yml"));
+  assert.throws(() => workflowRunnerLabels(missing, [], "unreviewed.yml", ["planner"]));
   for (const row of sourceRunnerChanges) {
     const file = path.basename(row.workflow);
     const job = (id: string) => `jobs:\n  ${id}:\n    runs-on: ${row.after}\n`;
