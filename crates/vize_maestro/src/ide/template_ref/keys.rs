@@ -127,7 +127,7 @@ fn spellings(ctx: &IdeContext<'_>) -> Option<Vec<Spelling>> {
         )?;
     }
     if let Some(template) = descriptor.template.as_ref() {
-        if template.lang.as_deref().is_some_and(|lang| lang != "html") {
+        if !vize_l1::container::lang::is_html_template(template.lang.as_deref()) {
             return None;
         }
         template_spellings(
