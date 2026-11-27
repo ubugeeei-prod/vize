@@ -10,11 +10,11 @@
 
 use crate::context::LintContext;
 use oxc_ast::ast::{
-    Argument, ArrayExpressionElement, Expression, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey, Statement,
+    Argument, ArrayExpression, ArrayExpressionElement, Expression, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use vize_croquis::croquis::{OptionsDescriptor, normalize_options_template_binding_name};
-use vize_croquis::script_parser::{build_options_descriptor, collect_options_object};
+use vize_croquis::script_parser::collect_options_object;
 use vize_l0::String;
 
 /// The instance names the component defines, or `None` when its members
@@ -33,20 +33,27 @@ pub(super) fn instance_names(ctx: &LintContext<'_>) -> Option<Vec<String>> {
         return Some(analysis_names());
     };
     let program = &parsed.program;
-    let (object, names) = if let Some(object) = collect_options_object(program) {
-        (object, analysis_names())
+    // Croquis's descriptor already lists the members of the options objects
+    // it resolves; `defineNuxtComponent` options list their own here.
+    let (object, mut names, members) = if let Some(object) = collect_options_object(program) {
+        (object, analysis_names(), Members::AsyncData)
     } else {
         match exported_wrapper_options(program) {
             Exported::None => return Some(analysis_names()),
             Exported::Unresolved => return None,
-            Exported::Nuxt(object) => (
-                object,
-                descriptor_names(Some(&build_options_descriptor(object))),
-            ),
+            Exported::Nuxt(object) => (object, Vec::new(), Members::All),
         }
     };
-    let mut names = names;
-    resolve_unlisted_members(object, &mut names).then_some(names)
+    resolve_members(object, &mut names, members).then_some(names)
+}
+
+/// Which literal members [`resolve_members`] adds to the names.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Members {
+    /// Only the `asyncData()` return keys, which croquis does not track.
+    AsyncData,
+    /// Every member group.
+    All,
 }
 
 fn descriptor_names(descriptor: Option<&OptionsDescriptor>) -> Vec<String> {
@@ -117,8 +124,12 @@ fn unwrap_expression<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'
 }
 
 /// Whether every member the options object puts on the instance is literal,
-/// adding the `asyncData()` return keys the descriptor does not track.
-fn resolve_unlisted_members(object: &ObjectExpression<'_>, names: &mut Vec<String>) -> bool {
+/// adding the template spellings of the `members` it lists to `names`.
+fn resolve_members(
+    object: &ObjectExpression<'_>,
+    names: &mut Vec<String>,
+    members: Members,
+) -> bool {
     object.properties.iter().all(|property| {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             // `...base` can carry any option.
@@ -130,26 +141,40 @@ fn resolve_unlisted_members(object: &ObjectExpression<'_>, names: &mut Vec<Strin
         let Some(key) = key_name(&property.key) else {
             return false;
         };
+        let listed = (members == Members::All).then_some(&mut *names);
         let value = unwrap_expression(&property.value);
         match key {
             "mixins" | "extends" => {
                 matches!(value, Expression::ArrayExpression(array) if array.elements.is_empty())
             }
             "props" | "inject" => match value {
-                Expression::ArrayExpression(array) => array
-                    .elements
-                    .iter()
-                    .all(|element| matches!(element, ArrayExpressionElement::StringLiteral(_))),
-                Expression::ObjectExpression(members) => literal_keys(members, None),
+                Expression::ArrayExpression(array) => literal_strings(array, listed),
+                Expression::ObjectExpression(object) => literal_keys(object, listed),
                 _ => false,
             },
             "computed" | "methods" => {
-                matches!(value, Expression::ObjectExpression(members) if literal_keys(members, None))
+                matches!(value, Expression::ObjectExpression(object) if literal_keys(object, listed))
             }
-            "data" | "setup" => returned_members(value, None),
+            "data" | "setup" => returned_members(value, listed),
             "asyncData" => returned_members(value, Some(&mut *names)),
             _ => true,
         }
+    })
+}
+
+/// Whether an array-form `props`/`inject` lists only string literals,
+/// pushing their template spellings into `names` when given.
+fn literal_strings(array: &ArrayExpression<'_>, mut names: Option<&mut Vec<String>>) -> bool {
+    array.elements.iter().all(|element| {
+        let ArrayExpressionElement::StringLiteral(string) = element else {
+            return false;
+        };
+        if let Some(names) = names.as_deref_mut()
+            && let Some(name) = normalize_options_template_binding_name(string.value.as_str())
+        {
+            names.push(name);
+        }
+        true
     })
 }
 

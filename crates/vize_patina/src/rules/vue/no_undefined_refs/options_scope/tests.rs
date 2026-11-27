@@ -82,6 +82,12 @@ fn literal_members_still_report_the_rest() {
         "export default { inheritAttrs: false, props: ['shared'] }",
         "export default defineComponent({ inject: { shared: {} } })",
         "export default defineNuxtComponent({ props: ['shared'] })",
+        "export default defineNuxtComponent({ props: { shared: String } })",
+        "export default defineNuxtComponent({ inject: ['shared'] })",
+        "export default defineNuxtComponent({ computed: { shared() { return 1 } } })",
+        "export default defineNuxtComponent({ methods: { shared() {} } })",
+        "export default defineNuxtComponent({ data: () => ({ shared: 1 }) })",
+        "export default defineNuxtComponent({ setup() { return { shared: 1 } } })",
         "export default defineNuxtComponent({ async asyncData() { return { shared: 1 } } })",
         "export default defineNuxtComponent({ asyncData: () => ({ shared: 1 }) })",
     ] {

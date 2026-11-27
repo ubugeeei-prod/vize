@@ -781,7 +781,7 @@ pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescri
 /// Member names and spans are recorded verbatim (no kebab→camel normalization);
 /// array-form `props`/`inject` entries record the full string-literal span
 /// including quotes, matching how lint diagnostics point at the declaration.
-pub fn build_options_descriptor(object: &ObjectExpression<'_>) -> OptionsDescriptor {
+fn build_options_descriptor(object: &ObjectExpression<'_>) -> OptionsDescriptor {
     let mut option_keys = Vec::new();
     let mut members = Vec::new();
 

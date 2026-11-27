@@ -343,10 +343,9 @@ mod tests {
         assert_eq!(checked, 6);
 
         let result = create_linter().lint_sfc(source, "app/components/Search.client.vue");
-        assert!(
-            result.diagnostics[0].message.contains("\"Search\""),
-            "{}",
-            result.diagnostics[0].message
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            "Component name \"Search\" should be multi-word to avoid conflicts with HTML elements"
         );
     }
 
