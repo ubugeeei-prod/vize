@@ -25,7 +25,7 @@ jobs:
       # Groups partition `testedPackages`; see
       # tools/config/vite-plus/tested-package-groups.ts.
       matrix: ${{ fromJSON(inputs.js-plan).matrix }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -164,7 +164,7 @@ jobs:
   pr-oxlint-project-qualification:
     name: PR Oxlint original project qualification
     if: ${{ inputs.run-original-project }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -285,7 +285,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: { surface: [fresco, ui] }
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
