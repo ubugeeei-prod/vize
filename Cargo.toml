@@ -230,6 +230,12 @@ parcel_selectors = "=0.28.3"
 
 # Terminal / layout
 crossterm = "=0.29.0"
+# Safe system-call wrappers. Both crates are already in the graph on Unix:
+# rustix through crossterm and tempfile, errno through signal-hook-registry.
+# Depending on them directly lets a crate call their safe APIs instead of
+# declaring the libc calls itself. Each user enables the rustix modules it needs.
+rustix = { version = "=1.1.6", default-features = false, features = ["std"] }
+errno = { version = "=0.3.14", default-features = false }
 taffy = "=0.10.1"
 unicode-width = "=0.2.2"
 unicode-segmentation = "=1.13.3"
