@@ -10,6 +10,8 @@ use tower_lsp::lsp_types::{Location, Position, Range};
 
 use super::{IdeContext, definition::script};
 
+pub(crate) mod keys;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct TemplateRefTarget {
     pub(crate) ref_name: String,
