@@ -30,7 +30,7 @@
 //!   prefix then displaced it at the same position, so an edit emits as
 //!   `prefix` then `suffix`.
 
-use vize_l0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String, string_builder::TextBuf};
 
 /// Splice pure insertions into `original` in one forward pass.
 ///
@@ -61,7 +61,30 @@ pub(super) fn splice_insertions(
         .iter()
         .map(|(_, prefix, suffix)| prefix.len() + suffix.len())
         .sum();
-    let mut result = String::with_capacity(original.len() + inserted);
+    let capacity = original.len() + inserted;
+    // Output that needs the heap anyway is assembled in a plain heap buffer,
+    // whose appends inline; it then moves into the result without a copy.
+    if capacity > core::mem::size_of::<String>() {
+        let mut result = TextBuf::with_capacity(capacity);
+        emit_insertions(original, &all_rewrites, wrapper_offset, |piece| {
+            result.push_str(piece);
+        });
+        return result.into_compact();
+    }
+    let mut result = String::with_capacity(capacity);
+    emit_insertions(original, &all_rewrites, wrapper_offset, |piece| {
+        result.push_str(piece);
+    });
+    result
+}
+
+#[inline(always)]
+fn emit_insertions(
+    original: &str,
+    all_rewrites: &[(usize, String, String)],
+    wrapper_offset: usize,
+    mut emit: impl FnMut(&str),
+) {
     let mut cursor = 0usize;
     for (pos, prefix, suffix) in all_rewrites.iter().rev() {
         let pos = pos.saturating_sub(wrapper_offset);
@@ -70,13 +93,12 @@ pub(super) fn splice_insertions(
         if pos > original.len() {
             continue;
         }
-        result.push_str(original.get(cursor..pos).unwrap_or_default());
-        result.push_str(prefix);
-        result.push_str(suffix);
+        emit(original.get(cursor..pos).unwrap_or_default());
+        emit(prefix);
+        emit(suffix);
         cursor = pos;
     }
-    result.push_str(original.get(cursor..).unwrap_or_default());
-    result
+    emit(original.get(cursor..).unwrap_or_default());
 }
 
 /// Splice whole-span replacements into `original` in one forward pass.
@@ -111,7 +133,7 @@ pub(super) fn splice_replacements(
 #[cfg(test)]
 mod tests {
     use super::{splice_insertions, splice_replacements};
-    use vize_l0::{FxHashSet, String};
+    use vize_l0::{FxHashSet, String, string_builder::TextBuf};
 
     /// The retired string-rewriting loop, kept verbatim as the test oracle:
     /// stable descending sort, then end-to-start `insert_str` with the
