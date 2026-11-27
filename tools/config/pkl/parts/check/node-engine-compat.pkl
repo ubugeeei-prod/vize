@@ -23,7 +23,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version` = "${{ matrix.node-version }}"
       cache = true
       `cache-save` = false

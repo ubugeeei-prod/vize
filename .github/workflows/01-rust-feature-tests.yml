@@ -57,6 +57,7 @@ jobs:
           frontend-jobs: "8"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with:
+          version: 1.8.0
           node-version-file: package.json
           cache: true
           run-install: false

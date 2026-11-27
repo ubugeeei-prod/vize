@@ -255,7 +255,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ matrix.lane != 'none' }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false
@@ -378,7 +378,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false

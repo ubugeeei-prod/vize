@@ -255,6 +255,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "Node 24 and package manager shims must be active before loading matrix scripts",
   );
   assert.deepEqual(steps[nodeSetupIndex].with, {
+    version: "1.8.0",
     "node-version-file": "package.json",
     cache: true,
     "run-install": false,

@@ -10,7 +10,7 @@ const state = fs.existsSync(process.env.STATE_PATH)
   : { published: false };
 if (
   args[0] === "dlx" &&
-  args[2] === "ovsx@^1.0.0" &&
+  args[2] === "ovsx@1.4.0" &&
   args[3] === "ovsx" &&
   args[4] === "create-namespace"
 ) {
@@ -21,7 +21,7 @@ if (
   console.error("Namespace already exists");
   process.exit(17);
 }
-if (args[0] === "dlx" && args[2] === "ovsx@^1.0.0" && args[3] === "ovsx" && args[4] === "publish") {
+if (args[0] === "dlx" && args[2] === "ovsx@1.4.0" && args[3] === "ovsx" && args[4] === "publish") {
   state.published = true;
   fs.writeFileSync(process.env.STATE_PATH, JSON.stringify(state));
   process.exit(0);

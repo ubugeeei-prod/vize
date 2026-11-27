@@ -33,6 +33,23 @@ export function restorePinnedWildAction(
   return restored;
 }
 
+/** The Vite+ CLI release that `vpVersion` in tools/ci/lib/Actions.pkl pins. */
+export const pinnedVpVersion = "1.8.0";
+
+/** Reverse the Vite+ CLI pin on setup-vp steps recorded before it existed. */
+export function restoreVpVersionPin(
+  steps: Array<{ uses?: string; with?: Record<string, unknown> }>,
+): number {
+  let restored = 0;
+  for (const step of steps) {
+    if (!step.uses?.startsWith("voidzero-dev/setup-vp@")) continue;
+    assert.equal(step.with?.version, pinnedVpVersion);
+    delete step.with.version;
+    restored += 1;
+  }
+  return restored;
+}
+
 /** Reverse the reviewed Rust 1.100.0 pin (#12954) in step inputs and environments. */
 export function restoreRustToolchainPin(
   steps: Array<{ with?: Record<string, unknown>; env?: Record<string, unknown> }>,

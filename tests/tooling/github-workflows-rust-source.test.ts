@@ -14,6 +14,7 @@ import {
   readRepoFile,
   requireDailySourceContracts,
   restoreRustToolchainPin,
+  restoreVpVersionPin,
   type DailyRustSourceWorkflow,
 } from "./support/github-workflows.ts";
 
@@ -331,6 +332,7 @@ function requireSplitRustRecipes(
     const prefix = structuredClone(report.steps.slice(0, 3)); // + sparse checkout (#6830)
     assert.equal(prefix[0].with?.["sparse-checkout-cone-mode"], false, "closure test pins paths");
     delete prefix[0].with;
+    assert.equal(restoreVpVersionPin(prefix), 1);
     assert.equal(
       digest(prefix),
       "649b94e358e52ae35218f47ec18138006bbc76d571f9f8bbb0aa58af7156acc7",

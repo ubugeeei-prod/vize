@@ -182,5 +182,5 @@ test("Open VSX namespace failures report trimmed diagnostics and stop before pub
     exists.stdout,
     /^Open VSX namespace ubugeeei already exists; continuing to publish\.\n/,
   );
-  assert.match(fs.readFileSync(log, "utf8"), /dlx -p ovsx@\^1\.0\.0 ovsx publish /);
+  assert.match(fs.readFileSync(log, "utf8"), /dlx -p ovsx@1\.4\.0 ovsx publish /);
 });

@@ -17,6 +17,7 @@ import {
   checkWorkflowJobSources,
   readRepoFile,
   restorePinnedWildAction,
+  restoreVpVersionPin,
   restoreRustToolchainPin,
   root,
 } from "./support/github-workflows.ts";
@@ -270,6 +271,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   const full = parse(readAutomationPrograms(".github/workflows/full-qualification.yml"));
   const original = structuredClone(full.jobs);
   // This later transfer from Check has a separate complete job contract.
+  assert.equal(restoreVpVersionPin(original["branch-coverage"].steps), 1);
   assert.equal(
     createHash("sha256").update(JSON.stringify(original["branch-coverage"])).digest("hex"),
     "1ee09264dca3bdb4046838b6066b0f4432482b80124ce59484c21a1575b4f65b",
@@ -430,6 +432,11 @@ void test("full-only extraction preserves all seventeen complete original job ob
     0,
   );
   assert.equal(restoredPins, 1);
+  const restoredVpPins = originalJobs.reduce(
+    (count: number, job: Job) => count + restoreVpVersionPin(job.steps ?? []),
+    0,
+  );
+  assert.equal(restoredVpPins, 7);
   // #7083 extends the authored allocation gate with its helper-rich witness.
   // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);

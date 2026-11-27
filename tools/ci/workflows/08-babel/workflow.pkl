@@ -48,7 +48,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp121
         with {
-          version = "latest"
+          version = ci.vpVersion
           `node-version` = "24.14.0"
           `run-install` = false
           cache = true

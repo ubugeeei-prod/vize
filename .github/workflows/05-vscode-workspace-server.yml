@@ -46,7 +46,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: package.json
           run-install: false
           cache: true
@@ -98,7 +98,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: package.json
           run-install: false
           cache: true

@@ -8,6 +8,7 @@ import {
   stringify,
   type Document,
   type Node,
+  type YAMLMap,
 } from "yaml";
 
 export type ConfigValue =
@@ -80,22 +81,52 @@ function sequenceSources(previous: ConfigValue[], next: ConfigValue[], ordered: 
   return indices;
 }
 
+// A mapping that gains one scalar key keeps its presentation: the new pair is
+// written in place, before the key that follows it in the new value.
+function insertedKey(
+  node: YAMLMap,
+  value: Record<string, ConfigValue>,
+  edits: ScalarEdit[],
+  source: string,
+): boolean {
+  const keys = Object.keys(value);
+  if (node.items.length === keys.length) return true;
+  const present = node.items.map((pair) => (isScalar(pair.key) ? pair.key.value : undefined));
+  const added = keys.filter((key) => !present.includes(key));
+  if (node.items.length + 1 !== keys.length || added.length !== 1) return false;
+  const key = added[0]!;
+  const child = value[key]!;
+  if (child !== null && typeof child === "object") return false;
+  const following = node.items[keys.indexOf(key)];
+  const start = isScalar(following?.key) ? following.key.range?.[0] : undefined;
+  if (start === undefined) return false;
+  const pair = stringify({ [key]: child }, { lineWidth: 0 }).trimEnd();
+  if (/[\r\n]/u.test(pair)) return false;
+  const lineStart = source.lastIndexOf("\n", start - 1) + 1;
+  const indent = source.slice(lineStart, start);
+  const separator = node.flow ? ", " : /^[ ]*$/u.test(indent) ? "\n" + indent : undefined;
+  if (separator === undefined) return false;
+  edits.push({ start, end: start, text: pair + separator });
+  return true;
+}
+
 function scalarEdits(
   node: Node | null,
   previous: ConfigValue,
   value: ConfigValue,
   edits: ScalarEdit[],
   ordered: boolean,
+  source: string,
 ): boolean {
   if (isMap(node) && isMapping(previous) && isMapping(value)) {
+    if (!insertedKey(node, value, edits, source)) return false;
     return (
-      node.items.length === Object.keys(value).length &&
       node.items.every((pair) => {
         if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
         const key = pair.key.value;
         return (
           Object.hasOwn(value, key) &&
-          scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered)
+          scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered, source)
         );
       })
     );
@@ -109,7 +140,7 @@ function scalarEdits(
       (plainValues ||
         sequenceSources(previous, value, ordered).every((source, index) => source === index)) &&
       value.every((child, index) =>
-        scalarEdits(node.items[index] as Node | null, previous[index]!, child, edits, ordered),
+        scalarEdits(node.items[index] as Node | null, previous[index]!, child, edits, ordered, source),
       )
     );
   }
@@ -135,7 +166,7 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
     if (existing !== undefined) {
       if (sameValue(existing, value, ordered)) return current;
       const edits: ScalarEdit[] = [];
-      if (scalarEdits(document.contents, existing, value, edits, ordered)) {
+      if (scalarEdits(document.contents, existing, value, edits, ordered, current)) {
         let text = current;
         for (const { start, end, text: replacement } of edits.reverse()) {
           text = text.slice(0, start) + replacement + text.slice(end);

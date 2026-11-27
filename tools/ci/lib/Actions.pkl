@@ -12,6 +12,10 @@ setupRust: ActionPin = "dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d
 setupNode: ActionPin = "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38"
 setupVp: ActionPin = "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa"
 setupVp121: ActionPin = "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af"
+/// The Vite+ CLI release every setup-vp step installs. Without an explicit
+/// version the action installs whatever is newest when the job starts, so two
+/// jobs of one run could use different CLIs. Raise it in its own change.
+vpVersion = "1.8.0"
 setupWild: ActionPin = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203"
 setupBun: ActionPin = "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
 cache: ActionPin = "actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae"
@@ -57,6 +61,7 @@ function wild(): Dynamic = new {
 function workspaceVp(): Dynamic = new {
   uses = setupVp
   with {
+    version = vpVersion
     `node-version-file` = "package.json"
     cache = true
     `run-install` = false

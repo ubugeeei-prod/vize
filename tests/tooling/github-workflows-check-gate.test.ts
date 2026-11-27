@@ -312,6 +312,7 @@ test("full JS qualification retains independent native builds and strictly gates
   const setup = report.runs.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
   assert.ok(setup);
   assert.deepEqual(setup.with, {
+    version: "1.8.0",
     "node-version-file": "package.json",
     cache: false,
     "run-install": false,

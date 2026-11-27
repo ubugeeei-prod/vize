@@ -37,6 +37,7 @@ test("setup-runtime-package-managers accepts package.json and matrix Node source
     if: "inputs.node-version == ''",
     uses: "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa",
     with: {
+      version: "1.8.0",
       "node-version-file": "${{ inputs.node-version-file }}",
       cache: "${{ inputs.cache }}",
       "run-install": false,
@@ -47,6 +48,7 @@ test("setup-runtime-package-managers accepts package.json and matrix Node source
     if: "inputs.node-version != ''",
     uses: "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa",
     with: {
+      version: "1.8.0",
       "node-version": "${{ inputs.node-version }}",
       cache: "${{ inputs.cache }}",
       "run-install": false,
