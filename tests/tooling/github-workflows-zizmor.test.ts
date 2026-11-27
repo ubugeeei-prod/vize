@@ -66,7 +66,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
     job.if,
     "${{ !cancelled() && (needs.plan.result != 'success' || needs.plan.outputs.audit != 'false') }}",
   );
-  assert.equal(job["runs-on"], "ubuntu-24.04");
+  assert.equal(job["runs-on"], "blacksmith-4vcpu-ubuntu-2404");
   assert.equal(job["timeout-minutes"], 10);
   assert.notEqual(job["continue-on-error"], true);
   assert.deepEqual(job.permissions, {
@@ -100,7 +100,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
 test("zizmor plans with read-only API calls and no candidate checkout", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "11-zizmor.yml"));
   const plan = workflow.jobs.plan;
-  assert.equal(plan["runs-on"], "ubuntu-24.04");
+  assert.equal(plan["runs-on"], "blacksmith-4vcpu-ubuntu-2404");
   assert.equal(plan["timeout-minutes"], 5);
   assert.deepEqual(plan.permissions, { contents: "read", "pull-requests": "read" });
   assert.equal(plan.outputs.audit, "${{ steps.plan.outputs.audit || 'true' }}");

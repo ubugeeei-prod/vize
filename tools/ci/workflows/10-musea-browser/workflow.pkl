@@ -25,7 +25,7 @@ concurrency {
 jobs {
   plan {
     name = "Select affected Musea integrations"
-    `runs-on` = ci.hostedLinux
+    `runs-on` = ci.linuxSmall
     `timeout-minutes` = 3
     outputs {
       native = "${{ steps.plan.outputs.musea-native }}"

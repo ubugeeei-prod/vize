@@ -41,7 +41,7 @@ permissions { contents = "read" }
 
 jobs {
   `real-vite-plugin-types` {
-    `runs-on` = ci.hostedLinux
+    `runs-on` = ci.linuxSmall
     `timeout-minutes` = 5
     steps = new Listing {
       ci.use(ci.checkout)

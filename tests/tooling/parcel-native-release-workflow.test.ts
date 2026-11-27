@@ -74,7 +74,7 @@ test("pull requests build per-platform packages only for native plugin changes",
   assert.deepEqual(parsed.on.schedule, [{ cron: "37 2 * * *" }]);
   const plan = parsed.jobs["packaging-changes"]!;
   assert.equal(plan.if, "${{ github.event_name == 'pull_request' }}");
-  assert.equal(plan["runs-on"], "ubuntu-24.04");
+  assert.equal(plan["runs-on"], "blacksmith-4vcpu-ubuntu-2404");
   assert.deepEqual(plan.outputs, { packages: "${{ steps.changes.outputs.packages }}" });
   const [detect] = plan.steps ?? [];
   assert.equal(detect?.uses, "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706");
