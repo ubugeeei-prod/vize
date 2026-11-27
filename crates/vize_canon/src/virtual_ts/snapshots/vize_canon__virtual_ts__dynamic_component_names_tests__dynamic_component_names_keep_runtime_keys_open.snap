@@ -255,9 +255,10 @@ const handler = () => {}
   void __vize_prop_check_0_static_prop;
   (undefined as unknown as __Child_Check_0)({
     ...{} as { "onSave": never },
-    ...{ [propName]: dynamicValue },
+    ...{ [(undefined as unknown as <S extends PropertyKey>(name: S) => S extends string ? $CamelizedPropKey_0<S> : S)(propName)]: dynamicValue },
     "staticProp": staticValue,
   });
+  type $CamelizedPropKey_0<S extends string> = S extends `${infer H}-${infer C}${infer T}` ? `${H}${Capitalize<C>}${$CamelizedPropKey_0<T>}` : S;
   type $SlotContract_0 = $StructuralSlots<typeof Child>;
   const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
   void __vize_required_slots_0;

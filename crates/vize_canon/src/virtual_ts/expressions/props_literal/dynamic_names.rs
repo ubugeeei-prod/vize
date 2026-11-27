@@ -9,6 +9,11 @@
 //! spread it raises no `TS1117`/`TS2783` against a static key of the same
 //! name.
 //!
+//! Vue camelizes a prop key at runtime, so `:[name]` with `name: 'some-message'`
+//! sets `someMessage`. The key therefore passes through a type-level camelize,
+//! [`CAMELIZED_KEY_ALIAS`], which the checked call declares after itself only
+//! when the usage has such a binding; a `string` name stays `string`.
+//!
 //! Like a `v-bind="bag"` spread, the entry owns its name and value
 //! expressions: both are mapped to their authored bytes, and
 //! `scope::component_prop_expressions` drops their bare `void (…)` copies.
@@ -22,6 +27,9 @@ use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::append;
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
+
+/// The block-local camelize alias of the props call `$CamelizedPropKey_{idx}`.
+const CAMELIZED_KEY_ALIAS: &str = "$CamelizedPropKey_";
 
 /// Whether `prop` is an authored `v-bind:[name]="value"` (or `:[name]`).
 pub(crate) fn is_dynamic_name_binding(template: Option<&str>, prop: &PassedProp) -> bool {
@@ -42,9 +50,10 @@ pub(super) fn append_dynamic_name_entries(
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) {
-    if source_context.aria_value_contract_index.is_none() {
+    let Some(idx) = source_context.aria_value_contract_index else {
         return;
-    }
+    };
+    let property_key = crate::virtual_ts::generated_names::lib("PropertyKey");
     for prop in &usage.props {
         if !is_dynamic_name_binding(source_context.template, prop) {
             continue;
@@ -52,7 +61,10 @@ pub(super) fn append_dynamic_name_entries(
         let Some(value) = prop.value.as_deref() else {
             continue;
         };
-        append!(*ts, "{expr_indent}  ...{{ [");
+        append!(
+            *ts,
+            "{expr_indent}  ...{{ [(undefined as unknown as <S extends {property_key}>(name: S) => S extends string ? {CAMELIZED_KEY_ALIAS}{idx}<S> : S)("
+        );
         append_mapped(
             ts,
             mappings,
@@ -60,7 +72,7 @@ pub(super) fn append_dynamic_name_entries(
             name_source_range(source_context, prop),
             (template_binding_access, source_context, usage),
         );
-        ts.push_str("]: ");
+        ts.push_str(")]: ");
         append_mapped(
             ts,
             mappings,
@@ -70,6 +82,29 @@ pub(super) fn append_dynamic_name_entries(
         );
         ts.push_str(" },\n");
     }
+}
+
+/// Declare the camelize alias the dynamic keys of props call `idx` read, when
+/// `usage` has one. Vue's `camelize` uppercases the character after each `-`.
+pub(crate) fn append_camelized_key_alias(
+    ts: &mut crate::virtual_ts::TextBuf,
+    usage: &ComponentUsage,
+    template: Option<&str>,
+    idx: usize,
+    indent: &str,
+) {
+    if !usage
+        .props
+        .iter()
+        .any(|prop| is_dynamic_name_binding(template, prop))
+    {
+        return;
+    }
+    let capitalize = crate::virtual_ts::generated_names::lib("Capitalize");
+    append!(
+        *ts,
+        "{indent}type {CAMELIZED_KEY_ALIAS}{idx}<S extends string> = S extends `${{infer H}}-${{infer C}}${{infer T}}` ? `${{H}}${{{capitalize}<C>}}${{{CAMELIZED_KEY_ALIAS}{idx}<T>}}` : S;\n"
+    );
 }
 
 fn append_mapped(
