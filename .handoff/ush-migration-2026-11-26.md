@@ -1,5 +1,19 @@
 # sh → ush migration: handoff (2026-11-26, about 21:30 JST)
 
+## Update 2026-11-27, about 14:00 JST (supersedes the matching items below)
+
+- ush #198 and the v0.20.1 release (#199, tag `v0.20.1`, assets and `sha256sums.txt` published) are done.
+- vize #13729 has two more commits:
+  - `bc3bb8a417`: the generator refuses a build that calls the optional ush runtime (marker `__ush_std_host() {`), because such a build exits 127 without ush; tests are in `tests/tooling/ush-programs.test.ts`;
+  - `5489c4fa43`: a `tools/README.md` note on the portable std.
+- #13729's red shard (`vm-programs.test.ts` on `editors/vscode/test/workspace-trust.test.ts`) comes from main's #13745. The fix is #13773 (auto-merge). After it merges, merge main into `ci/ush-foundation` so CI runs on a fresh merge ref.
+- `ci/ush-05-06` (`3df67a33f5`) now has:
+  - the v0.20.1 pin commit `9423dff00f` (flake, lock and setup-ush sums);
+  - 05-lsp-vs-volar `plan`/`measure` in ush. Under stub commands they match the old argv, output, summary and wrapper byte for byte.
+  - Cherry-pick `9423dff00f` onto `ci/ush-08` and `ci/ush-07-11` when rebasing them.
+- Pitfall: `std::int::sub` and other runtime-backed std functions compile fine but need ush when the build runs. Use `n + -1`.
+- The `vize-ush-07-11` and `vize-ush-08` worktrees were removed (branches pushed); recreate them from the branches.
+
 ## The goal (the user's words, still in force)
 
 > Retire the sh and ts scripts entirely and migrate to ubugeeei-prod/ush (phase 1: sh only). Write real ush, never `shell """`. Commit the compiled `.sh` under `./**/compiled/` so outside developers need no extra setup. If ush lacks a feature, commit to ush and take it through a release. Make setup one nix command. Soundness of design first, and readability everywhere.
