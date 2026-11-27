@@ -91,6 +91,19 @@ impl<'a> Emitter<'a, '_> {
                     }),
                     block,
                 );
+            } else if part.value.text.starts_with('<') {
+                // As the retained lane does: the runtime parses a template
+                // string that opens with `<` as markup, so such text is
+                // written into a placeholder text node instead.
+                self.register(id, &EmitDocument::plain(" "));
+                self.ir.standalone_text_elements.insert(id);
+                let mut values = Vec::new_in(&self.allocator);
+                values.push(self.spanned(part.value, true, Some(part.span)));
+                block.operation.push(OperationNode::SetText(SetTextIRNode {
+                    element: id,
+                    is_element: false,
+                    values,
+                }));
             } else {
                 let text = part.value.text;
                 let mut template = EmitDocument::new(self.source.is_some());
