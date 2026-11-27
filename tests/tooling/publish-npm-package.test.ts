@@ -374,7 +374,7 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
     assert.deepEqual(fs.readFileSync(argsLogPath, "utf8").trim().split("\n"), [
       "dlx",
       "-p",
-      "@vscode/vsce@^3.3.2",
+      "@vscode/vsce@3.9.1",
       "vsce",
       "publish",
       "--no-dependencies",
