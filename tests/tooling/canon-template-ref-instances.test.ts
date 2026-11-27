@@ -41,13 +41,20 @@ function project(files: Record<string, string>): string {
   return directory;
 }
 
-async function compare(directory: string, expected: string[]): Promise<void> {
+async function compare(
+  directory: string,
+  expected: string[],
+  vizeOnly: object[] = [],
+): Promise<void> {
   const oracle = vueTscDiagnostics(directory).sort(compareIdentity);
   assert.deepEqual(
     oracle.map((d) => `${d.file}:${d.line}:${d.column} TS${d.code}`),
     expected,
   );
-  assert.deepEqual((await check(directory)).map(diagnosticIdentity).sort(compareIdentity), oracle);
+  assert.deepEqual(
+    (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
+    [...oracle, ...vizeOnly].sort(compareIdentity),
+  );
 }
 
 const holder = (
@@ -212,7 +219,7 @@ defineExpose({ size: 1 });
   }
 });
 
-test("explicit and nested template refs retain Vue signatures beside inferred aliases", async () => {
+test("explicit template refs retain Vue signatures and nested calls check their keys", async () => {
   const app = (extra = "") => `<script setup lang="ts">
 import { useTemplateRef as r } from 'vue';
 const __vizeInferRef = 7;
@@ -241,8 +248,11 @@ local.value?.own.toFixed();
     composables: { useTemplateRef: ["useTemplateRef", "templateRef", "r"] },
   };
   fs.writeFileSync(configFile, JSON.stringify(config));
+  // Vize infers a call inside a local function too, so the unregistered key
+  // of `nested` is reported where vue-tsc keeps Vue's `unknown` signature.
+  const nestedKey = { file: "App.vue", line: 6, column: 30, code: 2339 };
   try {
-    await compare(directory, []);
+    await compare(directory, [], [nestedKey]);
     fs.writeFileSync(
       path.join(directory, "App.vue"),
       app(`explicit.value = null;
@@ -257,10 +267,10 @@ const missing = r('absent'); void missing;`),
     );
     assert.deepEqual(
       (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
-      oracle,
+      [...oracle, nestedKey].sort(compareIdentity),
     );
     fs.writeFileSync(path.join(directory, "App.vue"), app());
-    await compare(directory, []);
+    await compare(directory, [], [nestedKey]);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
