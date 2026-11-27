@@ -15,7 +15,6 @@ import {
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 export function resolveVitePlus() {
   const require = createRequire(path.resolve("package.json"));
@@ -33,6 +32,8 @@ export function resolveVitePlus() {
 
 const catalogs = new Map<string, Set<string>>();
 const CATALOG_CACHE_LIMIT = 8;
+const CATALOG_SOURCE = "export {};\n";
+const CATALOG_SOURCE_FILE = "catalog.ts";
 const CATALOG_PACKAGE = '{"name":"vize-rule-catalog","private":true}';
 let preparedCatalogRoot: string | undefined;
 
@@ -165,13 +166,24 @@ function managedCatalogWorkspace(): string {
   ensurePrivateDirectory(directory);
   recoverInterruptedWrites(directory);
   preparedCatalogRoot = directory;
-  const manifest = path.join(directory, "package.json");
-  try {
-    if (readFileSync(manifest, "utf8") === CATALOG_PACKAGE) return directory;
-  } catch {
-    // The exclusive atomic publication below owns missing or invalid state.
+  for (const [name, contents] of [
+    ["package.json", CATALOG_PACKAGE],
+    [CATALOG_SOURCE_FILE, CATALOG_SOURCE],
+  ]) {
+    const file = path.join(directory, name);
+    try {
+      const metadata = lstatSync(file);
+      if (
+        metadata.isFile() &&
+        !metadata.isSymbolicLink() &&
+        readFileSync(file, "utf8") === contents
+      )
+        continue;
+    } catch {
+      // Publish missing or invalid workspace inputs exclusively below.
+    }
+    atomicWrite(file, contents);
   }
-  atomicWrite(manifest, CATALOG_PACKAGE);
   return directory;
 }
 
@@ -179,6 +191,10 @@ function temporaryCatalogWorkspace(): { directory: string; cleanup(): void } {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-oxlint-rules-"));
   try {
     writeFileSync(path.join(directory, "package.json"), CATALOG_PACKAGE, {
+      flag: "wx",
+      mode: 0o600,
+    });
+    writeFileSync(path.join(directory, CATALOG_SOURCE_FILE), CATALOG_SOURCE, {
       flag: "wx",
       mode: 0o600,
     });
@@ -190,6 +206,28 @@ function temporaryCatalogWorkspace(): { directory: string; cleanup(): void } {
     directory,
     cleanup: () => rmSync(directory, { recursive: true, force: true }),
   };
+}
+
+/** Vite+ can reject an ignored workspace before it forwards --rules to Oxlint. */
+function hasNoLintInputs(output: string): boolean {
+  try {
+    const start = output.indexOf("{");
+    if (start < 0) return false;
+    const report: unknown = JSON.parse(output.slice(start));
+    return (
+      report !== null &&
+      typeof report === "object" &&
+      "number_of_files" in report &&
+      report.number_of_files === 0 &&
+      "number_of_rules" in report &&
+      report.number_of_rules === null &&
+      "diagnostics" in report &&
+      Array.isArray(report.diagnostics) &&
+      report.diagnostics.length === 0
+    );
+  } catch {
+    return false;
+  }
 }
 
 /** Only disable rules supported by the consumer's bundled Oxlint. */
@@ -204,32 +242,44 @@ export function availableVueRules(): Set<string> {
     return stored;
   }
   let directory: string;
+  let managed = true;
   let cleanup = () => {};
   try {
     directory = managedCatalogWorkspace();
   } catch {
     const temporary = temporaryCatalogWorkspace();
+    managed = false;
     directory = temporary.directory;
     cleanup = () => temporary.cleanup();
   }
   try {
     // A standalone project prevents recursive loading of defineConfig while
     // asking the installed CLI for its public rule catalog.
-    // Vite+ may select lintable inputs before forwarding --rules. This module
-    // is an existing JS/TS input in both source and published packages; JSON
-    // manifests are not lintable in every supported CLI. Ignore rules must
-    // not exclude the installed module's node_modules directory.
-    const result = spawnSync(
-      process.execPath,
-      [binary, "lint", "--rules", "--format=json", "--no-ignore", fileURLToPath(import.meta.url)],
-      {
-        cwd: directory,
-        encoding: "utf8",
-        env: process.env,
-        timeout: 60_000,
-        maxBuffer: 4 * 1024 * 1024,
-      },
-    );
+    // Vite+ may select lintable inputs before forwarding --rules. Keep that
+    // input in the owned workspace: consumer dist/node_modules exclusions
+    // must not discard the installed module used to discover its rules.
+    const discover = (cwd: string) =>
+      spawnSync(
+        process.execPath,
+        [
+          binary,
+          "lint",
+          "--rules",
+          "--format=json",
+          "--no-ignore",
+          path.join(cwd, CATALOG_SOURCE_FILE),
+        ],
+        { cwd, encoding: "utf8", env: process.env, timeout: 60_000, maxBuffer: 4 * 1024 * 1024 },
+      );
+    let result = discover(directory);
+    if (managed && !result.error && result.status !== 0 && hasNoLintInputs(result.stdout)) {
+      const temporary = temporaryCatalogWorkspace();
+      try {
+        result = discover(temporary.directory);
+      } finally {
+        temporary.cleanup();
+      }
+    }
     if (result.error && "code" in result.error && result.error.code === "ETIMEDOUT") {
       const available = new Set<string>();
       catalogs.set(binary, available);
