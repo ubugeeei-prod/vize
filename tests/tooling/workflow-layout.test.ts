@@ -21,6 +21,7 @@ import { parseTapCounts } from "../../tools/support/github/docs-preview-readines
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
 import { withoutGeneratedHeader } from "../../tools/support/ci/generated-header.ts";
+import { sourceRunnerChanges } from "./support/source-validation-runners.ts";
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -90,6 +91,10 @@ function workflowRunnerLabels(
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
   return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
+    const sourceRunner = sourceRunnerChanges.find(
+      (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
+    );
+    if (sourceRunner?.after === value["runs-on"]) return [];
     if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
@@ -139,7 +144,7 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   }
 });
 
-test("non-release workflows use maximum Blacksmith runner classes", () => {
+test("non-release workflows use reviewed build, source validation and planner runners", () => {
   const violations = readWorkflowEntries(root)
     .filter(({ groupId }) => groupId !== "02")
     .flatMap(({ file }) => {
@@ -174,6 +179,19 @@ jobs:
     workflowRunnerLabels(source).filter((runner) => !approvedRunnerLabels.has(runner)),
     ["blacksmith-8vcpu-ubuntu-2404"],
   );
+});
+
+test("the validation pool accepts only exact reviewed source job selectors", () => {
+  for (const row of sourceRunnerChanges) {
+    const file = path.basename(row.workflow);
+    const job = (id: string) => `jobs:\n  ${id}:\n    runs-on: ${row.after}\n`;
+    assert.deepEqual(workflowRunnerLabels(job(row.job), [], file), []);
+    for (const [source, filename] of [
+      [job("unreviewed"), file],
+      [job(row.job), "unreviewed.yml"],
+    ])
+      assert.throws(() => assert.deepEqual(workflowRunnerLabels(source!, [], filename), []));
+  }
 });
 
 test("the line-start proof requires its Linux ARM64 runner", () => {
