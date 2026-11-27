@@ -1,0 +1,46 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+type Status = 'ready' | 'pending' | 'failed'
+const status = ref<Status>('ready')
+
+// The annotated getter declares `string`, so TypeScript checks the switch.
+const annotated = computed((): string => {
+  switch (status.value) {
+    case 'ready':
+      return 'OK'
+    case 'pending':
+      return '...'
+    case 'failed':
+      return 'NG'
+  }
+})
+
+// A `default` that throws makes the switch exhaustive without any type.
+const guarded = computed(() => {
+  switch (status.value) {
+    case 'ready':
+      return 'OK'
+    default:
+      throw new Error(`unexpected ${status.value}`)
+  }
+})
+
+// Reported: nothing declares the getter's type, so no case may match.
+const untyped = computed(() => {
+  switch (status.value) {
+    case 'ready':
+      return 'OK'
+    case 'pending':
+      return '...'
+  }
+})
+
+// Reported: the declared type admits the `undefined` fallthrough.
+const optional = computed<string | undefined>(() => {
+  switch (status.value) {
+    case 'ready':
+      return 'OK'
+  }
+})
+</script>
+<template><span>{{ annotated }}{{ guarded }}{{ untyped }}{{ optional }}</span></template>
