@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import {
-  isVizeGeneratedVueModuleId,
-  NUXT_TRANSFORM_BRIDGE_ID_FILTER,
-} from "./module-id.ts";
+import { isVizeGeneratedVueModuleId, NUXT_TRANSFORM_BRIDGE_ID_FILTER } from "./module-id.ts";
 
 void test("Nuxt bridges canonical Vue IDs and retains legacy ownership without capturing raw/style files", () => {
   for (const id of [

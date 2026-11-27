@@ -454,7 +454,10 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
               const beforeUnimport = result;
               const injected = await unimportCtx.injectImports(result, id);
               if (injected.imports && injected.imports.length > 0) {
-                result = preserveExplicitVueImportsFromNuxtAutoImports(beforeUnimport, injected.code);
+                result = preserveExplicitVueImportsFromNuxtAutoImports(
+                  beforeUnimport,
+                  injected.code,
+                );
                 changed = true;
               }
             } catch {
