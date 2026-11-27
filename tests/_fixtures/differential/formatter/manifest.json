@@ -2096,7 +2096,9 @@
         "config": []
       },
       "provenance": {
-        "issues": [],
+        "issues": [
+          13797
+        ],
         "commits": [
           {
             "sha": "b3858ac9b7d886c07e8c2f1075e13d4fa19bcb57",
@@ -2163,13 +2165,13 @@
           "artifacts": [
             {
               "path": "sfc-hugged-child-whitespace-width/reference.expected.txt",
-              "sha256": "cddda51c2a72ff7abde51a283e4e305a6cdcf074b0291d7bc527609eb6b90a71",
+              "sha256": "48a1d3dab81df7b6844d985621f309777c4b85b6526853b081e4910c65076aaf",
               "role": "repository-authored-regression-reference",
               "provenance": {
                 "revision": "fb43a8ba1883dfd64114b610fe314ed8ce86b777",
                 "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
                 "symbol": "whitespace_only_child_measures_like_an_empty_child",
-                "assertion": "Hugged whitespace children print their first-pass layout and stay byte-stable."
+                "assertion": "Hugged whitespace children print like empty ones, count their closing tag toward print width, and stay byte-stable."
               },
               "mediaType": "text/x-vue",
               "runtimeFileName": "App.vue"
@@ -2184,7 +2186,7 @@
           "missingFields": [
             "structured FormatResult.changed is covered by the Rust convergence witness"
           ],
-          "referenceState": "repository-authored real-project-derived width contract; exact-source Actions required"
+          "referenceState": "repository-authored real-project-derived width contract, re-captured when empty closing tags joined the start-tag width (issue 13797); exact-source Actions required"
         }
       },
       "comparison": {
