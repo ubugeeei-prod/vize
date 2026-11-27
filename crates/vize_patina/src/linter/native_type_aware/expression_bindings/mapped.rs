@@ -53,6 +53,7 @@ pub(super) fn bind_checked_expressions(
     authored_source: Option<&str>,
     index: &mut u32,
     props_object: Option<&str>,
+    scope: Option<super::OptionsPropScope<'_>>,
 ) {
     let text = document.content.as_str();
     let mut edits = Vec::new();
@@ -170,12 +171,17 @@ pub(super) fn bind_checked_expressions(
                     || line.get(..line.len() - trimmed.len()).unwrap_or_default(),
                     |owner| owner.indent,
                 );
-                let annotation = props_object.and_then(|object| {
-                    super::super::options_prop_shape::options_prop_annotation(
-                        Some(object),
-                        expression,
-                    )
-                });
+                let annotation = props_object
+                    .and_then(|object| {
+                        super::super::options_prop_shape::options_prop_annotation(
+                            Some(object),
+                            expression,
+                        )
+                    })
+                    .filter(|_| {
+                        scope
+                            .is_none_or(|scope| scope.is_prop_reference(expression, authored.start))
+                    });
                 let prefix = match annotation {
                     Some(annotation) => cstr!("{indent}const {name}: {annotation} = ("),
                     None => cstr!("{indent}const {name} = ("),
