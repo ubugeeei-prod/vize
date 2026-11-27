@@ -1,0 +1,57 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "SWC plugin host contracts"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "npm/builder/swc/**"
+      "npm/builder/shared/**"
+      "crates/vize_atelier_jsx/**"
+      "crates/vize_atelier_sfc/**"
+      "Cargo.lock"
+      ".github/workflows/08-swc.yml"
+      "tools/ci/workflows/08-swc/**"
+    }
+  }
+  merge_group = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "swc-hosts-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  contracts {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with { toolchain = "1.100.0"; targets = "wasm32-wasip1" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with { key = "swc-plugin-hosts" }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Install frozen dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.command("Build the source native compiler", "vp run --filter './npm/native' build:debug")
+      ci.command("Build Wasm and SFC entrypoints", "vp run --filter './npm/builder/swc' build")
+      ci.command("Run actual SWC and Vue contracts", "vp run --filter './npm/builder/swc' test")
+      ci.command("Install and test fresh package tarballs", "vp run --filter './npm/builder/swc' test:packed")
+      ci.command("Check package source", "vp run --filter './npm/builder/swc' check")
+      ci.command("Check Rust adapter", "cargo clippy -p vize_swc_plugin -- -D warnings")
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "swc-plugin-${{ github.sha }}"
+          path = "npm/builder/swc/dist"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

@@ -33,6 +33,29 @@ Under the hood the plugins call the native/WASM `compileJsx` entry point (expose
 `@vizejs/native` and `@vizejs/wasm`), which lowers the source and returns render code plus any
 extracted scoped CSS.
 
+### SWC
+
+`@vizejs/swc-plugin` provides a Wasm plugin for SWC 1.16.22 and later:
+
+```json
+{
+  "jsc": {
+    "parser": { "syntax": "typescript", "tsx": true },
+    "experimental": {
+      "runPluginFirst": true,
+      "plugins": [["@vizejs/swc-plugin", { "jsxMode": "vdom" }]]
+    }
+  }
+}
+```
+
+Set `runPluginFirst` so Vize can read props before SWC erases TypeScript.
+The package also exports `transformVue` and `transformVueSync` from
+`@vizejs/swc-plugin/sfc` for `.vue` inputs; SWC Wasm plugins run after the
+JavaScript parser and cannot parse raw SFCs. See the
+[package guide](https://github.com/ubugeeei-prod/vize/tree/main/npm/builder/swc)
+for SFC CSS handling, SSR, source maps, and limitations.
+
 ## Authoring API
 
 A Vize JSX/TSX component is a **plain function with typed parameters**. There are no macros and no

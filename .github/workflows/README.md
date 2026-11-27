@@ -34,7 +34,7 @@ surfaces and are not routine CI-refactor targets.
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 7         |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 5         |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 16        |
-| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 14        |
+| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 15        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 4         |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 3         |
 | 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 8         |
@@ -197,13 +197,14 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 | 08.05 | Nuxt 2 module build                    | [`08-nuxt2-module.yml`](./08-nuxt2-module.yml)                   |
 | 08.06 | Nuxt 3 module build                    | [`08-nuxt3-module.yml`](./08-nuxt3-module.yml)                   |
 | 08.07 | Rspack SFC HMR                         | [`08-rspack.yml`](./08-rspack.yml)                               |
-| 08.08 | Turbopack consumers                    | [`08-turbopack.yml`](./08-turbopack.yml)                         |
-| 08.09 | Vite+ Type Compatibility               | [`08-vite-plus-types.yml`](./08-vite-plus-types.yml)             |
-| 08.10 | Vite+ configuration consumers          | [`08-vite-plus.yml`](./08-vite-plus.yml)                         |
-| 08.11 | Vite precompile cache identities       | [`08-vite-precompile-cache.yml`](./08-vite-precompile-cache.yml) |
-| 08.12 | Vitest project configuration consumers | [`08-vitest.yml`](./08-vitest.yml)                               |
-| 08.13 | Void build                             | [`08-void.yml`](./08-void.yml)                                   |
-| 08.14 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)             |
+| 08.08 | SWC plugin host contracts              | [`08-swc.yml`](./08-swc.yml)                                     |
+| 08.09 | Turbopack consumers                    | [`08-turbopack.yml`](./08-turbopack.yml)                         |
+| 08.10 | Vite+ Type Compatibility               | [`08-vite-plus-types.yml`](./08-vite-plus-types.yml)             |
+| 08.11 | Vite+ configuration consumers          | [`08-vite-plus.yml`](./08-vite-plus.yml)                         |
+| 08.12 | Vite precompile cache identities       | [`08-vite-precompile-cache.yml`](./08-vite-precompile-cache.yml) |
+| 08.13 | Vitest project configuration consumers | [`08-vitest.yml`](./08-vitest.yml)                               |
+| 08.14 | Void build                             | [`08-void.yml`](./08-void.yml)                                   |
+| 08.15 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)             |
 
 ## 09 Lint, format, and developer tooling
 

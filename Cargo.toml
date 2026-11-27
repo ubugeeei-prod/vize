@@ -39,6 +39,7 @@ members = [
   "crates/vize_doctor",
   "crates/vize_incremental",
   "npm/builder/parcel-native",
+  "npm/builder/swc",
   "tools/benchmarks/crates/davinci_harness",
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",

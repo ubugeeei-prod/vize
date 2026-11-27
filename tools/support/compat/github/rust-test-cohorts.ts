@@ -94,6 +94,7 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "vize_benchmarks",
       "vize_test_runner",
       "vize_parcel_transformer",
+      "vize_swc_plugin",
     ],
   },
 };

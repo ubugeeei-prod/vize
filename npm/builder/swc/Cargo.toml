@@ -1,0 +1,28 @@
+[package]
+name = "vize_swc_plugin"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SWC Wasm plugin for the shared Vize JSX compiler"
+publish = false
+
+[lib]
+path = "rust/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+oxc_sourcemap.workspace = true
+vize_atelier_jsx.workspace = true
+vize_carton.workspace = true
+swc_core = { version = "=85.1.1", features = [
+  "ecma_plugin_transform",
+  "ecma_codegen",
+  "ecma_parser_typescript",
+] }
+
+[lints]
+workspace = true

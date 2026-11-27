@@ -27,7 +27,7 @@
   },
   "06-native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
-    "workflow": "9b164e99171d77e81ba2ead0adf2b5687a44c2ec470d87b5e31dea7bdd10c350",
+    "workflow": "c33b7dd99b85559dda6a3539865a57deaa39ab06a978851639e46697e322ca97",
     "programs": [
       "tools/ci/workflows/06-native-smoke/scripts/build-npm-runtime-packages.sh",
       "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-in-alpine.sh",

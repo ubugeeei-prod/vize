@@ -782,6 +782,43 @@ importers:
         specifier: 3.7.0
         version: 3.7.0
 
+  npm/builder/swc:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      diff:
+        specifier: 9.0.0
+        version: 9.0.0
+      oxc-parser:
+        specifier: catalog:oxc
+        version: 0.157.0
+      webpack-sources:
+        specifier: 3.7.0
+        version: 3.7.0
+    devDependencies:
+      '@jridgewell/trace-mapping':
+        specifier: 0.3.31
+        version: 0.3.31
+      '@swc/core':
+        specifier: 1.16.22
+        version: 1.16.22(@swc/helpers@0.5.24)
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      '@vizejs/builder-shared':
+        specifier: workspace:*
+        version: link:../shared
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
+
   npm/builder/turbopack:
     dependencies:
       '@vizejs/native':

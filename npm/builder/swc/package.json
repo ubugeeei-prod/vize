@@ -1,0 +1,71 @@
+{
+  "name": "@vizejs/swc-plugin",
+  "version": "0.474.0",
+  "description": "Vue JSX, TSX and SFC compilation with Vize and SWC",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/swc"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "main": "./dist/vize_swc_plugin.wasm",
+  "exports": {
+    ".": "./dist/vize_swc_plugin.wasm",
+    "./sfc": {
+      "import": {
+        "types": "./dist/sfc.d.mts",
+        "default": "./dist/sfc.mjs"
+      },
+      "require": {
+        "types": "./dist/sfc.d.cts",
+        "default": "./dist/sfc.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "check": "vp check src scripts vite.config.ts",
+    "test": "node --test test/*.test.ts",
+    "test:packed": "node test/packed.ts"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "diff": "9.0.0",
+    "oxc-parser": "catalog:oxc",
+    "webpack-sources": "3.7.0"
+  },
+  "devDependencies": {
+    "@jridgewell/trace-mapping": "0.3.31",
+    "@swc/core": "1.16.22",
+    "@types/node": "catalog:typescript",
+    "@vizejs/builder-shared": "workspace:*",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "@swc/core": "^1.16.22"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "compatibility-preview",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}
