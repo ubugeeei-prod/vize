@@ -58,10 +58,16 @@ pub fn inventory(relative: &Path) -> Inventory {
 }
 
 pub fn assert_new_ui_present(root: &Path, files: &[PathBuf]) {
-    for path in NEW_UI {
-        assert!(
-            files.contains(&root.join(path)),
-            "new UI corpus source missing: {path}"
-        );
-    }
+    let mut expected: Vec<_> = NEW_UI.iter().map(|path| root.join(path)).collect();
+    let mut actual: Vec<_> = files
+        .iter()
+        .filter(|path| matches!(path.strip_prefix(root).map(inventory), Ok(Inventory::NewUi)))
+        .cloned()
+        .collect();
+    expected.sort();
+    actual.sort();
+    assert_eq!(
+        actual, expected,
+        "new UI corpus must match its exact inventory"
+    );
 }

@@ -6,6 +6,12 @@ import assert from "node:assert/strict";
 
 export const sourceRunnerChanges = [
   {
+    "workflow": ".github/workflows/full-source-cli.yml",
+    "job": "cli",
+    "before": "blacksmith-32vcpu-ubuntu-2404",
+    "after": "blacksmith-16vcpu-ubuntu-2404",
+  },
+  {
     "workflow": ".github/workflows/pr-rust-differential.yml",
     "job": "differential",
     "before": "blacksmith-32vcpu-ubuntu-2404",

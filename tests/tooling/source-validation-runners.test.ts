@@ -9,7 +9,7 @@ const read = (file: string) =>
   fs.readFileSync(new URL("../../" + file, import.meta.url), "utf8").replace(/\r\n?/g, "\n");
 
 void test("live source checks use exactly the reviewed runner selectors and retain every other field", () => {
-  assert.equal(sourceRunnerChanges.length, 22);
+  assert.equal(sourceRunnerChanges.length, 23);
   const labels = (
     parse(read(".github/actionlint.yaml")) as {
       "self-hosted-runner": { labels: string[] };
