@@ -100,12 +100,12 @@ impl<'a> TransformContext<'a> {
         template: impl Into<EmitDocument>,
         namespace: Namespace,
     ) -> usize {
-        let template: EmitDocument = template.into();
+        let (template, links) = template.into().into_parts();
         let template_index = self.templates.len();
         if let Some(spans) = self.template_spans.as_mut()
-            && !template.links().is_empty()
+            && !links.is_empty()
         {
-            spans.insert(template_index, template.links().to_vec());
+            spans.insert(template_index, links);
         }
         // Template strings are assembled per element and effectively unique,
         // so they are frozen with a single arena copy rather than interned.
