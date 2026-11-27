@@ -95,6 +95,7 @@ mod check_opaque_with_defaults_cli;
 mod check_options_api_inherited_members_cli;
 mod check_options_api_writable_computed_cli;
 mod check_outside_import_types_cli;
+mod check_outside_include_runtime_cli;
 mod check_package_cwd_cli;
 mod check_package_declaration_barrel_cli;
 mod check_package_external_import_cli;
