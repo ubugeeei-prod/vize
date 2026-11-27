@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "issue": 13720,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "spread",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "Foo.vue", "source": "DynamicRoot.vue.txt" },
+        { "file": "App.vue", "source": "Spread.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "wrong-prop",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "Foo.vue", "source": "DynamicRoot.vue.txt" },
+        { "file": "App.vue", "source": "WrongProp.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "App.vue",
+          "line": 8,
+          "column": 21,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

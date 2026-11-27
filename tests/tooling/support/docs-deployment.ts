@@ -56,7 +56,7 @@ export function build(owner = run(), artifacts = sourceArtifacts(owner), availab
     { runId: 38010819888, attempt: 1, sourceSha },
     artifacts,
     manifest,
-    available,
+    { available },
   );
 }
 export function publisherFixture() {

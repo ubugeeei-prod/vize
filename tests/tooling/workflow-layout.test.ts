@@ -21,6 +21,7 @@ import { parseTapCounts } from "../../tools/support/github/docs-preview-readines
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
 import { withoutGeneratedHeader } from "../../tools/support/ci/generated-header.ts";
+import { sourceRunnerChanges } from "./support/source-validation-runners.ts";
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -52,6 +53,22 @@ const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
 };
 const hostedZeroComputeRunner = "ubuntu-24.04";
 
+// Build-free planner and policy jobs take the smallest Blacksmith class: they
+// finish in seconds, and a 32-vCPU slot spent on them delays a build job at
+// the pool's concurrency cap. No Rust toolchain, sticky disk or build cache.
+const smallRunnerJobs: Readonly<Record<string, readonly string[]>> = {
+  "07-level-dependencies.yml": ["level-dependencies"],
+  "08-nuxt-styles.yml": ["plan"],
+  "08-vite-plus-types.yml": ["real-vite-plugin-types"],
+  "10-musea-browser.yml": ["plan"],
+  "11-zizmor.yml": ["plan", "zizmor"],
+  "cleanup-obsolete-merge-groups.yml": ["cleanup"],
+  "parcel-transformer.yml": ["packaging-changes"],
+  "release-smoke-contracts.yml": ["bun-planner", "node-planner-baseline"],
+  "title-policy.yml": ["issue-pr-title-policy"],
+};
+const smallRunner = "blacksmith-4vcpu-ubuntu-2404";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
@@ -68,11 +85,16 @@ function workflowRunnerLabels(
   source: string,
   hostedJobs: readonly string[] = [],
   file = "",
+  smallJobs: readonly string[] = [],
 ): string[] {
   const workflow = parse(source) as unknown;
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
   return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
+    const sourceRunner = sourceRunnerChanges.find(
+      (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
+    );
+    if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
     if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
@@ -80,6 +102,10 @@ function workflowRunnerLabels(
     }
     if (hostedJobs.includes(id)) {
       assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
+      return [];
+    }
+    if (smallJobs.includes(id)) {
+      assert.equal(value["runs-on"], smallRunner, id);
       return [];
     }
     // A planner-selected skip runs hosted; the selected path is the busy runner.
@@ -118,12 +144,12 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   }
 });
 
-test("non-release workflows use maximum Blacksmith runner classes", () => {
+test("non-release workflows use reviewed build, source validation and planner runners", () => {
   const violations = readWorkflowEntries(root)
     .filter(({ groupId }) => groupId !== "02")
     .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
+      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file, smallRunnerJobs[file])
         .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });
@@ -153,6 +179,22 @@ jobs:
     workflowRunnerLabels(source).filter((runner) => !approvedRunnerLabels.has(runner)),
     ["blacksmith-8vcpu-ubuntu-2404"],
   );
+});
+
+test("the validation pool accepts only exact reviewed source job selectors", () => {
+  const missing = "jobs:\n  planner: {}\n";
+  assert.throws(() => workflowRunnerLabels(missing, ["planner"], "unreviewed.yml"));
+  assert.throws(() => workflowRunnerLabels(missing, [], "unreviewed.yml", ["planner"]));
+  for (const row of sourceRunnerChanges) {
+    const file = path.basename(row.workflow);
+    const job = (id: string) => `jobs:\n  ${id}:\n    runs-on: ${row.after}\n`;
+    assert.deepEqual(workflowRunnerLabels(job(row.job), [], file), []);
+    for (const [source, filename] of [
+      [job("unreviewed"), file],
+      [job(row.job), "unreviewed.yml"],
+    ])
+      assert.throws(() => assert.deepEqual(workflowRunnerLabels(source!, [], filename), []));
+  }
 });
 
 test("the line-start proof requires its Linux ARM64 runner", () => {

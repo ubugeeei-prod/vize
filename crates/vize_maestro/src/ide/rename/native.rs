@@ -21,8 +21,11 @@ impl RenameService {
         new_name: &str,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
-        // A static attribute value (`ref="box"`) names no script symbol, even
-        // when a same-spelled binding exists.
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return key.rename(ctx, new_name);
+        }
+        // Any other static attribute value names no script symbol, even when
+        // a same-spelled binding exists.
         if ctx.is_in_template()
             && crate::ide::corsa_support::in_static_attribute_value(&ctx.content, ctx.offset)
         {

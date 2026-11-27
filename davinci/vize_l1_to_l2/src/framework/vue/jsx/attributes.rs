@@ -124,6 +124,12 @@ fn attribute<'a>(
     };
     // `a` and `a={}` are boolean attributes.
     let Some(expression) = expression else {
+        // A bare `ref_for` is the runtime's array-collection flag, not an
+        // attribute: an empty-string value would turn collection off. The
+        // Relief projection lowers it to `true`.
+        if name == "ref_for" {
+            return Err(JsxRefusal::Attribute);
+        }
         out.attributes.push(Attribute {
             name,
             value: None,

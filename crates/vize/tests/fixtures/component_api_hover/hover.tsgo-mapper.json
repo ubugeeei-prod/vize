@@ -194,7 +194,7 @@
   "interface tag": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(alias) const InterfaceChild: InterfaceChildComponent\n```\n"
+      "value": "```typescript\n(alias) (property) default: InterfaceChildComponent\n```\n"
     },
     "range": {
       "end": {
@@ -402,7 +402,7 @@
   "tag": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(alias) const Child: ChildComponent\n```\n"
+      "value": "```typescript\n(alias) (property) default: ChildComponent\n```\n"
     },
     "range": {
       "end": {

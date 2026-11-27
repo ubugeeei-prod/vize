@@ -67,7 +67,7 @@ jobs {
   `packaging-changes` {
     name = "Plan native packaging"
     `if` = "${{ github.event_name == 'pull_request' }}"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxSmall
     `timeout-minutes` = 5
     permissions {
       contents = "read"
