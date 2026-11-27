@@ -1,0 +1,7 @@
+<template>
+  <section>
+    <p>C:\new\table\x41</p>
+    <p>\`quoted\` and \${raw}</p>
+    <i title="C:\users\`name\`"></i>
+  </section>
+</template>

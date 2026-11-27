@@ -4,7 +4,8 @@
 //! literal key, so a name the template never registers is an error on that
 //! key. Vue's language tools do this only outside functions; Vize also types a
 //! call inside a function of the component's script (a local composable, a
-//! lifecycle hook), because it reads the same instance's refs. Only a call
+//! lifecycle hook), because it reads the same instance's refs. A missing key is
+//! an error there only when setup runs that function (see `owners`). Only a call
 //! inside an exported declaration keeps Vue's own signature: another module
 //! can call it from a component with a different template.
 //!
@@ -32,6 +33,9 @@ use crate::virtual_ts::helpers::push_ts_string_literal;
 
 mod globals;
 mod lines;
+mod owners;
+
+use owners::{Owner, Owners};
 
 #[derive(Default)]
 pub(super) struct TemplateRefUsage {
@@ -53,6 +57,7 @@ struct InferredCall {
     imported: bool,
     /// Where the top-level statement holding the call starts.
     statement_start: usize,
+    owner: Owner,
     /// A key can be nonliteral; its call still needs the inferred signature.
     literal: Option<(std::ops::Range<usize>, String)>,
 }
@@ -79,8 +84,16 @@ impl TemplateRefUsage {
             export_depth: 0,
             statement_depth: 0,
             statement_start: 0,
+            owners: Owners::default(),
+            default_export_depth: 0,
         };
         collector.visit_program(program);
+        let reached = collector.owners.reached_from_setup();
+        for call in &mut collector.calls {
+            if !call.owner.runs_in_instance(&reached) {
+                call.literal = None;
+            }
+        }
         // An unresolved name can belong to an authored ambient declaration or
         // be missing entirely. Only explicit Vue-global ownership admits its
         // specialization; otherwise retain the original call and diagnostics.
@@ -305,6 +318,8 @@ struct Collector<'s> {
     statement_depth: usize,
     /// Where the top-level statement being visited starts.
     statement_start: usize,
+    owners: Owners,
+    default_export_depth: usize,
 }
 
 impl Collector<'_> {
@@ -375,6 +390,22 @@ impl<'a> Visit<'a> for Collector<'_> {
         self.export_depth -= 1;
     }
 
+    fn visit_export_default_declaration(
+        &mut self,
+        export: &oxc_ast::ast::ExportDefaultDeclaration<'a>,
+    ) {
+        self.default_export_depth += 1;
+        walk::walk_export_default_declaration(self, export);
+        self.default_export_depth -= 1;
+    }
+
+    fn visit_object_property(&mut self, property: &oxc_ast::ast::ObjectProperty<'a>) {
+        if self.default_export_depth > 0 {
+            self.owners.observe_default_export_property(property);
+        }
+        walk::walk_object_property(self, property);
+    }
+
     fn visit_statement(&mut self, statement: &Statement<'a>) {
         if self.statement_depth == 0 {
             self.statement_start = statement.span().start as usize;
@@ -388,7 +419,10 @@ impl<'a> Visit<'a> for Collector<'_> {
         let published = self.publishes(function.id.as_ref().and_then(|id| id.symbol_id.get()));
         self.export_depth += usize::from(published);
         self.enter_function();
+        let id = function.id.as_ref().and_then(|id| id.symbol_id.get());
+        self.owners.enter(function.span.start, id);
         walk::walk_function(self, function, flags);
+        self.owners.leave();
         self.leave_function();
         self.export_depth -= usize::from(published);
     }
@@ -399,6 +433,7 @@ impl<'a> Visit<'a> for Collector<'_> {
             _ => None,
         });
         self.export_depth += usize::from(published);
+        self.owners.name_initializer(declarator);
         walk::walk_variable_declarator(self, declarator);
         self.export_depth -= usize::from(published);
     }
@@ -408,11 +443,14 @@ impl<'a> Visit<'a> for Collector<'_> {
         function: &oxc_ast::ast::ArrowFunctionExpression<'a>,
     ) {
         self.enter_function();
+        self.owners.enter(function.span.start, None);
         walk::walk_arrow_function_expression(self, function);
+        self.owners.leave();
         self.leave_function();
     }
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        self.owners.observe_call(call, self.scoping);
         if self.exported_function_depth == 0
             && call.type_arguments.is_none()
             && let Some((callee, imported)) = self.owned_callee(&call.callee)
@@ -439,6 +477,7 @@ impl<'a> Visit<'a> for Collector<'_> {
                 name: String::from(name),
                 imported,
                 statement_start: self.statement_start,
+                owner: self.owners.current(),
                 literal,
             });
         }

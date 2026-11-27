@@ -386,6 +386,7 @@ class FormatterConfig {
   preset: ("vize" | "prettier" | "compact" | "documentation")? = null
   normalizeDirectiveShorthands: Boolean? = null
   sortBlocks: Boolean? = null
+  blockSpacing: ("blank-line" | "preserve")? = null
   normalizeCssQuotes: Boolean? = null
   normalizeInlineStyles: Boolean? = null
   normalizeVForParens: Boolean? = null

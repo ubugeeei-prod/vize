@@ -1,0 +1,48 @@
+{
+  "schema": "vize.libraryKebabListenersSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 22908,
+        "sha256": "d18990600883589a2a00df0408df493ef74d0015a14203c3c72888eba07e325e"
+      },
+      "after": {
+        "bytes": 22953,
+        "sha256": "d69b697f7699c5234660f1e0647cff28d83acd101f9e7912dcc94294b8f489bf"
+      },
+      "hunks": [
+        {
+          "before": "            prop_key: &prop_key,\n            library: &library,\n            template_binding_access,",
+          "after": "            prop_key: &prop_key,\n            raw_prop_key: &raw_listener_key,\n            library: &library,\n            template_binding_access,"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 20155,
+        "sha256": "9423a52f0760614d8f9d0af1c41af8d6f9a76feedbceaf839dcd2a389461567f"
+      },
+      "after": {
+        "bytes": 20118,
+        "sha256": "9e54f86c43332c63d90f1c7bdcd69abd60bd77a29f55563ba9e810fed2ac4009"
+      },
+      "hunks": [
+        {
+          "before": "    pub(super) prop_key: &'a str,\n    /// Alias",
+          "after": "    pub(super) prop_key: &'a str,\n    /// The authored kebab listener key as a TS string literal, or `never`.\n    pub(super) raw_prop_key: &'a str,\n    /// Alias"
+        },
+        {
+          "before": "    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n\",\n    );\n",
+          "after": "    let library_args =\n        super::listener_contract::library_listener_args(&emit_props, prop_key, ctx.raw_prop_key);\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? {library_args} : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n\",\n    );\n"
+        }
+      ]
+    }
+  ]
+}

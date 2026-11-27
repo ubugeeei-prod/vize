@@ -51,6 +51,10 @@ jobs:
             /.github/scripts/workflows/release-jsr/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Require a full commit SHA for the release source
+        env:
+          JSR_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/require-a-full-source-commit.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -62,6 +66,7 @@ jobs:
   publish:
     name: Publish the JSR package
     needs: channel
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     # 0.496.0-0.504.0 were accepted while `deno publish` kept polling until the
     # old 75-minute job limit. Bound the CLI below that, but long enough for the
@@ -84,6 +89,10 @@ jobs:
             /.github/scripts/workflows/release-jsr/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Require a full commit SHA for the release source
+        env:
+          JSR_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/require-a-full-source-commit.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -117,6 +126,7 @@ jobs:
   publish-packages:
     name: Publish JSR package (${{ matrix.jsrName }})
     needs: channel
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.channel.outputs.packages) }}
@@ -137,6 +147,10 @@ jobs:
             /.github/scripts/workflows/release-jsr/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Require a full commit SHA for the release source
+        env:
+          JSR_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/require-a-full-source-commit.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

@@ -202,6 +202,22 @@ export default defineConfig({}).withVue({
 通常の Vite プラグインでも使えます。すべてのキーは[設定リファレンス](./configuration-reference.md)
 を参照してください。
 
+### ネイティブ要素の値なし属性
+
+ネイティブ要素にバインドした値は、その要素の属性の型でチェックされます。たとえば
+`<img :alt="1">` は TS2322 です。一方、`<img src="/a.png" alt>` のような値なし属性は報告しません。
+Vue はこれを `alt=""` として出力します。HTML の値なし属性は「空の値で属性がある」という意味で、
+どの属性でも正しい書き方です。`alt=""` は装飾画像の標準的なマークアップでもあります。
+
+TypeScript のどちらの値でも正しく表せません。
+
+- vue-tsc は `true` として型付けし、正しいマークアップである `<img alt>` に
+  `Type 'boolean' is not assignable to type 'string'` を報告します。
+- `""` として型付けすると、Vue の真偽値属性の型（`Booleanish`）が `""` を含まないため、
+  `<input disabled>` や `<input checked>` がエラーになります。
+
+計算した値を渡す場合は `:alt="label"` のようにバインドしてください。バインドした値はチェックされます。
+
 ## グローバルな型と自動インポート
 
 Vue Router の実験的な resolver やパース済みのルートパラメーターは、

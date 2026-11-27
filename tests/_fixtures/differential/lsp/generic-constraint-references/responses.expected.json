@@ -1,0 +1,106 @@
+[
+  {
+    "params": {
+      "position": {
+        "line": 0,
+        "character": 43
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 47,
+            "line": 0
+          },
+          "start": {
+            "character": 43,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 18,
+            "line": 1
+          },
+          "start": {
+            "character": 14,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 0
+          },
+          "start": {
+            "character": 17,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/types.ts"
+      }
+    ]
+  },
+  {
+    "params": {
+      "position": {
+        "line": 1,
+        "character": 14
+      },
+      "context": {
+        "includeDeclaration": true
+      }
+    },
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 47,
+            "line": 0
+          },
+          "start": {
+            "character": 43,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 18,
+            "line": 1
+          },
+          "start": {
+            "character": 14,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 0
+          },
+          "start": {
+            "character": 17,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/types.ts"
+      }
+    ]
+  }
+]

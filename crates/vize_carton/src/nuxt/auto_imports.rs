@@ -20,14 +20,14 @@ use super::{config_file, optional_path, owns_an_application, read};
 
 /// Nuxt project roots by directory, so a batch probes each directory once.
 #[derive(Default)]
-pub(crate) struct NuxtRoots {
+pub struct NuxtRoots {
     nearest: FxHashMap<PathBuf, Option<usize>>,
     roots: Vec<PathBuf>,
 }
 
 impl NuxtRoots {
     /// Index of the nearest Nuxt project at or above `directory`.
-    pub(crate) fn nearest(&mut self, directory: &Path) -> Option<usize> {
+    pub fn nearest(&mut self, directory: &Path) -> Option<usize> {
         let mut visited = Vec::new();
         let mut current = Some(directory);
         let found = loop {
@@ -53,8 +53,13 @@ impl NuxtRoots {
         found
     }
 
+    /// The project root [`Self::nearest`] numbered `index`.
+    pub fn dir(&self, index: usize) -> Option<&Path> {
+        self.roots.get(index).map(PathBuf::as_path)
+    }
+
     /// The project roots, in the order [`Self::nearest`] numbered them.
-    pub(crate) fn into_dirs(self) -> Vec<PathBuf> {
+    pub fn into_dirs(self) -> Vec<PathBuf> {
         self.roots
     }
 }
@@ -62,12 +67,23 @@ impl NuxtRoots {
 /// The names Nuxt auto-imports into the templates of the project at `root`.
 ///
 /// `Err` carries the declaration file the project has not generated yet.
-pub(crate) fn template_globals(root: &Path) -> Result<Vec<String>, PathBuf> {
+pub fn template_globals(root: &Path) -> Result<Vec<String>, PathBuf> {
     let declarations = generated_dir(root).join("types").join("imports.d.ts");
     match fs::read_to_string(&declarations) {
         Ok(source) => Ok(declared_names(&source)),
         Err(_) => Err(declarations),
     }
+}
+
+/// Why `vue/no-undefined-refs` stays off for the project at `root` until Nuxt
+/// writes `declarations`, worded once for every tool that skips it.
+pub fn missing_declarations_notice(root: &Path, declarations: &Path) -> String {
+    vize_l0::cstr!(
+        "Skipping vue/no-undefined-refs in {}: Nuxt has not generated {} yet, so auto-imported \
+         names cannot be told from undefined ones. Run `nuxi prepare` to generate it.",
+        root.display(),
+        declarations.display()
+    )
 }
 
 /// `buildDir` when the config states it literally, else Nuxt's default.

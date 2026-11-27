@@ -1,9 +1,13 @@
 use crate::options::FormatOptions;
 use vize_l0::String;
+use vize_l1::css::nesting::MAX_CSS_NESTING_DEPTH;
 
 /// Format rule layout and declaration punctuation without passing authored
 /// values through the CSS printer. Media queries and selectors stay intact.
-pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> String {
+///
+/// Every line is indented once per open rule. `None` when rules nest past
+/// the depth the style formatter supports.
+pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Option<String> {
     let newline = options.newline_string();
     let indent = options.indent_string();
     let bytes = source.as_bytes();
@@ -56,6 +60,9 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
                     value_braces += 1;
                     index += 1;
                     continue;
+                }
+                if depth == MAX_CSS_NESTING_DEPTH {
+                    return None;
                 }
                 write_css_line(
                     &mut output,
@@ -124,11 +131,11 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
         &indent,
         newline,
     );
-    if options.use_tabs || options.tab_width != 2 {
+    Some(if options.use_tabs || options.tab_width != 2 {
         reindent_token_gaps(&output, options, false)
     } else {
         output
-    }
+    })
 }
 
 fn write_css_line(output: &mut String, content: &str, depth: usize, indent: &str, newline: &str) {
@@ -345,4 +352,41 @@ fn reindent_token_gaps(source: &str, options: &FormatOptions, printer_indent: bo
         output.truncate(output.trim_end_matches(['\r', '\n']).len());
     }
     output
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MAX_CSS_NESTING_DEPTH, format_layout_only};
+    use crate::options::FormatOptions;
+
+    /// `depth` rules, each the only content of the one around it.
+    fn nested_rules(depth: usize) -> std::string::String {
+        "a{".repeat(depth) + &"}".repeat(depth)
+    }
+
+    #[test]
+    fn rules_nested_to_the_limit_are_indented_once_per_level() {
+        let mut expected = std::string::String::new();
+        for depth in 0..MAX_CSS_NESTING_DEPTH {
+            expected += &"  ".repeat(depth);
+            expected += "a {\n";
+        }
+        for depth in (0..MAX_CSS_NESTING_DEPTH).rev() {
+            expected += &"  ".repeat(depth);
+            expected += "}\n";
+        }
+        let formatted = format_layout_only(
+            &nested_rules(MAX_CSS_NESTING_DEPTH),
+            &FormatOptions::default(),
+        );
+        assert_eq!(formatted.as_deref(), Some(expected.as_str()));
+    }
+
+    #[test]
+    fn rules_nested_past_the_limit_have_no_layout() {
+        let options = FormatOptions::default();
+        for depth in [MAX_CSS_NESTING_DEPTH + 1, 30_000] {
+            assert_eq!(format_layout_only(&nested_rules(depth), &options), None);
+        }
+    }
 }
