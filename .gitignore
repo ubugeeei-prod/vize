@@ -73,6 +73,7 @@ npm-debug.log*
 
 # Playwright test outputs
 .cache/
+.swc/
 tests/app/results/
 tests/app/screenshots/
 playground/e2e/vrt/test-results/

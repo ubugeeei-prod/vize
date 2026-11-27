@@ -97,8 +97,8 @@ function assertLiveInventory(workflow: string, release: string): void {
   assert.ok(expected);
   assert.deepEqual(
     release.split("\n").filter((row) => row.startsWith("  RELEASE_JS_PACKAGES: ")),
-    [expected],
-    "release publishes the registered Babel package with every established package",
+    [expected + " npm/builder/swc"],
+    "release adds exactly the SWC package to the registered historical inventory",
   );
 }
 

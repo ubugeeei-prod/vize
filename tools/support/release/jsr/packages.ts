@@ -12,7 +12,8 @@ export interface JsrPackageDescriptor {
 /**
  * npm-only launchers whose package-manager integration has no JSR equivalent.
  */
-export const npmOnlyReleasePackageDirectories = ["npm/create-fresco"] as const;
+// SWC resolves its root export as a Wasm binary, not a JavaScript module.
+export const npmOnlyReleasePackageDirectories = ["npm/create-fresco", "npm/builder/swc"] as const;
 
 /**
  * JavaScript packages shipped by the release workflow and mirrored on JSR.

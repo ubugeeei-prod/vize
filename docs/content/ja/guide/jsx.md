@@ -34,6 +34,28 @@ export default defineConfig({}).withVue({});
 プラグインは `@vizejs/native` または `@vizejs/wasm` の `compileJsx` を呼び出します。
 この処理でソースを中間表現へ変換し、レンダー関数のコードと、抽出した scoped CSS を返します。
 
+### SWC
+
+`@vizejs/swc-plugin` は SWC 1.16.22 以降で使える Wasm Plugin を提供します。
+
+```json
+{
+  "jsc": {
+    "parser": { "syntax": "typescript", "tsx": true },
+    "experimental": {
+      "runPluginFirst": true,
+      "plugins": [["@vizejs/swc-plugin", { "jsxMode": "vdom" }]]
+    }
+  }
+}
+```
+
+SWC が TypeScript を除去する前に Vize が props の型を読み取れるよう、`runPluginFirst` を指定します。
+`.vue` 入力には `@vizejs/swc-plugin/sfc` の `transformVue` / `transformVueSync` を使います。
+SWC の Wasm Plugin は JavaScript の解析後に動作するため、SFC を直接解析できません。
+CSS、SSR、ソースマップ、制約については
+[パッケージガイド](https://github.com/ubugeeei-prod/vize/tree/main/npm/builder/swc)を参照してください。
+
 <span id="オーサリング-api"></span>
 
 ## コンポーネントの書き方

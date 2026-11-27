@@ -1,0 +1,61 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/08-swc/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: SWC plugin host contracts
+on:
+  workflow_dispatch: null
+  pull_request:
+    paths:
+      - npm/builder/swc/**
+      - npm/builder/shared/**
+      - crates/vize_atelier_jsx/**
+      - crates/vize_atelier_sfc/**
+      - Cargo.lock
+      - .github/workflows/08-swc.yml
+      - tools/ci/workflows/08-swc/**
+  merge_group: null
+permissions:
+  contents: read
+concurrency:
+  group: swc-hosts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+          targets: wasm32-wasip1
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: swc-plugin-hosts
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install frozen dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the source native compiler
+        run: vp run --filter './npm/native' build:debug
+      - name: Build Wasm and SFC entrypoints
+        run: vp run --filter './npm/builder/swc' build
+      - name: Run actual SWC and Vue contracts
+        run: vp run --filter './npm/builder/swc' test
+      - name: Install and test fresh package tarballs
+        run: vp run --filter './npm/builder/swc' test:packed
+      - name: Check package source
+        run: vp run --filter './npm/builder/swc' check
+      - name: Check Rust adapter
+        run: cargo clippy -p vize_swc_plugin -- -D warnings
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: swc-plugin-${{ github.sha }}
+          path: npm/builder/swc/dist
+          if-no-files-found: error
