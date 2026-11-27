@@ -155,7 +155,7 @@ test("DOM L2 emit options stay scoped to the supported switch surface", () => {
   assert.deepEqual(
     [
       ...publicStructFieldNames(
-        readRepoFile("davinci", "vize_l4", "src", "targets", "dom", "artifact", "options.rs"),
+        readRepoFile("davinci", "vize_l4", "src", "targets", "dom", "template", "options.rs"),
         "DomEmitOptions",
       ),
     ].sort(),
@@ -189,7 +189,7 @@ test("DOM production selector has no live env lane override", () => {
     ["crates", "vize_atelier_dom", "src", "compile.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "sfc.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "stage_options.rs"],
-    ["davinci", "vize_l4", "src", "targets", "dom", "artifact.rs"],
+    ["davinci", "vize_l4", "src", "targets", "dom", "template.rs"],
     ["davinci", "vize_l1_to_l2", "src", "lib.rs"],
   ] as const;
 
