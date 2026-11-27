@@ -102,7 +102,11 @@ pub fn parse_art<'a>(
     })
 }
 
-/// Musea's target inference, shared with the Musea lint rules.
+/// Musea's target inference, shared with the Musea lint rules. Kept out of
+/// line so a file with an explicit target parses through the same code as
+/// before the inference was shared.
+#[cold]
+#[inline(never)]
 fn infer_art_target<'a>(
     allocator: &'a Allocator,
     script: &'a str,
