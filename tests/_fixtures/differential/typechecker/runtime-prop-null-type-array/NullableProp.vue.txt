@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps({
+  caseId: { type: [String, null], default: null },
+  count: [Number, null],
+})
+</script>
+<template><span>{{ caseId }}</span></template>

@@ -57,6 +57,27 @@ test("waitUntilRenderFlush commits pending Vue updates without waiting for the f
   await app.unmount();
 });
 
+test("non-interactive output reaches stdout without control characters from text", async () => {
+  const stdout = new PassThrough();
+  Object.assign(stdout, { columns: 80, rows: 24, isTTY: false });
+  const app = createApp(
+    () =>
+      h("box", { style: { flexDirection: "column" } }, [
+        h("text", { text: "bold\u001b[1m done\u0007" }),
+        h("text", { text: "a\tb\u009b2J" }),
+      ]),
+    {
+      interactive: false,
+      patchConsole: false,
+      stdout: stdout as unknown as NodeJS.WriteStream,
+    },
+  );
+
+  await app.mount();
+  await app.unmount();
+  assert.equal(String(stdout.read()), "bold[1m done\na\tb2J\n");
+});
+
 test("waitUntilRenderFlush waits for an interactive mount before resolving", async () => {
   const stdout = new PassThrough();
   Object.assign(stdout, { columns: 80, rows: 24, isTTY: true });

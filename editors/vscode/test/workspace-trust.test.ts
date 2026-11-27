@@ -37,6 +37,10 @@ const body = [
   )
   .join("\n");
 
+/** Reads the activation entry point and the idle wait from the evaluated extension. */
+const lifecycleFile = new URL("./programs/workspace-trust-lifecycle.js", import.meta.url);
+const lifecycleProgram = fs.readFileSync(lifecycleFile, "utf8");
+
 /** The extension modules that run unchanged. */
 const realModules = {
   LINT_ONLY_CONFIGURATION_UPDATES,
@@ -191,9 +195,9 @@ function openWindow(trusted: boolean) {
   const editor = editorApi(trusted, observed);
   const context = vm.createContext({ ...realModules, ...editor, ...machine(observed) });
   new vm.Script(body).runInContext(context);
-  const lifecycle = new vm.Script(
-    "({ activate, idle: () => waitForConfigurationIdle(() => configurationSyncTimer !== undefined) })",
-  ).runInContext(context) as Lifecycle;
+  const lifecycle = new vm.Script(lifecycleProgram, {
+    filename: lifecycleFile.pathname,
+  }).runInContext(context) as Lifecycle;
   return {
     ...observed,
     activate: () =>

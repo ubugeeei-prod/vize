@@ -22,7 +22,7 @@ use super::{
             is_whitespace_or_comment,
         },
         expression::generate_expression,
-        helpers::{is_builtin_component, to_valid_asset_identifier},
+        helpers::{is_builtin_component, js_string_contents, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -218,7 +218,7 @@ fn generate_if_branch_component(
             ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
             ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
             ctx.push("(\"");
-            ctx.push(name);
+            ctx.push(&js_string_contents(name));
             ctx.push("\")");
         } else {
             ctx.push("_component_component");

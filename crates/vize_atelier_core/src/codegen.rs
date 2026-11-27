@@ -59,6 +59,9 @@ mod tests;
 mod span_tests;
 
 #[cfg(test)]
+mod component_name_literal_tests;
+
+#[cfg(test)]
 use crate::options::CodegenOptions;
 
 pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};

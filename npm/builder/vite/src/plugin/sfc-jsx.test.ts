@@ -10,7 +10,13 @@ import type { VizePluginState } from "./state.ts";
 // `compiler.ts` takes `compileJsx` off the binding when it is first evaluated,
 // so the spy is installed before any plugin module is imported.
 const native = createRequire(import.meta.url)("@vizejs/native") as Record<string, unknown>;
-const jsxCalls: { filename?: string; jsxMode?: string; jsxCompat?: string; lang?: string }[] = [];
+const jsxCalls: {
+  filename?: string;
+  jsxMode?: string;
+  jsxCompat?: string;
+  vapor?: boolean;
+  lang?: string;
+}[] = [];
 const compileJsx = native.compileJsx as (source: string, options?: object) => unknown;
 native.compileJsx = (source: string, options?: (typeof jsxCalls)[number]) => {
   jsxCalls.push({ ...options });
@@ -18,6 +24,7 @@ native.compileJsx = (source: string, options?: (typeof jsxCalls)[number]) => {
 };
 const { loadSfcModule } = await import("../test/sfc-module.ts");
 const { VizeSfcCompileError } = await import("../compiler.ts");
+const { findSfcJsxScript } = await import("./sfc-jsx.ts");
 const { parseSync } = await import("oxc-parser");
 
 const TSX_SETUP = `<script setup lang="tsx">
@@ -198,4 +205,68 @@ void test("the JSX options of the plugin reach the lowering, and its errors fail
     return true;
   });
   assert.equal(jsxCalls.at(-1)?.jsxMode, "vapor");
+});
+
+void test("a > or a lang inside a quoted attribute value does not end or name the script tag", async () => {
+  assert.deepEqual(findSfcJsxScript(`<template />\n<script setup data-note=">" lang="tsx">`), {
+    lang: "tsx",
+    line: 2,
+  });
+  assert.deepEqual(
+    findSfcJsxScript(`<script setup generic="T extends Array<string>" lang='jsx'>`),
+    { lang: "jsx", line: 1 },
+  );
+  assert.equal(findSfcJsxScript(`<script setup lang="ts" data-x='lang="tsx"'>`), null);
+  assert.equal(findSfcJsxScript(`<script setup lang="tsx-like">`), null);
+  assert.deepEqual(
+    findSfcJsxScript(`<script lang="ts">\n</script>\n<script setup lang=tsx>`),
+    { lang: "tsx", line: 3 },
+    "a later script tag is still read",
+  );
+
+  const { root, file } = project({
+    "Quoted.vue": TSX_SETUP.replace("<script setup", `<script setup data-note=">"`),
+  });
+  const result = await loadSfcModule(state(root), file("Quoted.vue"));
+  assert.ok(result);
+  assertLoweredModule(result.code, "quoted > before lang");
+});
+
+void test("SSR lowers JSX to VNodes whatever jsxMode or vapor ask of the client", async () => {
+  const { root, file } = project({ "Va.vue": TSX_SETUP });
+  for (const mergedOptions of [{ jsxMode: "vapor" as const }, { vapor: true }]) {
+    jsxCalls.length = 0;
+    const result = await loadSfcModule(state(root, { mergedOptions }), file("Va.vue"), {
+      ssr: true,
+    });
+    assert.ok(result);
+    assertLoweredModule(result.code, `ssr ${JSON.stringify(mergedOptions)}`);
+    assert.match(result.code, /_createElementVNode\("span"/);
+    assert.equal(jsxCalls[0]?.jsxMode, "vdom");
+    assert.equal(jsxCalls[0]?.vapor, false);
+  }
+});
+
+void test("an authored vue import that binds a JSX helper's local name fails the compile", async () => {
+  const { root, file } = project({
+    "Clash.vue": `<template><Render /></template>
+<script setup lang="tsx">
+import { ref as _createElementVNode } from "vue";
+const n = _createElementVNode(2);
+const Render = () => <span>{n.value}</span>;
+</script>
+`,
+  });
+  for (const ssr of [false, true]) {
+    await assert.rejects(
+      loadSfcModule(state(root), file("Clash.vue"), { ssr }),
+      (error: unknown) => {
+        assert.ok(error instanceof VizeSfcCompileError);
+        assert.equal(error.filePath, file("Clash.vue"));
+        assert.match(error.message, /`ref as _createElementVNode`/);
+        assert.match(error.message, /in <script lang="tsx"> \(line 2\)/);
+        return true;
+      },
+    );
+  }
 });

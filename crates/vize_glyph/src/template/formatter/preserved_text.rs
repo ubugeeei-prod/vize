@@ -84,6 +84,8 @@ impl TemplateFormatter<'_> {
                     }
                     output.push('>');
                     if !helpers::is_void_element_str(&tag_name) {
+                        // `depth` starts one level in, at the template block.
+                        super::nesting::open_element(depth.saturating_sub(1))?;
                         depth += 1;
                     }
                 }
