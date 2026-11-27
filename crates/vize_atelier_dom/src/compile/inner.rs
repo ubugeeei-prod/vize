@@ -4,9 +4,9 @@ use vize_atelier_core::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
     },
-    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    lane::transform_with_frozen_elements,
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
-    parser::parse_with_options_custom_elements_and_template_syntax,
+    parser::Parser,
     walk_probe::WalkCounts,
 };
 use vize_l0::dump::capture::NoCapture;
@@ -58,15 +58,18 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
-    let (mut root, errors) = profile!(
+    // The spans of `v-pre` elements keep them plain through the transform:
+    // Vue resolves no component inside a `v-pre` subtree.
+    let (mut root, errors, v_pre_elements) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options_custom_elements_and_template_syntax(
+        Parser::with_options_custom_elements_and_template_syntax(
             allocator,
             source,
             parser_opts,
             custom_elements.clone(),
             template_syntax,
         )
+        .parse_with_v_pre_elements()
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -158,14 +161,16 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+        transform_with_frozen_elements(
             allocator,
+            source,
             &mut root,
             transform_opts,
             script_tables,
             custom_elements,
             template_syntax_quirks,
             hoisted_scope_id,
+            v_pre_elements,
         )
     );
     let template_walks = template_walk_before.map(|before| WalkCounts::snapshot().since(before));

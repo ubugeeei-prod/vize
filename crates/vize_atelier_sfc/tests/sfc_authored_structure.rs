@@ -167,7 +167,7 @@ fn each_shape_matches_vue_markup_and_tree() {
         (
             "<p v-pre><div><Child>{{ x }}</Child></div></p>",
             "<p${_ssrRenderAttrs(_attrs)}><div><Child>{{ x }}</Child></div></p>",
-            "0:p 1:div",
+            "0:p 1:div 2:Child",
         ),
     ] {
         let source = template(body);

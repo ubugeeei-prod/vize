@@ -265,7 +265,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             &tree,
             &errors,
             caps,
-            LowerPolicy::compile(options.comments),
+            LowerPolicy::compile(options.comments).with_literal_v_pre_tags(),
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

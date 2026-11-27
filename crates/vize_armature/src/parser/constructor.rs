@@ -80,6 +80,7 @@ impl<'a> Parser<'a> {
             in_pre: false,
             in_v_pre: false,
             frozen_elements: None,
+            v_pre_elements: None,
             template_syntax_facts: None,
             open_table_count: 0,
             open_p_count: 0,

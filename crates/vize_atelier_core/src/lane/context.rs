@@ -312,6 +312,14 @@ impl<'a> TransformContext<'a> {
             0,
             0,
         );
+        // A destructured key or index alias binds every name of its pattern,
+        // so `v-model` rejects each one as a scope variable.
+        for (alias, names) in [(key_alias, key_names), (index_alias, index_names)] {
+            for name in for_bindings::pattern_tail_bindings(alias, names) {
+                self.scope_chain
+                    .add_binding(name, ScopeBinding::new(BindingType::SetupConst, 0));
+            }
+        }
     }
 
     /// Enter a v-slot scope with the given slot params

@@ -1,0 +1,31 @@
+import { vModelText as _vModelText, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+
+
+export default {
+  __name: 'Layout',
+  setup(__props) {
+
+const rows = { a: { k: { x: 1 } } };
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("div", null, [...(_cache[0] || (_cache[0] = [
+      _createElementVNode("div", null, [
+        _createElementVNode("Child", { ":x": "1" }, "{{ x }}"),
+        _createElementVNode("slot", { name: "s" }, "f")
+      ], -1 /* CACHED */)
+    ]))]),
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row, { k }) => {
+      return (_openBlock(), _createElementBlock("div", null, [
+        _withDirectives(_createElementVNode("input", {
+          "onUpdate:modelValue": $event => ((k.x) = $event)
+        }, null, 8 /* PROPS */, ["onUpdate:modelValue"]), [
+          [_vModelText, k.x]
+        ])
+      ]))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}

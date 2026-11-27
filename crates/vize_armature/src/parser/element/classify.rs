@@ -15,25 +15,32 @@ impl<'a> Parser<'a> {
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_l0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
-            && !(self.frozen_elements.is_some()
-                && frozen
+            && !(frozen
+                && self.literal_v_pre_tags()
                 && !vize_l0::is_platform_tag(element.tag)
                 && self.is_component(element))
     }
 
-    /// Determine element type (element, component, slot, template)
+    /// Whether a tag in a `v-pre` subtree stays the plain element Vue's
+    /// compiler keeps it as: for the compiler lanes (which configure
+    /// `is_native_tag`) and the frozen-element custody parse. Other callers
+    /// keep classifying such a tag as authored.
+    fn literal_v_pre_tags(&self) -> bool {
+        self.frozen_elements.is_some() || self.options.is_native_tag.is_some()
+    }
+
+    /// Determine element type (element, component, slot, template).
+    ///
+    /// `in_v_pre` is true for an element that carries `v-pre` or sits inside
+    /// a `v-pre` subtree. Vue compiles nothing there, so every tag stays a
+    /// plain element: a PascalCase tag is not resolved as a component.
     pub(in crate::parser) fn determine_element_type(
         &self,
         element: &ElementNode<'a>,
+        in_v_pre: bool,
     ) -> ElementType {
         let tag = element.tag;
-        if self.frozen_elements.is_some()
-            && (self.in_v_pre
-                || element
-                    .props
-                    .iter()
-                    .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre")))
-        {
+        if in_v_pre && self.literal_v_pre_tags() {
             return ElementType::Element;
         }
 
