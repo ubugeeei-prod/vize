@@ -70413,6 +70413,35 @@
       }
     },
     {
+      "id": "typechecker/template-ref-key-check-owners/keys-checked-where-this-instance-runs",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-ref-key-check-owners/Owners.vue.txt",
+          "sha256": "0b23e66ca24cbfc5b07c36d7805a004411bd9d35e80f100bae123c5d2cbed8ef",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "template_ref_keys::tests::key_checks_follow_the_functions_this_instance_runs: a key is checked against the template only in setup, its callbacks, the default export's `setup` and local functions setup reaches; a function rendered as a component or never called keeps the inferred call without the key check. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/tsx-script-syntax-projection/typescript-only-syntax",
       "state": "active",
       "targets": [

@@ -171,8 +171,12 @@ Passing it to the default slot (`#default`) reports nothing. Found in n8n's
 ### A template ref read inside a local function
 
 Vize types `useTemplateRef("key")` from the template wherever the component's own script calls
-it, including a local composable or a lifecycle hook, so a key the template never registers is
-an error. vue-tsc reads the template's refs only at the top level of `<script setup>`:
+it, including a local composable or a lifecycle hook. A key the template never registers is an
+error wherever this component's instance runs the call: the setup body, a callback that setup
+passes to a call such as `onMounted`, and the local functions that setup calls. A local function
+that is rendered as its own component or never called keeps the inferred type without that check,
+because another instance may run it. vue-tsc reads the template's refs only at the top level of
+`<script setup>`:
 
 ```vue
 <!-- src/ConfirmDialog.vue -->

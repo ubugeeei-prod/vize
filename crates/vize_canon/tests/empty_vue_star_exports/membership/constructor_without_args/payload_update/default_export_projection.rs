@@ -4,7 +4,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::{fs, path::Path, sync::OnceLock};
 
-const RECORD_SHA: &str = "48c528aa98936322ef8162d6013c5f87cd5871d1af8ba05dd928fdbe0f492b57";
+const RECORD_SHA: &str = "7c3d10799a562895a81aa275a15f790ad4071a1083676d012977d09246b2f298";
 
 fn record() -> &'static Value {
     static RECORD: OnceLock<Value> = OnceLock::new();
