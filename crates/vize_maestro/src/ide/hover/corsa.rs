@@ -35,11 +35,11 @@ impl HoverService {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.template.as_ref()?;
 
+        // An offset no mapping covers (static attribute values, text) has no
+        // generated counterpart. Reading it as a generated offset would point
+        // rename and references at whatever unrelated symbol sits there.
         if crate::utils::is_standalone_html_path(ctx.uri.path()) {
-            return template
-                .source_map
-                .to_generated(sfc_offset)
-                .or(Some(sfc_offset));
+            return template.source_map.to_generated(sfc_offset);
         }
 
         // Get template block start offset in SFC
@@ -55,11 +55,7 @@ impl HoverService {
         // Calculate relative offset
         let relative_offset = sfc_offset - template_start;
 
-        // Use source map to convert offset
-        template
-            .source_map
-            .to_generated(relative_offset)
-            .or(Some(relative_offset))
+        template.source_map.to_generated(relative_offset)
     }
 
     /// Convert SFC offset to virtual TS script offset.

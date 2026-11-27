@@ -40,6 +40,7 @@ mod parse;
 mod pkl;
 mod plugin_inspect;
 mod plugin_lint;
+pub(crate) mod shared_scratch;
 pub use plugin_lint::{PluginLintSidecar, SidecarBudget, SidecarReply};
 #[cfg(test)]
 mod plugin_plan_tests;

@@ -1,0 +1,1 @@
+src/ConfirmDialog.vue(6,30): error TS2339: Property 'showModal' does not exist on type '{}'.

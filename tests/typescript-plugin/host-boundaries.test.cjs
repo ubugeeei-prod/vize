@@ -32,6 +32,17 @@ function fakeNative(directory) {
   return directory;
 }
 
+// nativePath is honoured only when the project resolves this checkout's plugin.
+function linkPlugin(project) {
+  const scope = path.join(project, "node_modules/@vizejs");
+  fs.mkdirSync(scope, { recursive: true });
+  fs.symlinkSync(
+    fs.realpathSync(pluginSource),
+    path.join(scope, "typescript-vue-plugin"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+}
+
 void test("an absent default provider leaves tsserver and its external files untouched", (t) => {
   // A copied plugin has no node_modules, like the universal VSIX.
   const plugin = path.join(temporary(t), "plugin");
@@ -88,9 +99,11 @@ void test("SFC projections read the project configuration once per project versi
   const project = temporary(t);
   const config = `${project}/tsconfig.json`;
   write(project, { "tsconfig.json": {}, "A.vue": "<template />", "B.vue": "<template />" });
+  linkPlugin(project);
   let version = 1;
   const reads = [];
   const host = {
+    getCurrentDirectory: () => project,
     getProjectVersion: () => String(version),
     getCompilationSettings: () => ({ configFilePath: config }),
     getScriptSnapshot: () => undefined,
@@ -132,6 +145,7 @@ void test("resolution keeps host results, project host methods and NodeNext impo
     "node_modules/dep/package.json": { name: "dep", types: "index.d.ts" },
     "node_modules/dep/index.d.ts": "export default 1;",
   });
+  linkPlugin(project);
   const options = {
     module: ts.ModuleKind.NodeNext,
     moduleResolution: ts.ModuleResolutionKind.NodeNext,

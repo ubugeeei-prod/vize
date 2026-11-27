@@ -8,7 +8,8 @@
 //! call). Only `await` expressions and calls made by the setup function itself
 //! count: nested functions run later and are skipped. `<script setup>` restores
 //! the instance after `await` for every call except `defineExpose`, which the
-//! expose rule checks as a top-level statement.
+//! expose rule checks as a top-level statement. `useTemplateRef` registers its
+//! key on the same instance, so the lifecycle rule checks it too.
 
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AwaitExpression,
@@ -25,9 +26,11 @@ use oxc_ast_visit::{
 };
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
-use vize_l0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 use super::SfcScriptContext;
+
+mod shadowed;
 
 /// Modules whose Composition API exports the rules track: eslint-plugin-vue's
 /// and `@vue/runtime-core`.
@@ -35,8 +38,10 @@ fn is_vue_module(source: &str) -> bool {
     source == "@vue/runtime-core" || super::composition_api::is_composition_api_module(source)
 }
 
-/// Lifecycle hooks that must be registered synchronously.
-pub(super) const LIFECYCLE_HOOKS: [&str; 11] = [
+/// What the lifecycle rule checks: the hooks that must be registered
+/// synchronously, and `useTemplateRef`, whose key is registered on the current
+/// instance as well.
+const INSTANCE_APIS: [&str; 12] = [
     "onBeforeMount",
     "onBeforeUnmount",
     "onBeforeUpdate",
@@ -48,7 +53,11 @@ pub(super) const LIFECYCLE_HOOKS: [&str; 11] = [
     "onUpdated",
     "onActivated",
     "onDeactivated",
+    TEMPLATE_REF,
 ];
+
+/// The finding name of a `useTemplateRef` call after `await`.
+pub(super) const TEMPLATE_REF: &str = "useTemplateRef";
 
 /// Watch APIs whose stop handle is lost when registered after `await`.
 pub(super) const WATCH_APIS: [&str; 2] = ["watch", "watchEffect"];
@@ -99,8 +108,8 @@ pub(super) fn find(
 /// Local names bound to the tracked Vue exports.
 #[derive(Default)]
 struct Imports {
-    /// Local name of a tracked named import.
-    named: FxHashSet<CompactString>,
+    /// Local name of a tracked named import, with the export it names.
+    named: FxHashMap<CompactString, &'static str>,
     /// Local names of `import * as Vue from "vue"`.
     namespaces: FxHashSet<CompactString>,
     /// The export names `named` and namespace members resolve against.
@@ -110,7 +119,7 @@ struct Imports {
 impl Imports {
     fn collect(program: &Program<'_>, target: Target) -> Self {
         let exports: &'static [&'static str] = match target {
-            Target::Lifecycle => &LIFECYCLE_HOOKS,
+            Target::Lifecycle => &INSTANCE_APIS,
             Target::Watch => &WATCH_APIS,
             Target::Expose => &[],
         };
@@ -133,12 +142,16 @@ impl Imports {
             for specifier in declaration.specifiers.iter().flatten() {
                 match specifier {
                     ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                        if !specifier.import_kind.is_type()
-                            && exports.contains(&specifier.imported.name().as_str()) =>
+                        if !specifier.import_kind.is_type() =>
                     {
-                        imports
-                            .named
-                            .insert(CompactString::new(specifier.local.name.as_str()));
+                        let imported = specifier.imported.name();
+                        if let Some(export) =
+                            exports.iter().find(|export| **export == imported.as_str())
+                        {
+                            imports
+                                .named
+                                .insert(CompactString::new(specifier.local.name.as_str()), export);
+                        }
                     }
                     ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
                         imports
@@ -156,16 +169,20 @@ impl Imports {
         self.named.is_empty() && self.namespaces.is_empty()
     }
 
-    /// Whether `callee` names a tracked export: `onMounted` or `Vue.onMounted`.
-    fn resolves(&self, callee: &Expression<'_>) -> bool {
+    /// The tracked export `callee` names: `onMounted` or `Vue.onMounted`.
+    fn resolve(&self, callee: &Expression<'_>) -> Option<&'static str> {
         match callee {
-            Expression::Identifier(identifier) => self.named.contains(identifier.name.as_str()),
-            Expression::StaticMemberExpression(member) => {
-                matches!(&member.object, Expression::Identifier(object)
-                    if self.namespaces.contains(object.name.as_str()))
-                    && self.exports.contains(&member.property.name.as_str())
+            Expression::Identifier(identifier) => self.named.get(identifier.name.as_str()).copied(),
+            Expression::StaticMemberExpression(member)
+                if matches!(&member.object, Expression::Identifier(object)
+                    if self.namespaces.contains(object.name.as_str())) =>
+            {
+                self.exports
+                    .iter()
+                    .find(|export| **export == member.property.name.as_str())
+                    .copied()
             }
-            _ => false,
+            _ => None,
         }
     }
 }
@@ -269,6 +286,7 @@ impl Components<'_> {
 
     fn scan_setup(&mut self, params: &FormalParameters<'_>, body: &FunctionBody<'_>) {
         let mut scan = Scan::new(self.target, self.imports, expose_bindings(params));
+        scan.shadowed = shadowed::declared_names(params, body);
         for statement in &body.statements {
             scan.visit_statement(statement);
         }
@@ -297,6 +315,8 @@ struct Scan<'i> {
     target: Target,
     imports: &'i Imports,
     expose: ExposeBindings,
+    /// Names the setup function declares, which hide a same-named import.
+    shadowed: FxHashSet<CompactString>,
     after_await: bool,
     /// Calls whose return value is kept (a watch stop handle that may be used).
     kept: FxHashSet<u32>,
@@ -309,6 +329,7 @@ impl<'i> Scan<'i> {
             target,
             imports,
             expose,
+            shadowed: FxHashSet::default(),
             after_await: false,
             kept: FxHashSet::default(),
             findings: Vec::new(),
@@ -331,9 +352,13 @@ impl<'i> Scan<'i> {
 
     fn check(&mut self, call: &CallExpression<'_>) {
         let name = match self.target {
-            Target::Lifecycle => (self.imports.resolves(&call.callee) && call.arguments.len() < 2)
-                .then(|| CompactString::new("lifecycle")),
-            Target::Watch => (self.imports.resolves(&call.callee)
+            Target::Lifecycle => match self.resolve(&call.callee) {
+                Some(TEMPLATE_REF) => Some(CompactString::new(TEMPLATE_REF)),
+                // A hook given an explicit target instance is allowed.
+                Some(_) if call.arguments.len() < 2 => Some(CompactString::new("lifecycle")),
+                _ => None,
+            },
+            Target::Watch => (self.resolve(&call.callee).is_some()
                 && !self.kept.contains(&call.span.start))
             .then(|| CompactString::new("watch")),
             Target::Expose => self.expose_name(&call.callee),

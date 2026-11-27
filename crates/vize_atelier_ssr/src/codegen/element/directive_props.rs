@@ -66,7 +66,7 @@ impl SsrCodegenContext<'_> {
     }
 
     /// `resolveSetupReference("v-" + name)` over the script bindings, else
-    /// `_resolveDirective(name)` (inlined, like component resolution).
+    /// the `_directive_<name>` local `ssrRender` declares.
     pub(crate) fn directive_reference(&mut self, name: &str) -> String {
         let camel = camelize(&cstr!("v-{name}"));
         let pascal = capitalize(&camel);
@@ -103,7 +103,7 @@ impl SsrCodegenContext<'_> {
             Some((binding, _)) => cstr!("$setup[{}]", quoted_js_string(&binding)),
             None => {
                 self.use_core_helper(RuntimeHelper::ResolveDirective);
-                cstr!("_resolveDirective({})", quoted_js_string(name))
+                self.resolved_directive(name)
             }
         }
     }

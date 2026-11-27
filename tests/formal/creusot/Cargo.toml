@@ -26,6 +26,7 @@ members = [
   "fusion",
   "template-labels",
   "glyph-line-breaks",
+  "recovery-positions",
 ]
 
 [workspace.dependencies]

@@ -233,7 +233,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                                 });
                             }
                             BindName::Dynamic(name) => {
-                                let key = self.dynamic_key(name)?;
+                                let mut key = self.dynamic_key(name)?;
+                                if bind.camel {
+                                    key = self.ctx.camelized_dynamic_key(&key);
+                                }
                                 entries.push(component_prop_entry(&key, &value, true));
                             }
                         }

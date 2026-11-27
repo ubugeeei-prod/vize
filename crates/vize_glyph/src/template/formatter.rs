@@ -7,6 +7,7 @@
 use crate::{error::FormatError, options::FormatOptions};
 use memchr::memchr3;
 use vize_l0::String;
+use vize_l0::string_builder::TextBuf;
 
 use super::{
     attributes::sort_attributes,
@@ -39,8 +40,8 @@ use whitespace_significant::is_whitespace_significant_element;
 pub(crate) struct TemplateFormatter<'a> {
     options: &'a FormatOptions,
     vue_version: crate::VueVersion,
-    indent: &'static [u8],
-    newline: &'static [u8],
+    indent: &'static str,
+    newline: &'static str,
     base_depth: usize,
 }
 
@@ -54,8 +55,8 @@ impl<'a> TemplateFormatter<'a> {
         Self {
             options,
             vue_version,
-            indent: options.indent_bytes(),
-            newline: options.newline_bytes(),
+            indent: options.indent_str(),
+            newline: options.newline_string(),
             base_depth,
         }
     }
@@ -64,7 +65,7 @@ impl<'a> TemplateFormatter<'a> {
         // Select the CR-aware scanner once per template. The const parameter
         // specializes the ordinary LF path back to one delimiter scan per text
         // run, while leaving raw-region bytes untouched.
-        if self.newline == b"\r" && memchr::memchr(b'\n', input.as_bytes()).is_none() {
+        if self.newline == "\r" && memchr::memchr(b'\n', input.as_bytes()).is_none() {
             if self.options.canonical_directive_layout {
                 self.format_inner::<true, true>(input)
             } else {
@@ -83,7 +84,7 @@ impl<'a> TemplateFormatter<'a> {
     ) -> Result<String, FormatError> {
         let source = input.as_bytes();
         let len = source.len();
-        let mut output = Vec::with_capacity(len + len / 4);
+        let mut output = TextBuf::with_capacity(len + len / 4);
         let mut pos = 0;
         let mut depth: usize = 0;
         let mut text = TextRun::new();
@@ -138,15 +139,15 @@ impl<'a> TemplateFormatter<'a> {
                 if let Some(end_offset) = find_bytes(sub_slice(source, pos..), b"-->") {
                     let comment_end = pos + end_offset + 3;
                     self.open_chunk(&mut output, depth, join);
-                    output.extend_from_slice(sub_slice(source, comment_start..comment_end));
-                    output.extend_from_slice(self.newline);
+                    output.push_str(input.get(comment_start..comment_end).unwrap_or_default());
+                    output.push_str(self.newline);
                     joiner.finish(comment_end);
                     pos = comment_end;
                 } else {
                     // Unclosed comment - write remainder
                     self.open_chunk(&mut output, depth, join);
-                    output.extend_from_slice(sub_slice(source, comment_start..));
-                    output.extend_from_slice(self.newline);
+                    output.push_str(input.get(comment_start..).unwrap_or_default());
+                    output.push_str(self.newline);
                     joiner.finish(len);
                     pos = len;
                 }
@@ -164,8 +165,8 @@ impl<'a> TemplateFormatter<'a> {
                     depth = depth.saturating_sub(1);
                     inline = InlineNode::None;
                     self.open_chunk(&mut output, depth, join);
-                    output.extend_from_slice(b"</");
-                    output.extend_from_slice(tag_name.as_bytes());
+                    output.push_str("</");
+                    output.push_str(&tag_name);
                     if (CANONICAL && joiner.take_wrapped_text_close(pos))
                         || (join.is_continuation()
                             && !joiner.locks_current_line()
@@ -174,11 +175,11 @@ impl<'a> TemplateFormatter<'a> {
                                     &output, input, end_pos,
                                 )))
                     {
-                        output.extend_from_slice(self.newline);
+                        output.push_str(self.newline);
                         self.write_indent(&mut output, depth);
                     }
-                    output.push(b'>');
-                    output.extend_from_slice(self.newline);
+                    output.push('>');
+                    output.push_str(self.newline);
                     joiner.finish(end_pos);
                     pos = end_pos;
                     continue;
@@ -218,8 +219,8 @@ impl<'a> TemplateFormatter<'a> {
                         )
                     };
                     self.open_chunk(&mut output, depth, join);
-                    output.push(b'<');
-                    output.extend_from_slice(tag_name.as_bytes());
+                    output.push('<');
+                    output.push_str(&tag_name);
 
                     let mut closing_bracket_on_own_line = self
                         .write_opening_attributes_with_prefix(
@@ -235,27 +236,27 @@ impl<'a> TemplateFormatter<'a> {
                             self.hugged_inline_suffix_overflows(&output, suffix)
                         })
                     {
-                        output.extend_from_slice(self.newline);
+                        output.push_str(self.newline);
                         self.write_indent(&mut output, depth);
                         closing_bracket_on_own_line = true;
                     }
 
                     if is_self_closing {
                         if closing_bracket_on_own_line {
-                            output.extend_from_slice(b"/>");
+                            output.push_str("/>");
                         } else {
-                            output.extend_from_slice(b" />");
+                            output.push_str(" />");
                         }
                     } else if !is_void
                         && !whitespace_significant
                         && let Some(closing_end_pos) =
                             self.parse_immediate_empty_closing_tag(input, end_pos, &tag_name)
                     {
-                        output.push(b'>');
-                        output.extend_from_slice(b"</");
-                        output.extend_from_slice(tag_name.as_bytes());
-                        output.push(b'>');
-                        output.extend_from_slice(self.newline);
+                        output.push('>');
+                        output.push_str("</");
+                        output.push_str(&tag_name);
+                        output.push('>');
+                        output.push_str(self.newline);
                         joiner.finish(closing_end_pos);
                         pos = closing_end_pos;
                         continue;
@@ -264,7 +265,7 @@ impl<'a> TemplateFormatter<'a> {
                         // the formatter never changes rendered output.
                         // (#963, #3249)
                         pos = self.copy_whitespace_significant_element(
-                            source,
+                            input,
                             end_pos,
                             &tag_name,
                             len,
@@ -273,19 +274,19 @@ impl<'a> TemplateFormatter<'a> {
                         joiner.finish(pos);
                         continue;
                     } else {
-                        output.push(b'>');
+                        output.push('>');
                         if !is_void {
                             depth += 1;
                             joiner.opened_element(pos, end_pos, tag_name.len());
                         }
                     }
-                    output.extend_from_slice(self.newline);
+                    output.push_str(self.newline);
                     joiner.finish(end_pos);
                     pos = end_pos;
                     continue;
                 }
                 // Keep a non-tag `<` as text and advance past it.
-                text.push_byte(pos, b'<');
+                text.push_char(pos, '<');
                 if CANONICAL {
                     inline = inline.track(source, pos, pos + 1);
                 }
@@ -332,7 +333,7 @@ impl<'a> TemplateFormatter<'a> {
                 }
 
                 if content_end > content_start {
-                    text.push_source(source, content_start, content_end);
+                    text.push_source(input, content_start, content_end);
                     if CANONICAL {
                         inline = inline.track(source, content_start, content_end);
                     }
@@ -365,29 +366,32 @@ impl<'a> TemplateFormatter<'a> {
         self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
 
         // Remove trailing newline for consistency
-        while output.last().is_some_and(|&b| b == b'\n' || b == b'\r') {
-            output.pop();
-        }
+        let kept = output.trim_end_matches(['\n', '\r']).len();
+        output.truncate(kept);
 
-        // SAFETY: copied UTF-8 template ranges, formatter `&str` fragments and ASCII layout
-        // keep valid bytes. Parser ranges and ASCII delimiter checks maintain UTF-8 boundaries.
-        // Skipping validation preserves formatter throughput for large templates.
-        Ok(unsafe { String::from_utf8_unchecked(output) })
+        Ok(output.into_compact())
     }
 
     #[inline]
-    fn write_indent(&self, output: &mut Vec<u8>, depth: usize) {
+    fn write_indent(&self, output: &mut TextBuf, depth: usize) {
         for _ in 0..depth {
-            output.extend_from_slice(self.indent);
+            output.push_str(self.indent);
         }
     }
 
     #[inline]
-    fn write_indented_line(&self, output: &mut Vec<u8>, content: &[u8], depth: usize) {
+    fn write_indented_line(&self, output: &mut TextBuf, content: &str, depth: usize) {
         self.write_indent(output, depth);
-        output.extend_from_slice(content);
-        output.extend_from_slice(self.newline);
+        output.push_str(content);
+        output.push_str(self.newline);
     }
+}
+
+/// The text after the last line break of `output`.
+#[inline]
+pub(crate) fn current_line(output: &str) -> &str {
+    let start = memchr::memrchr2(b'\r', b'\n', output.as_bytes()).map_or(0, |pos| pos + 1);
+    output.get(start..).unwrap_or_default()
 }
 
 fn earliest_offset(left: Option<usize>, right: Option<usize>) -> Option<usize> {

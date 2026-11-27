@@ -38,6 +38,9 @@ pub struct VueDocumentVirtualTsOptions {
     pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
     pub configured_global_template_ref: bool,
+    /// A named `useTemplateRef` import from `#imports` is Vue's: the project
+    /// maps the alias to a module that re-exports Vue's (Nuxt's manifest).
+    pub imports_alias_template_ref: bool,
     pub dialect: vize_carton::config::VueVersion,
     pub preserve_missing_vue_diagnostics: bool,
 }
@@ -50,6 +53,7 @@ impl Default for VueDocumentVirtualTsOptions {
             experimental_patterned_template: false,
             preserve_event_navigation: false,
             configured_global_template_ref: false,
+            imports_alias_template_ref: false,
             dialect: vize_carton::config::VueVersion::default(),
             preserve_missing_vue_diagnostics: true,
         }
@@ -141,7 +145,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             preserve_unused_diagnostics: false,
             configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
                 global: document_options.configured_global_template_ref,
-                imports_alias: false,
+                imports_alias: document_options.imports_alias_template_ref,
             },
             options_api: document_options.options_api,
             preserve_authored_component: false,

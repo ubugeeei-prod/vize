@@ -72,11 +72,13 @@ pub(crate) fn run(args: BuildArgs) {
     if let Some(threads) = args.threads
         && let Err(error) = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
+            .stack_size(crate::commands::WORKER_STACK_BYTES)
             .build_global()
     {
         eprintln!("Failed to configure thread pool: {error}");
         std::process::exit(1);
     }
+    crate::commands::start_worker_pool();
 
     let default_patterns = args.patterns.is_empty().then(|| {
         vec![build_config.project_root.as_deref().map_or_else(

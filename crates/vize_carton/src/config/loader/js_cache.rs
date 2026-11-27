@@ -147,9 +147,12 @@ impl CacheSlot {
         {
             return None;
         }
+        // A cached evaluation stands in for running the config, so it is only
+        // read from a directory another user cannot have created.
         let node_modules = config
             .ancestors()
             .skip(1)
+            .filter(|directory| !super::shared_scratch::is_shared_scratch_directory(directory))
             .map(|directory| directory.join("node_modules"))
             .find(|directory| directory.is_dir())?;
         let mut runtime = rustc_hash::FxHasher::default();
@@ -179,7 +182,13 @@ impl CacheSlot {
         let bytes = std::fs::read(&self.path).ok()?;
         let entries: Vec<Entry> = serde_json::from_slice(&bytes).ok()?;
         for entry in entries {
-            if entry.key != self.key || !entry.inputs_fresh() {
+            // Every stored entry records the config file itself; one that does
+            // not was never written by `store`.
+            let records_config = entry
+                .inputs
+                .iter()
+                .any(|(path, _, _)| *path == self.key.config);
+            if entry.key != self.key || !records_config || !entry.inputs_fresh() {
                 continue;
             }
             if entry.env_fresh() {

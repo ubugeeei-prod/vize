@@ -20,6 +20,19 @@ export interface ZoneClock {
   readonly fromWall: (wall: number) => number;
 }
 
+// Callers choose the zone id and its spelling, so the per-zone caches have to stay bounded.
+const maximumCachedZones = 64;
+
+/** Add `value` to a per-zone cache, dropping the oldest entry once the cache is full. */
+function cacheForZone<Value>(cache: Map<string, Value>, timeZone: string, value: Value): Value {
+  if (cache.size >= maximumCachedZones) {
+    const oldest = cache.keys().next();
+    if (oldest.done !== true) cache.delete(oldest.value);
+  }
+  cache.set(timeZone, value);
+  return value;
+}
+
 const partFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function partsFormatter(timeZone: string): Intl.DateTimeFormat {
@@ -36,8 +49,7 @@ function partsFormatter(timeZone: string): Intl.DateTimeFormat {
     second: "numeric",
     era: "short",
   });
-  partFormatters.set(timeZone, formatter);
-  return formatter;
+  return cacheForZone(partFormatters, timeZone, formatter);
 }
 
 function zoneOffset(formatter: Intl.DateTimeFormat, epoch: number): number {
@@ -268,8 +280,7 @@ export function zoneIntervals(timeZone: string): ZoneIntervals {
       },
     }),
   };
-  intervalCache.set(timeZone, intervals);
-  return intervals;
+  return cacheForZone(intervalCache, timeZone, intervals);
 }
 
 /** Choose the tick interval d3's `timeTickInterval` would pick for `[start, stop]`. */

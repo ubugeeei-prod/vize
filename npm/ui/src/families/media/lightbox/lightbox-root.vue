@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="Item">
-import { computed, useTemplateRef, watch } from "vue";
+import { computed, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
@@ -138,7 +138,6 @@ defineSlots<{
   default?(props: LightboxSlotState<Item>): unknown;
 }>();
 
-const element = useTemplateRef<HTMLDivElement>("element");
 const baseId = useDeterministicId({ id: () => id, hint: "lightbox" });
 const openState = useControllableState<boolean>({
   value: () => open,
@@ -306,7 +305,6 @@ defineExpose(exposed);
 
 <template>
   <div
-    ref="element"
     data-vize-ui="lightbox-root"
     part="root"
     :dir

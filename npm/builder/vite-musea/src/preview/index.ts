@@ -89,7 +89,7 @@ function renderError(title, error) {
 }
 
 ${mountHelper}
-
+${RENDERED_PROPS_SNIPPET}
 window.__museaSetProps = (props, attrs = {}) => {
   propsOverride.value = { ...props };
   attrsOverride.value = { ...attrs };
@@ -156,6 +156,39 @@ mount();
 `;
 }
 
+/**
+ * Declared props are delivered to the component. Any other key lands on its root
+ * element, where Vue reads a leading "." or "^" as a forced DOM property or
+ * attribute, so those keep identifier and kebab-case names only.
+ */
+const RENDERED_PROPS_SNIPPET = `
+function __museaDeclaredProps(component, declared = new Set()) {
+  const options = typeof component === 'function'
+    ? component.options || component.__vccOpts || component
+    : component;
+  if (!options) return declared;
+  for (const name of Array.isArray(options.props) ? options.props : Object.keys(options.props || {})) {
+    declared.add(__museaCamelize(name));
+  }
+  for (const mixin of options.mixins || []) __museaDeclaredProps(mixin, declared);
+  return __museaDeclaredProps(options.extends, declared);
+}
+
+function __museaCamelize(name) {
+  return String(name).replace(/-(\\w)/g, (_, letter) => letter.toUpperCase());
+}
+
+function __museaRenderedProps(component, record) {
+  const declared = __museaDeclaredProps(component);
+  return Object.fromEntries(Object.entries(record).filter(([name]) =>
+    declared.has(__museaCamelize(name)) ||
+    (/^[\\p{ID_Start}$_][\\p{ID_Continue}$-]*$/u.test(name) &&
+      !/^on/i.test(name) &&
+      !/^(innerHTML|outerHTML|srcdoc)$/i.test(name))
+  ));
+}
+`;
+
 function isLegacyVueVersion(version: MuseaVueVersion | undefined): boolean {
   return (
     version === 0.11 || version === 1 || version === 2 || version === "2.7" || version === "legacy"
@@ -183,7 +216,7 @@ function vue2RemountAppSnippet(): string {
         slotFns[name] = slot;
         if (name === 'default') children.push(...slot());
       }
-      return h(Component, { props: { ...propsOverride.value }, attrs: { ...attrsOverride.value }, scopedSlots: slotFns }, children);
+      return h(Component, { props: __museaRenderedProps(Component, propsOverride.value), attrs: __museaRenderedProps(Component, attrsOverride.value), scopedSlots: slotFns }, children);
     }
   });`;
 }
@@ -196,7 +229,7 @@ function vue3RemountAppSnippet(): string {
         for (const [name, content] of Object.entries(slotsOverride)) {
           if (content) slotFns[name] = () => h('span', String(content));
         }
-        return h(Component, { ...attrsOverride.value, ...propsOverride.value }, slotFns);
+        return h(Component, __museaRenderedProps(Component, { ...attrsOverride.value, ...propsOverride.value }), slotFns);
       };
     }
   });`;

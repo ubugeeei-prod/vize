@@ -82,6 +82,8 @@ const compilerReferenceRepins = new Map([
   ["compiler/sfc/template-host-globals-10927", "#11698 erases TypeScript per authored piece"],
   ["compiler/sfc/template-ts-unscanned-erasure", "#11698 erases TypeScript per authored piece"],
   ["compiler/sfc/tsx-setup-jsx-bindings", "#11698 erases TypeScript per authored piece"],
+  ["compiler/dialect/vue0-10-repeat", "SSR declares each resolved directive once in ssrRender"],
+  ["compiler/dialect/vue0-11-repeat", "SSR declares each resolved directive once in ssrRender"],
 ]);
 
 // Rows a later decision retired from the module-bytes pack; each stays absent.

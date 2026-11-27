@@ -28,6 +28,17 @@ function fakeNative(directory) {
   return require(path.join(directory, "index.js"));
 }
 
+// nativePath is honoured only when the project resolves this checkout's plugin.
+function linkPlugin(project) {
+  const scope = path.join(project, "node_modules/@vizejs");
+  fs.mkdirSync(scope, { recursive: true });
+  fs.symlinkSync(
+    fs.realpathSync(pluginSource),
+    path.join(scope, "typescript-vue-plugin"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+}
+
 void test("unrequested SFC snapshots stay stubs until a query names them", (t) => {
   const project = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-lazy-sfc-")));
   t.after(() => fs.rmSync(project, { recursive: true, force: true }));
@@ -40,6 +51,7 @@ void test("unrequested SFC snapshots stay stubs until a query names them", (t) =
     "src/main.ts": "export const ready = true;\n",
   };
   write(project, files);
+  linkPlugin(project);
   const abs = (name) => path.join(project, name);
   const native = fakeNative(path.join(project, "native"));
   const generated = [];
@@ -158,6 +170,7 @@ void test("cold TypeScript diagnostics promote only resolved SFC dependencies an
     "node_modules/conditional/Require.vue": "<template />\n",
   };
   write(project, files);
+  linkPlugin(project);
   const abs = (name) => path.join(project, name);
   const native = fakeNative(path.join(project, "native"));
   const generated = [];
@@ -337,6 +350,7 @@ void test("requests within one project version reuse its import walk and resolut
     "node_modules/ui/index.ts": "export const kit = 1;\n",
   };
   write(project, files);
+  linkPlugin(project);
   const abs = (name) => path.join(project, name);
   const native = fakeNative(path.join(project, "native"));
   const generated = [];

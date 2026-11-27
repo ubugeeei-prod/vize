@@ -9,6 +9,7 @@
 //! template-position interpolations; this is the script-block half.
 
 use crate::template::helpers::template_literal_state_after_line_from;
+use vize_l0::string_builder::TextBuf;
 
 /// Write `content` into `output`, indenting each line with `indent` except
 /// lines that continue a multi-line template literal, which are emitted
@@ -17,10 +18,10 @@ use crate::template::helpers::template_literal_state_after_line_from;
 /// The opening line of a template literal is still indented: its leading
 /// whitespace sits before the backtick and is not part of the string.
 pub(super) fn write_indented_block(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     content: &str,
-    indent: &[u8],
-    newline: &[u8],
+    indent: &str,
+    newline: &str,
 ) {
     let trimmed = content.trim_end_matches('\n').trim_end_matches('\r');
     let mut inside_template_literal = false;
@@ -32,10 +33,10 @@ pub(super) fn write_indented_block(
         .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'));
     for line in lines {
         if !line.is_empty() && !inside_template_literal {
-            output.extend_from_slice(indent);
+            output.push_str(indent);
         }
-        output.extend_from_slice(line.as_bytes());
-        output.extend_from_slice(newline);
+        output.push_str(line);
+        output.push_str(newline);
         inside_template_literal =
             template_literal_state_after_line_from(inside_template_literal, line);
     }
@@ -107,9 +108,10 @@ mod tests {
     }
 
     fn indent_with(content: &str, newline: &[u8]) -> vize_l0::String {
-        let mut output = Vec::new();
-        write_indented_block(&mut output, content, b"  ", newline);
-        core::str::from_utf8(&output).unwrap().into()
+        let mut output = vize_l0::string_builder::TextBuf::new();
+        let newline = core::str::from_utf8(newline).unwrap();
+        write_indented_block(&mut output, content, "  ", newline);
+        output.into_compact()
     }
 
     #[test]

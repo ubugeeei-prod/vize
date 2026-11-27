@@ -314,3 +314,50 @@ fn governing_paths_include_inherited_configs_and_auto_target_vue_manifest() {
         assert!(paths.contains(&path), "missing {path:?} from {paths:?}");
     }
 }
+
+#[test]
+fn imports_alias_owns_use_template_ref_only_when_it_reexports_vues() {
+    for (module, expected) in [
+        ("export { onMounted, useTemplateRef } from 'vue';\n", true),
+        ("export { useTemplateRef } from 'my-vue';\n", false),
+        ("export declare const useTemplateRef: () => null;\n", false),
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(root.path().join(".nuxt")).unwrap();
+        std::fs::write(root.path().join(".nuxt/imports.d.ts"), module).unwrap();
+        std::fs::write(
+            root.path().join("tsconfig.json"),
+            r##"{ "compilerOptions": { "paths": { "#imports": ["./.nuxt/imports"] } } }"##,
+        )
+        .unwrap();
+        let mut project = VirtualProject::new(root.path()).unwrap();
+        project.set_tsconfig_path(Some(root.path().join("tsconfig.json")));
+        assert_eq!(
+            project.imports_alias_reexports_vue_template_ref(),
+            expected,
+            "{module}"
+        );
+    }
+    // A wildcard mapping reaches the same manifest.
+    let root = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(root.path().join(".nuxt")).unwrap();
+    std::fs::write(
+        root.path().join(".nuxt/imports.d.ts"),
+        "export { useTemplateRef } from 'vue';\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.path().join("tsconfig.json"),
+        r##"{ "compilerOptions": { "paths": { "#*": ["./.nuxt/*"] } } }"##,
+    )
+    .unwrap();
+    let mut project = VirtualProject::new(root.path()).unwrap();
+    project.set_tsconfig_path(Some(root.path().join("tsconfig.json")));
+    assert!(project.imports_alias_reexports_vue_template_ref());
+    // Without the alias nothing is adopted.
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(root.path().join("tsconfig.json"), "{}").unwrap();
+    let mut project = VirtualProject::new(root.path()).unwrap();
+    project.set_tsconfig_path(Some(root.path().join("tsconfig.json")));
+    assert!(!project.imports_alias_reexports_vue_template_ref());
+}

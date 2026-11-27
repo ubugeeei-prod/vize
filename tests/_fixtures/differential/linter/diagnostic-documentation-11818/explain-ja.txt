@@ -1627,6 +1627,7 @@ html/no-empty-palpable-content · lint ルール
     <p>text</p>
     <li>item</li>
     <td>cell</td>
+    <p v-t="'title'"></p>
   </template>
 
 ヒント:
@@ -4450,6 +4451,8 @@ vue/component-definition-name-casing · lint ルール
 不正な例:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
   my-Component.vue     -> should be MyComponent.vue or my-component.vue
+  myComponent.client.vue
+  page.block.vue
 
 正しい例:
   MyComponent.vue
@@ -4457,6 +4460,9 @@ vue/component-definition-name-casing · lint ルール
   my-component.vue
   index.vue
   App.vue
+  ClientBox.client.vue
+  ServerTime.server.vue
+  GlobalThing.global.vue
 
 ヒント:
   ファイル名をPascalCaseまたはkebab-caseに変更してください:
@@ -6469,10 +6475,12 @@ vue/require-component-is · lint ルール
 不正な例:
   <component />
   <component></component>
+  <component is="" />
 
 正しい例:
   <component :is="currentComponent" />
   <component :is="'MyComponent'" />
+  <component is="MyComponent" />
 
 ヒント:
   <component>は動的コンポーネントであり、レンダリングするコンポーネントを決定するためにis属性が必要です

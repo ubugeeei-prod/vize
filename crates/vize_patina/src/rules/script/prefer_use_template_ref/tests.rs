@@ -268,3 +268,118 @@ fn reports_nothing_for_a_standalone_script() {
     let result = linter.lint("const root = ref(null)", 0);
     assert_eq!(result.warning_count, 0);
 }
+
+// --- Template evidence comes from attributes, never from text --------------
+
+#[test]
+fn ignores_ref_spellings_in_comments_text_and_other_attribute_values() {
+    let sfc = r#"<script setup lang="ts">
+import { ref } from 'vue'
+
+const query = ref('')
+const input = ref('')
+const name = ref('')
+const el = ref(0)
+</script>
+
+<template>
+  <div>
+    <!-- <input ref="query"> -->
+    <input v-model="query" type="search" aria-label="Search">
+    <input v-model="input" aria-label="Demo">
+    <code>&lt;input ref="input"&gt;</code>
+    <input v-model="name" aria-label="Name" placeholder="e.g. ref='name'">
+    <p>{{ el }} {{ 'ref="el"' }}</p>
+  </div>
+</template>
+"#;
+    assert_eq!(rule_names(&lint_sfc(sfc)), Vec::<&str>::new());
+}
+
+#[test]
+fn raw_template_fallback_reads_only_tag_headers() {
+    use super::template_refs::source_ref_names;
+    let names = source_ref_names(
+        r#"<div title="ref='title'"><!-- <i ref="comment"> --> ref="text" {{ 'ref="mustache"' }}<input ref="field"><b ref=bare></b></div>"#,
+    );
+    let mut names: Vec<&str> = names.iter().map(|name| name.as_str()).collect();
+    names.sort_unstable();
+    assert_eq!(names, vec!["bare", "field"]);
+}
+
+// --- Declaration spellings and readonly use ---------------------------------
+
+#[test]
+fn reports_wrapped_aliased_and_namespaced_ref_declarations() {
+    let sfc = r#"<script setup lang="ts">
+import * as Vue from 'vue'
+import { ref, ref as vRef, type Ref } from 'vue'
+
+const a = (ref<HTMLElement | null>(null))
+const b = ref(null) as Ref<HTMLElement | null>
+const c = ref<HTMLElement | null>(null)!
+const d = vRef<HTMLElement | null>(null)
+const e = Vue.ref<HTMLElement | null>(null)
+</script>
+
+<template>
+  <div ref="a" /><div ref="b" /><div ref="c" /><div ref="d" /><div ref="e" />
+</template>
+"#;
+    assert_eq!(rule_names(&lint_sfc(sfc)).len(), 5);
+}
+
+#[test]
+fn ignores_a_ref_named_like_vue_but_imported_elsewhere() {
+    let sfc = r#"<script setup lang="ts">
+import { ref } from './local-ref'
+const root = ref(null)
+</script>
+
+<template>
+  <div ref="root" />
+</template>
+"#;
+    assert_eq!(rule_names(&lint_sfc(sfc)), Vec::<&str>::new());
+}
+
+#[test]
+fn ignores_refs_the_script_writes() {
+    let sfc = r#"<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
+const el = ref<HTMLElement | null>(null)
+const other = ref<HTMLElement | null>(null)
+onMounted(() => {
+  el.value ??= document.querySelector<HTMLElement>('#fallback')
+})
+function reset(): void {
+  other.value = null
+}
+</script>
+
+<template>
+  <div ref="el" @click="reset" /><div ref="other" />
+</template>
+"#;
+    assert_eq!(rule_names(&lint_sfc(sfc)), Vec::<&str>::new());
+}
+
+#[test]
+fn the_suggestion_keeps_the_keyword_and_element_type() {
+    let sfc = r#"<script setup lang="ts">
+import { shallowRef } from 'vue'
+let panel = shallowRef<HTMLDivElement | undefined | null>()
+</script>
+
+<template>
+  <div ref="panel" />
+</template>
+"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(result.diagnostics.len(), 1);
+    assert_eq!(
+        result.diagnostics[0].help.as_deref(),
+        Some("Replace with: `let panel = useTemplateRef<HTMLDivElement>('panel')`")
+    );
+}

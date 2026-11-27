@@ -1689,6 +1689,7 @@ html/no-empty-palpable-content · lint 规则
     <p>text</p>
     <li>item</li>
     <td>cell</td>
+    <p v-t="'title'"></p>
   </template>
 
 帮助:
@@ -4610,6 +4611,8 @@ vue/component-definition-name-casing · lint 规则
 错误示例:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
   my-Component.vue     -> should be MyComponent.vue or my-component.vue
+  myComponent.client.vue
+  page.block.vue
 
 正确示例:
   MyComponent.vue
@@ -4617,6 +4620,9 @@ vue/component-definition-name-casing · lint 规则
   my-component.vue
   index.vue
   App.vue
+  ClientBox.client.vue
+  ServerTime.server.vue
+  GlobalThing.global.vue
 
 帮助:
   将文件名改为PascalCase或kebab-case:
@@ -6735,10 +6741,12 @@ vue/require-component-is · lint 规则
 错误示例:
   <component />
   <component></component>
+  <component is="" />
 
 正确示例:
   <component :is="currentComponent" />
   <component :is="'MyComponent'" />
+  <component is="MyComponent" />
 
 帮助:
   <component>是动态组件，需要is属性来确定要渲染的组件

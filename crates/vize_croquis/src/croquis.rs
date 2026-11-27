@@ -174,6 +174,11 @@ pub struct Croquis {
     /// Unused bindings (defined but not referenced in template)
     pub unused_bindings: Vec<CompactString>,
 
+    /// Setup bindings initialized by `useTemplateRef(key)`. The key wires the
+    /// template ref, so a `ref` attribute spelling the binding's name is not a
+    /// read of it.
+    pub(crate) template_ref_handles: FxHashSet<CompactString>,
+
     /// Type exports from script setup (hoisted to module level)
     pub type_exports: Vec<TypeExport>,
 

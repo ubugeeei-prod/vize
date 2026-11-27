@@ -70,6 +70,23 @@ export class MappedModule {
       suffix++;
     }
 
+    // A prologue and an epilogue written in one edit (the SSR registration)
+    // leave a changed span from the first line to the last, so the epilogue's
+    // lines would move every line too. The previous module survives intact in
+    // such an edit, and only what precedes it moves its lines.
+    const firstBreak = previous.indexOf("\n");
+    if (
+      firstBreak >= prefix &&
+      previous.lastIndexOf("\n") < previous.length - suffix &&
+      next.length > previous.length
+    ) {
+      const at = next.indexOf(previous);
+      if (at !== -1) {
+        this.map = shiftMappedLines(this.map, 0, countNewlines(next.slice(0, at)));
+        return;
+      }
+    }
+
     const removed = previous.slice(prefix, previous.length - suffix);
     const inserted = next.slice(prefix, next.length - suffix);
     const addedLines = countNewlines(inserted) - countNewlines(removed);
@@ -140,5 +157,100 @@ export function identitySourceMap(file: string, source: string): SourceMapV3 {
     sourcesContent: [source],
     names: [],
     mappings: lines.join(";"),
+  };
+}
+
+const BASE64_VALUES = new Map(
+  Array.from({ length: BASE64_DIGITS.length }, (_, value) => [BASE64_DIGITS[value], value]),
+);
+
+/** A decoded segment: generated column, then source index, line and column when mapped. */
+type Segment = number[];
+
+function decodeMappings(mappings: string): Segment[][] {
+  const lines: Segment[][] = [];
+  const state = [0, 0, 0, 0, 0];
+  for (const text of mappings.split(";")) {
+    const segments: Segment[] = [];
+    state[0] = 0;
+    for (const field of text.split(",")) {
+      if (!field) continue;
+      const segment: Segment = [];
+      let value = 0;
+      let shift = 0;
+      for (const digit of field) {
+        const bits = BASE64_VALUES.get(digit) ?? 0;
+        value += (bits & 31) << shift;
+        if (bits & 32) {
+          shift += 5;
+          continue;
+        }
+        const index = segment.length;
+        state[index] += value & 1 ? -(value >>> 1) : value >>> 1;
+        segment.push(state[index]);
+        value = 0;
+        shift = 0;
+      }
+      segments.push(segment);
+    }
+    lines.push(segments);
+  }
+  return lines;
+}
+
+function encodeMappings(lines: Segment[][]): string {
+  let source = 0;
+  let sourceLine = 0;
+  let sourceColumn = 0;
+  return lines
+    .map((segments) => {
+      let column = 0;
+      return segments
+        .map(([generated, index, line, original]) => {
+          const encoded = `${vlq(generated - column)}${vlq(index - source)}${vlq(line - sourceLine)}${vlq(original - sourceColumn)}`;
+          column = generated;
+          source = index;
+          sourceLine = line;
+          sourceColumn = original;
+          return encoded;
+        })
+        .join(",");
+    })
+    .join(";");
+}
+
+/**
+ * The map of a second compile step over code the `inner` map already traces.
+ *
+ * `outer` describes the step's output against its input, and `inner` that
+ * input against the authored file, so each outer position is traced through
+ * `inner` to the authored one. A position `inner` does not map stays unmapped
+ * rather than borrow a neighbour's line.
+ */
+export function composeSourceMaps(outer: SourceMapV3, inner: SourceMapV3): SourceMapV3 {
+  const traced = decodeMappings(inner.mappings);
+  const lines = decodeMappings(outer.mappings).map((segments) => {
+    const composed: Segment[] = [];
+    for (const [generated, , line, column] of segments) {
+      if (line === undefined) continue;
+      // The inner segment that covers the column is the last one starting at or before it.
+      let covering: Segment | undefined;
+      for (const segment of traced[line] ?? []) {
+        if (segment[0] > column) break;
+        covering = segment;
+      }
+      if (covering && covering.length >= 4) {
+        composed.push([generated, covering[1], covering[2], covering[3]]);
+      }
+    }
+    return composed;
+  });
+  return {
+    version: 3,
+    ...(inner.file === undefined ? {} : { file: inner.file }),
+    sources: inner.sources,
+    ...(inner.sourcesContent === undefined ? {} : { sourcesContent: inner.sourcesContent }),
+    names: [],
+    mappings: encodeMappings(lines),
   };
 }

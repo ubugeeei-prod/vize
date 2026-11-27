@@ -62,6 +62,39 @@ test("activating an item moves aria-current and emits typed selections", async (
   handle.unmount();
 });
 
+test("hrefs a browser would read as a script URL are never rendered", () => {
+  const dropped = [
+    "javascript:alert(1)",
+    " JavaScript:alert(1)",
+    "java\tscript:alert(1)",
+    "java\nscript:alert(1)",
+    "\u0001javascript:alert(1)",
+    "vbscript:msgbox(1)",
+    "data:text/html,<p>",
+    "/path\u007f",
+  ];
+  const handle = mountInteraction(BottomNavigation, {
+    props: { destinations },
+    slots: {
+      default: () => [
+        ...dropped.map((href, index) =>
+          h(BottomNavigationItem, { value: `dropped-${index}`, href }, { default: () => "?" }),
+        ),
+        h(
+          BottomNavigationItem,
+          { value: "home", href: " /home?tab=1#top " },
+          { default: () => "Home" },
+        ),
+      ],
+    },
+  });
+  assert.deepEqual(
+    items(handle.root()).map((item) => item.getAttribute("href")),
+    [...dropped.map(() => null), "/home?tab=1#top"],
+  );
+  handle.unmount();
+});
+
 test("controlled values win, and disabled or unknown items do not activate", async () => {
   const handle = mountInteraction(BottomNavigation, {
     props: { destinations, modelValue: "home", ariaLabelledby: "nav-title" },

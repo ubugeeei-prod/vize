@@ -207,6 +207,14 @@ fn create_diagnostic(file_id: FileId, violation: &SetupContextViolation) -> Cros
                 "Lifecycle hooks require the component instance context which is only available during setup",
             )),
         ),
+        SetupContextViolationKind::ModuleLevelTemplateRef => (
+            CompactString::new(
+                "`useTemplateRef()` must be called inside setup() or <script setup>",
+            ),
+            Some(CompactString::new(
+                "Outside setup there is no component instance to register the key on, so the returned ref is never set; call it inside setup()",
+            )),
+        ),
     };
 
     let diag = CrossFileDiagnostic::new(
@@ -245,6 +253,10 @@ mod tests {
         assert_eq!(
             ViolationSeverity::Warning,
             SetupContextViolationKind::ModuleLevelWatch.severity()
+        );
+        assert_eq!(
+            ViolationSeverity::Error,
+            SetupContextViolationKind::ModuleLevelTemplateRef.severity()
         );
     }
 }

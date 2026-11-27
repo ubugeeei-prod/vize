@@ -78,10 +78,70 @@ impl super::super::VirtualProject {
         self.global_template_ref.imports_alias = reexported;
     }
 
+    /// Whether the effective tsconfig maps `#imports` to a module that
+    /// re-exports Vue's own `useTemplateRef` (Nuxt's generated manifest). The
+    /// first `paths` target that names a file decides, as in TypeScript.
+    pub(crate) fn imports_alias_reexports_vue_template_ref(&self) -> bool {
+        let alias = crate::virtual_ts::TemplateRefOwnership::IMPORTS_ALIAS;
+        let Ok(flattened) =
+            self.load_compiler_options_flattened(self.effective_tsconfig_path().as_deref())
+        else {
+            return false;
+        };
+        let Some(paths) = flattened.options.get("paths").and_then(Value::as_object) else {
+            return false;
+        };
+        // TypeScript prefers the exact key, then the wildcard pattern with
+        // the longest prefix (`"#*": ["./.nuxt/*"]`).
+        let selected = paths.get(alias).map(|targets| (targets, "")).or_else(|| {
+            paths
+                .iter()
+                .filter_map(|(pattern, targets)| {
+                    let (prefix, suffix) = pattern.split_once('*')?;
+                    let captured = alias.strip_prefix(prefix)?.strip_suffix(suffix)?;
+                    Some((prefix.len(), targets, captured))
+                })
+                .max_by_key(|(prefix, _, _)| *prefix)
+                .map(|(_, targets, captured)| (targets, captured))
+        });
+        let Some((targets, captured)) = selected else {
+            return false;
+        };
+        let Some(targets) = targets.as_array() else {
+            return false;
+        };
+        targets
+            .iter()
+            .filter_map(Value::as_str)
+            .find_map(|target| {
+                let target = target.replacen('*', captured, 1);
+                let target = std::path::Path::new(&target);
+                let target = if target.is_absolute() {
+                    target.to_path_buf()
+                } else {
+                    self.project_root.join(target)
+                };
+                let with_suffix = |suffix: &str| {
+                    let mut path = target.as_os_str().to_owned();
+                    path.push(suffix);
+                    std::path::PathBuf::from(path)
+                };
+                [
+                    target.clone(),
+                    with_suffix(".ts"),
+                    with_suffix(".d.ts"),
+                    target.join("index.ts"),
+                    target.join("index.d.ts"),
+                ]
+                .into_iter()
+                .find(|candidate| candidate.is_file())
+            })
+            .and_then(|path| std::fs::read_to_string(path).ok())
+            .is_some_and(|source| crate::batch::reexports_vue_template_ref(&source))
+    }
+
     /// Which `useTemplateRef` callees besides a `vue` import are Vue's own.
-    pub(in crate::batch::virtual_project) fn template_ref_ownership(
-        &self,
-    ) -> crate::virtual_ts::TemplateRefOwnership {
+    pub(crate) fn template_ref_ownership(&self) -> crate::virtual_ts::TemplateRefOwnership {
         crate::virtual_ts::TemplateRefOwnership {
             global: self.global_template_ref.enabled(),
             imports_alias: self.global_template_ref.imports_alias,

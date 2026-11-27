@@ -1,0 +1,3 @@
+src/ConfirmDialog.vue
+  error:5:33 [TS2339] Property 'dialgo' does not exist on type '$TemplateRefs'.
+  error:6:30 [TS2339] Property 'showModal' does not exist on type '{}'.

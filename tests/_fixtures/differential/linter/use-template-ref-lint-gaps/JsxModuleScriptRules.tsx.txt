@@ -1,0 +1,14 @@
+import { defineComponent, onMounted, useTemplateRef } from 'vue'
+
+export default defineComponent({
+  name: 'JsxComp',
+  setup() {
+    const el = useTemplateRef<HTMLInputElement>('el')
+    onMounted(() => {
+      if (el) {
+        el.focus()
+      }
+    })
+    return () => <input ref="el" type="text" aria-label="x"></input>
+  },
+})

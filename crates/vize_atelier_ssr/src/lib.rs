@@ -4,6 +4,8 @@
 mod bindings;
 pub mod codegen;
 mod compile;
+#[cfg(test)]
+mod declared_directive_tests;
 #[cfg(feature = "legacy-differential")]
 pub mod differential;
 #[cfg(test)]
@@ -11,6 +13,10 @@ mod empty_directive_tests;
 pub mod errors;
 mod l4;
 pub mod options;
+#[cfg(test)]
+mod setup_dynamic_key_tests;
+#[cfg(test)]
+mod sfc_fixture_tests;
 #[cfg(test)]
 mod slot_params_typescript_tests;
 #[cfg(test)]

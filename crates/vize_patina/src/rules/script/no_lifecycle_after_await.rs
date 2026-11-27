@@ -10,6 +10,10 @@
 //! instance after `await`). A hook given an explicit target instance as its
 //! second argument is allowed.
 //!
+//! `useTemplateRef(key)` is checked the same way: it registers its key on the
+//! current instance, so after an `await` in `setup()` the returned ref is
+//! never set.
+//!
 //! ## Examples
 //!
 //! ### Invalid
@@ -82,6 +86,25 @@ impl ScriptRule for NoLifecycleAfterAwait {
         for finding in after_await::find(program, sfc, Target::Lifecycle) {
             let start = offset as u32 + finding.span.start;
             let end = offset as u32 + finding.span.end;
+            if finding.name == after_await::TEMPLATE_REF {
+                result.add_diagnostic(
+                    LintDiagnostic::error(
+                        META.name,
+                        CompactString::new(
+                            "`useTemplateRef()` is forbidden after an `await` expression.",
+                        ),
+                        start,
+                        end,
+                    )
+                    .with_label("called after `await`", start, end)
+                    .with_help(
+                        "After an `await`, `setup()` has no current component instance, so \
+                         `useTemplateRef()` cannot register its key and the returned ref is \
+                         never set. Call it before the first `await`.",
+                    ),
+                );
+                continue;
+            }
             result.add_diagnostic(
                 LintDiagnostic::error(META.name, CompactString::new("Lifecycle hooks are forbidden after an `await` expression."), start, end)
                     .with_label("registered after `await`", start, end)
