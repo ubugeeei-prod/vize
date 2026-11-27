@@ -10,6 +10,19 @@ const read = (file: string) =>
 
 void test("live source checks use exactly the reviewed runner selectors and retain every other field", () => {
   assert.equal(sourceRunnerChanges.length, 22);
+  const labels = (
+    parse(read(".github/actionlint.yaml")) as {
+      "self-hosted-runner": { labels: string[] };
+    }
+  )["self-hosted-runner"].labels;
+  for (const row of sourceRunnerChanges) {
+    for (const selector of [row.before, row.after])
+      for (const runner of selector.match(/blacksmith-[a-z0-9-]+/g) ?? [])
+        assert.ok(
+          labels.includes(runner),
+          "source runner selectors must pass workflow syntax checks",
+        );
+  }
   for (const file of new Set(sourceRunnerChanges.map((row) => row.workflow))) {
     const raw = read(file);
     const live = parse(raw) as Workflow;
