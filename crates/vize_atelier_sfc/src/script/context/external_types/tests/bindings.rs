@@ -20,11 +20,20 @@ fn compile(files: &[(&str, &str)], component: &str) -> std::string::String {
     alone
 }
 
+/// The runtime props of a compiled component, one trimmed line each, and
+/// its errors: exactly `props` and none.
 fn assert_props(output: &str, props: &[&str]) {
-    assert!(output.contains("errors: []"), "{output}");
-    for prop in props {
-        assert!(output.contains(prop), "missing `{prop}`:\n{output}");
-    }
+    let lines: Vec<&str> = output.lines().map(str::trim).collect();
+    let errors = lines.iter().find_map(|line| line.strip_prefix("errors: "));
+    assert_eq!(errors, Some("[]"), "{output}");
+    let start = lines.iter().position(|line| *line == "props: {").unwrap() + 1;
+    let length = lines
+        .iter()
+        .skip(start)
+        .position(|line| *line == "}," || *line == "}")
+        .unwrap();
+    let found: Vec<&str> = lines.iter().skip(start).take(length).copied().collect();
+    assert_eq!(found, props, "{output}");
 }
 
 #[test]
@@ -56,7 +65,7 @@ fn an_aliased_import_resolves_through_renaming_and_star_re_exports() {
     assert_props(
         &output,
         &[
-            "value: { type: String, required: true }",
+            "value: { type: String, required: true },",
             "nested: { type: Object, required: false }",
         ],
     );
@@ -87,7 +96,7 @@ fn a_named_import_reads_its_own_module_over_a_same_named_declaration() {
         assert_props(
             &output,
             &[
-                "item: { type: Object, required: true }",
+                "item: { type: Object, required: true },",
                 "options: { type: Object, required: false }",
             ],
         );
@@ -107,7 +116,13 @@ fn a_same_named_boolean_of_another_module_does_not_cast_the_prop() {
         &files,
         "<script setup lang=\"ts\">\nimport type { Options } from './flags'\nimport type { Flag } from './detail'\ndefineProps<{ flag: Flag; options?: Options }>()\n</script>\n<template><div /></template>\n",
     );
-    assert_props(&output, &["flag: { type: String, required: true }"]);
+    assert_props(
+        &output,
+        &[
+            "flag: { type: String, required: true },",
+            "options: { type: Object, required: false }",
+        ],
+    );
 }
 
 #[test]
