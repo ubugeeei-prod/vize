@@ -54,6 +54,19 @@ impl TextBuf {
         self.0.reserve(additional);
     }
 
+    /// Room for at least `additional` more bytes, allocating no more than
+    /// that.
+    #[inline]
+    pub fn reserve_exact(&mut self, additional: usize) {
+        self.0.reserve_exact(additional);
+    }
+
+    /// The bytes it can hold without reallocating.
+    #[inline]
+    pub fn capacity(&self) -> usize {
+        self.0.capacity()
+    }
+
     /// Keep the first `len` bytes. `len` must be a scalar boundary, such as a
     /// length this buffer had earlier; like [`String::truncate`], it panics
     /// otherwise.

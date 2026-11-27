@@ -64,8 +64,11 @@ pub(super) fn splice_insertions(
     let capacity = original.len() + inserted;
     // Output that needs the heap anyway is assembled in a plain heap buffer,
     // whose appends inline; it then moves into the result without a copy.
-    if capacity > core::mem::size_of::<String>() {
-        let mut result = TextBuf::with_capacity(capacity);
+    // It allocates what a `CompactString` would: at least 32 bytes.
+    let inline = core::mem::size_of::<String>();
+    if capacity > inline {
+        let heap = inline + core::mem::size_of::<usize>();
+        let mut result = TextBuf::with_capacity(capacity.max(heap));
         emit_insertions(original, &all_rewrites, wrapper_offset, |piece| {
             result.push_str(piece);
         });
