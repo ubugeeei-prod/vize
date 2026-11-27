@@ -171,10 +171,7 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
     (step) => step.uses === "./.github/actions/setup-rust-script",
   );
   assert.equal(originalSetupIndex >= 0, true);
-  assert.equal(
-    steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
-    false,
-  );
+  assert(!steps.some((step) => step.uses === "./.github/actions/setup-rust-script"));
   steps.splice(originalSetupIndex, 0, structuredClone(originalSteps[originalSetupIndex]));
 
   const publisher = steps.find((step) => step.name === "Coverage report");
