@@ -23,6 +23,8 @@ macos = "blacksmith-12vcpu-macos-15"
 // checks with no Rust toolchain or sticky disk). They finish in seconds, and
 // a 32-vCPU slot spent on them delays a build job at the pool's cap.
 linuxSmall = "blacksmith-4vcpu-ubuntu-2404"
+// Source checks keep their complete commands on the available mid-size pool.
+linuxValidation = "blacksmith-16vcpu-ubuntu-2404"
 
 function use(action: String): Dynamic = new { uses = action }
 
