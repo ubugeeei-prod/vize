@@ -23,6 +23,7 @@ mod inline_breaks;
 mod interpolation;
 pub(crate) mod nesting;
 mod opening_attributes;
+use opening_attributes::Continued;
 mod preserved_text;
 mod suppression;
 mod tags;
@@ -169,7 +170,11 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.push_str("</");
                     output.push_str(&tag_name);
+                    // Prettier closes a hugged element whose opening `>` moved
+                    // down with `>` on its own line too.
+                    let moved_opening = joiner.take_moved_opening_bracket(depth);
                     if (CANONICAL && joiner.take_wrapped_text_close(pos))
+                        || (CANONICAL && moved_opening && join.is_continuation())
                         || (join.is_continuation()
                             && !joiner.locks_current_line()
                             && (self.closing_bracket_overflows(&output)
@@ -231,19 +236,29 @@ impl<'a> TemplateFormatter<'a> {
                         None if is_self_closing => 3,
                         None => 1,
                     };
+                    let continued = if !join.is_continuation() || joiner.locks_current_line() {
+                        Continued::No
+                    } else if joiner.follows_opening_bracket(pos) {
+                        Continued::AfterOpeningBracket
+                    } else {
+                        Continued::Line
+                    };
                     self.open_chunk(&mut output, depth, join);
                     output.push('<');
                     output.push_str(&tag_name);
 
-                    let mut closing_bracket_on_own_line = self
-                        .write_opening_attributes_with_prefix(
-                            &mut output,
-                            &tag_name,
-                            &sorted_attrs,
-                            depth,
-                            join.is_continuation() && !joiner.locks_current_line(),
-                            compact_suffix_width,
-                        );
+                    let line = self.write_opening_attributes_with_prefix(
+                        &mut output,
+                        &tag_name,
+                        &sorted_attrs,
+                        depth,
+                        continued,
+                        compact_suffix_width,
+                    );
+                    if line.moved_parent_bracket {
+                        joiner.moved_opening_bracket(depth.saturating_sub(1));
+                    }
+                    let mut closing_bracket_on_own_line = line.bracket_on_own_line;
                     if !closing_bracket_on_own_line
                         && hugged_inline_suffix.is_some_and(|suffix| {
                             self.hugged_inline_suffix_overflows(&output, suffix)

@@ -1294,6 +1294,131 @@
       ]
     },
     {
+      "id": "formatter/sfc/continued-tag-parent-bracket",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-continued-tag-parent-bracket",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "24af1719f6b829081992da6b442e5c74ae191b059771c507dd1ff91c352d7f18",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          13797
+        ],
+        "commits": [
+          {
+            "sha": "f81ae30e7eed4fa919a7e803c833db4c0b21a7eb",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/opening_attributes.rs",
+              "crates/vize_glyph/src/template/formatter/suppression.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13797,
+            "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+            "symbol": "continued_tag_moves_the_parent_bracket_instead_of_wrapping"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+          "symbol": "continued_tag_moves_the_parent_bracket_instead_of_wrapping",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The fixture covers the default preset; the unmovable and still-overflowing cases stay in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "empty, text and void children hugged after a parent's opening > that overflow the line"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-continued-tag-parent-bracket/reference.expected.txt",
+              "sha256": "cce228e3e056b327ccb4915e2a23defaf15e2a699b85c2db2f8c56a06cb71ac0",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13797,
+                "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+                "symbol": "continued_tag_moves_the_parent_bracket_instead_of_wrapping",
+                "assertion": "An overflowing tag hugged after its parent's > stays whole; the parent's > moves to the next line."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [],
+          "referenceState": "issue-derived default-preset layout; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/crlf-template-layout",
       "state": "active",
       "targets": [
@@ -2165,13 +2290,13 @@
           "artifacts": [
             {
               "path": "sfc-hugged-child-whitespace-width/reference.expected.txt",
-              "sha256": "48a1d3dab81df7b6844d985621f309777c4b85b6526853b081e4910c65076aaf",
+              "sha256": "202f9b4e14afe4a4d1417aaef219d6d2bc9cca4b99b8aca7e37494df8c72c42a",
               "role": "repository-authored-regression-reference",
               "provenance": {
                 "revision": "fb43a8ba1883dfd64114b610fe314ed8ce86b777",
                 "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
                 "symbol": "whitespace_only_child_measures_like_an_empty_child",
-                "assertion": "Hugged whitespace children print like empty ones, count their closing tag toward print width, and stay byte-stable."
+                "assertion": "Hugged whitespace children print like empty ones, count their closing tag toward print width, keep a continued tag whole by moving the parent's >, and stay byte-stable."
               },
               "mediaType": "text/x-vue",
               "runtimeFileName": "App.vue"
@@ -2186,7 +2311,7 @@
           "missingFields": [
             "structured FormatResult.changed is covered by the Rust convergence witness"
           ],
-          "referenceState": "repository-authored real-project-derived width contract, re-captured when empty closing tags joined the start-tag width (issue 13797); exact-source Actions required"
+          "referenceState": "repository-authored real-project-derived width contract, re-captured when empty closing tags joined the start-tag width and continued tags moved the parent's > (issue 13797); exact-source Actions required"
         }
       },
       "comparison": {
@@ -3913,6 +4038,138 @@
                 "path": "crates/vize_glyph/tests/block_spacing.rs",
                 "symbol": "prettier_preset_keeps_authored_block_spacing",
                 "assertion": "Prettier 3.10.1 output: no blank line is added between SFC blocks and a run of blank lines becomes one."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "Prettier 3.10.1 output for an issue-derived SFC; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/prettier-continued-tag-parent-bracket",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-prettier-continued-tag-parent-bracket",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "24af1719f6b829081992da6b442e5c74ae191b059771c507dd1ff91c352d7f18",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "b34a321081a6dcfccf55000cabc722fb14d5badecc7ebf3c5e3aced4ffc65ac8",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          13797
+        ],
+        "commits": [
+          {
+            "sha": "f81ae30e7eed4fa919a7e803c833db4c0b21a7eb",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/opening_attributes.rs",
+              "crates/vize_glyph/src/template/formatter/suppression.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13797,
+            "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+            "symbol": "prettier_continued_tag_matches_prettier"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+          "symbol": "prettier_continued_tag_matches_prettier",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "Whitespace-only hugged children and text that overflows after a hugged closing tag stay outside this fixture; see the PR body."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "empty, text and void children hugged after a parent's opening > that overflow the line"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-prettier-continued-tag-parent-bracket/reference.expected.txt",
+              "sha256": "596b68598dca6cd1c2a252522884731e4beb359ca38141b83c1b41c58e319900",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13797,
+                "path": "crates/vize_glyph/tests/continued_tag_parent_bracket.rs",
+                "symbol": "prettier_continued_tag_matches_prettier",
+                "assertion": "Prettier 3.10.1 output: the parent's opening and closing > move to their own lines and the hugged tag stays whole."
               },
               "mediaType": "text/x-vue",
               "runtimeFileName": "App.vue"

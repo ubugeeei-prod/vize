@@ -67,6 +67,8 @@ pub(super) struct LineJoiner<'s> {
     /// Last ordinary opening tag, borrowed from the existing tag parser.
     opening: Option<(usize, usize, usize)>,
     wrapped_text_close: Option<usize>,
+    /// Depth of the element whose opening `>` moved below its start tag.
+    moved_opening: Option<usize>,
     /// Inline node start whose authored blank line the Prettier preset keeps.
     kept_blank_line: Option<usize>,
 }
@@ -80,6 +82,7 @@ impl<'s> LineJoiner<'s> {
             previous_end: None,
             opening: None,
             wrapped_text_close: None,
+            moved_opening: None,
             kept_blank_line: None,
         }
     }
@@ -140,6 +143,30 @@ impl<'s> LineJoiner<'s> {
 
     pub(super) fn opened_element(&mut self, start: usize, end: usize, name_len: usize) {
         self.opening = Some((start, end, name_len));
+    }
+
+    /// The chunk at `start` touches the `>` of the opening tag emitted just
+    /// before it, so that `>` may move to the next line in its place.
+    #[inline]
+    pub(super) fn follows_opening_bracket(&self, start: usize) -> bool {
+        self.opening
+            .is_some_and(|(_, end, _)| end == start && self.previous_end == Some(end))
+    }
+
+    /// Remember that the opening `>` of the element at `depth` moved down.
+    #[inline]
+    pub(super) fn moved_opening_bracket(&mut self, depth: usize) {
+        self.moved_opening = Some(depth);
+    }
+
+    /// Whether the closing tag at `depth` pairs with a moved opening `>`.
+    #[inline]
+    pub(super) fn take_moved_opening_bracket(&mut self, depth: usize) -> bool {
+        if self.moved_opening == Some(depth) {
+            self.moved_opening = None;
+            return true;
+        }
+        false
     }
 
     pub(super) fn locks_current_line(&self) -> bool {

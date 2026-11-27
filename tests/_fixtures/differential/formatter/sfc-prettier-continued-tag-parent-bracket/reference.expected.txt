@@ -1,0 +1,14 @@
+<template>
+  <div>
+    <el-button plain size="small" type="primary" @click="preview(true)"
+      ><i class="el-icon-view-ab">x</i>Prev</el-button
+    >
+    <el-button plain size="small" type="primary" @click="preview(true)"
+      ><i class="el-icon-view-ab"></i>Prev</el-button
+    >
+    <el-button plain size="small" type="primary" @click="preview(true)"
+      ><img class="el-icon-view-ab" />Prev</el-button
+    >
+    <el-button size="small"><i class="el-icon-view"></i>Prev</el-button>
+  </div>
+</template>
