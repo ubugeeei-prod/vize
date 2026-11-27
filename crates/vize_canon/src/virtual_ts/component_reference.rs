@@ -434,6 +434,30 @@ fn options_api_reserved_binding_local_with_bindings(
     local
 }
 
+/// Whether Vue's compiler gives the element its component before it reads
+/// setup bindings (`resolveComponentType`): `<component>` or `<Component>`
+/// with an `is` prop is the dynamic component, and the core and DOM built-ins
+/// (`Teleport`, `Suspense`, `KeepAlive`, `BaseTransition`, `Transition`,
+/// `TransitionGroup`, each also in kebab case) are Vue's own. A setup binding
+/// spelled like one of these tags never owns it.
+pub(crate) fn resolves_before_setup_bindings(element: &vize_relief::ElementNode<'_>) -> bool {
+    if vize_croquis::builtins::is_runtime_builtin_component(element.tag) {
+        return true;
+    }
+    matches!(element.tag, "component" | "Component")
+        && element.props.iter().any(|prop| match prop {
+            vize_relief::PropNode::Attribute(attribute) => attribute.name == "is",
+            vize_relief::PropNode::Directive(directive) => {
+                directive.name == "bind"
+                    && matches!(
+                        &directive.arg,
+                        Some(vize_relief::ExpressionNode::Simple(arg))
+                            if arg.is_static && arg.content == "is"
+                    )
+            }
+        })
+}
+
 mod registrations;
 pub(crate) use registrations::is_registered_component;
 
