@@ -101,6 +101,7 @@ pub fn run(args: ReadyArgs) {
             max_attributes_per_line: None,
             normalize_directive_shorthands: None,
             sort_blocks: None,
+            block_spacing: None,
             self_close_void_elements: None,
             normalize_css_quotes: None,
             normalize_inline_styles: None,

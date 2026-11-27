@@ -162,7 +162,7 @@ fs.writeFileSync(path.join(consumer, ".prettierignore"), "ignored.vue\n");
 const input =
   '<script setup lang="ts">const label:string="雪 😀";</script><template><p class="note">{{label}}</p></template><style>.note{color:red}</style>';
 const golden =
-  '<script setup lang="ts">\nconst label: string = \'雪 😀\'\n</script>\n\n<template>\n  <p class="note">{{ label }}</p>\n</template>\n\n<style>\n.note {\n  color: red;\n}\n</style>\n'.replaceAll(
+  '<script setup lang="ts">\nconst label: string = \'雪 😀\'\n</script>\n<template>\n  <p class="note">{{ label }}</p>\n</template>\n<style>\n.note {\n  color: red;\n}\n</style>\n'.replaceAll(
     "\n",
     "\r\n",
   );

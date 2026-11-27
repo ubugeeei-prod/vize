@@ -135,6 +135,12 @@ formatterConfigDef: JsonSchema = new JsonSchema {
       description = "Sort SFC blocks in canonical order"
       default = true
     }
+    ["blockSpacing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "blank-line"; "preserve" }
+      description = "Write one blank line between SFC blocks, or preserve the authored spacing (at most one blank line)"
+      default = "blank-line"
+    }
     ["normalizeCssQuotes"] = new JsonSchema {
       type = "boolean"
       description = "Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference"

@@ -1139,6 +1139,10 @@ export interface FormatterConfig {
    */
   sortBlocks?: boolean;
   /**
+   * Write one blank line between SFC blocks, or preserve the authored spacing (at most one blank line)
+   */
+  blockSpacing?: "blank-line" | "preserve";
+  /**
    * Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference
    */
   normalizeCssQuotes?: boolean;

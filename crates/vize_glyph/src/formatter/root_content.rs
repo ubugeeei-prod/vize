@@ -56,7 +56,8 @@ fn classify(gap: &str) -> (bool, Option<usize>) {
     (!has_blank_line(tail), group_start)
 }
 
-fn has_blank_line(tail: &str) -> bool {
+/// Whether whitespace between two root nodes holds an empty line.
+pub(super) fn has_blank_line(tail: &str) -> bool {
     let bytes = tail.as_bytes();
     let mut breaks = 0;
     for (index, &byte) in bytes.iter().enumerate() {
