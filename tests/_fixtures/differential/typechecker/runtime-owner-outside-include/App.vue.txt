@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { shared } from "../../shared/a";
+
+const count: number = shared;
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>

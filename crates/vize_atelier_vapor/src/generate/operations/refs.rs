@@ -4,7 +4,7 @@ use crate::ir::{
 };
 use vize_carton::{String, cstr};
 
-use super::super::context::GenerateContext;
+use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 
 /// Generate SetTemplateRef
 pub(super) fn generate_set_template_ref(
@@ -14,7 +14,7 @@ pub(super) fn generate_set_template_ref(
     let element = cstr!("n{}", set_ref.element);
 
     let value = if set_ref.value.is_static {
-        cstr!("\"{}\"", set_ref.value.content)
+        cstr!("\"{}\"", escape_js_string_literal(set_ref.value.content))
     } else {
         ctx.resolve_expression_node(&set_ref.value)
     };

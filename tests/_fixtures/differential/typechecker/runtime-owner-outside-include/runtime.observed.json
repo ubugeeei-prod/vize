@@ -1,0 +1,25 @@
+{
+  "layout": {
+    "work/shared/a.ts": "shared-a.ts.txt",
+    "work/app/package.json": "{\"name\":\"app\",\"private\":true}",
+    "work/app/tsconfig.json": "tsconfig.json.txt",
+    "work/app/src/App.vue": "App.vue.txt",
+    "work/app/node_modules/vize": "the CLI package with its optional platform compiler nested under its own node_modules"
+  },
+  "invocation": {
+    "cwd": "work/app",
+    "command": "vize check",
+    "environment": "no CORSA_PATH, CORSA_EXECUTABLE, TSGO_PATH, TSGO_EXECUTABLE, TSRS_PATH or TSRS_EXECUTABLE"
+  },
+  "materializedProjectRoot": "work",
+  "runtimeOwner": "work/app",
+  "observed": {
+    "0.805.0": "error: native TypeScript runtime not found (discovery walked work and its ancestors only)",
+    "fixed": "work/app/node_modules/vize/node_modules/@typescript/typescript-{platform}/lib/tsc"
+  },
+  "relativeCorsaPath": {
+    "argument": "node_modules/vize/node_modules/@typescript/typescript-{platform}/lib/tsc",
+    "0.805.0": "Configured Corsa executable does not exist: work/node_modules/...",
+    "fixed": "resolved against work/app"
+  }
+}

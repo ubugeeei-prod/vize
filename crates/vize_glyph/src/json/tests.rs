@@ -1,4 +1,6 @@
+use super::parser::{MAX_NESTING_DEPTH, NESTING_DEPTH_ERROR};
 use super::{format_json_source, format_jsonc_source};
+use crate::error::FormatError;
 use crate::options::FormatOptions;
 
 fn opts() -> FormatOptions {
@@ -196,4 +198,77 @@ fn jsonc_is_idempotent_across_comment_positions() {
 #[test]
 fn jsonc_unterminated_block_comment_errors() {
     assert!(format_jsonc_source("{ /* oops \n \"a\": 1 }", &opts()).is_err());
+}
+
+// -- nesting depth -----------------------------------------------------
+
+/// `depth` arrays, each the only element of the one around it.
+fn nested_arrays(depth: usize) -> std::string::String {
+    "[".repeat(depth) + &"]".repeat(depth)
+}
+
+/// `depth` objects, each the only member value of the one around it.
+fn nested_objects(depth: usize) -> std::string::String {
+    "{\"a\":".repeat(depth) + "1" + &"}".repeat(depth)
+}
+
+#[track_caller]
+fn assert_nesting_depth_error(result: Result<vize_l0::String, FormatError>) {
+    let Err(FormatError::JsonFormatError(message)) = result else {
+        panic!("nesting past the limit must be a JSON format error");
+    };
+    assert_eq!(message.as_str(), NESTING_DEPTH_ERROR);
+}
+
+#[test]
+fn nesting_at_the_limit_formats() {
+    let source = nested_arrays(MAX_NESTING_DEPTH);
+    let innermost = MAX_NESTING_DEPTH - 1;
+    let mut expected = std::string::String::new();
+    for depth in 0..innermost {
+        expected += &"  ".repeat(depth);
+        expected += "[\n";
+    }
+    expected += &"  ".repeat(innermost);
+    expected += "[]\n";
+    for depth in (0..innermost).rev() {
+        expected += &"  ".repeat(depth);
+        expected += "]\n";
+    }
+    for format in [format_json_source, format_jsonc_source] {
+        let first = format(&source, &opts()).unwrap();
+        assert_eq!(first.as_str(), expected);
+        assert_eq!(format(first.as_str(), &opts()).unwrap().as_str(), expected);
+    }
+}
+
+#[test]
+fn nesting_past_the_limit_is_a_format_error() {
+    for source in [
+        nested_arrays(MAX_NESTING_DEPTH + 1),
+        nested_objects(MAX_NESTING_DEPTH + 1),
+    ] {
+        assert_nesting_depth_error(format_json_source(&source, &opts()));
+        assert_nesting_depth_error(format_jsonc_source(&source, &opts()));
+    }
+    assert!(format_json_source(&nested_objects(MAX_NESTING_DEPTH), &opts()).is_ok());
+}
+
+#[test]
+fn unclosed_nesting_far_past_the_limit_is_the_same_format_error() {
+    let source = "[".repeat(50_000);
+    assert_nesting_depth_error(format_json_source(&source, &opts()));
+    assert_nesting_depth_error(format_jsonc_source(&source, &opts()));
+    let source = "{\"a\":".repeat(50_000);
+    assert_nesting_depth_error(format_json_source(&source, &opts()));
+    assert_nesting_depth_error(format_jsonc_source(&source, &opts()));
+}
+
+#[test]
+fn sibling_collections_do_not_accumulate_depth() {
+    let siblings = MAX_NESTING_DEPTH * 2;
+    let source = std::format!("[{}]", vec!["[{}]"; siblings].join(","));
+    let expected = std::format!("[\n{}\n]\n", vec!["  [{}]"; siblings].join(",\n"));
+    let result = format_json_source(&source, &opts()).unwrap();
+    assert_eq!(result.as_str(), expected);
 }

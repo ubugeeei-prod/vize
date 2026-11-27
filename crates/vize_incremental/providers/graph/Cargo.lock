@@ -1587,6 +1587,7 @@ dependencies = [
  "once_cell",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_span",
  "rustc-hash",
  "serde",

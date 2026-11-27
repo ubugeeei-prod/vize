@@ -8,6 +8,15 @@ import { test } from "node:test";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
+import { vscePackage } from "../../tools/support/release/publish_vscode_extension/main.ts";
+
+test("publish_vscode_extension runs the exact vsce that packages the extension", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(new URL("../../editors/vscode/package.json", import.meta.url), "utf8"),
+  ) as { devDependencies: Record<string, string> };
+  assert.match(vscePackage, /^@vscode\/vsce@\d+\.\d+\.\d+$/);
+  assert.equal(vscePackage, `@vscode/vsce@${manifest.devDependencies["@vscode/vsce"]}`);
+});
 
 test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing dependencies", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-corepack-"));
@@ -53,7 +62,7 @@ test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing 
       "--allow-build",
       "keytar",
       "--package",
-      "@vscode/vsce@^3.3.2",
+      "@vscode/vsce@3.9.1",
       "vsce",
       "publish",
       "--no-dependencies",
@@ -104,7 +113,7 @@ test("publish_vscode_extension can publish with npx without pnpm hydration", () 
     assert.deepEqual(fs.readFileSync(argsLogPath, "utf8").trim().split("\n"), [
       "-y",
       "-p",
-      "@vscode/vsce@^3.3.2",
+      "@vscode/vsce@3.9.1",
       "vsce",
       "publish",
       "--no-dependencies",

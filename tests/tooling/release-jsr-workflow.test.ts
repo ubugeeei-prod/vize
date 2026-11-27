@@ -45,6 +45,8 @@ function workflow(file: string): Workflow {
 }
 
 const enabled = "needs.channel.outputs.enabled == 'true'";
+const fromMain = "github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'";
+const sourceGuard = "Require a full commit SHA for the release source";
 const jsr = workflow("release-jsr.yml");
 const publishSteps = jsr.jobs.publish?.steps ?? [];
 const runs = (step: Step, command: RegExp) => command.test(step.run ?? "");
@@ -55,10 +57,28 @@ await test("every npm package manifest can trigger the JSR parity check", () => 
 });
 
 await test("every release runs the JSR publish dry-run, whatever the channel says", () => {
-  assert.equal(jsr.jobs.publish?.if, undefined, "the publish job itself is never skipped");
+  assert.equal(jsr.jobs.publish?.if, fromMain, "the channel never skips the publish job");
   const dryRuns = publishSteps.filter((step) => runs(step, /deno publish --dry-run/));
   assert.equal(dryRuns.length, 1);
   assert.equal(dryRuns[0]?.if, undefined, "the dry-run has no condition");
+});
+
+await test("JSR publishes only from main, from the dispatched commit or one full commit SHA", () => {
+  for (const name of ["publish", "publish-packages"]) {
+    assert.equal(jsr.jobs[name]?.if, fromMain, name);
+  }
+  for (const name of ["channel", "publish", "publish-packages"]) {
+    const [guard, checkout] = jsr.jobs[name]?.steps ?? [];
+    assert.equal(guard?.name, sourceGuard, `${name} checks the source before checking it out`);
+    assert.deepEqual(guard?.env, { JSR_SOURCE_SHA: "${{ inputs.source_sha }}" }, name);
+    assert.match(
+      guard?.run ?? "",
+      /^if \[\[ -n "\$JSR_SOURCE_SHA" && ! "\$JSR_SOURCE_SHA" =~ \^\[0-9a-f\]\{40\}\$ \]\]; then\n(?: .*\n)* +exit 1\nfi$/m,
+      name,
+    );
+    assert.equal(checkout?.uses, "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd", name);
+    assert.equal(checkout?.with?.ref, "${{ inputs.source_sha || github.sha }}", name);
+  }
 });
 
 await test("only an enabled channel publishes to JSR and runs the consumers", () => {
@@ -219,11 +239,14 @@ await test("the multi-package release retains the original six consumer cells", 
   } = checkout.with;
   // Whole job objects are frozen after adding the package-inventory output and
   // making consumers wait for every JSR package. This protects every ref,
-  // runtime cell and install/oracle command from unrelated drift.
+  // runtime cell and install/oracle command from unrelated drift. The source
+  // check that now precedes the channel checkout has its own test above.
+  const channel = {
+    ...jsr.jobs.channel,
+    steps: (jsr.jobs.channel?.steps ?? []).filter((step) => step.name !== sourceGuard),
+  };
   assert.deepEqual(
-    [jsr.jobs.channel, { ...consumer, steps: [{ ...checkout, with: original }, ...steps] }].map(
-      digest,
-    ),
+    [channel, { ...consumer, steps: [{ ...checkout, with: original }, ...steps] }].map(digest),
     [
       "7ab3655958b6284a4f8b39a01bc4e45598cf2000593e4737dce3ea1f56d98a93",
       "59d0a1e4d402aa99ea6faa370ea6231470d4eb4c5d3089f10cd8b77e77f4fb81",

@@ -6,7 +6,9 @@ use vize_atelier_core::steps::{
 use vize_carton::cstr;
 
 pub(super) use super::super::expression_retained::resolve_inline_handler_node as resolve_inline_handler;
-use super::super::{context::GenerateContext, expression::is_simple_path_expression};
+use super::super::{
+    context::GenerateContext, escape_js_string_literal, expression::is_simple_path_expression,
+};
 
 /// Generate SetEvent
 pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEventIRNode<'_>) {
@@ -105,6 +107,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     } else {
         // A listener that is not delegated attaches directly.
         ctx.use_helper("on");
+        let quoted_name = escape_js_string_literal(event_name);
 
         let has_options = set_event.modifiers.options.once
             || set_event.modifiers.options.capture
@@ -122,7 +125,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
                 opts.push("passive: true");
             }
             // The handler keeps its expression anchors, as a delegated one does.
-            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, event_name));
+            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, quoted_name));
             line.push_spanned(&wrapped_handler);
             line.push_str(", {");
             ctx.push_line_spanned(&line);
@@ -134,7 +137,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             ctx.deindent();
             ctx.push_line("})");
         } else {
-            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, event_name));
+            let mut line = EmitDocument::plain(&cstr!("_on({}, \"{}\", ", element, quoted_name));
             line.push_spanned(&wrapped_handler);
             line.push_str(")");
             ctx.push_line_spanned(&line);
@@ -187,7 +190,7 @@ fn wrap_handler(callee: &str, handler: &EmitDocument, list: &[&str]) -> EmitDocu
             out.push_str(",");
         }
         out.push_str("\"");
-        out.push_str(item);
+        out.push_str(&escape_js_string_literal(item));
         out.push_str("\"");
     }
     out.push_str("])");

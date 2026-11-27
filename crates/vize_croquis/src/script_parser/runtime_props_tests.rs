@@ -220,6 +220,25 @@ fn builtin_constructors_keep_their_spelling() {
     );
 }
 
+/// `null` in a type array is a member of the union, as Vue infers it; a lone
+/// `type: null` accepts anything and stays untyped.
+#[test]
+fn null_in_a_type_array_joins_the_union() {
+    let result = parse_script_setup(
+        "defineProps({ id: { type: [String, null], default: null }, count: [Number, null], only: { type: [null] }, any: { type: null }, bare: null })",
+    );
+    assert_eq!(
+        prop_types(&result),
+        [
+            ("id", Some("string | null"), false),
+            ("count", Some("number | null"), false),
+            ("only", Some("null"), false),
+            ("any", None, false),
+            ("bare", None, false),
+        ]
+    );
+}
+
 /// The props type is module scoped; Vue rejects setup locals in `defineProps`.
 #[test]
 fn setup_local_constructor_values_stay_untyped() {

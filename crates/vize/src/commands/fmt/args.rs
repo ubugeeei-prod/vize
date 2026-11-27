@@ -1,6 +1,6 @@
 //! Direct formatter command arguments and typed option values.
 
-use super::options::{FmtAttributeSortOrder, FmtObjectWrap};
+use super::options::{FmtAttributeSortOrder, FmtBlockSpacing, FmtObjectWrap};
 use super::patterns::FORMAT_PATTERN_HELP;
 use super::{FmtArrowParens, FmtEndOfLine, FmtPreset, FmtQuoteProps, FmtTrailingComma};
 use clap::Args;
@@ -114,6 +114,9 @@ pub struct FmtArgs {
     /// Order SFC blocks canonically instead of preserving their authored order
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_blocks: Option<bool>,
+    /// Write one blank line between SFC blocks, or preserve the authored spacing
+    #[arg(long, value_enum)]
+    pub(in crate::commands) block_spacing: Option<FmtBlockSpacing>,
     /// Close HTML void elements such as `<img>` with `/>`
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub self_close_void_elements: Option<bool>,

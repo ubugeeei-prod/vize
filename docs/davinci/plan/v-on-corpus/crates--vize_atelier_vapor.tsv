@@ -11,6 +11,8 @@ crates/vize_atelier_vapor/src/l3/tests/once_events.rs	@focus.capture
 crates/vize_atelier_vapor/src/l3/tests/once_events.rs	@click.once
 crates/vize_atelier_vapor/src/l3/tests/once_events.rs	@keydown.enter
 crates/vize_atelier_vapor/src/tests.rs	@click.stop
+crates/vize_atelier_vapor/src/tests_authored_string_literals.rs	@a",f(),".once
+crates/vize_atelier_vapor/src/tests_authored_string_literals.rs	@keyup.a",f(),"
 crates/vize_atelier_vapor/src/tests_same_event_listeners.rs	@click.delegate
 crates/vize_atelier_vapor/src/tests_same_event_listeners.rs	@click.delegate.prevent
 crates/vize_atelier_vapor/src/tests_same_event_listeners.rs	@click.delegate

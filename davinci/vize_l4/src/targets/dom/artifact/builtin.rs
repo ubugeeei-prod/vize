@@ -82,9 +82,11 @@ pub(super) fn emit_dynamic_tag(
     if let Some(BindingOp::Bind(bind)) = component.bindings.iter().find(|b| is_is_bind(b)) {
         bind_value(bind)?.emit_authored(cx, bind)?;
     } else if let Some(attr) = component.attributes.iter().find(|attr| attr.name == "is") {
+        // The value is still authored text: decode it, then spell the decoded
+        // name as string contents, as every static attribute value is.
         cx.buf.push("\"");
         if let Some(value) = attr.value {
-            cx.buf.push(value);
+            cx.buf.push(super::js::escape_js_string(value).as_str());
         }
         cx.buf.push("\"");
     } else {

@@ -2992,6 +2992,12 @@
           "default": true,
           "type": "boolean"
         },
+        "blockSpacing": {
+          "description": "Write one blank line between SFC blocks, or preserve the authored spacing (at most one blank line)",
+          "default": "blank-line",
+          "type": "string",
+          "enum": ["blank-line", "preserve"]
+        },
         "normalizeCssQuotes": {
           "description": "Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference",
           "default": false,

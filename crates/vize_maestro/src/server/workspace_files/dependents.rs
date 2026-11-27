@@ -49,6 +49,22 @@ pub(super) fn include_open_typecheck_documents(
     documents
 }
 
+/// Every open `.vue` document, for a change that reaches each one's linter.
+pub(super) fn open_vue_documents(state: &ServerState) -> Vec<(Url, i32)> {
+    let mut documents = state
+        .documents
+        .iter()
+        .filter_map(|document| {
+            let uri = document.key();
+            uri.path()
+                .ends_with(".vue")
+                .then(|| (uri.clone(), document.value().version))
+        })
+        .collect::<Vec<_>>();
+    documents.sort();
+    documents
+}
+
 pub(super) fn affected_vue_source_paths<'a>(
     state: &ServerState,
     uris: impl Iterator<Item = &'a str>,
