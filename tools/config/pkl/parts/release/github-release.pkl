@@ -98,7 +98,16 @@ steps = new Listing {
     }
   }
   new Dynamic {
+    name = "Inspect existing release publication"
+    id = "release-state"
+    env {
+      GH_TOKEN = "${{ github.token }}"
+    }
+    run = #"node "$VIZE_CI_FILES/publication.ts" inspect"#
+  }
+  new Dynamic {
     name = "Checksum and sign release artifacts"
+    `if` = "steps.release-state.outputs.published != 'true'"
     env {
       COSIGN_YES = "true"
       VIZE_EDITOR_PLATFORM_ARTIFACTS = "${{ env.EDITOR_PLATFORMS }}"
@@ -107,6 +116,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Generate release notes"
+    `if` = "steps.release-state.outputs.published != 'true'"
     env {
       GH_TOKEN = "${{ github.token }}"
       CRATES_PUBLICATION = "${{ needs.publication-quota.outputs.crates }}"
@@ -115,14 +125,17 @@ steps = new Listing {
     run = #"node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md""#
   }
   new Dynamic {
-    name = "Create Release"
+    name = "Upload assets to draft release"
+    id = "draft-release"
+    `if` = "steps.release-state.outputs.published != 'true'"
     uses = "softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65"  // v2
     with {
       tag_name = "${{ needs.version.outputs.tag }}"
       body_path = "${{ runner.temp }}/release-notes.md"
       generate_release_notes = false
+      draft = true
       prerelease = "${{ needs.version.outputs.prerelease }}"
-      make_latest = "${{ needs.version.outputs.make_latest }}"
+      make_latest = "false"
       overwrite_files = true
       files = """
       cli-artifacts/*.tar.gz
@@ -146,5 +159,15 @@ steps = new Listing {
 
       """
     }
+  }
+  new Dynamic {
+    name = "Publish completed draft release"
+    `if` = "steps.release-state.outputs.published != 'true'"
+    env {
+      GH_TOKEN = "${{ github.token }}"
+      RELEASE_ID = "${{ steps.draft-release.outputs.id }}"
+      RELEASE_MAKE_LATEST = "${{ needs.version.outputs.make_latest }}"
+    }
+    run = #"node "$VIZE_CI_FILES/publication.ts" publish"#
   }
 }
