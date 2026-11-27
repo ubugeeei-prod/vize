@@ -2,8 +2,8 @@
 // the pinned Pug build and the resulting HTML is compiled with the pinned Vue
 // compiler on both sides, so a formatting change may rebase outer indentation
 // but must not move a single byte of authored Pug or change the compiled
-// program. The oracle is fixed-Vue-3 and maps against preprocessed HTML; it
-// makes no authored-Pug source-map claim. See ./pug/oracle-runtime.ts for the
+// program. The compiler follows the project's Vue dialect and maps against
+// preprocessed HTML; it makes no authored-Pug source-map claim. See ./pug/oracle-runtime.ts for the
 // pinned toolchain and the fail-closed static-Pug guards.
 import fs from "node:fs";
 
@@ -34,6 +34,8 @@ import {
 } from "./sfc-equivalence.ts";
 import type { TemplateNode } from "./sfc-equivalence.ts";
 import { findSfcOpeningTagEnd } from "./sfc-opening-tag.ts";
+import { compileSfcWithDialectBaseline, getSfcBaselineProvenance } from "./sfc-baselines.ts";
+import type { SfcBaselineProvenance } from "./sfc-baselines.ts";
 
 export { PUG_ORACLE_BASELINE } from "./pug/oracle-runtime.ts";
 export type { PugOracleContext } from "./pug/oracle-runtime.ts";
@@ -55,6 +57,8 @@ type SideEvidence = {
 
 export type PugOracleEvidence = {
   contextSha256: string;
+  dialect: string;
+  baseline: SfcBaselineProvenance | (typeof PUG_ORACLE_BASELINE & { id: string });
   pristine: SideEvidence;
   formatted: SideEvidence;
   sourceMapMoved: boolean | null;
@@ -117,8 +121,7 @@ export function comparePugTemplateEquivalence(
   const after = compileSide(formatted, context);
   const pristineErrors = diagnosticsOfSeverity(pristine.diagnostics, "error");
   const afterErrors = diagnosticsOfSeverity(after.diagnostics, "error");
-  const baselineUsable =
-    pristine.compiled != null && pristine.error == null && pristineErrors.length === 0;
+  const baselineUsable = pristine.compiled && pristine.error == null && pristineErrors.length === 0;
 
   if (pristine.error != null) differences.push(`pristine Pug baseline failed: ${pristine.error}`);
   if (pristineErrors.length > 0) {
@@ -129,7 +132,7 @@ export function comparePugTemplateEquivalence(
     differences.push(`formatted Vue baseline failed: ${diagnosticSummary(afterErrors)}`);
   }
 
-  if (pristine.compiled != null && after.compiled != null) {
+  if (pristine.compiled && after.compiled) {
     if (pristine.evidence.relativePugSha256 !== after.evidence.relativePugSha256) {
       differences.push("relative authored Pug bytes changed");
     }
@@ -153,7 +156,20 @@ export function comparePugTemplateEquivalence(
         (difference) => `Pug render ${difference}`,
       ),
     );
+    if (
+      context.dialect != null &&
+      context.dialect !== "3" &&
+      pristine.evidence.normalizedRenderSha256 !== after.evidence.normalizedRenderSha256
+    ) {
+      differences.push("Pug dialect render program changed");
+    }
   }
+
+  const dialect = context.dialect ?? "3";
+  const baseline =
+    dialect === "3"
+      ? { id: "vue3-pug", ...PUG_ORACLE_BASELINE }
+      : getSfcBaselineProvenance(dialect);
 
   return {
     differences,
@@ -167,8 +183,12 @@ export function comparePugTemplateEquivalence(
             .map(([name, filter]) => [name, sha256(String(filter))])
             .sort(([left], [right]) => codePointCompare(left, right)),
           baseline: PUG_ORACLE_BASELINE.optionsSha256,
+          dialect,
+          compilerBaseline: baseline,
         }),
       ),
+      dialect,
+      baseline,
       pristine: pristine.evidence,
       formatted: after.evidence,
       sourceMapMoved:
@@ -195,7 +215,7 @@ function compileSide(
   source: string,
   context: PugOracleContext,
 ): {
-  compiled: { ast: TemplateNode; code: string; map?: unknown } | null;
+  compiled: boolean;
   semanticAst: TemplateNode | null;
   diagnostics: CapturedDiagnostic[];
   evidence: SideEvidence;
@@ -216,7 +236,7 @@ function compileSide(
     error: null,
   };
   const diagnostics: CapturedDiagnostic[] = [];
-  let compiled: { ast: TemplateNode; code: string; map?: unknown } | null = null;
+  let compiled = false;
   let semanticAst: TemplateNode | null = null;
 
   try {
@@ -253,17 +273,29 @@ function compileSide(
     evidence.preprocessedHtmlSha256 = sha256(html);
     evidence.dependencies = dependencyEvidence(render.dependencies, context.basedir);
     semanticAst = parseVueTemplate(html, vueParserOptions);
-    compiled = compileVueTemplate(html, {
-      ...vueCompilerOptions,
-      filename: context.displayFilename,
-      onError: (diagnostic: Diagnostic) =>
-        diagnostics.push({ severity: "error", value: diagnostic }),
-      onWarn: (diagnostic: Diagnostic) =>
-        diagnostics.push({ severity: "warning", value: diagnostic }),
-    });
-    evidence.normalizedRenderSha256 = sha256(templateAstSemanticSignature(semanticAst));
-    evidence.renderCodeSha256 = sha256(compiled.code);
-    evidence.sourceMapSha256 = sha256(JSON.stringify(compiled.map ?? null));
+    if (context.dialect == null || context.dialect === "3") {
+      const result = compileVueTemplate(html, {
+        ...vueCompilerOptions,
+        filename: context.displayFilename,
+        onError: (diagnostic: Diagnostic) =>
+          diagnostics.push({ severity: "error", value: diagnostic }),
+        onWarn: (diagnostic: Diagnostic) =>
+          diagnostics.push({ severity: "warning", value: diagnostic }),
+      });
+      evidence.normalizedRenderSha256 = sha256(templateAstSemanticSignature(semanticAst));
+      evidence.renderCodeSha256 = sha256(result.code);
+      evidence.sourceMapSha256 = sha256(JSON.stringify(result.map ?? null));
+    } else {
+      const result = compileSfcWithDialectBaseline(
+        `<template>${html}</template>`,
+        context.displayFilename,
+        context.dialect,
+      );
+      if (!result.ok) throw new Error(`${result.stage}: ${result.message}`);
+      evidence.normalizedRenderSha256 = sha256(result.signature);
+      // Legacy adapters expose normalized programs, without raw-code or map claims.
+    }
+    compiled = true;
   } catch (error) {
     evidence.error = stableError(error, context);
   }
