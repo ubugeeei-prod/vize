@@ -117,7 +117,10 @@ fn controlling_terminal_is_a_close_on_exec_terminal_or_an_os_error() {
         Ok(fd) => {
             assert!(rustix::termios::isatty(&fd));
             let flags = rustix::io::fcntl_getfd(&fd).unwrap();
-            assert!(flags.contains(rustix::io::FdFlags::CLOEXEC));
+            assert_eq!(
+                flags & rustix::io::FdFlags::CLOEXEC,
+                rustix::io::FdFlags::CLOEXEC
+            );
         }
         // CI runners usually have neither a terminal stdin nor a controlling
         // terminal; the child-process signal tests cover the terminal case.

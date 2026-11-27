@@ -50,7 +50,7 @@ napi-derive = { workspace = true, optional = true }
 
 [target.'cfg(unix)'.dependencies]
 libc.workspace = true
-rustix.workspace = true
+rustix = { workspace = true, features = ["stdio", "termios"] }
 errno.workspace = true
 
 [target.'cfg(windows)'.dependencies]
