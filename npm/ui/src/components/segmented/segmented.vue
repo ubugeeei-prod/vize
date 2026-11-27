@@ -81,6 +81,7 @@ function onKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
+  <!-- eslint-disable-next-line a11y/interactive-supports-focus -->
   <div
     role="radiogroup"
     data-vize-ui="segmented"

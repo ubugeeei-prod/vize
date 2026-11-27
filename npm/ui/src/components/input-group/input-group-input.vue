@@ -31,8 +31,8 @@ function onInput(event: Event): void {
 <template>
   <input
     data-vize-ui="input-group-input"
-    :type="type"
-    :name="name"
+    :type
+    :name
     :value="modelValue"
     :disabled="off"
     :data-state="off ? 'disabled' : 'idle'"

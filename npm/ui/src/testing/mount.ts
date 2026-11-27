@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils";
 import type { ComponentMountingOptions, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import type { Component } from "vue";
+import { landmarkRoleOf } from "../families/accessibility/landmark/landmark-runtime.ts";
 
 /**
  * Mounted-DOM interaction harness: components mount into the real (happy-dom)
@@ -228,6 +229,14 @@ function computeRole(element: HTMLElement): string | null {
   if (tag === "button") return "button";
   if (tag === "a" && element.hasAttribute("href")) return "link";
   if (tag === "progress") return "progressbar";
+  if (tag === "article") return "article";
+  if (tag === "table") return "table";
+  if (tag === "tr") return "row";
+  if (tag === "td") {
+    const ownerRole = element.closest("table")?.getAttribute("role");
+    return ownerRole === "grid" || ownerRole === "treegrid" ? "gridcell" : "cell";
+  }
+  if (tag === "form") return landmarkRoleOf(element);
   if (element instanceof HTMLInputElement) {
     if (element.type === "checkbox") return "checkbox";
     if (element.type === "radio") return "radio";

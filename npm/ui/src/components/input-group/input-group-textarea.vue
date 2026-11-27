@@ -31,8 +31,8 @@ function onInput(event: Event): void {
 <template>
   <textarea
     data-vize-ui="input-group-textarea"
-    :name="name"
-    :rows="rows"
+    :name
+    :rows
     :value="modelValue"
     :disabled="off"
     :data-state="off ? 'disabled' : 'idle'"
