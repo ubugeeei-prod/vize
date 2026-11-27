@@ -31,6 +31,46 @@ pub(super) struct ImportBinding {
     pub(super) dependency: usize,
 }
 
+/// Where a script summary hands its named imports.
+pub(super) trait BindingSink {
+    fn len(&self) -> usize;
+    fn bind(&mut self, local: &str, imported: &String, dependency: usize);
+    fn truncate(&mut self, len: usize);
+}
+
+/// The imports of a module the walks read bind nothing a component looks up.
+impl BindingSink for () {
+    #[inline(always)]
+    fn len(&self) -> usize {
+        0
+    }
+
+    #[inline(always)]
+    fn bind(&mut self, _local: &str, _imported: &String, _dependency: usize) {}
+
+    #[inline(always)]
+    fn truncate(&mut self, _len: usize) {}
+}
+
+/// A component's own script keeps every named import.
+impl BindingSink for Vec<ImportBinding> {
+    fn len(&self) -> usize {
+        Vec::len(self)
+    }
+
+    fn bind(&mut self, local: &str, imported: &String, dependency: usize) {
+        self.push(ImportBinding {
+            local: local.into(),
+            imported: imported.clone(),
+            dependency,
+        });
+    }
+
+    fn truncate(&mut self, len: usize) {
+        Vec::truncate(self, len);
+    }
+}
+
 /// Where a module's export is declared: the declaring module, and which of its
 /// interfaces or type aliases it is.
 #[derive(Clone, Copy, Debug)]

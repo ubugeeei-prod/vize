@@ -17,7 +17,7 @@ use super::modules::{self, ModuleGraph, ModuleId};
 use super::resolution::{canonical_base_file, path_key, project::Project};
 use super::walk::{RequestedExports, TypeDependency, Walk};
 use super::work::{Step, count};
-use super::{FileTypeSummary, ImportedTypes, ScriptCompileContext, extract_script_summary};
+use super::{FileTypeSummary, ImportedTypes, ScriptCompileContext, extract_script_summary_binding};
 
 impl ScriptCompileContext {
     /// Walk the script's type-bearing imports/re-exports on disk and merge the
@@ -60,7 +60,8 @@ impl ScriptCompileContext {
         // follow?" signal — strictly tighter than the old substring guard, so
         // no separate text pre-check is needed.
         let mut root = FileTypeSummary::default();
-        extract_script_summary(source, &mut root, false);
+        let mut bindings = Vec::new();
+        extract_script_summary_binding(source, &mut root, false, &mut bindings);
         if root.specifiers.is_empty() {
             // Nothing to resolve — skip base-file canonicalization entirely
             // (the common case: scripts with only runtime imports).
@@ -87,7 +88,7 @@ impl ScriptCompileContext {
 
         let walked = self.walk_imported_declarations(
             &root.dependencies,
-            &root.bindings,
+            &bindings,
             base_file,
             project,
             modules::shared(project, current_batch_epoch()).as_deref(),

@@ -54,8 +54,6 @@ pub(super) struct FileTypeSummary {
     dependencies: Vec<TypeDependency>,
     /// Local type names and their module requests, for checked macro imports.
     imports: Vec<(String, String)>,
-    /// The named type imports, each with the export it names.
-    bindings: Vec<bindings::ImportBinding>,
 }
 
 /// Metadata hints for configuration discovery. Imported module summaries
@@ -111,6 +109,18 @@ fn extract_script_summary(
     summary: &mut FileTypeSummary,
     follows_value_imports: bool,
 ) {
+    extract_script_summary_binding(source, summary, follows_value_imports, &mut ());
+}
+
+/// [`extract_script_summary`] that also hands each named type import to
+/// `bindings`. Only a component's own script binds its imports; a module the
+/// walks read passes `()`, which keeps nothing.
+fn extract_script_summary_binding(
+    source: &str,
+    summary: &mut FileTypeSummary,
+    follows_value_imports: bool,
+    bindings: &mut impl bindings::BindingSink,
+) {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = Parser::new(&allocator, source, source_type).parse();
@@ -162,7 +172,7 @@ fn extract_script_summary(
                     .specifiers
                     .push(import_decl.source.value.to_compact_string());
                 let mut requested = Vec::new();
-                let bound = summary.bindings.len();
+                let bound = bindings.len();
                 let mut namespace = false;
                 if let Some(specifiers) = &import_decl.specifiers {
                     for specifier in specifiers {
@@ -180,11 +190,7 @@ fn extract_script_summary(
                             }
                         };
                         if let Some(imported) = imported {
-                            summary.bindings.push(bindings::ImportBinding {
-                                local: local.name.to_compact_string(),
-                                imported: imported.clone(),
-                                dependency: summary.dependencies.len(),
-                            });
+                            bindings.bind(&local.name, &imported, summary.dependencies.len());
                             requested.push(imported);
                         }
                         summary.imports.push((
@@ -196,7 +202,7 @@ fn extract_script_summary(
                 // A namespace import asks for the whole module, which names
                 // no export to bind.
                 if namespace {
-                    summary.bindings.truncate(bound);
+                    bindings.truncate(bound);
                 }
                 summary.dependencies.push(TypeDependency::Import {
                     specifier: import_decl.source.value.to_compact_string(),
