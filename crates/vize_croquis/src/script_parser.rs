@@ -65,7 +65,9 @@ pub use parse_plain::{
     analyze_script_program, parse_script, parse_script_with_options,
     parse_script_with_options_and_jsx,
 };
-pub use process::{collect_options_descriptor, collect_options_object, process_statement};
+pub use process::{
+    build_options_descriptor, collect_options_descriptor, collect_options_object, process_statement,
+};
 pub(crate) use prop_options::is_const_type_assertion;
 pub use prop_options::literal_boolean_type;
 pub use recovery::{

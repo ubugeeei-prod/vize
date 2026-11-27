@@ -77,12 +77,17 @@ impl MultiWordComponentNames {
 
     /// Extract the component name from a filename.
     /// e.g., "MyComponent.vue" → "MyComponent", "pages/index.vue" → "index"
+    ///
+    /// Nuxt's mode suffixes are not part of the name: Nuxt registers
+    /// "Search.client.vue" as "Search".
     fn extract_component_name(filename: &str) -> Option<&str> {
         // Get the file stem (without extension and path)
         let basename = filename.rsplit('/').next().unwrap_or(filename);
         let basename = basename.rsplit('\\').next().unwrap_or(basename);
         // Remove .vue extension
-        basename.strip_suffix(".vue")
+        let stem = basename.strip_suffix(".vue")?;
+        let name = crate::component_name::strip_nuxt_mode_suffixes(stem);
+        Some(if name.is_empty() { stem } else { name })
     }
 
     fn is_valid_name(&self, name: &str) -> bool {
@@ -312,6 +317,37 @@ mod tests {
                 result.diagnostics
             );
         }
+    }
+
+    // Nuxt registers `Search.client.vue` as `Search`: the mode suffix is not
+    // a word of the name, and the name the message shows.
+    #[test]
+    fn nuxt_mode_suffixes_are_not_part_of_the_filename_name() {
+        let source = include_str!(
+            "../../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/Anonymous.vue.txt"
+        );
+        let cases = include_str!(
+            "../../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/multi-word-component-names.txt"
+        );
+        let mut checked = 0;
+        for line in cases.lines() {
+            let (expected, filename) = line.split_once(' ').unwrap();
+            let result = create_linter().lint_sfc(source, filename);
+            assert_eq!(
+                result.error_count,
+                expected.parse::<usize>().unwrap(),
+                "{filename}"
+            );
+            checked += 1;
+        }
+        assert_eq!(checked, 6);
+
+        let result = create_linter().lint_sfc(source, "app/components/Search.client.vue");
+        assert!(
+            result.diagnostics[0].message.contains("\"Search\""),
+            "{}",
+            result.diagnostics[0].message
+        );
     }
 
     #[test]

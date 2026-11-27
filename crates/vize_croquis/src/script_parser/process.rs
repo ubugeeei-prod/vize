@@ -29,5 +29,7 @@ mod vue_runtime_api;
 
 pub(in crate::script_parser) use builtin_types::process_statement_with_builtin;
 pub(in crate::script_parser) use options_api::collect_options_api_component_metadata;
-pub use options_api::{collect_options_descriptor, collect_options_object};
+pub use options_api::{
+    build_options_descriptor, collect_options_descriptor, collect_options_object,
+};
 pub use statements::process_statement;

@@ -1,0 +1,14 @@
+<script>
+import formatting from '~/mixins/formatting'
+
+export default {
+  mixins: [formatting],
+  data() {
+    return { price: 120 }
+  },
+}
+</script>
+
+<template>
+  <p>{{ formatPrice(price) }} {{ currency }}</p>
+</template>
