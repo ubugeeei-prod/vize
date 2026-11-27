@@ -2459,20 +2459,12 @@
       "source": "const App = () => <p ref={(el) => { if (el) el.dataset.ref = 'set'; }}>{state.label}</p>;",
       "initial": { "label": "a" },
       "steps": [{ "patch": { "label": "b" } }],
-      "expectedText": ["", ""],
-      "expectedElementIdentities": [[], []],
-      "expectedWarnings": [
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"]
-      ],
-      "expectedDom": [[], []],
-      "expectedReferenceDom": [
+      "expectedText": ["a", "b"],
+      "expectedElementIdentities": [[0], [0]],
+      "expectedDom": [
         [{ "tag": "p", "attributes": { "data-ref": "set" }, "children": ["a"] }],
         [{ "tag": "p", "attributes": { "data-ref": "set" }, "children": ["b"] }]
-      ],
-      "expectedReferenceText": ["a", "b"],
-      "expectedReferenceElementIdentities": [[0], [0]],
-      "expectedReferenceWarnings": [[], []]
+      ]
     },
     {
       "id": "options/on-object-value",
@@ -5920,36 +5912,8 @@
         { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
         { "patch": { "value": { "$jsxValue": "zero" } } }
       ],
-      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
-      "expectedElementIdentities": [[], [], [], [], [], [], [], [], [], []],
-      "expectedWarnings": [
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"]
-      ],
-      "expectedDom": [[], [], [], [], [], [], [], [], [], []],
-      "expectedReferenceDom": [
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }]
-      ],
-      "expectedReferenceText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
-      "expectedReferenceElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
-      "expectedReferenceWarnings": [[], [], [], [], [], [], [], [], [], []],
+      "expectedText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
       "expectedVdomText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
       "expectedVdomElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
       "expectedVdomWarnings": [
@@ -6011,21 +5975,121 @@
         { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
         { "patch": { "value": { "$jsxValue": "zero" } } }
       ],
-      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
-      "expectedElementIdentities": [[], [], [], [], [], [], [], [], [], []],
-      "expectedWarnings": [
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"]
+      "expectedText": ["ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
       ],
-      "expectedDom": [[], [], [], [], [], [], [], [], [], []],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "span", "attributes": {}, "children": ["a"] },
+              { "tag": "span", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ]
+      ],
       "expectedReferenceDom": [
         [
           {
@@ -6150,19 +6214,6 @@
         "ab ",
         "ab "
       ],
-      "expectedReferenceElementIdentities": [
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2],
-        [0, 1, 2]
-      ],
-      "expectedReferenceWarnings": [[], [], [], [], [], [], [], [], [], []],
       "expectedVdomText": ["ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab", "ab"],
       "expectedVdomElementIdentities": [
         [0, 1, 2],
@@ -14806,36 +14857,8 @@
         { "patch": { "value": { "$jsxValue": "nested-vnode" } } },
         { "patch": { "value": { "$jsxValue": "zero" } } }
       ],
-      "expectedText": ["", "", "", "", "", "", "", "", "", ""],
-      "expectedElementIdentities": [[], [], [], [], [], [], [], [], [], []],
-      "expectedWarnings": [
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
-        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"]
-      ],
-      "expectedDom": [[], [], [], [], [], [], [], [], [], []],
-      "expectedReferenceDom": [
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["r"] }]
-      ],
-      "expectedReferenceText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
-      "expectedReferenceElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
-      "expectedReferenceWarnings": [[], [], [], [], [], [], [], [], [], []],
+      "expectedText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
+      "expectedElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
       "expectedVdomText": ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r"],
       "expectedVdomElementIdentities": [[0], [0], [0], [0], [0], [0], [0], [0], [0], [0]],
       "expectedVdomWarnings": [
