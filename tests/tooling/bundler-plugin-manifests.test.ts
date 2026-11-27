@@ -202,9 +202,11 @@ test("@vizejs/vite-plugin does not import Vite 8-only parser APIs", () => {
     "utf-8",
   );
 
-  assert.equal(manifest.dependencies?.["oxc-parser"], "catalog:oxc");
-  assert.match(moduleOutput, /import \{ parseSync \} from "oxc-parser";/);
-  assert.doesNotMatch(moduleOutput, /from ["']vite["']/);
+  // The native compiler reports every module's shape, so the plugin parses
+  // no emitted JavaScript at runtime, with Vite's parser or any other.
+  assert.equal(manifest.dependencies?.["oxc-parser"], undefined);
+  assert.equal(manifest.devDependencies?.["oxc-parser"], "catalog:oxc");
+  assert.doesNotMatch(moduleOutput, /from ["'](?:vite|oxc-parser)["']/);
 });
 
 test("all three bundler-plugin packages require Node >= 22", () => {
