@@ -3629,8 +3629,7 @@
       },
       "expectations": {
         "legacy": {
-          "state": "captured",
-          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "state": "pending",
           "artifacts": [
             {
               "path": "sfc-prettier-block-spacing/reference.expected.txt",
@@ -3652,7 +3651,9 @@
             "candidate-cli-output-bytes",
             "3-pass-idempotence"
           ],
-          "missingFields": [],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
           "referenceState": "Prettier 3.10.1 output for an issue-derived SFC; exact-source Actions required"
         }
       },
