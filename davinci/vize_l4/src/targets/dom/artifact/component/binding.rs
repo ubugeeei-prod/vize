@@ -93,19 +93,19 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
 
 fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {
     let mut prop_fallback = None;
-    if let Some(binding) = candidate(table, String::from(name), &mut prop_fallback) {
+    if let Some(binding) = candidate(table, name, &mut prop_fallback) {
         return Some(binding);
     }
     let camel = camelize(name);
     if camel.as_str() != name
-        && let Some(binding) = candidate(table, camel.clone(), &mut prop_fallback)
+        && let Some(binding) = candidate(table, camel.as_str(), &mut prop_fallback)
     {
         return Some(binding);
     }
     let pascal = capitalize(&camel);
     if pascal.as_str() != name
         && pascal.as_str() != camel.as_str()
-        && let Some(binding) = candidate(table, pascal, &mut prop_fallback)
+        && let Some(binding) = candidate(table, pascal.as_str(), &mut prop_fallback)
     {
         return Some(binding);
     }
@@ -114,22 +114,22 @@ fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind
 
 fn candidate(
     table: &BindingTable,
-    candidate: String,
+    candidate: &str,
     prop_fallback: &mut Option<(String, BindingKind)>,
 ) -> Option<(String, BindingKind)> {
     // Vue's `resolveSetupReference`: setup bindings first, then a prop. A
     // renamed props destructure (`{ icon: Icon }`) is not a setup
     // reference, so its tag resolves as an asset.
-    let kind = table.kind(candidate.as_str())?;
+    let kind = table.kind(candidate)?;
     match kind {
         BindingKind::Props => {
             if prop_fallback.is_none() {
-                *prop_fallback = Some((candidate, kind));
+                *prop_fallback = Some((String::from(candidate), kind));
             }
             None
         }
         BindingKind::PropsAliased => None,
-        _ => Some((candidate, kind)),
+        _ => Some((String::from(candidate), kind)),
     }
 }
 

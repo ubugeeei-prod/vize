@@ -234,24 +234,26 @@ fn rewrite_bound_component_resolution(
 fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<(String, bool)> {
     let resolve_base = |name: &str| {
         let mut prop = None;
-        let mut candidate = |candidate: String| match bindings.bindings.get(candidate.as_str()) {
+        let mut candidate = |candidate: &str| match bindings.bindings.get(candidate) {
             Some(BindingType::Props) => {
-                prop.get_or_insert(candidate);
+                if prop.is_none() {
+                    prop = Some(candidate.to_compact_string());
+                }
                 None
             }
             Some(BindingType::PropsAliased) | None => None,
-            Some(_) => Some(candidate),
+            Some(_) => Some(candidate.to_compact_string()),
         };
-        if let Some(binding) = candidate(name.to_compact_string()) {
+        if let Some(binding) = candidate(name) {
             return Some((binding, false));
         }
 
         let camel = camelize_component_name(name);
-        if let Some(binding) = candidate(camel.clone()) {
+        if let Some(binding) = candidate(camel.as_str()) {
             return Some((binding, false));
         }
 
-        if let Some(binding) = candidate(capitalize_component_name(camel.as_str())) {
+        if let Some(binding) = candidate(capitalize_component_name(camel.as_str()).as_str()) {
             return Some((binding, false));
         }
 

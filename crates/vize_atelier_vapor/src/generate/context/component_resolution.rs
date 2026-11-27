@@ -76,27 +76,29 @@ pub(crate) fn resolve_setup_reference(
     name: &str,
 ) -> Option<(String, bool)> {
     let mut prop = None;
-    let mut candidate = |candidate: String| match bindings.bindings.get(candidate.as_str()) {
+    let mut candidate = |candidate: &str| match bindings.bindings.get(candidate) {
         Some(BindingType::Props) => {
-            prop.get_or_insert(candidate);
+            if prop.is_none() {
+                prop = Some(candidate.to_compact_string());
+            }
             None
         }
         Some(BindingType::PropsAliased) | None => None,
-        Some(_) => Some(candidate),
+        Some(_) => Some(candidate.to_compact_string()),
     };
-    if let Some(binding) = candidate(name.to_compact_string()) {
+    if let Some(binding) = candidate(name) {
         return Some((binding, false));
     }
     let camel = camelize(name);
     if camel.as_str() != name
-        && let Some(binding) = candidate(camel.clone())
+        && let Some(binding) = candidate(camel.as_str())
     {
         return Some((binding, false));
     }
     let pascal = capitalize(&camel);
     if pascal.as_str() != name
         && pascal.as_str() != camel.as_str()
-        && let Some(binding) = candidate(pascal)
+        && let Some(binding) = candidate(pascal.as_str())
     {
         return Some((binding, false));
     }

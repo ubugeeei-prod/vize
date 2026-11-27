@@ -90,23 +90,28 @@ impl CodegenContext {
             // Vue's `resolveSetupReference`: setup bindings first, then a
             // prop. A renamed props destructure (`{ icon: Icon }`) is not a
             // setup reference, so its tag resolves as an asset.
-            let mut resolve_candidate = |candidate: String| {
-                match metadata.bindings.get(candidate.as_str()) {
+            let mut resolve_candidate = |candidate: &str| {
+                match metadata.bindings.get(candidate) {
                     Some(BindingType::Props) => {
-                        prop_fallback.get_or_insert((candidate, BindingType::Props));
+                        if prop_fallback.is_none() {
+                            prop_fallback =
+                                Some((candidate.to_compact_string(), BindingType::Props));
+                        }
                     }
                     Some(BindingType::PropsAliased) | None => {}
-                    Some(binding_type) => return Some((candidate, *binding_type)),
+                    Some(binding_type) => {
+                        return Some((candidate.to_compact_string(), *binding_type));
+                    }
                 }
                 None
             };
 
-            if let Some(binding) = resolve_candidate(name.to_compact_string()) {
+            if let Some(binding) = resolve_candidate(name) {
                 return Some(binding);
             }
             let camel = camelize(name);
             if camel.as_str() != name
-                && let Some(binding) = resolve_candidate(camel.clone())
+                && let Some(binding) = resolve_candidate(camel.as_str())
             {
                 return Some(binding);
             }
@@ -114,7 +119,7 @@ impl CodegenContext {
             let pascal = capitalize(&camel);
             if pascal.as_str() != name
                 && pascal.as_str() != camel.as_str()
-                && let Some(binding) = resolve_candidate(pascal)
+                && let Some(binding) = resolve_candidate(pascal.as_str())
             {
                 return Some(binding);
             }

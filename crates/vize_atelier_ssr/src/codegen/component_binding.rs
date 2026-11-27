@@ -65,23 +65,24 @@ impl<'a> SsrCodegenContext<'a> {
         // reference, so its tag resolves as an asset.
         let resolve_base = |name: &str| {
             let mut prop_fallback = None;
-            let mut candidate = |candidate: String| match metadata.bindings.get(candidate.as_str())
-            {
+            let mut candidate = |candidate: &str| match metadata.bindings.get(candidate) {
                 Some(BindingType::Props) => {
-                    prop_fallback.get_or_insert((candidate, BindingType::Props));
+                    if prop_fallback.is_none() {
+                        prop_fallback = Some((candidate.to_compact_string(), BindingType::Props));
+                    }
                     None
                 }
                 Some(BindingType::PropsAliased) | None => None,
-                Some(binding_type) => Some((candidate, *binding_type)),
+                Some(binding_type) => Some((candidate.to_compact_string(), *binding_type)),
             };
-            if let Some(binding) = candidate(name.to_compact_string()) {
+            if let Some(binding) = candidate(name) {
                 return Some(binding);
             }
             let camel = camelize(name);
-            if let Some(binding) = candidate(camel.clone()) {
+            if let Some(binding) = candidate(camel.as_str()) {
                 return Some(binding);
             }
-            if let Some(binding) = candidate(capitalize(camel.as_str())) {
+            if let Some(binding) = candidate(capitalize(camel.as_str()).as_str()) {
                 return Some(binding);
             }
             prop_fallback
