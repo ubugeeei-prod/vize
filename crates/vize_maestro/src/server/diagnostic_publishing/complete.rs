@@ -91,6 +91,7 @@ impl MaestroServer {
                     }
                     retained.finish();
                     self.publish_typecheck_unavailable_notice().await;
+                    self.log_nuxt_notices().await;
                     return;
                 }
                 Err(_) => {
@@ -119,6 +120,9 @@ impl MaestroServer {
         {
             scheduler.complete_if_current(uri, version, stamp, &self.state);
         }
+        // The reason a rule is skipped reaches the log before the result it shaped.
+        #[cfg(feature = "native")]
+        self.log_nuxt_notices().await;
         tracing::info!(
             "sending collected diagnostics for {} version {}",
             uri,

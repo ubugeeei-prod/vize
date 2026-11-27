@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.vue", "src/**/*.ts", "../shared/*.ts"]
+}

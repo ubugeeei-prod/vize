@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+import { Script } from "node:vm";
 import { parse } from "yaml";
 
 const workflow = fs.readFileSync(
@@ -51,9 +52,44 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
   assert.equal(job.with.paths, "npm/builder/parcel-native");
   assert.equal(
     job.with.publish,
-    "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}",
+    "${{ github.repository == 'ubugeeei-prod/vize' && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish == true && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))) }}",
   );
   assert.equal(job.with.version, "${{ inputs.version }}");
+});
+
+test("native Parcel packages publish only from this repository's v* tags or a dispatch on main", () => {
+  const parsed = parse(workflow) as { jobs: Record<string, { with: Record<string, string> }> };
+  const condition = parsed.jobs["native-plugin-packages"].with.publish.slice(3, -2).trim();
+  const startsWith = (value: string, prefix: string) => value.startsWith(prefix);
+  const publishes = (
+    event: string,
+    ref: string,
+    publish: boolean | null,
+    repository = "ubugeeei-prod/vize",
+  ) =>
+    new Script(condition).runInNewContext({
+      github: { repository, event_name: event, ref },
+      inputs: { publish },
+      startsWith,
+    });
+  const tag = "refs/tags/v0.800.0";
+  // release.yml dispatches `--ref "$RELEASE_TAG" -f publish=true` once the tag exists.
+  assert.equal(publishes("workflow_dispatch", tag, true), true);
+  assert.equal(publishes("workflow_dispatch", "refs/heads/main", true), true);
+  assert.equal(publishes("push", tag, null), true);
+  // Builds without a publish request, and requests from any other ref, publish nothing.
+  assert.equal(publishes("workflow_dispatch", tag, false), false);
+  assert.equal(publishes("workflow_dispatch", "refs/heads/main", false), false);
+  assert.equal(publishes("workflow_dispatch", "refs/heads/feature", true), false);
+  assert.equal(publishes("workflow_dispatch", "refs/heads/v0.800.0", true), false);
+  assert.equal(publishes("workflow_dispatch", "refs/tags/nightly", true), false);
+  assert.equal(publishes("schedule", "refs/heads/main", null), false);
+  assert.equal(publishes("pull_request", "refs/pull/1/merge", null), false);
+  assert.equal(publishes("push", "refs/tags/nightly", null), false);
+  // Another repository never publishes, whatever its event.
+  assert.equal(publishes("workflow_dispatch", tag, true, "someone/vize"), false);
+  assert.equal(publishes("workflow_dispatch", "refs/heads/main", true, "someone/vize"), false);
+  assert.equal(publishes("push", tag, null, "someone/vize"), false);
 });
 
 test("pull requests build per-platform packages only for native plugin changes", () => {

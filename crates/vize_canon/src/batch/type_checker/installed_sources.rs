@@ -32,11 +32,29 @@ impl BatchTypeChecker {
         options: BatchTypeCheckerOptions,
         corsa_path: Option<&Path>,
     ) -> CorsaResult<Self> {
+        Self::with_runtime_root(project_root, None, options, corsa_path)
+    }
+
+    /// Create a batch type checker whose native runtime belongs to
+    /// `runtime_root`, the directory that owns the program.
+    ///
+    /// The materialized project root also covers the program's sources outside
+    /// that owner, such as a tsconfig `include` of `../shared`, so it can be an
+    /// ancestor that installs no packages. Runtime discovery and a relative
+    /// Corsa path start from the owner instead; its ancestor walk still reaches
+    /// the project root. `None` uses the project root.
+    pub fn with_runtime_root(
+        project_root: &Path,
+        runtime_root: Option<&Path>,
+        options: BatchTypeCheckerOptions,
+        corsa_path: Option<&Path>,
+    ) -> CorsaResult<Self> {
         let project = VirtualProject::new(project_root)?;
         let mut project = project;
         project.set_tsconfig_path(options.tsconfig_path);
         project.set_virtual_ts_options(options.virtual_ts_options);
-        let executor = CorsaExecutor::with_corsa_path(project.project_root(), corsa_path)?;
+        let runtime_root = runtime_root.unwrap_or_else(|| project.project_root());
+        let executor = CorsaExecutor::with_corsa_path(runtime_root, corsa_path)?;
 
         Ok(Self {
             project,

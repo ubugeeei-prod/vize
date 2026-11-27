@@ -14,9 +14,21 @@ fn assert_fixed_point(input: &str, expected: &str, options: &FormatOptions) {
 
 #[test]
 fn whitespace_only_child_measures_like_an_empty_child() {
+    // With `></Panel>` the line needs 108 columns, so the attributes wrap
+    // (as in Prettier). Every whitespace-only child prints like the empty one.
     let options = FormatOptions::default();
     let line = r#"<Panel ref="panelEl" position="bottom-right" :class="{ intersecting: isIntersectingWithPanel }">"#;
-    let expected = format!("<template>\n  <div>\n    {line}</Panel>\n  </div>\n</template>\n");
+    let expected = concat!(
+        "<template>\n",
+        "  <div>\n",
+        "    <Panel\n",
+        "      ref=\"panelEl\"\n",
+        "      position=\"bottom-right\"\n",
+        "      :class=\"{ intersecting: isIntersectingWithPanel }\"\n",
+        "    ></Panel>\n",
+        "  </div>\n",
+        "</template>\n",
+    );
     for child in ["", " ", "  ", "\t", " \t "] {
         let input =
             format!("<template>\n  <div>\n    {line}{child}</Panel>\n  </div>\n</template>\n");
@@ -35,15 +47,21 @@ fn whitespace_only_child_after_an_inline_sibling() {
         "  </div>\n",
         "</template>\n",
     );
+    // The whitespace-only `<i>` prints as an empty one. Its `></i>` makes the
+    // continued line overflow, so it takes the continued-tag layout that
+    // `<img>` and `<i>x</i>` in this position already get.
     let expected = concat!(
         "<template>\n",
         "  <div>\n",
-        "    <el-button plain size=\"small\" type=\"primary\" @click=\"preview(true)\"",
-        "><i class=\"el-icon-view-ab\"></i>Prev</el-button>\n",
+        "    <el-button plain size=\"small\" type=\"primary\" @click=\"preview(true)\"><i\n",
+        "        class=\"el-icon-view-ab\"\n",
+        "      ></i>Prev</el-button>\n",
         "  </div>\n",
         "</template>\n",
     );
     assert_fixed_point(input, expected, &options);
+    let empty = input.replace("> </i>", "></i>");
+    assert_fixed_point(&empty, expected, &options);
 }
 
 #[test]

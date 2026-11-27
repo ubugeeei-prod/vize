@@ -42,6 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-target bytes of a recorded asset's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::library_kebab_listeners::source_before(path, current);
     let current = super::entry_package_exports::source_before(path, current);
     let current = super::union_host_slot_payload::source_before(path, current);
     let record = record();

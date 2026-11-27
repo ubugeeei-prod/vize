@@ -1,0 +1,29 @@
+import type { PublicProps, VNode } from "vue";
+
+export interface RowEvent<Item> {
+  item: Item;
+  index: number;
+}
+
+// The shape vue-tsc emits for `<script setup generic="Item">` with
+// `defineEmits<{ "row-clicked": [event: RowEvent<Item>]; select: [item: Item] }>()`.
+// Vue's `EmitsToProps` keeps the authored hyphen in `onRow-clicked`.
+declare const _default: <Item>(
+  __VLS_props: NonNullable<Awaited<typeof __VLS_setup>>["props"],
+  __VLS_ctx?: Pick<NonNullable<Awaited<typeof __VLS_setup>>, "attrs" | "emit" | "slots">,
+  __VLS_expose?: NonNullable<Awaited<typeof __VLS_setup>>["expose"],
+  __VLS_setup?: Promise<{
+    props: {
+      readonly "onRow-clicked"?: ((event: RowEvent<Item>) => any) | undefined;
+      readonly onSelect?: ((item: Item) => any) | undefined;
+    } & { items: readonly Item[] } & PublicProps;
+    expose(exposed: {}): void;
+    attrs: any;
+    slots: { row?: (props: { item: Item }) => any };
+    emit: ((evt: "row-clicked", event: RowEvent<Item>) => void) &
+      ((evt: "select", item: Item) => void);
+  }>,
+) => VNode & {
+  __ctx?: Awaited<typeof __VLS_setup>;
+};
+export default _default;

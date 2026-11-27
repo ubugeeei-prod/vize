@@ -6,16 +6,64 @@ import {
   type NuxtClientManifestVitePlugin,
 } from "./client-manifest-bridge.ts";
 
-function invokeCloseBundle(plugin: NuxtClientManifestVitePlugin): Promise<unknown> {
+function invokeCloseBundle(
+  plugin: NuxtClientManifestVitePlugin,
+  context: object = plugin,
+): Promise<unknown> {
   const hook = plugin.closeBundle;
   if (typeof hook === "function") {
-    return Promise.resolve(hook.call(plugin));
+    return Promise.resolve(hook.call(context));
   }
   if (hook && typeof hook.handler === "function") {
-    return Promise.resolve(hook.handler.call(plugin));
+    return Promise.resolve(hook.handler.call(context));
   }
   throw new Error("plugin has no closeBundle hook");
 }
+
+const inEnvironment = (name: string) => ({ environment: { name } });
+
+void test("Nuxt client manifest closeBundle bridge runs the SSR finalizer after the client call", async () => {
+  // Mirrors Nuxt's Environment API plugin: one instance, applied to client and
+  // SSR, where only the SSR closeBundle reads and removes the client manifest.
+  const calls: (string | undefined)[] = [];
+  const plugin: NuxtClientManifestVitePlugin = {
+    name: "nuxt:client-manifest",
+    async closeBundle(this: unknown) {
+      const name = (this as { environment?: { name?: string } }).environment?.name;
+      calls.push(name);
+      return name === "ssr" ? "finalized" : undefined;
+    },
+  };
+
+  patchNuxtClientManifestCloseBundlePlugin(plugin, {});
+
+  assert.equal(await invokeCloseBundle(plugin, inEnvironment("client")), undefined);
+  assert.equal(await invokeCloseBundle(plugin, inEnvironment("ssr")), "finalized");
+  assert.equal(await invokeCloseBundle(plugin, inEnvironment("ssr")), "finalized");
+  assert.equal(await invokeCloseBundle(plugin, inEnvironment("worker")), undefined);
+  assert.deepEqual(calls, ["client", "ssr", "worker"]);
+});
+
+void test("Nuxt client manifest closeBundle bridge dedupes each environment across instances", async () => {
+  const calls: string[] = [];
+  const scope = {};
+  const plugins = [0, 1].map((index): NuxtClientManifestVitePlugin => ({
+    name: "nuxt:client-manifest",
+    closeBundle: {
+      handler(this: unknown) {
+        calls.push(`${index}:${(this as { environment: { name: string } }).environment.name}`);
+      },
+    },
+  }));
+  for (const plugin of plugins) patchNuxtClientManifestCloseBundlePlugin(plugin, scope);
+
+  for (const plugin of plugins) {
+    await invokeCloseBundle(plugin, inEnvironment("client"));
+    await invokeCloseBundle(plugin, inEnvironment("ssr"));
+  }
+
+  assert.deepEqual(calls, ["0:client", "0:ssr"]);
+});
 
 void test("Nuxt client manifest closeBundle bridge is idempotent per build scope", async () => {
   let calls = 0;

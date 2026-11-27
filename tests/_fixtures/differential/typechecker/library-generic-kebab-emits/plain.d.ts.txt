@@ -1,0 +1,14 @@
+import type { DefineComponent } from "vue";
+import type { RowEvent } from "./table";
+
+// A non-generic packaged component with the same kebab emit.
+export declare const Plain: DefineComponent<
+  { items: readonly string[] },
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  { "row-clicked": (event: RowEvent<string>) => true }
+>;

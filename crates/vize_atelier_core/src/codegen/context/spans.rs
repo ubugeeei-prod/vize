@@ -10,7 +10,7 @@
 use vize_l0::Span;
 
 use super::CodegenContext;
-use crate::codegen::helpers::escape_js_string;
+use crate::codegen::helpers::{escape_js_string, js_string_contents};
 use crate::{DirectiveNode, ElementNode, RootNode, RuntimeHelper, TemplateChildNode, TextNode};
 
 /// Authored offset of the tag name of the first element (document order)
@@ -86,12 +86,16 @@ impl CodegenContext {
         self.push_mapped(self.helper(RuntimeHelper::WithCtx), unit_start);
     }
 
-    /// Push a resolved component name anchored at the first element that
-    /// authors it by that exact tag (asset resolution is shared by every use).
+    /// Push a resolved component name as JavaScript string contents, anchored
+    /// at the first element that authors it by that exact tag (asset
+    /// resolution is shared by every use).
     pub(in crate::codegen) fn push_component_name(&mut self, name: &str, root: &RootNode<'_>) {
+        let contents = js_string_contents(name);
         match first_tag_offset(&root.children, name).filter(|_| self.out.is_recording()) {
-            Some(offset) => self.push_linked(name, Span::new(offset, offset + name.len() as u32)),
-            None => self.push(name),
+            Some(offset) => {
+                self.push_linked(&contents, Span::new(offset, offset + name.len() as u32));
+            }
+            None => self.push(&contents),
         }
     }
 

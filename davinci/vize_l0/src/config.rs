@@ -13,7 +13,7 @@ pub use document::ConfigDocument;
 pub use model::{
     AllowListOptions, AnchorHasContentOptions, ArrowParens, AttributeHyphenationConfig,
     AttributeHyphenationOptions, AttributeSortOrder, AwaitThenableOptions, BlockLangBlock,
-    BlockLangNames, BlockLangOptions, CallAfterAwaitOptions, CallAfterAwaitSpec,
+    BlockLangNames, BlockLangOptions, BlockSpacing, CallAfterAwaitOptions, CallAfterAwaitSpec,
     ChecksConditionalsOptions, ChecksVoidReturnOptions, CompilerConfigEntry,
     ComponentNameInTemplateCasingOptions, ConfigEntryFiles, ConfigEntryIgnore,
     ConfigExperimentalVueFlags, ConfigFeatureFlags, ConfigLintRuleOptions,

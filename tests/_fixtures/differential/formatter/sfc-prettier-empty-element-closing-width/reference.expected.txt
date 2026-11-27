@@ -1,0 +1,23 @@
+<template>
+  <div>
+    <section
+      id="first-section"
+      class="a-long-class-name another-long-class"
+    ></section>
+    <textarea
+      id="first-textarea"
+      class="a-long-class-name another-long-class"
+    ></textarea>
+    <input v-model="note" type="text" class="form-control-with-a-long-name" />
+    <MyField
+      v-model="note"
+      label="Note"
+      class="form-control-with-a-long-name"
+    />
+    <section id="short" class="a-long-class-name another-long"></section>
+  </div>
+</template>
+
+<script setup lang="ts">
+const note = "";
+</script>

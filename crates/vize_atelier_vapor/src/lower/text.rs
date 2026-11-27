@@ -15,10 +15,29 @@ use super::context::TransformContext;
 /// Transform text node
 pub(crate) fn transform_text<'a>(
     ctx: &mut TransformContext<'a>,
-    text: &TextNode,
+    text: &TextNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
     let element_id = ctx.next_id();
+    if text.content.starts_with('<') {
+        // The runtime's `template()` creates a text node only from a string
+        // that does not open with `<`; any other string is parsed as markup.
+        // Text that opens with `<` is therefore written into a placeholder
+        // text node, as upstream's `materializeLiteralTextNode` does.
+        ctx.add_template(element_id, vize_carton::String::from(" "));
+        ctx.standalone_text_elements.insert(element_id);
+        let mut values = Vec::new_in(&ctx.allocator);
+        let exp = SimpleExpressionNode::new(text.content, true, text.loc.clone());
+        values.push(Box::new_in(exp, &ctx.allocator));
+        // The value never changes, so the write needs no render effect.
+        block.operation.push(OperationNode::SetText(SetTextIRNode {
+            element: element_id,
+            is_element: false,
+            values,
+        }));
+        block.returns.push(element_id);
+        return;
+    }
     let template = ctx.text_template(text);
     ctx.add_template(element_id, template);
     block.returns.push(element_id);

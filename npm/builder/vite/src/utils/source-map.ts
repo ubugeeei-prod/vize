@@ -206,9 +206,14 @@ function encodeMappings(lines: Segment[][]): string {
     .map((segments) => {
       let column = 0;
       return segments
-        .map(([generated, index, line, original]) => {
-          const encoded = `${vlq(generated - column)}${vlq(index - source)}${vlq(line - sourceLine)}${vlq(original - sourceColumn)}`;
+        .map((segment) => {
+          const [generated, index, line, original] = segment;
+          const step = vlq(generated - column);
           column = generated;
+          // An unmapped segment carries no source fields, so the source deltas
+          // of the next mapped segment still count from the last mapped one.
+          if (segment.length < 4) return step;
+          const encoded = `${step}${vlq(index - source)}${vlq(line - sourceLine)}${vlq(original - sourceColumn)}`;
           source = index;
           sourceLine = line;
           sourceColumn = original;
@@ -232,16 +237,19 @@ export function composeSourceMaps(outer: SourceMapV3, inner: SourceMapV3): Sourc
   const lines = decodeMappings(outer.mappings).map((segments) => {
     const composed: Segment[] = [];
     for (const [generated, , line, column] of segments) {
-      if (line === undefined) continue;
       // The inner segment that covers the column is the last one starting at or before it.
       let covering: Segment | undefined;
-      for (const segment of traced[line] ?? []) {
+      for (const segment of line === undefined ? [] : (traced[line] ?? [])) {
         if (segment[0] > column) break;
         covering = segment;
       }
-      if (covering && covering.length >= 4) {
-        composed.push([generated, covering[1], covering[2], covering[3]]);
-      }
+      // An unmapped position keeps its own one-field segment. Without it, a
+      // lookup there would fall back to the mapped segment before it.
+      composed.push(
+        covering && covering.length >= 4
+          ? [generated, covering[1], covering[2], covering[3]]
+          : [generated],
+      );
     }
     return composed;
   });
