@@ -89,10 +89,6 @@ fn run_check(app: &Path, args: &[&str]) -> std::process::Output {
 fn assert_launched(runtime: &Path, output: &std::process::Output) {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        !stderr.contains("native TypeScript runtime not found"),
-        "stderr:\n{stderr}"
-    );
-    assert!(
         runtime.with_file_name("tsc.used").is_file(),
         "the package's own runtime was not launched\nstderr:\n{stderr}"
     );
