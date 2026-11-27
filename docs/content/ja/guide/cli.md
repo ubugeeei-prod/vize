@@ -162,6 +162,7 @@ vize fmt --write src
 | `--max-attributes-per-line`        | 指定した属性数で改行する                               |
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` の省略記法を正規化する |
 | `--sort-blocks`                    | SFC ブロックの標準順序を切り替える                     |
+| `--block-spacing`                  | SFC ブロック間を `blank-line`、`preserve` から選ぶ     |
 | `--self-close-void-elements`       | HTML の空要素に `/>` を付けるか切り替える              |
 | `--normalize-css-quotes`          | CSS・SCSS・Less の文字列の引用符を `--single-quote` に合わせる |
 | `--normalize-inline-styles`       | 静的な `style` 宣言の空白を整える                     |
