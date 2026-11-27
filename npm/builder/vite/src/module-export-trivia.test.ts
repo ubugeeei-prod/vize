@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { parseSync } from "oxc-parser";
 
 import { bindDefaultExport } from "../../shared/native-shape.ts";
-import { analyzeModuleOutput } from "./utils/module-output.ts";
+import { analyzeModuleOutput } from "../test/oxc-module-output.ts";
 
 const gaps = [
   " ",
