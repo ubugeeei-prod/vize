@@ -236,7 +236,10 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShap
     shape.has_dynamic_import = dynamic_imports.found;
     for statement in &program.body {
         match statement {
-            Statement::ExportDefaultDeclaration(export) => {
+            // A module with two default exports is invalid, and the parser
+            // still reads it. Report the first, as the builders' own oxc
+            // analysis did before this shape existed.
+            Statement::ExportDefaultDeclaration(export) if !shape.has_default_export => {
                 let span = export.span();
                 shape.has_default_export = true;
                 shape.default_export_start = Some(span.start);

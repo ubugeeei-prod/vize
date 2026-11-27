@@ -280,3 +280,17 @@ fn a_type_assertion_still_parses_as_typescript() {
     let shape = shape("const n = <number>1;\nexport default { n };\n");
     assert!(shape.has_default_export);
 }
+
+/// An invalid module with two default exports reports the first one.
+#[test]
+fn the_first_of_two_default_exports_is_reported() {
+    let code = "export default { a: 1 };\nexport default _sfc_main\n";
+    let shape = shape(code);
+    assert_eq!(shape.default_export_start, Some(0));
+    assert_eq!(
+        &code[..shape.default_export_end.unwrap() as usize],
+        "export default { a: 1 };"
+    );
+    assert!(!shape.default_export_is_sfc_main);
+    assert_eq!(shape.default_export_local, None);
+}
