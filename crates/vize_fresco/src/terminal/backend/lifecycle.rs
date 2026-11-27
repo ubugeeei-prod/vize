@@ -29,6 +29,8 @@ mod panic_hook;
 mod raw_mode;
 mod signal_hook;
 mod state;
+#[cfg(windows)]
+mod windows_console;
 
 #[cfg(all(test, unix))]
 mod pty_test_support;

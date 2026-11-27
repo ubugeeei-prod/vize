@@ -230,6 +230,12 @@ parcel_selectors = "=0.28.3"
 
 # Terminal / layout
 crossterm = "=0.29.0"
+# Safe termios, standard-descriptor and errno wrappers for Fresco's terminal
+# lifecycle. Both crates are already in the graph on Unix, through crossterm
+# (rustix) and signal-hook-registry (errno); depending on them directly lets
+# Fresco call their safe APIs instead of declaring the libc calls itself.
+rustix = { version = "=1.1.6", default-features = false, features = ["std", "stdio", "termios"] }
+errno = { version = "=0.3.14", default-features = false }
 taffy = "=0.10.1"
 unicode-width = "=0.2.2"
 unicode-segmentation = "=1.13.3"

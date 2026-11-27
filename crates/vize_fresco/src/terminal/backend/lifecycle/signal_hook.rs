@@ -8,10 +8,9 @@ mod unix;
 mod windows;
 
 #[cfg(all(test, unix))]
-use unix::{
-    SUPERVISED_SIGNALS, errno_location, inspect_action, install_actions_with,
-    terminal_signal_handler,
-};
+use unix::{SUPERVISED_SIGNALS, inspect_action, install_actions_with, terminal_signal_handler};
+#[cfg(all(test, windows))]
+use windows::terminal_control_handler;
 
 /// Result of installing Fresco's process signal hook.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

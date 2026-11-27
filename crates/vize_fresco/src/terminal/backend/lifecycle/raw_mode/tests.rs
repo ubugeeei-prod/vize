@@ -1,5 +1,5 @@
 use std::{
-    os::fd::RawFd,
+    os::fd::{FromRawFd, OwnedFd, RawFd},
     sync::{
         Barrier, Mutex, MutexGuard,
         atomic::{AtomicBool, Ordering},
@@ -9,7 +9,7 @@ use std::{
 
 use super::unix::{
     RawSnapshotReader, disable_raw_mode, emergency_restore_raw_mode, enable_raw_mode_on_owned_fd,
-    raw_mode_requires_restoration,
+    open_controlling_terminal, raw_mode_requires_restoration,
 };
 use crate::terminal::backend::lifecycle::pty_test_support::PtyFixture;
 
@@ -80,8 +80,10 @@ fn invalid_terminal_descriptor_is_closed_without_publishing_a_snapshot() {
     let fd = unsafe { libc::open(c"/dev/null".as_ptr(), libc::O_RDWR) };
     assert!(fd >= 0);
     let fd = duplicate_outside_common_test_fd_range(fd);
+    // SAFETY: the duplicate is a new descriptor that nothing else owns.
+    let owned = unsafe { OwnedFd::from_raw_fd(fd) };
 
-    let error = enable_raw_mode_on_owned_fd(fd).unwrap_err();
+    let error = enable_raw_mode_on_owned_fd(owned).unwrap_err();
     assert!(matches!(
         error.raw_os_error(),
         Some(libc::ENOTTY | libc::ENODEV)
@@ -107,6 +109,20 @@ fn second_owned_fd_does_not_replace_or_modify_active_snapshot() {
     first.assert_restored();
     second.assert_restored();
     disable_raw_mode().unwrap();
+}
+
+#[test]
+fn controlling_terminal_is_a_close_on_exec_terminal_or_an_os_error() {
+    match open_controlling_terminal() {
+        Ok(fd) => {
+            assert!(rustix::termios::isatty(&fd));
+            let flags = rustix::io::fcntl_getfd(&fd).unwrap();
+            assert!(flags.contains(rustix::io::FdFlags::CLOEXEC));
+        }
+        // CI runners usually have neither a terminal stdin nor a controlling
+        // terminal; the child-process signal tests cover the terminal case.
+        Err(error) => assert!(error.raw_os_error().is_some()),
+    }
 }
 
 fn raw_mode_test_guard() -> MutexGuard<'static, ()> {

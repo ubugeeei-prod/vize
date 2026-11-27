@@ -1,60 +1,60 @@
 //! Unix `termios` snapshots and lock-free emergency restoration.
+//!
+//! Terminal calls go through rustix's safe `termios` and descriptor wrappers,
+//! which crossterm already links. The one `unsafe` contract left here is the
+//! snapshot cell that a panic hook or signal handler reads without a lock.
 
 use std::{
     cell::UnsafeCell,
     error::Error,
-    fmt, io,
-    mem::MaybeUninit,
-    os::fd::RawFd,
+    fmt,
+    fs::OpenOptions,
+    io, mem,
+    os::fd::OwnedFd,
     sync::atomic::{AtomicBool, AtomicUsize, Ordering},
 };
+
+use rustix::termios::{self, OptionalActions, Termios};
 
 static RAW_SNAPSHOT: RawSnapshotCell = RawSnapshotCell::new();
 static RAW_SNAPSHOT_ACTIVE: AtomicBool = AtomicBool::new(false);
 static RAW_SNAPSHOT_PUBLISHED: AtomicBool = AtomicBool::new(false);
 static RAW_SNAPSHOT_READERS: AtomicUsize = AtomicUsize::new(0);
 
-struct RawSnapshotCell(UnsafeCell<MaybeUninit<NativeRawSnapshot>>);
+/// The published snapshot. Only the claimant of `RAW_SNAPSHOT_ACTIVE` stores
+/// or removes it, and only while it is unpublished and no reader holds a slot.
+/// Readers borrow it only through [`RawSnapshotReader`].
+struct RawSnapshotCell(UnsafeCell<Option<NativeRawSnapshot>>);
 
 impl RawSnapshotCell {
     const fn new() -> Self {
-        Self(UnsafeCell::new(MaybeUninit::uninit()))
+        Self(UnsafeCell::new(None))
     }
 
-    fn write(&self, snapshot: NativeRawSnapshot) {
-        // SAFETY: only the snapshot claimant writes, and it publishes after
-        // this write. A new claimant waits until readers drain.
-        unsafe { (*self.0.get()).write(snapshot) };
-    }
-
-    fn read(&self) -> NativeRawSnapshot {
-        // SAFETY: the value is initialized because every caller reads only
-        // after a `write` published `RAW_SNAPSHOT_ACTIVE`. Reader callers
-        // hold a reader slot and observed the active flag in the
-        // sequentially consistent publication order, and deactivation waits
-        // for every slot before a later session can reuse storage. The
-        // remaining caller is `deactivate_snapshot`, which is the lease
-        // owner reading its own snapshot after readers drained, so no
-        // concurrent `write` can overlap it. `NativeRawSnapshot` is `Copy`
-        // data (a descriptor, a `termios`, and a flag), so reading it out
-        // never duplicates ownership of a Rust resource; the descriptor is
-        // closed exactly once by `deactivate_snapshot`.
-        unsafe { self.0.get().cast::<NativeRawSnapshot>().read() }
+    /// Store or remove the snapshot as its owner, returning the old value.
+    fn replace(&self, snapshot: Option<NativeRawSnapshot>) -> Option<NativeRawSnapshot> {
+        // SAFETY: only the `RAW_SNAPSHOT_ACTIVE` claimant calls this, so no two
+        // calls overlap. It stores before `RAW_SNAPSHOT_PUBLISHED` is set and
+        // removes after the flag is cleared and `RAW_SNAPSHOT_READERS` drained
+        // to zero, so no reader borrow overlaps the mutation (see
+        // `RawSnapshotReader::acquire` for the ordering argument).
+        unsafe { mem::replace(&mut *self.0.get(), snapshot) }
     }
 }
 
-// SAFETY: access to the `UnsafeCell` follows the publication and reader
-// protocol documented on `RawSnapshotCell::write` and `read`.
+// SAFETY: every access to the `UnsafeCell` follows the publication and reader
+// protocol documented on `RawSnapshotCell::replace` and
+// `RawSnapshotReader::acquire`. `NativeRawSnapshot` is `Send + Sync` data.
 unsafe impl Sync for RawSnapshotCell {}
 
 struct NativeRawSnapshot {
-    fd: RawFd,
-    original: libc::termios,
+    fd: OwnedFd,
+    original: Termios,
     owns_crossterm_raw_mode: bool,
 }
 
 pub(super) struct RawSnapshotReader {
-    snapshot: NativeRawSnapshot,
+    snapshot: &'static NativeRawSnapshot,
 }
 
 impl RawSnapshotReader {
@@ -64,9 +64,25 @@ impl RawSnapshotReader {
             RAW_SNAPSHOT_READERS.fetch_sub(1, Ordering::SeqCst);
             return None;
         }
-        Some(Self {
-            snapshot: RAW_SNAPSHOT.read(),
-        })
+        // SAFETY: this reader took a slot and then observed the published
+        // flag, both in the sequentially consistent order. The owner stores
+        // the snapshot before publishing it, and removes it only after
+        // clearing the flag and waiting for every slot, so the value stays in
+        // place and unmutated until `Drop` releases this slot. The `'static`
+        // borrow never leaves the guard: `snapshot()` lends it for the guard's
+        // lifetime only.
+        let snapshot = unsafe { (*RAW_SNAPSHOT.0.get()).as_ref() };
+        match snapshot {
+            Some(snapshot) => Some(Self { snapshot }),
+            None => {
+                RAW_SNAPSHOT_READERS.fetch_sub(1, Ordering::SeqCst);
+                None
+            }
+        }
+    }
+
+    fn snapshot(&self) -> &NativeRawSnapshot {
+        self.snapshot
     }
 }
 
@@ -94,30 +110,30 @@ pub(in crate::terminal::backend::lifecycle) fn enable_raw_mode() -> io::Result<(
     let crossterm_was_raw = match crossterm::terminal::is_raw_mode_enabled() {
         Ok(enabled) => enabled,
         Err(error) => {
-            close_owned_fd(fd);
+            drop(fd);
             release_unpublished_snapshot_claim();
             return Err(error);
         }
     };
     let owns_crossterm_raw_mode = !crossterm_was_raw;
-    let original = publish_snapshot(fd, owns_crossterm_raw_mode)?;
+    publish_snapshot(fd, owns_crossterm_raw_mode)?;
     if owns_crossterm_raw_mode && let Err(enable) = crossterm::terminal::enable_raw_mode() {
-        return fail_enable_transition(fd, &original, enable);
+        return fail_enable_transition(enable);
     }
     Ok(())
 }
 
 /// Restore and release the native raw-mode snapshot.
 pub(in crate::terminal::backend::lifecycle) fn disable_raw_mode() -> io::Result<()> {
-    let Some(snapshot) = RawSnapshotReader::acquire() else {
+    let Some(reader) = RawSnapshotReader::acquire() else {
         return Ok(());
     };
-    let mut restoration =
-        set_terminal_attributes(snapshot.snapshot.fd, &snapshot.snapshot.original);
-    if restoration.is_ok() && snapshot.snapshot.owns_crossterm_raw_mode {
+    let snapshot = reader.snapshot();
+    let mut restoration = restore_original_attributes(snapshot);
+    if restoration.is_ok() && snapshot.owns_crossterm_raw_mode {
         restoration = crossterm::terminal::disable_raw_mode();
     }
-    drop(snapshot);
+    drop(reader);
     if restoration.is_ok() {
         deactivate_snapshot();
     }
@@ -129,55 +145,55 @@ pub(in crate::terminal::backend::lifecycle) fn raw_mode_requires_restoration() -
     RAW_SNAPSHOT_PUBLISHED.load(Ordering::SeqCst)
 }
 
-/// Restore raw mode from a panic hook without releasing conservative state.
+/// Restore raw mode from a panic hook or signal handler without releasing
+/// conservative state.
+///
+/// The reader slot is two atomic operations, and rustix's `tcsetattr` is one
+/// `ioctl` on Linux and libc's `tcsetattr` elsewhere; POSIX lists both as
+/// async-signal-safe. The path neither allocates nor takes a Fresco or
+/// standard-output lock. State remains active so unwind cleanup can retry.
 pub(in crate::terminal::backend::lifecycle) fn emergency_restore_raw_mode() -> bool {
-    let Some(snapshot) = RawSnapshotReader::acquire() else {
+    let Some(reader) = RawSnapshotReader::acquire() else {
         return true;
     };
-    // SAFETY: the reader holds the published snapshot, so its descriptor is
-    // open and `original` is the initialized termios `tcgetattr` returned.
-    // `tcsetattr` is a direct libc operation: it does not allocate or take
-    // Fresco/stdout locks. State remains active so unwind cleanup can retry.
-    unsafe {
-        libc::tcsetattr(
-            snapshot.snapshot.fd,
-            libc::TCSANOW,
-            &snapshot.snapshot.original,
-        ) == 0
-    }
+    restore_original_attributes(reader.snapshot()).is_ok()
 }
 
 #[cfg(test)]
-pub(super) fn enable_raw_mode_on_owned_fd(fd: RawFd) -> io::Result<()> {
+pub(super) fn enable_raw_mode_on_owned_fd(fd: OwnedFd) -> io::Result<()> {
     if !claim_snapshot() {
-        close_owned_fd(fd);
+        drop(fd);
         return Ok(());
     }
-    let original = publish_snapshot(fd, false)?;
-    let mut raw = original;
-    // SAFETY: `raw` is an initialized termios value owned by this function.
-    unsafe { libc::cfmakeraw(&mut raw) };
+    let mut raw = publish_snapshot(fd, false)?;
+    raw.make_raw();
 
-    if let Err(enable) = set_terminal_attributes(fd, &raw) {
-        return fail_enable_transition(fd, &original, enable);
+    let applied = match RawSnapshotReader::acquire() {
+        Some(reader) => set_terminal_attributes(&reader.snapshot().fd, &raw),
+        None => Ok(()),
+    };
+    if let Err(enable) = applied {
+        return fail_enable_transition(enable);
     }
     Ok(())
 }
 
-fn publish_snapshot(fd: RawFd, owns_crossterm_raw_mode: bool) -> io::Result<libc::termios> {
-    let original = match terminal_attributes(fd) {
+/// Read the descriptor's attributes, then store and publish the snapshot.
+/// Returns a copy of the captured attributes.
+fn publish_snapshot(fd: OwnedFd, owns_crossterm_raw_mode: bool) -> io::Result<Termios> {
+    let original = match termios::tcgetattr(&fd) {
         Ok(attributes) => attributes,
         Err(error) => {
-            close_owned_fd(fd);
+            drop(fd);
             release_unpublished_snapshot_claim();
-            return Err(error);
+            return Err(error.into());
         }
     };
-    RAW_SNAPSHOT.write(NativeRawSnapshot {
+    drop(RAW_SNAPSHOT.replace(Some(NativeRawSnapshot {
         fd,
-        original,
+        original: original.clone(),
         owns_crossterm_raw_mode,
-    });
+    })));
     // Sequential consistency closes the late-reader race: a reader that
     // increments after deactivation must observe unpublished, while a reader
     // that observes published is counted before the owner can reuse storage.
@@ -185,12 +201,12 @@ fn publish_snapshot(fd: RawFd, owns_crossterm_raw_mode: bool) -> io::Result<libc
     Ok(original)
 }
 
-fn fail_enable_transition(
-    fd: RawFd,
-    original: &libc::termios,
-    enable: io::Error,
-) -> io::Result<()> {
-    match set_terminal_attributes(fd, original) {
+fn fail_enable_transition(enable: io::Error) -> io::Result<()> {
+    let rollback = match RawSnapshotReader::acquire() {
+        Some(reader) => restore_original_attributes(reader.snapshot()),
+        None => Ok(()),
+    };
+    match rollback {
         Ok(()) => {
             deactivate_snapshot();
             Err(enable)
@@ -199,49 +215,23 @@ fn fail_enable_transition(
     }
 }
 
-pub(super) fn terminal_attributes(fd: RawFd) -> io::Result<libc::termios> {
-    let mut attributes = MaybeUninit::<libc::termios>::zeroed();
-    // SAFETY: `attributes` points to writable storage for one termios value.
-    if unsafe { libc::tcgetattr(fd, attributes.as_mut_ptr()) } != 0 {
-        return Err(io::Error::last_os_error());
-    }
-    // SAFETY: successful `tcgetattr` initialized the complete zeroed value.
-    Ok(unsafe { attributes.assume_init() })
+fn restore_original_attributes(snapshot: &NativeRawSnapshot) -> io::Result<()> {
+    set_terminal_attributes(&snapshot.fd, &snapshot.original)
 }
 
-fn set_terminal_attributes(fd: RawFd, attributes: &libc::termios) -> io::Result<()> {
-    // SAFETY: `attributes` is initialized and borrowed for the syscall.
-    if unsafe { libc::tcsetattr(fd, libc::TCSANOW, attributes) } == 0 {
-        Ok(())
-    } else {
-        Err(io::Error::last_os_error())
-    }
+fn set_terminal_attributes(fd: &OwnedFd, attributes: &Termios) -> io::Result<()> {
+    Ok(termios::tcsetattr(fd, OptionalActions::Now, attributes)?)
 }
 
-fn open_controlling_terminal() -> io::Result<RawFd> {
-    // SAFETY: both operations use valid process file-descriptor constants.
-    if unsafe { libc::isatty(libc::STDIN_FILENO) } == 1 {
-        return duplicate_cloexec(libc::STDIN_FILENO);
+pub(super) fn open_controlling_terminal() -> io::Result<OwnedFd> {
+    let stdin = rustix::stdio::stdin();
+    if termios::isatty(stdin) {
+        // `F_DUPFD_CLOEXEC` creates the duplicate close-on-exec atomically.
+        return Ok(rustix::io::fcntl_dupfd_cloexec(stdin, 0)?);
     }
-
-    // SAFETY: the path is static and NUL-terminated. `O_CLOEXEC` sets the
-    // flag atomically, leaving no descriptor-inheritance window.
-    let fd = unsafe { libc::open(c"/dev/tty".as_ptr(), libc::O_RDWR | libc::O_CLOEXEC) };
-    if fd < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(fd)
-}
-
-fn duplicate_cloexec(fd: RawFd) -> io::Result<RawFd> {
-    // SAFETY: duplicating a valid descriptor does not borrow its resource,
-    // and `F_DUPFD_CLOEXEC` takes one integer minimum-descriptor argument.
-    // The duplicate is created close-on-exec atomically.
-    let duplicate = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 0) };
-    if duplicate < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(duplicate)
+    // std opens with `O_CLOEXEC`, leaving no descriptor-inheritance window.
+    let terminal = OpenOptions::new().read(true).write(true).open("/dev/tty")?;
+    Ok(terminal.into())
 }
 
 fn deactivate_snapshot() {
@@ -255,7 +245,9 @@ fn deactivate_snapshot() {
             std::thread::yield_now();
         }
     }
-    close_owned_fd(RAW_SNAPSHOT.read().fd);
+    // Dropping the snapshot closes its descriptor exactly once. Like
+    // `OwnedFd::drop`, close errors are not retried.
+    drop(RAW_SNAPSHOT.replace(None));
     RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
 }
 
@@ -267,12 +259,6 @@ fn claim_snapshot() -> bool {
 
 fn release_unpublished_snapshot_claim() {
     RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
-}
-
-fn close_owned_fd(fd: RawFd) {
-    // SAFETY: the snapshot owns `fd`; close is attempted exactly once after
-    // readers drain. Like `OwnedFd::drop`, close errors are not retried.
-    let _ = unsafe { libc::close(fd) };
 }
 
 fn combine_transition_errors(enable: io::Error, rollback: io::Error) -> io::Error {
