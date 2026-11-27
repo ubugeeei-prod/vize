@@ -66,16 +66,20 @@ fn parent_bracket_stays_when_moving_it_cannot_help() {
         "  ><i class=\"el-icon-view-ab el-icon-with-a-longer-name\"></i>Prev</el-button>\n",
         "</template>\n",
     );
-    let formatted = format_sfc(wrapped, &options).expect("format").code;
-    assert!(
-        !formatted.contains("\n  \n"),
-        "a moved bracket must not leave a blank indented line: {formatted}"
-    );
-    assert_fixed_point(&formatted, &formatted, &options);
+    // Moving it again would only leave an indented blank line behind.
+    assert_fixed_point(wrapped, wrapped, &options);
 
     // Even on its own line the child does not fit, so its attributes wrap.
     let long = "<template>\n  <div>\n    <b><i class=\"a-class-name-long-enough-that-the-tag-never-fits-on-one-line-alone\" title=\"x\"></i></b>\n  </div>\n</template>\n";
-    let formatted = format_sfc(long, &options).expect("format").code;
-    assert!(formatted.contains("<b><i\n"), "{formatted}");
-    assert_fixed_point(&formatted, &formatted, &options);
+    let expected = concat!(
+        "<template>\n",
+        "  <div>\n",
+        "    <b><i\n",
+        "        class=\"a-class-name-long-enough-that-the-tag-never-fits-on-one-line-alone\"\n",
+        "        title=\"x\"\n",
+        "      ></i></b>\n",
+        "  </div>\n",
+        "</template>\n",
+    );
+    assert_fixed_point(long, expected, &options);
 }
