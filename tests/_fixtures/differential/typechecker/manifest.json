@@ -62831,6 +62831,96 @@
       }
     },
     {
+      "id": "typechecker/dynamic-component-fallthrough-root-13720/spread",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_builtin_roots::reported_project_keeps_a_dynamic_root_open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-fallthrough-root-13720/tsconfig.json.txt",
+          "sha256": "55c67b3897fe903c18ac38bf2109d2523b123c497eb195337287df36e915e221"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "dynamic-component-fallthrough-root-13720/DynamicRoot.vue.txt",
+          "sha256": "e436f220333a7b73768bc05a86c363f2059bdbfc94550089c9522eb3ade3381e"
+        },
+        {
+          "file": "App.vue",
+          "path": "dynamic-component-fallthrough-root-13720/Spread.vue.txt",
+          "sha256": "d5e9d8e3efb2db5b4e9af72df4806ac6b91868d299c8cc94e46b1395ad1c699c"
+        },
+        {
+          "file": "cases.json",
+          "path": "dynamic-component-fallthrough-root-13720/cases.json",
+          "sha256": "9d76127184aa9f152620be860a4257706bcfe6b7b083afb98e382424bd6f4ac2"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_builtin_roots::reported_project_keeps_a_dynamic_root_open; with fallthroughAttributes, a setup binding named component does not type a <component :is> root, so a static attribute beside a v-bind object on the component stays valid. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-fallthrough-root-13720/wrong-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_builtin_roots::reported_project_keeps_a_dynamic_root_open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-fallthrough-root-13720/tsconfig.json.txt",
+          "sha256": "55c67b3897fe903c18ac38bf2109d2523b123c497eb195337287df36e915e221"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "dynamic-component-fallthrough-root-13720/DynamicRoot.vue.txt",
+          "sha256": "e436f220333a7b73768bc05a86c363f2059bdbfc94550089c9522eb3ade3381e"
+        },
+        {
+          "file": "App.vue",
+          "path": "dynamic-component-fallthrough-root-13720/WrongProp.vue.txt",
+          "sha256": "d7f77a4ed79376ec2c75e8da660f3409a18e18e4402c317910bb47e39a36947f"
+        },
+        {
+          "file": "cases.json",
+          "path": "dynamic-component-fallthrough-root-13720/cases.json",
+          "sha256": "9d76127184aa9f152620be860a4257706bcfe6b7b083afb98e382424bd6f4ac2"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_builtin_roots::reported_project_keeps_a_dynamic_root_open; with fallthroughAttributes, a wrong value for the component's own prop beside the dynamic root is TS2322. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-listener-member-arity/typed-reference",
       "state": "active",
       "targets": [
