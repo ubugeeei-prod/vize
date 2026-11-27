@@ -9,6 +9,7 @@ import {
   compiledTarget,
   listUshPrograms,
   pinnedUshVersion,
+  runtimeDependentBuilds,
   syncUshPrograms,
 } from "../../tools/support/ci/ush-programs.ts";
 
@@ -42,6 +43,22 @@ test("modules under lib/ are not programs", () => {
 test("a build whose program is gone is reported before ush runs", () => {
   const directory = repository({ "scripts/compiled/renamed.sh": "#!/bin/sh\n" });
   assert.throws(() => syncUshPrograms(directory, true), /scripts\/compiled\/renamed\.sh/u);
+});
+
+test("a build that calls the ush runtime is found", () => {
+  const directory = repository({
+    "scripts/compiled/portable.sh": "#!/bin/sh\nprintf '%s\\n' ok\n",
+    "scripts/compiled/runtime.sh":
+      '#!/bin/sh\n__ush_std_host() {\n  "${USH_RUNTIME:-ush}" "$@"\n}\n',
+  });
+  assert.deepEqual(
+    runtimeDependentBuilds(directory, ["scripts/portable.ush", "scripts/runtime.ush"]),
+    ["scripts/compiled/runtime.sh"],
+  );
+});
+
+test("no committed build calls the ush runtime", () => {
+  assert.deepEqual(runtimeDependentBuilds(root, listUshPrograms(root)), []);
 });
 
 test("the flake input pins the ush release", () => {

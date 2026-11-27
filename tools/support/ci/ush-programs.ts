@@ -64,6 +64,18 @@ function orphanedBuilds(root: string, programs: readonly string[]): string[] {
 }
 
 /**
+ * Builds that call the optional ush runtime, as `std::int::sub` or `std::string::length`
+ * do. They stop with exit 127 wherever ush is not installed, as on most runners and
+ * contributors' machines, so the portable std or shell arithmetic must do instead.
+ * ush emits this entry point only into a build that reaches the runtime.
+ */
+export function runtimeDependentBuilds(root: string, programs: readonly string[]): string[] {
+  return programs
+    .filter((source) => readBuild(root, source)?.includes("\n__ush_std_host() {"))
+    .map(compiledTarget);
+}
+
+/**
  * Compile every program, or with `check` verify that each committed build is current.
  * Writing without ush on PATH only warns, so contributors who never touch a `.ush`
  * file can still regenerate the Pkl outputs; checking always needs it.
@@ -105,6 +117,11 @@ export function syncUshPrograms(root: string, check: boolean): UshSync {
       : "";
     throw new Error(`${result.stderr.trim() || "ush compile failed"}${fix}`);
   }
+  const runtime = runtimeDependentBuilds(root, programs);
+  if (runtime.length)
+    throw new Error(
+      `These builds need the ush runtime, which most runners lack:\n${runtime.join("\n")}`,
+    );
   const updated = programs.filter((source) => readBuild(root, source) !== before.get(source));
   return { programs, updated: updated.map(compiledTarget) };
 }
