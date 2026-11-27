@@ -2,6 +2,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 `self-hosted-runner` {
   labels = new Listing {
+    ci.linuxSmall
     "blacksmith-8vcpu-ubuntu-2404"
     ci.macos
     ci.linux2204
