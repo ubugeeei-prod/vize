@@ -8,7 +8,7 @@ mod structural_transform_tests {
     use super::super::super::traverse::traverse_children;
     use super::super::*;
     use crate::errors::CompilerError;
-    use crate::lane::{ParentNode, TransformContext};
+    use crate::lane::TransformContext;
     use crate::options::TransformOptions;
     use crate::parser::parse;
 
@@ -18,7 +18,7 @@ mod structural_transform_tests {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
         let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
-        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+        traverse_children(&mut ctx, &mut root.children);
         ctx.errors
     }
 

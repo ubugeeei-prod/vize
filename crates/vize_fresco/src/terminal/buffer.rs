@@ -149,6 +149,9 @@ impl Buffer {
             }
         } else {
             for grapheme in text.graphemes(true) {
+                if is_control_grapheme(grapheme) {
+                    continue;
+                }
                 let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
                     break;
                 };
@@ -187,9 +190,8 @@ impl Buffer {
 
         let mut column = x;
         let mut written = 0_u16;
-        let skip_ascii_controls = text.is_ascii();
         for grapheme in text.graphemes(true) {
-            if skip_ascii_controls && grapheme.bytes().all(|byte| byte.is_ascii_control()) {
+            if is_control_grapheme(grapheme) {
                 continue;
             }
             let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
@@ -362,6 +364,13 @@ impl Buffer {
             }
         }
     }
+}
+
+/// A grapheme that holds a control character (C0, DEL or C1). A cell stores
+/// only what the terminal draws, so text can never carry a terminal command;
+/// segmentation always isolates a control character in its own grapheme.
+fn is_control_grapheme(grapheme: &str) -> bool {
+    grapheme.chars().any(char::is_control)
 }
 
 impl Default for Buffer {
