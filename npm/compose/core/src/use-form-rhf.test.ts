@@ -25,10 +25,6 @@ function schema(
   return { "~standard": { version: 1, vendor: "test", validate } };
 }
 
-async function flush(): Promise<void> {
-  for (let index = 0; index < 5; index += 1) await Promise.resolve();
-}
-
 void test("criteriaMode first keeps the earliest message in source order", async () => {
   const options = {
     initialValues: initialProfile(),

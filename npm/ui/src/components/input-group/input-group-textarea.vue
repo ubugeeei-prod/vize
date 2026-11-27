@@ -29,10 +29,12 @@ function onInput(event: Event): void {
 </script>
 
 <template>
+  <!-- The consumer labels this native root through fallthrough attrs or an external label. -->
+  <!-- eslint-disable-next-line a11y/form-control-has-label -->
   <textarea
     data-vize-ui="input-group-textarea"
-    :name="name"
-    :rows="rows"
+    :name
+    :rows
     :value="modelValue"
     :disabled="off"
     :data-state="off ? 'disabled' : 'idle'"

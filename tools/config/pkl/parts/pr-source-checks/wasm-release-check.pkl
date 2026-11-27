@@ -2,7 +2,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "WASM release build check"
 needs = "pr-source-plan"
-`runs-on` = "${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`runs-on` = "${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 20
 env {
 

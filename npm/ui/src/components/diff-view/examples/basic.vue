@@ -11,5 +11,5 @@ const patch = `--- a/readme.md
 </script>
 
 <template>
-  <DiffView label="readme.md" :patch="patch" />
+  <DiffView label="readme.md" :patch />
 </template>

@@ -1,7 +1,7 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "full-js-report"
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 5
 `if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
 // Whole callee success retains all four original full-product dependencies.

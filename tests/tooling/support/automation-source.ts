@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import type { Node } from "yaml";
 
+import { sourceRunnersBefore } from "./source-validation-runners.ts";
 import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
 import { withoutGeneratedHeader } from "../../../tools/support/ci/generated-header.ts";
 
@@ -47,7 +48,13 @@ export function automationShellPath(body: string, owner?: string): string {
 export function readWorkflowShell(owner: string): string {
   assert.match(owner, /^[a-z0-9-]+$/u);
   const workflow = withoutGeneratedHeader(
-    readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8"),
+    sourceRunnersBefore(
+      `.github/workflows/${owner}.yml`,
+      readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8").replace(
+        /\r\n?/gu,
+        "\n",
+      ),
+    ),
     "hash",
   );
   return workflow.replace(
@@ -76,7 +83,10 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
   const file =
     parts[0] instanceof URL ? fileURLToPath(parts[0]) : path.resolve(root, ...(parts as string[]));
   const source = withoutGeneratedHeader(
-    readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"),
+    sourceRunnersBefore(
+      path.relative(root, file).split(path.sep).join("/"),
+      readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"),
+    ),
     "hash",
   );
   const { isMap, isScalar, isSeq, parseDocument } = createRequire(import.meta.url)(

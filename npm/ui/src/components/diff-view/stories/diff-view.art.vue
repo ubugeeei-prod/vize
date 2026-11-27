@@ -12,7 +12,7 @@ const patch = `--- a/readme.md
 
 <art title="Diff View" status="ready">
   <variant name="Default" default>
-    <DiffView label="readme.md" :patch="patch" />
+    <DiffView label="readme.md" :patch />
   </variant>
   <variant name="Structured">
     <DiffView

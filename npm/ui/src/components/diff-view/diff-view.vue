@@ -12,10 +12,10 @@ const rendered = computed(() =>
 </script>
 
 <template>
-  <table data-vize-ui="diff-view" role="table" :aria-label="label">
+  <table data-vize-ui="diff-view" :aria-label="label">
     <tbody>
-      <tr v-for="line in rendered" :key="line.key" role="row" :data-kind="line.kind">
-        <td role="cell">{{ line.text }}</td>
+      <tr v-for="line in rendered" :key="line.key" :data-kind="line.kind">
+        <td>{{ line.text }}</td>
       </tr>
     </tbody>
   </table>

@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils";
 import type { ComponentMountingOptions, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import type { Component } from "vue";
+import { landmarkRoleOf } from "../families/accessibility/landmark/landmark-runtime.ts";
 
 /**
  * Mounted-DOM interaction harness: components mount into the real (happy-dom)
@@ -228,6 +229,15 @@ function computeRole(element: HTMLElement): string | null {
   if (tag === "button") return "button";
   if (tag === "a" && element.hasAttribute("href")) return "link";
   if (tag === "progress") return "progressbar";
+  if (tag === "article") return "article";
+  if (tag === "table") return "table";
+  if (tag === "tr") return "row";
+  if (tag === "td") {
+    const ownerRole = element.closest("table")?.getAttribute("role")?.trim().split(/\s+/)[0];
+    return ownerRole === "grid" || ownerRole === "treegrid" ? "gridcell" : "cell";
+  }
+  if (tag === "form")
+    return landmarkRoleOf(element) ?? (element.getAttribute("title")?.trim() ? "form" : null);
   if (element instanceof HTMLInputElement) {
     if (element.type === "checkbox") return "checkbox";
     if (element.type === "radio") return "radio";
@@ -263,6 +273,9 @@ function computeAccessibleName(element: HTMLElement): string {
     const label = forLabel ?? element.closest("label");
     if (label !== null) return collapseWhitespace(label.textContent ?? "");
   }
+  if (element instanceof HTMLTableElement && element.caption !== null)
+    return collapseWhitespace(element.caption.textContent ?? "");
+  if (element.localName === "form") return collapseWhitespace(element.getAttribute("title") ?? "");
   return collapseWhitespace(element.textContent ?? "");
 }
 

@@ -39,12 +39,12 @@ function onKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <form role="form" data-vize-ui="chat-composer" aria-label="Composer" @submit.prevent="publish">
+  <form data-vize-ui="chat-composer" aria-label="Composer" @submit.prevent="publish">
     <textarea
       :value="draft"
       rows="2"
       :aria-label="label"
-      :disabled="disabled"
+      :disabled
       @input="onInput"
       @keydown="onKeydown"
     />
