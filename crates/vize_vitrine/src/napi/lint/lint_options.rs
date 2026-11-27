@@ -93,8 +93,10 @@ pub struct PatinaLintOptionsNapi {
     /// CLI-compatible `linter.ruleOptions` encoded as JSON.
     pub rule_options_json: Option<String>,
     /// Read the files imported macro types reach once per process instead of
-    /// once per call, for hosts whose sources do not change while they run,
-    /// such as one Oxlint CLI run.
+    /// once per call. Only for a process that is one lint run, such as one
+    /// Oxlint CLI run: the view lives until the process exits, and while it
+    /// lives every type resolution in the process, compiles included, treats
+    /// the files it read as unchanged.
     pub run_scoped_type_sources: Option<bool>,
 }
 

@@ -99,7 +99,7 @@ export interface PatinaBinding {
       attributeHyphenationIgnoreTags?: string[];
       /** Full CLI-compatible per-rule option map. */
       ruleOptionsJson?: string;
-      /** Read imported type sources once per process, for one run whose files don't change. */
+      /** Read imported type sources once per process, for a process that is one lint run. */
       runScopedTypeSources?: boolean;
     },
   ): PatinaLintResult;

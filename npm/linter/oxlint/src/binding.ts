@@ -1,6 +1,3 @@
-import { createRequire } from "node:module";
-import path from "node:path";
-
 import type {
   PatinaLintResult,
   PatinaRuleMeta,
@@ -8,6 +5,7 @@ import type {
   PatinaSettings,
 } from "./model.js";
 import { loadBinding } from "./native.js";
+import { ONE_SHOT_OXLINT_RUN, packageResolution } from "./run-scope.js";
 import { getActivePreset } from "./settings.js";
 
 const VUE_ROUTER_COMPONENTS = ["RouterLink", "RouterView"] as const;
@@ -32,8 +30,8 @@ export function lintPatina(
     typeAware: settings.typeAware,
     corsaPath: settings.corsaPath,
     ruleOptionsJson: cliRuleOptions ? JSON.stringify(cliRuleOptions) : undefined,
-    // One Oxlint CLI run reads each imported type source once; an editor session keeps reading fresh ones.
-    runScopedTypeSources: !process.argv.includes("--lsp"),
+    // One Oxlint CLI run reads each imported type source once; every other host keeps reading fresh ones.
+    runScopedTypeSources: ONE_SHOT_OXLINT_RUN,
     ...directRuleOptions,
   });
 }
@@ -84,23 +82,7 @@ export function withHostGlobals(
   };
 }
 
-// Resolution walks the directories above a file, which every file of a directory shares.
-const vueRouterResolvableByDirectory = new Map<string, boolean>();
-
-function isVueRouterResolvableFrom(filename: string): boolean {
-  const directory = path.dirname(path.resolve(filename));
-  let resolvable = vueRouterResolvableByDirectory.get(directory);
-  if (resolvable === undefined) {
-    try {
-      createRequire(path.join(directory, "index.js")).resolve("vue-router");
-      resolvable = true;
-    } catch {
-      resolvable = false;
-    }
-    vueRouterResolvableByDirectory.set(directory, resolvable);
-  }
-  return resolvable;
-}
+const isVueRouterResolvableFrom = packageResolution("vue-router");
 
 export function getPatinaRules(): PatinaRuleMeta[] {
   return loadBinding().getPatinaRules();

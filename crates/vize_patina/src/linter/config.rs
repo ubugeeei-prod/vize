@@ -456,7 +456,9 @@ impl TypeSources {
 }
 
 /// One run's disk view for imported macro types, for the linters of that run
-/// to share. Only for hosts whose sources do not change during the run.
+/// to share. While it lives it holds the process-wide type-resolution batch
+/// open, so it is only for hosts whose sources do not change while it lives:
+/// one kept in a `static` needs a process that ends with its run.
 pub struct SharedTypeSources(super::run_type_sources::RunTypeSources);
 
 impl SharedTypeSources {
