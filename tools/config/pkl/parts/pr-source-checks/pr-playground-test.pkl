@@ -70,7 +70,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

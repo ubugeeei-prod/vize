@@ -31,6 +31,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }

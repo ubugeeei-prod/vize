@@ -7,7 +7,7 @@ runs:
   steps:
     - name: Setup Vite+ and Node.js
       uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-      with: { node-version-file: "package.json", cache: true, run-install: false }
+      with: { version: 1.8.0, node-version-file: "package.json", cache: true, run-install: false }
     - uses: ./.github/actions/setup-rust-script
     - name: Install package build dependencies
       shell: bash

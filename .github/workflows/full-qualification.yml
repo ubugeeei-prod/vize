@@ -57,6 +57,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: false
@@ -127,7 +128,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
+        with:
+          { version: 1.8.0, node-version-file: "package.json", cache: false, run-install: false }
       - name: Require every full JS partition to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --full-js-packages
@@ -152,7 +154,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: package.json, cache: true, run-install: true }
+        with: { version: 1.8.0, node-version-file: package.json, cache: true, run-install: true }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: nextest-ci
@@ -270,6 +272,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: true
@@ -298,6 +301,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: true
@@ -328,6 +332,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: true
@@ -392,6 +397,7 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: false
@@ -463,6 +469,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: false

@@ -25,7 +25,7 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
   assert.deepEqual(parsedJob?.strategy?.matrix?.["node-version"], ["22", "24"]);
   assert.doesNotMatch(job, /\.node-version\.ci/);
   assert.deepEqual(setupStep?.with, {
-    version: "latest",
+    version: "1.8.0",
     "node-version": "${{ matrix.node-version }}",
     cache: true,
     "cache-save": false,

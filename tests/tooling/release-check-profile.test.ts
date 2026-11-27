@@ -15,6 +15,7 @@ import {
   checkWorkflowJobSources,
   readRepoFile,
   restorePinnedWildAction,
+  restoreVpVersionPin,
 } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; run?: string; if?: string; env?: object };
@@ -139,6 +140,7 @@ test("parallel Rust jobs preserve setup and apply the reviewed Clippy and TS-24 
     assert.ok(currentTask > 0, `${id} is missing its retained task`);
     const currentSetup = structuredClone(jobs[id].steps.slice(0, currentTask));
     assert.equal(restorePinnedWildAction(currentSetup), 1, `${id} recovery adapter`);
+    assert.equal(restoreVpVersionPin(currentSetup), 1, `${id} Vite+ pin`);
     const expectedSetup =
       id === "rust-clippy-portability"
         ? setup.filter((step) => step.uses !== "./.github/actions/setup-rust-script")

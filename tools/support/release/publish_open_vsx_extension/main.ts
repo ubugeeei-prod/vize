@@ -84,6 +84,9 @@ interface ReadOnlyRetry {
   delaySeconds: number;
 }
 
+/** The exact ovsx that publishes, so every release runs the same publisher. */
+export const ovsxPackage = "ovsx@1.4.0";
+
 /** Runs one ovsx write, retrying with doubling delays while Open VSX is read-only. */
 async function ovsxWrite(
   vpBin: string,
@@ -92,7 +95,7 @@ async function ovsxWrite(
 ): Promise<CollectedOutput> {
   let delay = retry.delaySeconds;
   for (let attempt = 1; ; attempt++) {
-    const output = await collectOutput(vpBin, ["dlx", "-p", "ovsx@^1.0.0", "ovsx", ...args]);
+    const output = await collectOutput(vpBin, ["dlx", "-p", ovsxPackage, "ovsx", ...args]);
     if (output.status === 0 || !openVsxIsReadOnly(output) || attempt >= retry.attempts) {
       return output;
     }

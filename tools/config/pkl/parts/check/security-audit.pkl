@@ -17,7 +17,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

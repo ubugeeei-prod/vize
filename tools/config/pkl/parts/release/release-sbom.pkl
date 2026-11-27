@@ -1,0 +1,113 @@
+import "../../../../ci/lib/Actions.pkl" as ci
+
+// The SBOMs describe the tag's checkout and the files the release attaches.
+// They are generated here, with read access only, and the release job signs
+// and attaches them.
+name = "Generate release SBOMs"
+needs = List("version", "tag", "publish-npm", "build-editor-platforms", "publication-quota")
+`if` = "${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 15
+permissions {
+  actions = "read"
+  contents = "read"
+}
+env {
+  RELEASE_TAG = "${{ needs.version.outputs.tag }}"
+  RELEASE_SHA = "${{ needs.version.outputs.sha }}"
+  // A failed platform build releases without its files rather than blocking.
+  EDITOR_PLATFORMS = "${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}"
+}
+steps = new Listing {
+  ci.checkoutAt("${{ needs.version.outputs.tag }}")
+  new Dynamic {
+    `if` = "inputs.npm_resume_run == ''"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      pattern = "cli-*"
+      path = "cli-artifacts"
+      `merge-multiple` = true
+    }
+  }
+  new Dynamic {
+    `if` = "inputs.npm_resume_run != ''"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      pattern = "cli-*"
+      path = "cli-artifacts"
+      `merge-multiple` = true
+      `run-id` = "${{ inputs.npm_resume_run }}"
+      `github-token` = "${{ github.token }}"
+      repository = "${{ github.repository }}"
+    }
+  }
+  new Dynamic {
+    `if` = "inputs.npm_resume_run == ''"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      name = "editor-extensions"
+      path = "editor-extension-artifacts"
+    }
+  }
+  new Dynamic {
+    `if` = "inputs.npm_resume_run != ''"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      name = "editor-extensions"
+      path = "editor-extension-artifacts"
+      `run-id` = "${{ inputs.npm_resume_run }}"
+      `github-token` = "${{ github.token }}"
+      repository = "${{ github.repository }}"
+    }
+  }
+  new Dynamic {
+    `if` = "inputs.npm_resume_run == '' && env.EDITOR_PLATFORMS == '1'"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      pattern = "editor-extension-platform-*"
+      path = "editor-extension-artifacts/platform"
+      `merge-multiple` = true
+    }
+  }
+  new Dynamic {
+    `if` = "inputs.npm_resume_run != '' && env.EDITOR_PLATFORMS == '1'"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      pattern = "editor-extension-platform-*"
+      path = "editor-extension-artifacts/platform"
+      `merge-multiple` = true
+      `run-id` = "${{ inputs.npm_resume_run }}"
+      `github-token` = "${{ github.token }}"
+      repository = "${{ github.repository }}"
+    }
+  }
+  new Dynamic {
+    uses = "anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a"  // v0.17.8
+    with {
+      `artifact-name` = "vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json"
+      format = "cyclonedx-json"
+      `output-file` = "vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json"
+      `upload-artifact` = false
+    }
+  }
+  new Dynamic {
+    uses = "anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a"  // v0.17.8
+    with {
+      `artifact-name` = "vize-${{ needs.version.outputs.tag }}-spdx.sbom.json"
+      format = "spdx-json"
+      `output-file` = "vize-${{ needs.version.outputs.tag }}-spdx.sbom.json"
+      `upload-artifact` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "release-sbom"
+      path = """
+      vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
+      vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
+      """
+      `if-no-files-found` = "error"
+    }
+  }
+}
