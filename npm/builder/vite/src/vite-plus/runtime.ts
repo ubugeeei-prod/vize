@@ -15,6 +15,7 @@ import {
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export function resolveVitePlus() {
   const require = createRequire(path.resolve("package.json"));
@@ -214,11 +215,13 @@ export function availableVueRules(): Set<string> {
   try {
     // A standalone project prevents recursive loading of defineConfig while
     // asking the installed CLI for its public rule catalog.
-    // An explicit operand prevents Vite+ from enumerating the workspace before
-    // forwarding --rules. The owned manifest exists even in a gitignored cache.
+    // Vite+ may select lintable inputs before forwarding --rules. This module
+    // is an existing JS/TS input in both source and published packages; JSON
+    // manifests are not lintable in every supported CLI. Ignore rules must
+    // not exclude the installed module's node_modules directory.
     const result = spawnSync(
       process.execPath,
-      [binary, "lint", "--rules", "--format=json", "package.json"],
+      [binary, "lint", "--rules", "--format=json", "--no-ignore", fileURLToPath(import.meta.url)],
       {
         cwd: directory,
         encoding: "utf8",

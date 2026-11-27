@@ -161,7 +161,7 @@ void test("the installed Vite+ returns its rule catalog from a gitignored cache"
   process.env.XDG_CACHE_HOME = path.join(owner, "ordinary-cache");
   resetAvailableVueRulesForTests();
   const expected = [...availableVueRules()].sort();
-  assert.ok(expected.includes("component-definition-name-casing"));
+  assert.ok(expected.includes("valid-define-props"));
 
   process.env.XDG_CACHE_HOME = path.join(project, ".cache");
   resetAvailableVueRulesForTests();
