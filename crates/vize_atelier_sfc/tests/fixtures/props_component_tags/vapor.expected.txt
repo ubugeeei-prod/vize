@@ -1,0 +1,34 @@
+import { defineVaporComponent as _defineVaporComponent } from 'vue'
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from 'vue';
+
+const t0 = _template("<div></div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n2 = t0()
+  const _component_my_icon = $props.myIcon
+  _setInsertionState(n2)
+  const n0 = _createComponentWithFallback(_component_my_icon, null, null, false)
+  const _component_Icon = _resolveComponent("Icon")
+  _setInsertionState(n2, 1)
+  const n1 = _createComponentWithFallback(_component_Icon, null, null, false)
+  return n2
+}
+const __vaporRender = render
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'Layout',
+  props: {
+    myIcon: { type: null, required: true },
+    icon: { type: null, required: true }
+  },
+  render: __vaporRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = {  }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

@@ -54,11 +54,10 @@ fn assert_both_lanes(source: &str, options: &DomCompilerOptions, render: &str, p
             "{lane} inline={}: {source}",
             options.inline
         );
-        assert!(
-            result.preamble.contains(preamble),
-            "{lane} inline={}: {source}: {}",
-            options.inline,
-            result.preamble
+        assert_eq!(
+            result.preamble, preamble,
+            "{lane} inline={}: {source}",
+            options.inline
         );
     }
     assert_eq!(selected.code, legacy.code, "{source}");
@@ -85,7 +84,12 @@ fn a_prop_tag_reads_the_props_object_through_unref() {
             r#"return (_openBlock(), _createBlock(_unref($props["myIcon"]).Item))"#,
         ),
     ] {
-        assert_both_lanes(source, &options(inline, &props), render, "unref as _unref");
+        assert_both_lanes(
+            source,
+            &options(inline, &props),
+            render,
+            "import { openBlock as _openBlock, createBlock as _createBlock, unref as _unref } from \"vue\"\n",
+        );
     }
 }
 
@@ -101,7 +105,7 @@ fn a_setup_binding_still_wins_over_a_prop_spelling() {
         "<my-icon />",
         &options(true, &entries),
         "return (_openBlock(), _createBlock(MyIcon))",
-        "createBlock as _createBlock",
+        "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
     );
 }
 
@@ -116,7 +120,7 @@ fn a_renamed_props_destructure_tag_resolves_as_an_asset() {
             "<Icon />",
             &options(inline, &entries),
             "return (_openBlock(), _createBlock(_component_Icon))",
-            "resolveComponent as _resolveComponent",
+            "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
         );
     }
 }

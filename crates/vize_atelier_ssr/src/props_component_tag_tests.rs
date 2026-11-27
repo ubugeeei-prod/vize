@@ -79,7 +79,12 @@ fn a_prop_tag_reads_the_props_object_through_unref() {
     ] {
         let (code, preamble) = compile(source, &options(inline, &props));
         assert_eq!(code, push, "inline={inline}: {source}");
-        assert!(preamble.contains("unref as _unref"), "{preamble}");
+        assert_eq!(
+            preamble,
+            "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\n\
+             import { unref as _unref } from \"vue\"\n",
+            "inline={inline}: {source}"
+        );
     }
 }
 
@@ -108,6 +113,11 @@ fn a_renamed_props_destructure_tag_resolves_as_an_asset() {
             code, r#"_push(_ssrRenderComponent(_resolveComponent("Icon"), _attrs, null, _parent))"#,
             "inline={inline}"
         );
-        assert!(!preamble.contains("_unref"), "{preamble}");
+        assert_eq!(
+            preamble,
+            "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\n\
+             import { resolveComponent as _resolveComponent } from \"vue\"\n",
+            "inline={inline}"
+        );
     }
 }

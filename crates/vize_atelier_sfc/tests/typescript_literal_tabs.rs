@@ -43,38 +43,39 @@ fn compile(ssr: bool) -> String {
     result.code.as_str().to_owned()
 }
 
-/// The authored literals and comment, each holding a raw tab.
-const LITERALS: &[&str] = &[
-    "const tab = \"\t\";",
-    "const raw = \"a\tb\";",
-    "const tpl = `x\ty\n\tz`;",
-    "const re = /\t/;",
-    "/* keep\ta comment tab */",
-    "  return `\n\t${tab}`;",
-];
-
-#[test]
-fn the_ssr_module_matches_its_pinned_reference() {
-    let code = compile(true);
-    let path = fixture("module.expected.txt");
+/// Compare `code` with the pinned module at `path`, or rewrite it under
+/// `VIZE_BLESS_TYPESCRIPT_LITERAL_TABS`.
+fn assert_pinned(code: &str, path: std::path::PathBuf) {
     if std::env::var_os("VIZE_BLESS_TYPESCRIPT_LITERAL_TABS").is_some() {
-        std::fs::write(&path, &code).expect("bless module");
+        std::fs::create_dir_all(path.parent().expect("fixture directory")).expect("directory");
+        std::fs::write(&path, code).expect("bless module");
         return;
     }
     let expected = std::fs::read_to_string(&path).expect("pinned module");
-    assert_eq!(code, expected);
+    assert_eq!(code, expected, "{}", path.display());
+}
+
+#[test]
+fn the_ssr_module_matches_its_pinned_reference() {
+    assert_pinned(&compile(true), fixture("module.expected.txt"));
+}
+
+/// The DOM module, pinned beside this test, holds the same literals.
+#[test]
+fn the_dom_module_matches_its_pinned_module() {
+    assert_pinned(
+        &compile(false),
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/typescript_literal_tabs/dom.expected.txt"),
+    );
 }
 
 #[test]
 fn every_lane_keeps_the_authored_tabs() {
     for ssr in [false, true] {
-        let code = compile(ssr);
-        for literal in LITERALS {
-            assert!(code.contains(literal), "ssr={ssr}: {literal:?} in\n{code}");
-        }
         // Seven tabs are authored inside literals and the comment; the
         // indentation the erasure prints adds none.
-        assert_eq!(code.matches('\t').count(), 7, "ssr={ssr}:\n{code}");
+        assert_eq!(compile(ssr).matches('\t').count(), 7, "ssr={ssr}");
     }
 }
 
