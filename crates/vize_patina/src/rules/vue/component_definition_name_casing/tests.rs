@@ -244,6 +244,25 @@ fn unicode_whitespace_does_not_hide_component_names() {
 }
 
 #[test]
+fn escaped_keys_computed_key_trivia_and_line_comments_reach_the_scanner() {
+    for script in [
+        r"export default { n\u0061me: 'bad_name' }",
+        r"export default { 'na\u006de': 'bad_name' }",
+        r"export default { ['na\x6de']: 'bad_name' }",
+        "export default { ['name' ]: 'bad_name' }",
+        "export default { ['name' /* key */ ]: 'bad_name' }",
+        r"app.\u0063omponent('bad_name', {})",
+        "app. // registration\ncomponent('bad_name', {})",
+        "app. // registration\r\ncomponent('bad_name', {})",
+        "app. // registration\u{2028}component('bad_name', {})",
+    ] {
+        assert!(may_name_component(script.as_bytes()), "{script}");
+        let source = format!("<script>{script}</script>");
+        assert_eq!(pascal(&source), ["'bad_name'"], "{script}");
+    }
+}
+
+#[test]
 fn wrapped_typescript_default_objects_keep_definition_names() {
     for expression in [
         "{ name: 'bad_name' } as ComponentOptions",

@@ -204,20 +204,31 @@ impl Rule for ComponentDefinitionNameCasing {
 /// a `name` key followed by `:` (quoted or computed keys included), or a
 /// `component` member after a `.`. Comments may sit where whitespace may.
 fn may_name_component(source: &[u8]) -> bool {
+    // Both identifiers and string keys can encode any checked character.
+    // Leave decoding (including string line continuations) to the parser.
+    if memchr::memchr(b'\\', source).is_some() {
+        return true;
+    }
+    let mut has_line_comment = None;
     memchr::memmem::find_iter(source, b"name").any(|at| is_name_key_end(source, at + "name".len()))
-        || memchr::memmem::find_iter(source, b"component").any(|at| is_member_name(source, at))
+        || memchr::memmem::find_iter(source, b"component").any(|at| {
+            is_member_name(source, at)
+                // A reverse byte scan cannot distinguish a line comment's
+                // text from code. Admit it without rescanning for every name.
+                || *has_line_comment
+                    .get_or_insert_with(|| memchr::memmem::find(source, b"//").is_some())
+        })
 }
 
 fn is_name_key_end(source: &[u8], mut at: usize) -> bool {
     if matches!(source.get(at), Some(b'\'' | b'"' | b'`')) {
         at += 1;
     }
-    if source.get(at) == Some(&b']') {
-        at += 1;
-    }
     loop {
         match source.get(at) {
             Some(byte) if byte.is_ascii_whitespace() => at += 1,
+            // A computed string key can have trivia before its closing bracket.
+            Some(b']') => at += 1,
             // A non-ASCII boundary may be JavaScript whitespace. The AST
             // remains authoritative, so conservatively admit it.
             Some(byte) if !byte.is_ascii() => return true,
