@@ -407,6 +407,12 @@ mod tests {
         assert!(is_stale_session_directory("session-9999999999-0"));
         assert!(!is_stale_session_directory("session-not-a-pid-0"));
         assert!(!is_stale_session_directory("cache"));
+        assert!(is_stale_session_directory("session-0-0"));
+        // The liveness probe: this process is running, and pid 1 is running
+        // even when it belongs to another user (`EPERM`).
+        let own = cstr!("session-{}-0", std::process::id());
+        assert!(!is_stale_session_directory(own.as_str()));
+        assert!(!is_stale_session_directory("session-1-0"));
     }
 
     fn write_file(path: &Path) {

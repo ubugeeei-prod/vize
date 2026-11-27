@@ -68,10 +68,15 @@ fn process_is_running(pid: u64) -> bool {
         return false;
     }
 
-    // SAFETY: signal 0 sends nothing; `kill` only checks that the process
-    // exists. The pid was range-checked into `pid_t` above.
-    let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
-    result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+    // `kill(pid, 0)` sends nothing and only checks that the process exists.
+    // `EPERM` means it exists but belongs to another user.
+    let Some(pid) = rustix::process::Pid::from_raw(pid as i32) else {
+        return false;
+    };
+    match rustix::process::test_kill_process(pid) {
+        Ok(()) => true,
+        Err(error) => error == rustix::io::Errno::PERM,
+    }
 }
 
 #[cfg(not(unix))]
