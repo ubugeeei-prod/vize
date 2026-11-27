@@ -51,6 +51,7 @@ interface ExportEntry {
 
 interface BundlerPluginManifest {
   dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
   engines?: Record<string, string>;
   exports?: Record<string, ExportEntry | string>;
   name?: string;
