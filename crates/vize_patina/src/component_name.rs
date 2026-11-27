@@ -42,5 +42,27 @@ pub(crate) fn is_nuxt_route_file(filename: &str) -> bool {
         .any(|segment| segment == "pages")
 }
 
+/// The component name a `.vue` filename defines: the basename without `.vue`
+/// and without Nuxt's mode suffixes.
+///
+/// Nuxt reads `.client`, `.server`, `.global` and `.island` as rendering
+/// modes, not as part of the name: `ClientBox.client.vue` registers
+/// `ClientBox`. This strips them the way Nuxt's component scanner does (one
+/// optional `.client`/`.server` followed by any `.global`/`.island`). Any other
+/// dotted stem, such as `page.block`, is kept whole so it stays reported.
+pub(crate) fn definition_name_stem(filename: &str) -> &str {
+    let basename = filename.rsplit(['/', '\\']).next().unwrap_or(filename);
+    let mut name = basename.trim_end_matches(".vue");
+    while let Some(rest) = name
+        .strip_suffix(".global")
+        .or_else(|| name.strip_suffix(".island"))
+    {
+        name = rest;
+    }
+    name.strip_suffix(".client")
+        .or_else(|| name.strip_suffix(".server"))
+        .unwrap_or(name)
+}
+
 /// Common exception filenames that don't need PascalCase
 pub(crate) const EXCEPTION_NAMES: &[&str] = &["App"];

@@ -9,7 +9,7 @@
   },
   "linter/current-api/ref-call-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__ref-call-control.snap",
-    "sha256": "812da01796e6a91b28459f73451ca66d4f6327acb82a5e7e4a22dbd78bb429d8"
+    "sha256": "b2cdad3016b35594ce55184e09f1ce5d0d46a76b80f9cd22b1088e51f92ddf00"
   },
   "linter/current-api/v-for-no-separator": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__v-for-no-separator.snap",

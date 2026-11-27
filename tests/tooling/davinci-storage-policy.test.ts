@@ -115,7 +115,7 @@ test("stage storage has no opaque imports or unreviewed std paths", () => {
   for (const issue of foundationBridges.issues) {
     assert.match(
       issue,
-      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|pool(?:\/tests)?|profiler\/core|telegraph)\.rs: forbidden std storage (?:path|import): /u,
+      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|pool(?:\/tests)?|profiler\/core|string_builder\/text_buf|telegraph)\.rs: forbidden std storage (?:path|import): /u,
     );
   }
   const projectSources = Object.fromEntries(

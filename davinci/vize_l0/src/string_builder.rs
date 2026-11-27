@@ -1,7 +1,12 @@
 //! String builder utilities for efficient string construction.
 //!
 //! Provides macros for building strings without excessive allocations,
-//! avoiding the overhead of `format!` by using direct `push_str` operations.
+//! avoiding the overhead of `format!` by using direct `push_str` operations,
+//! and [`TextBuf`], the growing buffer that code builders append to.
+
+mod text_buf;
+
+pub use text_buf::TextBuf;
 
 /// Push multiple items to a string efficiently.
 ///

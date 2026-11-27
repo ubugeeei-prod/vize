@@ -1,3 +1,4 @@
+import { parseLocation } from "./location.ts";
 import type {
   CompiledRoute,
   RouteDefinition,
@@ -15,6 +16,7 @@ const ROUTER_ERROR = {
   duplicateName: "VIZE_ROUTER_DUPLICATE_NAME",
   duplicatePath: "VIZE_ROUTER_DUPLICATE_PATH",
   invalidComponent: "VIZE_ROUTER_COMPONENT_NOT_VUE",
+  invalidParam: "VIZE_ROUTER_INVALID_PARAM",
   invalidPath: "VIZE_ROUTER_INVALID_PATH",
   missingParam: "VIZE_ROUTER_MISSING_PARAM",
   unknownRoute: "VIZE_ROUTER_UNKNOWN_ROUTE",
@@ -49,16 +51,13 @@ export function createRouterMatcher<const Routes extends readonly RouteDefinitio
   return {
     routes,
     match(input) {
-      const url = toUrl(input);
+      const url = parseLocation(input);
+      if (url === undefined) return undefined;
       for (const candidate of compiled) {
         const matched = candidate.pattern.exec(url.pathname);
         if (!matched) continue;
-        const params = Object.fromEntries(
-          candidate.params.flatMap((name, index) => {
-            const value = matched[index + 1];
-            return value == null ? [] : [[name, decodeURIComponent(value)]];
-          }),
-        );
+        const params = decodeParams(candidate.params, matched);
+        if (params === undefined) return undefined;
         return {
           route: candidate.route,
           name: candidate.route.name,
@@ -248,6 +247,24 @@ function compilePath(pathPattern: string): Pick<CompiledRoute, "params" | "patte
   return { pattern: new RegExp(`^${source}$`), params };
 }
 
+/** Decode captured params, or return undefined when one is not valid percent-encoding. */
+function decodeParams(
+  names: readonly string[],
+  matched: RegExpExecArray,
+): Record<string, string> | undefined {
+  try {
+    return Object.fromEntries(
+      names.flatMap((name, index) => {
+        const value = matched[index + 1];
+        return value == null ? [] : [[name, decodeURIComponent(value)]];
+      }),
+    );
+  } catch (error) {
+    if (error instanceof URIError) return undefined;
+    throw error;
+  }
+}
+
 function buildPath(pathPattern: string, params: RouteParams): string {
   if (pathPattern === "/") return "/";
   const path = pathPattern
@@ -258,21 +275,31 @@ function buildPath(pathPattern: string, params: RouteParams): string {
       const optional = segment.endsWith("?");
       const name = segment.slice(segment.startsWith(":") ? 1 : 1, optional ? -1 : undefined);
       const value = params[name];
-      if (value == null) {
+      const segments =
+        value == null ? [] : segment.startsWith("*") ? catchAllSegments(value) : [value];
+      // An empty value cannot fill a segment, and as the first one it would
+      // make the path start with `//`.
+      if (!segments[0]) {
         if (optional) return [];
         throw new Error(`[${ROUTER_ERROR.missingParam}] Missing route param ${name}`);
       }
-      const encoded = segment.startsWith("*")
-        ? value.split("/").map(encodeURIComponent).join("/")
-        : encodeURIComponent(value);
-      return [encoded];
+      // A dot segment is removed when the path is parsed, which would name another route.
+      if (segments.some((item) => item === "." || item === "..")) {
+        throw new Error(
+          `[${ROUTER_ERROR.invalidParam}] Route param ${name} cannot contain a "." or ".." segment`,
+        );
+      }
+      return [segments.map(encodeURIComponent).join("/")];
     })
     .join("/");
   return `/${path}`;
 }
 
-function toUrl(input: string | URL): URL {
-  return input instanceof URL ? input : new URL(input, "https://vize.local");
+/** Split a catch-all value into segments, dropping the empty ones a leading `/` produces. */
+function catchAllSegments(value: string): string[] {
+  const segments = value.split("/");
+  const first = segments.findIndex((segment) => segment !== "");
+  return first === -1 ? [] : segments.slice(first);
 }
 
 function parseQuery(searchParams: URLSearchParams): RouteQuery {

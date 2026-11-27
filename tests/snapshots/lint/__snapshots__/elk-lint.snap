@@ -1300,21 +1300,10 @@
         "endLine": 10,
         "endColumn": 35,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
-      },
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'NotificationEnablePushNotification.client' should be PascalCase or kebab-case",
-        "line": 21,
-        "column": 11,
-        "endLine": 21,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/notification/NotificationGroupedFollow.vue",
@@ -1383,17 +1372,6 @@
     "file": "app/components/notification/NotificationPreferences.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'NotificationPreferences.client' should be PascalCase or kebab-case",
-        "line": 114,
-        "column": 11,
-        "endLine": 114,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "a11y/no-refer-to-non-existent-id",
         "ruleDocsPath": "docs/content/rules/reference/a11y-no-refer-to-non-existent-id.md",
         "severity": 1,
@@ -1406,7 +1384,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/notification/NotificationSubscribePushNotificationError.vue",
@@ -1547,21 +1525,9 @@
   },
   {
     "file": "app/components/publish/PublishEmojiPicker.client.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'PublishEmojiPicker.client' should be PascalCase or kebab-case",
-        "line": 57,
-        "column": 11,
-        "endLine": 57,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/publish/PublishLanguagePicker.vue",
@@ -1941,17 +1907,6 @@
     "file": "app/components/publish/PublishWidgetFull.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'PublishWidgetFull.client' should be PascalCase or kebab-case",
-        "line": 41,
-        "column": 11,
-        "endLine": 41,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
@@ -1964,7 +1919,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/publish/PublishWidgetList.vue",
@@ -1987,17 +1942,6 @@
   {
     "file": "app/components/pwa/PwaBadge.client.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaBadge.client' should be PascalCase or kebab-case",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
@@ -2022,22 +1966,11 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/pwa/PwaInstallPrompt.client.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaInstallPrompt.client' should be PascalCase or kebab-case",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
@@ -2051,25 +1984,13 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/pwa/PwaPrompt.client.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaPrompt.client' should be PascalCase or kebab-case",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/report/ReportModal.vue",

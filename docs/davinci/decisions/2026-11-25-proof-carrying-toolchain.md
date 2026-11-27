@@ -30,7 +30,7 @@ weakest status among its laws.
 | The L3 schedule contract and the C-23 checker are exact                    | proved (Creusot, 20 rows, programs of every size)                                                                            |
 | Spans, ranges, UTF-16 columns and VLQ are correct                          | Spans, ranges, mappings: proved (Creusot, every `u32`/`i32`). UTF-16 columns, VLQ, `to_generated`: `kani`, ports in progress |
 | Incremental updates equal recomputation                                    | `kani` with fixed tree shapes (L3 reference machine)                                                                         |
-| Every product `unsafe` block is sound                                      | 184 sites inventoried. 14 are model-checked or proved. The rest are covered by fuzzing, Miri or tests, or are FFI            |
+| Every product `unsafe` block is sound                                      | 128 sites inventoried. 16 are model-checked or proved. The rest are covered by fuzzing, Miri or tests, or are FFI            |
 | Lossless L1 render equals source                                           | owed                                                                                                                         |
 | The formatter is idempotent and preserves meaning                          | owed                                                                                                                         |
 

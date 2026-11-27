@@ -81,6 +81,45 @@ void test("rejects untrusted missing, extra, and invalid parameters before visit
   assert.equal(visits, 0);
 });
 
+void test("a resolved path never starts with two slashes or holds a dot segment", () => {
+  const rooted = defineApplicationMarquette({
+    application: "navigation-rest-fixture",
+    targets: ["native"],
+    environments: [{ id: "device", target: "native", consumer: "client", runtime: "native" }],
+    routes: [
+      { id: "any", path: "/*path", environment: "device", rendering: "native" },
+      { id: "item", path: "/items/:itemId", environment: "device", rendering: "native" },
+    ],
+  } as const);
+  let visits = 0;
+  const navigator = createMarquetteNavigator(rooted, (target) => {
+    visits += 1;
+    return target.path;
+  });
+
+  assert.equal(navigator.navigate("any", { path: "/other.example/start" }), "/other.example/start");
+  assert.equal(navigator.navigate("any", { path: "//other.example//a" }), "/other.example//a");
+  assert.equal(navigator.navigate("any", { path: "guide/.../start" }), "/guide/.../start");
+  assert.equal(navigator.navigate("item", { itemId: "..." }), "/items/...");
+  assert.equal(visits, 4);
+
+  for (const path of ["/", "//", "..", "../items/1", "guide/./start", "guide/.."]) {
+    assert.throws(
+      () => navigator.navigate("any", { path }),
+      new Error('Invalid navigation parameter "path" for route "any".'),
+      path,
+    );
+  }
+  for (const itemId of [".", ".."]) {
+    assert.throws(
+      () => navigator.navigate("item", { itemId }),
+      new Error('Invalid navigation parameter "itemId" for route "item".'),
+      itemId,
+    );
+  }
+  assert.equal(visits, 4);
+});
+
 const photoParameters: NavigationParameters<typeof marquette, "photo"> = {
   userId: "user",
   photoId: 1,

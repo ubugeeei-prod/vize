@@ -9,7 +9,7 @@ mod scanner;
 pub use scanner::find_matching_paren;
 use scanner::find_next_v_bind;
 
-use vize_carton::{Allocator, String, ToCompactString, Vec as ArenaVec};
+use vize_carton::{Allocator, String, StringBuilder, ToCompactString};
 
 /// One replacement actually emitted by the shared v-bind transform.
 /// Both ranges count UTF-8 bytes. Replacement bytes have no copied origin.
@@ -60,28 +60,27 @@ pub fn extract_and_transform_v_bind_with_edits<'a>(
     production_filename: Option<&str>,
     mut record: impl FnMut(CssVBindEdit),
 ) -> (&'a str, Vec<String>) {
-    let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
-    let mut result = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
+    let mut result = StringBuilder::with_capacity_in(css.len() * 2, bump);
     let mut pos = 0;
 
-    while pos < css_bytes.len() {
+    while pos < css.len() {
         if let Some(actual_pos) = find_next_v_bind(css, pos) {
             let start = actual_pos + 7;
 
             let Some(after_open) = css.get(start..) else {
-                result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
+                result.push_str(css.get(pos..).unwrap_or_default());
                 break;
             };
 
             if let Some(end) = find_matching_paren(after_open) {
                 // Copy everything before v-bind(
-                result.extend_from_slice(css_bytes.get(pos..actual_pos).unwrap_or_default());
+                result.push_str(css.get(pos..actual_pos).unwrap_or_default());
 
                 // Extract expression
                 let Some(expr_str) = after_open.get(..end).map(str::trim) else {
                     pos = start + end + 1;
-                    result.extend_from_slice(css_bytes.get(actual_pos..pos).unwrap_or_default());
+                    result.push_str(css.get(actual_pos..pos).unwrap_or_default());
                     continue;
                 };
                 let expr_str = trim_outer_quotes(expr_str);
@@ -89,16 +88,15 @@ pub fn extract_and_transform_v_bind_with_edits<'a>(
 
                 // Generate CSS custom property reference.
                 let generated_start = result.len();
-                result.extend_from_slice(b"var(--");
+                result.push_str("var(--");
                 if let Some(filename) = production_filename {
-                    result
-                        .extend_from_slice(prod_scoped_v_bind_name(filename, expr_str).as_bytes());
+                    result.push_str(&prod_scoped_v_bind_name(filename, expr_str));
                 } else if let Some(scope_id) = scope_id {
-                    result.extend_from_slice(scoped_v_bind_name(scope_id, expr_str).as_bytes());
+                    result.push_str(&scoped_v_bind_name(scope_id, expr_str));
                 } else {
                     write_v_bind_hash(&mut result, expr_str);
                 }
-                result.push(b')');
+                result.push(')');
 
                 pos = start + end + 1;
                 record(CssVBindEdit {
@@ -106,23 +104,16 @@ pub fn extract_and_transform_v_bind_with_edits<'a>(
                     generated: generated_start..result.len(),
                 });
             } else {
-                result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
+                result.push_str(css.get(pos..).unwrap_or_default());
                 break;
             }
         } else {
-            result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
+            result.push_str(css.get(pos..).unwrap_or_default());
             break;
         }
     }
 
-    // SAFETY: `result` is assembled from byte slices borrowed from `css` plus
-    // ASCII-only delimiters, hashes, and sanitized v-bind suffixes. Every copied
-    // slice boundary comes from `str::find`/byte scans over ASCII tokens, so it
-    // never cuts through a UTF-8 code point. The bump copy keeps the returned
-    // `&str` alive for the caller's arena lifetime while avoiding a second UTF-8
-    // validation pass on this hot CSS transform path.
-    let result_str = unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&result)) };
-    (result_str, vars)
+    (result.into_str(), vars)
 }
 
 /// The expressions [`extract_and_transform_v_bind`] collects, without building
@@ -309,9 +300,9 @@ fn normalize_hash_sum_i32(hash: u32) -> u64 {
 }
 
 /// Write v-bind variable hash to output
-fn write_v_bind_hash(out: &mut ArenaVec<u8>, expr: &str) {
+fn write_v_bind_hash(out: &mut StringBuilder<'_>, expr: &str) {
     if !is_css_var_identifier(expr) {
-        out.extend_from_slice(prod_scoped_v_bind_name("", expr).as_bytes());
+        out.push_str(&prod_scoped_v_bind_name("", expr));
         return;
     }
     let hash: u32 = expr
@@ -320,21 +311,21 @@ fn write_v_bind_hash(out: &mut ArenaVec<u8>, expr: &str) {
 
     // Write hash as hex
     write_hex_u32(out, hash);
-    out.push(b'-');
+    out.push('-');
 
     // Write sanitized expression
-    for b in expr.bytes() {
-        match b {
-            b'.' | b'[' | b']' | b'(' | b')' => out.push(b'_'),
-            _ => out.push(b),
-        }
+    for c in expr.chars() {
+        out.push(match c {
+            '.' | '[' | ']' | '(' | ')' => '_',
+            c => c,
+        });
     }
 }
 
 /// Write u32 as 8-digit hex
-fn write_hex_u32(out: &mut ArenaVec<u8>, val: u32) {
+fn write_hex_u32(out: &mut StringBuilder<'_>, val: u32) {
     for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
-        out.push(hex_digit(((val >> shift) & 0xF) as u8));
+        out.push(char::from(hex_digit(((val >> shift) & 0xF) as u8)));
     }
 }
 

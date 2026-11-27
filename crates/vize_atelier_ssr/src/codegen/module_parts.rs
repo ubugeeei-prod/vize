@@ -1,10 +1,13 @@
-//! Module assembly around the `ssrRender` body: the helper-import preamble
-//! and the `_temp` bindings merged-props elements allocate
-//! (`@vue/compiler-ssr` declares them once at the top of the render body).
+//! Module assembly around the `ssrRender` body: the helper-import preamble,
+//! the resolved directive locals, and the `_temp` bindings merged-props
+//! elements allocate (`@vue/compiler-ssr` declares both once at the top of
+//! the render body).
 
 use super::SsrCodegenContext;
+use super::element::props::quoted_js_string;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
+use vize_l2::op::vue::asset_identifier;
 
 impl SsrCodegenContext<'_> {
     /// A fresh `_tempN` binding, declared at the top of `ssrRender`.
@@ -32,6 +35,37 @@ impl SsrCodegenContext<'_> {
         let declaration = cstr!("  let {names}\n");
         // Links recorded after the body start move with the text they cover.
         self.out.insert_str(self.body_start, &declaration);
+    }
+
+    /// The `_directive_<name>` local for a directive resolved by name. It is
+    /// declared once at the top of `ssrRender`, as Vue declares it; Nuxt's
+    /// directive auto-import rewrites only that declaration.
+    pub(crate) fn resolved_directive(&mut self, name: &str) -> String {
+        if !self
+            .resolved_directives
+            .iter()
+            .any(|resolved| resolved == name)
+        {
+            self.resolved_directives.push(String::from(name));
+        }
+        asset_identifier("directive", name)
+    }
+
+    /// Declare every resolved directive ahead of the CSS-variable prelude and
+    /// the temps: `const _directive_focus = _resolveDirective("focus")`.
+    pub(super) fn declare_directives(&mut self) {
+        if self.resolved_directives.is_empty() {
+            return;
+        }
+        let mut declarations = String::default();
+        for name in &self.resolved_directives {
+            declarations.push_str("  const ");
+            declarations.push_str(&asset_identifier("directive", name));
+            declarations.push_str(" = _resolveDirective(");
+            declarations.push_str(&quoted_js_string(name));
+            declarations.push_str(")\n");
+        }
+        self.out.insert_str(self.assets_start, &declarations);
     }
 
     /// Build the preamble with imports

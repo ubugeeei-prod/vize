@@ -1,4 +1,5 @@
 use oxc_syntax::identifier::is_identifier_part;
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String};
 
 use crate::script::ScriptCompileContext;
@@ -18,7 +19,7 @@ pub(super) struct SetupBindingInputs<'a> {
 /// Emit the render function return statement or setup binding return.
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_render_return(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     template: &TemplateParts<'_>,
     setup_bindings: SetupBindingInputs<'_>,
     is_ts: bool,
@@ -29,53 +30,53 @@ pub(super) fn emit_render_return(
 ) {
     if !template.render_body.is_empty() {
         if is_ts {
-            output.extend_from_slice(b"return (_ctx: any,_cache: any) => {\n");
+            output.push_str("return (_ctx: any,_cache: any) => {\n");
         } else {
-            output.extend_from_slice(b"return (_ctx, _cache) => {\n");
+            output.push_str("return (_ctx, _cache) => {\n");
         }
 
         // Output component/directive resolution statements (preamble)
         for line in template.preamble.lines() {
             if !line.trim().is_empty() {
-                output.extend_from_slice(b"  ");
-                output.extend_from_slice(line.as_bytes());
-                output.push(b'\n');
+                output.push_str("  ");
+                output.push_str(line);
+                output.push('\n');
             }
         }
         if !template.preamble.is_empty() {
-            output.push(b'\n');
+            output.push('\n');
         }
 
         if template.render_is_block {
             for line in template.render_body.lines() {
                 if line.trim().is_empty() {
-                    output.push(b'\n');
+                    output.push('\n');
                     continue;
                 }
 
-                output.extend_from_slice(b"  ");
-                output.extend_from_slice(line.as_bytes());
-                output.push(b'\n');
+                output.push_str("  ");
+                output.push_str(line);
+                output.push('\n');
             }
         } else {
             // Indent the render body properly
             let mut first_line = true;
             for line in template.render_body.lines() {
                 if first_line {
-                    output.extend_from_slice(b"  return ");
-                    output.extend_from_slice(line.as_bytes());
+                    output.push_str("  return ");
+                    output.push_str(line);
                     first_line = false;
                 } else {
-                    output.push(b'\n');
-                    output.extend_from_slice(line.as_bytes());
+                    output.push('\n');
+                    output.push_str(line);
                 }
             }
             if first_line {
-                output.extend_from_slice(b"  return null");
+                output.push_str("  return null");
             }
-            output.push(b'\n');
+            output.push('\n');
         }
-        output.extend_from_slice(b"}\n");
+        output.push_str("}\n");
     } else {
         let setup_bindings = collect_setup_bindings(ctx, setup_bindings, template);
         if is_vapor && !template.render_fn.is_empty() {
@@ -83,60 +84,60 @@ pub(super) fn emit_render_return(
             if needs_template_ref_setter {
                 template_refs::emit_setter(output, &setup_bindings, ctx);
             }
-            output.extend_from_slice(b"const __returned__ = { ");
+            output.push_str("const __returned__ = { ");
             let mut binding_index = 0usize;
             if needs_template_ref_setter {
-                output.extend_from_slice(VAPOR_TEMPLATE_REF_SETTER.as_bytes());
+                output.push_str(VAPOR_TEMPLATE_REF_SETTER);
                 binding_index += 1;
             }
             for name in setup_bindings.iter() {
                 if binding_index > 0 {
-                    output.extend_from_slice(b", ");
+                    output.push_str(", ");
                 }
                 binding_index += 1;
-                output.extend_from_slice(name.as_bytes());
+                output.push_str(name);
             }
-            output.extend_from_slice(b" }\n");
+            output.push_str(" }\n");
             if needs_template_ref_setter {
-                output.extend_from_slice(b";({}).constructor.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+                output.push_str(";({}).constructor.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
             } else {
-                output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+                output.push_str("Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
             }
             if is_prod {
                 // Production does not proxy returned setup bindings. Preserve
                 // ref unwrapping and writes for the separate Vapor render.
-                output.extend_from_slice(b"const __instance = _getCurrentInstance()\n");
-                output.extend_from_slice(b"const __ctx = _proxyRefs(__returned__)\n");
-                output.extend_from_slice(b"if (__instance) __instance.setupState = __ctx\n");
-                output.extend_from_slice(b"return ");
-                output.extend_from_slice(vapor_render_alias.unwrap_or("render").as_bytes());
-                output.extend_from_slice(b"(__ctx, __props, __emit, __attrs, __slots)\n");
+                output.push_str("const __instance = _getCurrentInstance()\n");
+                output.push_str("const __ctx = _proxyRefs(__returned__)\n");
+                output.push_str("if (__instance) __instance.setupState = __ctx\n");
+                output.push_str("return ");
+                output.push_str(vapor_render_alias.unwrap_or("render"));
+                output.push_str("(__ctx, __props, __emit, __attrs, __slots)\n");
             } else {
                 // Development owns the setup-state proxy and render scope so
                 // child-triggered HMR can rerender with the parent's bindings.
-                output.extend_from_slice(b"return __returned__\n");
+                output.push_str("return __returned__\n");
             }
         } else if !setup_bindings.is_empty() {
             if !template.render_fn.is_empty() {
-                output.extend_from_slice(b"const __returned__ = { ");
+                output.push_str("const __returned__ = { ");
             } else {
                 // No template (e.g., Musea art files) -- return setup bindings as an object
                 // so they're accessible for runtime template compilation (compileToFunction).
-                output.extend_from_slice(b"return { ");
+                output.push_str("return { ");
             }
             for (i, name) in setup_bindings.iter().enumerate() {
                 if i > 0 {
-                    output.extend_from_slice(b", ");
+                    output.push_str(", ");
                 }
-                output.extend_from_slice(name.as_bytes());
+                output.push_str(name);
             }
-            output.extend_from_slice(b" }\n");
+            output.push_str(" }\n");
             if !template.render_fn.is_empty() {
-                output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
-                output.extend_from_slice(b"return __returned__\n");
+                output.push_str("Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+                output.push_str("return __returned__\n");
             }
         } else if !template.render_fn.is_empty() {
-            output.extend_from_slice(b"return {}\n");
+            output.push_str("return {}\n");
         }
     }
 }

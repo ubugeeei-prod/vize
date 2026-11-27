@@ -270,7 +270,7 @@ fn original_typed_ref_call_keeps_full_diagnostic_and_actual_original_file_refusa
                 "History.vue",
                 vec![serde_json::json!({
             "rule_name": RULE, "severity": "warning", "message": "Template ref 'text' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).",
-            "start": 64, "end": 98, "help": "Replace with: `const text = useTemplateRef('text')`",
+            "start": 64, "end": 98, "help": "Replace with: `const text = useTemplateRef<HTMLInputElement>('text')`",
             "labels": [{ "message": "declared as a template ref", "start": 64, "end": 98 }], "fix": null })]
             )
         );

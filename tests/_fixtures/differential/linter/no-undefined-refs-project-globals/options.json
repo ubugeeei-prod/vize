@@ -1,0 +1,13 @@
+{
+  "vue/no-undefined-refs": {
+    "globals": [
+      "formatCount",
+      "isDefined",
+      "navigateTo",
+      "resolveComponent",
+      "sharedSum",
+      "shout",
+      "useColor"
+    ]
+  }
+}

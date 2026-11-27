@@ -346,6 +346,7 @@ export function createExtensionSetup(
       "missing-server": "$(warning) Vize",
       ready: "$(check) Vize",
       starting: "$(sync~spin) Vize",
+      untrusted: "$(shield) Vize",
     };
 
     state.statusBarItem.text = statusText[status];
@@ -401,6 +402,7 @@ export function createExtensionSetup(
       "missing-server": "server missing",
       ready: "ready",
       starting: "starting",
+      untrusted: "waiting for workspace trust",
     };
     return labels[status];
   }

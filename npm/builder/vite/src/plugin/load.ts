@@ -27,6 +27,7 @@ import {
   normalizeStyleVirtualId,
 } from "./load-style.ts";
 import { loadCustomBlock } from "./custom-block-load.ts";
+import { isServedFileAllowed } from "./served-files.ts";
 import { getSfcModuleRequest, loadSfcModuleSource } from "./sfc-module.ts";
 
 export { normalizeVueServerRendererImport };
@@ -60,6 +61,7 @@ function findMacroArtifactModule(
   const cache = getEnvironmentCache(state, ssr);
   const extractCss = shouldExtractCssForRequest(state, ssr);
   realPath = classifyVitePluginRequest(realPath).normalizedVuePath;
+  if (!isServedFileAllowed(state, realPath, ssr)) return null;
   let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
 
   if (!compiled && (isHeldByBuild(state, realPath) || fs.existsSync(realPath))) {
@@ -145,6 +147,7 @@ export function loadHook(
         realPath = projectPath;
       }
     }
+    if (!isServedFileAllowed(state, realPath, !!loadOptions?.ssr)) return null;
     const lang = styleRequest.styleLang ?? null;
     const scoped = styleRequest.styleScoped ?? null;
     const fallbackCompiled = getCompiledStyleSource(state, realPath, !!loadOptions?.ssr);

@@ -4,13 +4,37 @@
 //! A deeply repeated run such as thousands of `+` tokens therefore burns parser
 //! time without increasing bracket depth, so the nesting guard needs a separate
 //! budget for the same safety boundary.
+//!
+//! The right-associative operators recurse the same way without a bracket or
+//! a prefix run: each `?:`, `=>`, assignment and `**` parses its right side one
+//! frame deeper. They share one budget for the whole expression.
 
 use super::{MAX_EXPRESSION_NESTING_DEPTH, scan};
 use crate::SmallVec;
 
+/// Right-associative operators accepted in one expression. Authored code
+/// chains a handful; the parser's stack needs thousands to run out.
+const MAX_RIGHT_ASSOCIATIVE_OPERATORS: usize = 256;
+
+/// Whether the `=` at `at` assigns. `==`, `===`, `!=`, `!==`, `<=` and `>=`
+/// compare, and `=>` is counted as an arrow by the caller.
+fn is_assignment_equals(bytes: &[u8], at: usize) -> bool {
+    if bytes.get(at + 1) == Some(&b'=') {
+        return false;
+    }
+    let before = |back: usize| at.checked_sub(back).and_then(|index| bytes.get(index));
+    match before(1) {
+        Some(b'=' | b'!') => false,
+        // `<<=`, `>>=` and `>>>=` assign; a lone `<` or `>` compares.
+        Some(angle @ (b'<' | b'>')) => before(2) == Some(angle),
+        _ => true,
+    }
+}
+
 #[inline(always)]
-pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
+pub(super) fn has_excessive_operator_recursion(content: &str) -> bool {
     let bytes = content.as_bytes();
+    let mut right_associative_operators = 0usize;
     let mut can_start_operand = true;
     // Template expressions nest a few levels; these stacks stay inline.
     let mut delimiters: SmallVec<[u8; 32]> = SmallVec::new();
@@ -136,9 +160,35 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
                 i += 1;
             }
             b',' | b';' | b':' | b'?' | b'=' | b'*' | b'/' | b'%' | b'&' | b'|' | b'^' => {
+                let next = bytes.get(i + 1).copied();
+                let width = match (byte, next) {
+                    // `??` and `?.name` do not recurse; `?.5` is a conditional.
+                    (b'?', Some(b'?')) => 2,
+                    (b'?', Some(b'.'))
+                        if !bytes.get(i + 2).is_some_and(|digit| digit.is_ascii_digit()) =>
+                    {
+                        1
+                    }
+                    (b'?', _) => {
+                        right_associative_operators += 1;
+                        1
+                    }
+                    (b'=', Some(b'>')) | (b'*', Some(b'*')) => {
+                        right_associative_operators += 1;
+                        2
+                    }
+                    (b'=', _) if is_assignment_equals(bytes, i) => {
+                        right_associative_operators += 1;
+                        1
+                    }
+                    _ => 1,
+                };
+                if right_associative_operators > MAX_RIGHT_ASSOCIATIVE_OPERATORS {
+                    return true;
+                }
                 can_start_operand = true;
                 prefix_operator_run = 0;
-                i += 1;
+                i += width;
             }
             _ => {
                 can_start_operand = false;
@@ -157,5 +207,8 @@ fn increment_prefix_operator_run(run: &mut usize) -> bool {
 }
 
 fn is_prefix_keyword(identifier: &[u8]) -> bool {
-    matches!(identifier, b"await" | b"delete" | b"typeof" | b"void")
+    matches!(
+        identifier,
+        b"await" | b"delete" | b"new" | b"typeof" | b"void"
+    )
 }

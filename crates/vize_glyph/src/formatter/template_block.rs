@@ -13,9 +13,10 @@ use super::{
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::template;
+use vize_l0::string_builder::TextBuf;
 
 pub(super) fn write_template_block(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
@@ -46,27 +47,27 @@ pub(super) fn write_template_block(
         opening_tag::write_raw(output, opening_tag);
     } else {
         // Build the opening tag
-        output.extend_from_slice(b"<template");
+        output.push_str("<template");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
             if let Some(lang) = block.lang() {
                 write_attr(output, "lang", Some(lang));
             }
             write_remaining_attrs(output, &block.attrs, &["lang"]);
         }
-        output.push(b'>');
+        output.push('>');
     }
     if authored_markdown {
         // Frontmatter delimiters, code fences and their indentation are all
         // Markdown syntax owned by Ox Content. Until explicit Markdown
         // formatting exists, copying this slice is the only semantics-safe
         // operation, including when the SFC formatter uses another EOL mode.
-        output.extend_from_slice(content.as_bytes());
-        output.extend_from_slice(b"</template>");
+        output.push_str(content);
+        output.push_str("</template>");
         return Ok(());
     }
     // An empty block stays empty on one line, as Prettier prints it.
     if content.trim().is_empty() {
-        output.extend_from_slice(b"</template>");
+        output.push_str("</template>");
         return Ok(());
     }
     if native_html && preserve_whitespace {
@@ -75,13 +76,13 @@ pub(super) fn write_template_block(
         // all bytes between tags and interpolation delimiters with their owner.
         let formatted =
             template::format_template_content_preserving_text(content, options, vue_version)?;
-        output.extend_from_slice(formatted.as_bytes());
-        output.extend_from_slice(b"</template>");
+        output.push_str(&formatted);
+        output.push_str("</template>");
         return Ok(());
     }
-    output.extend_from_slice(options.newline_bytes());
+    output.push_str(options.newline_string());
 
-    let indent = options.indent_bytes();
+    let indent = options.indent_str();
     if let Some(formatted_content) = formatted_content {
         // Native HTML is always indented by one level from the template
         // tag — except inside whitespace-significant regions (`<pre>`,
@@ -90,7 +91,7 @@ pub(super) fn write_template_block(
         let trimmed = formatted_content
             .trim_end_matches('\n')
             .trim_end_matches('\r');
-        template_indent::write_indented_template(output, trimmed, indent, options.newline_bytes());
+        template_indent::write_indented_template(output, trimmed, indent, options.newline_string());
     } else {
         // A preprocessor language owns every byte inside its block. Rebase
         // only the common outer indentation so the SFC stays canonical;
@@ -99,11 +100,11 @@ pub(super) fn write_template_block(
             output,
             content,
             indent,
-            options.newline_bytes(),
+            options.newline_string(),
         );
     }
 
-    output.extend_from_slice(b"</template>");
+    output.push_str("</template>");
 
     Ok(())
 }

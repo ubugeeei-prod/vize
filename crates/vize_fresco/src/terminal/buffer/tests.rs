@@ -85,6 +85,39 @@ fn clipped_ascii_writes_skip_control_graphemes_without_shifting_text() {
 }
 
 #[test]
+fn control_characters_are_never_stored_beside_wide_or_accented_text() {
+    let styled = "\u{1b}[1mbold\u{1b}[0m\u{7}";
+    for (text, expected) in [
+        ("é\u{1b}[2Jz", "é[2Jz"),
+        ("界\u{9b}31m\u{85}", "界31m"),
+        ("é\r\n\u{7f}z", "éz"),
+    ] {
+        for clip_width in [12, 11] {
+            let mut buffer = Buffer::new(12, 1);
+            let clip = Rect::new(0, 0, clip_width, 1);
+            buffer.set_string_clipped(0, 0, text, Style::new(), clip);
+            let stored: compact_str::CompactString = (0..12)
+                .filter_map(|x| buffer.get(x, 0))
+                .filter(|cell| !cell.is_continuation)
+                .map(|cell| cell.symbol.as_str())
+                .collect();
+            assert_eq!(
+                stored.trim_end(),
+                expected,
+                "{text:?} clipped to {clip_width}"
+            );
+        }
+    }
+    let mut buffer = Buffer::new(40, 1);
+    buffer.set_string(0, 0, &["é", styled].concat(), Style::new());
+    assert!((0..40).all(|x| {
+        buffer
+            .get(x, 0)
+            .is_some_and(|cell| !cell.symbol.chars().any(char::is_control))
+    }));
+}
+
+#[test]
 fn narrow_replacements_remove_every_stale_wide_cell() {
     let mut buffer = Buffer::new(4, 1);
     buffer.set_string(0, 0, "界", Style::new());

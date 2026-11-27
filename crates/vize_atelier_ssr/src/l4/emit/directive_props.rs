@@ -27,7 +27,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         let argument = match &directive.argument {
             None => None,
             Some(DynamicName::Static(name)) => Some(quoted_js_string(name)),
-            Some(name) => Some(self.directive_argument(name)?),
+            Some(name) => Some(self.dynamic_key(name)?),
         };
         if let Some(argument) = &argument {
             if value.is_none() {

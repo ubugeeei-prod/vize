@@ -1,3 +1,4 @@
+import { locationPath, parseLocation } from "./location.ts";
 import { createRouterMatcher } from "./runtime.ts";
 import type {
   NamedRouteLocation,
@@ -69,11 +70,18 @@ export function createRouter<const Routes extends readonly RouteDefinition[]>(
       const controller = new AbortController();
       active = controller;
 
-      const initial = resolveLocation(matcher, location);
+      let initial: ResolvedLocation<Routes> | undefined;
+      let unresolved: unknown;
+      try {
+        initial = resolveLocation(matcher, location);
+      } catch (error) {
+        // A named location that cannot form a path is reported like an unmatched one.
+        unresolved = error;
+      }
       if (!initial) {
         const result: NavigationResult<Routes> = {
           status: "error",
-          error: new Error(`No route matches ${locationLabel(location)}`),
+          error: unresolved ?? new Error(`No route matches ${locationLabel(location)}`),
         };
         publish({ ...state, status: "error", pending: undefined, error: result.error });
         return result;
@@ -174,16 +182,18 @@ function resolveLocation<const Routes extends readonly RouteDefinition[]>(
   matcher: Router<Routes>["matcher"],
   location: RouteLocation<Routes>,
 ): ResolvedLocation<Routes> | undefined {
-  const url = isNamedLocation(location)
-    ? matcher.resolve(location.name, location.params, {
-        ...(location.query === undefined ? {} : { query: location.query }),
-        ...(location.hash === undefined ? {} : { hash: location.hash }),
-      })
-    : location instanceof URL
-      ? `${location.pathname}${location.search}${location.hash}`
-      : location;
+  const url = parseLocation(
+    isNamedLocation(location)
+      ? matcher.resolve(location.name, location.params, {
+          ...(location.query === undefined ? {} : { query: location.query }),
+          ...(location.hash === undefined ? {} : { hash: location.hash }),
+        })
+      : location,
+  );
+  if (url === undefined) return undefined;
   const match = matcher.match(url);
-  return match === undefined ? undefined : { match, url };
+  // History receives the parsed form, never the caller's raw string.
+  return match === undefined ? undefined : { match, url: locationPath(url) };
 }
 
 function isNamedLocation<Routes extends readonly RouteDefinition[]>(

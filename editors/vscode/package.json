@@ -442,7 +442,10 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "Vize runs a native language-server binary. In untrusted workspaces it ignores workspace-controlled server paths and skips workspace-local server binaries to prevent code execution from cloned repositories. Enable Workspace Trust to use the full feature set."
+      "description": "The Vize language server evaluates the project's Vite config and runs the project's TypeScript runtime, so it does not start in Restricted Mode. Syntax highlighting and language configuration stay available; diagnostics, completion, navigation, formatting and the other language server features turn on once the workspace is trusted.",
+      "restrictedConfigurations": [
+        "vize.serverPath"
+      ]
     }
   }
 }

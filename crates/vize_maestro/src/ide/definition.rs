@@ -17,6 +17,7 @@ pub(crate) mod import_resolver;
 mod inline_art;
 pub(crate) mod module_specifier;
 pub(crate) mod script;
+mod script_literals;
 mod service;
 mod slot;
 mod template;

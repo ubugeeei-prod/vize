@@ -42,7 +42,13 @@ Native projection failures are diagnostics, never an `any` component stub.
 Missing imports remain errors. The native engine and its UTF-8/UTF-16 conversion
 helper are resolved from the same installed package. The default is the plugin's own matching native dependency. A project can explicitly
 select another compatible `@vizejs/native` package directory with `"nativePath"`
-in its plugin entry. Overrides must supply the projection API and its matching
+in its plugin entry. The override applies only when this plugin is the copy
+the project itself resolves (installed in it, hoisted to a workspace root, or
+linked); a plugin installed elsewhere, such as a global or editor-provided copy,
+reports an error instead of loading a path named by the opened project. The
+selected directory's
+`package.json` must name `@vizejs/native`, and it is checked before any of its
+code is loaded. Overrides must supply the projection API and its matching
 helper; a failed override remains an error and is never silently substituted.
 Unsaved snapshots invalidate generated code and mappings together.
 
@@ -70,4 +76,5 @@ file hashes; workspace `nativePath` values and global native loader variables
 do not replace that implementation dependency. This does not change the LSP's
 existing `vize.serverPath` selection. The small universal VSIX is a separate
 metadata-only artifact; full native-service acceptance uses a matching platform
-VSIX. Standalone npm/tsserver consumers retain the explicit override above.
+VSIX. Standalone npm/tsserver consumers that install the plugin in the project
+retain the explicit override above.

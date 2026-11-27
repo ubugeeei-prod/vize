@@ -1,0 +1,42 @@
+{
+  "schema": "vize.editor-mirror-storage-observation",
+  "version": 1,
+  "exitStatus": 0,
+  "temporaryDirectoryAfter": [
+    {
+      "path": "elsewhere",
+      "kind": "directory",
+      "mode": "0755",
+      "owner": "{uid}"
+    },
+    {
+      "path": "vize-canon",
+      "kind": "link",
+      "target": "elsewhere"
+    },
+    {
+      "path": "vize-canon-{uid}",
+      "kind": "directory",
+      "mode": "0700",
+      "owner": "{uid}"
+    },
+    {
+      "path": "vize-canon-{uid}/editor",
+      "kind": "directory",
+      "mode": "0700",
+      "owner": "{uid}"
+    },
+    {
+      "path": "vize-canon-{uid}/editor/sessions",
+      "kind": "directory",
+      "mode": "0700",
+      "owner": "{uid}"
+    },
+    {
+      "path": "vize-canon-{uid}/editor/sessions/.gc.lock",
+      "kind": "file",
+      "mode": "0600",
+      "owner": "{uid}"
+    }
+  ]
+}

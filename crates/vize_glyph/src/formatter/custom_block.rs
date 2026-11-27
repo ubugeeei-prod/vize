@@ -1,7 +1,8 @@
 use crate::{error::FormatError, options::FormatOptions};
+use vize_l0::string_builder::TextBuf;
 
 pub(super) fn format(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
@@ -11,14 +12,14 @@ pub(super) fn format(
     if let Some(opening_tag) = &opening_tag {
         super::opening_tag::write_raw(output, opening_tag);
     } else {
-        output.push(b'<');
-        output.extend_from_slice(block.name.as_bytes());
+        output.push('<');
+        output.push_str(block.name);
         if !super::write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
             super::write_remaining_attrs(output, &block.attrs, &[]);
         }
-        output.push(b'>');
+        output.push('>');
     }
-    output.extend_from_slice(options.newline_bytes());
+    output.push_str(options.newline_string());
 
     let content = super::opening_tag::content_after_opening_tag(
         source,
@@ -29,18 +30,18 @@ pub(super) fn format(
     if block.name == "art" {
         write_art_content(output, content, options, vue_version)?;
     } else {
-        output.extend_from_slice(content.trim().as_bytes());
-        output.extend_from_slice(options.newline_bytes());
+        output.push_str(content.trim());
+        output.push_str(options.newline_string());
     }
 
-    output.extend_from_slice(b"</");
-    output.extend_from_slice(block.name.as_bytes());
-    output.push(b'>');
+    output.push_str("</");
+    output.push_str(block.name);
+    output.push('>');
     Ok(())
 }
 
 fn write_art_content(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     content: &str,
     options: &FormatOptions,
     vue_version: crate::VueVersion,
@@ -68,7 +69,7 @@ fn write_art_content(
         if pending_blank_lines > 0 {
             if wrote_chunk {
                 for _ in 0..pending_blank_lines {
-                    output.extend_from_slice(options.newline_bytes());
+                    output.push_str(options.newline_string());
                 }
             }
             pending_blank_lines = 0;
@@ -79,7 +80,7 @@ fn write_art_content(
     if !chunk_lines.is_empty() {
         if pending_blank_lines > 0 && wrote_chunk {
             for _ in 0..pending_blank_lines {
-                output.extend_from_slice(options.newline_bytes());
+                output.push_str(options.newline_string());
             }
         }
         write_art_chunk(output, &chunk_lines, options, vue_version)?;
@@ -88,7 +89,7 @@ fn write_art_content(
 }
 
 fn write_art_chunk(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     lines: &[&str],
     options: &FormatOptions,
     vue_version: crate::VueVersion,
@@ -103,8 +104,8 @@ fn write_art_chunk(
     super::template_indent::write_indented_template(
         output,
         trimmed,
-        options.indent_bytes(),
-        options.newline_bytes(),
+        options.indent_str(),
+        options.newline_string(),
     );
     Ok(())
 }

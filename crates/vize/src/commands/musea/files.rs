@@ -22,6 +22,20 @@ pub(super) fn collect_files(patterns: &[impl AsRef<str>]) -> Vec<PathBuf> {
     files
 }
 
+/// Write a generated art file. A symbolic link at `target` is refused, not
+/// followed: whatever it points at is not one of this project's arts.
+pub(super) fn write_art_file(target: &Path, contents: &str) -> std::io::Result<()> {
+    let linked =
+        std::fs::symlink_metadata(target).is_ok_and(|metadata| metadata.file_type().is_symlink());
+    if linked {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "the target is a symbolic link",
+        ));
+    }
+    std::fs::write(target, contents)
+}
+
 pub(super) fn is_story_file(path: &Path) -> bool {
     let name = match path.file_name().and_then(|name| name.to_str()) {
         Some(name) => name,
@@ -210,9 +224,28 @@ fn story_glob_options() -> MatchOptions {
 
 #[cfg(test)]
 mod tests {
-    use super::{StoryGlob, collect_files};
+    use super::{StoryGlob, collect_files, write_art_file};
     use std::fs;
     use std::path::{Path, PathBuf};
+
+    #[cfg(unix)]
+    #[test]
+    fn an_art_file_is_never_written_through_a_symbolic_link() {
+        let temp = tempfile::tempdir().unwrap();
+        let outside = temp.path().join("outside.txt");
+        let linked = temp.path().join("Button.art.vue");
+        let plain = temp.path().join("Card.art.vue");
+        fs::write(&outside, "keep").unwrap();
+        std::os::unix::fs::symlink(&outside, &linked).unwrap();
+
+        let error = write_art_file(&linked, "<art />").unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::InvalidInput);
+        assert_eq!(fs::read_to_string(&outside).unwrap(), "keep");
+
+        write_art_file(&plain, "<art />").unwrap();
+        write_art_file(&plain, "<art></art>").unwrap();
+        assert_eq!(fs::read_to_string(&plain).unwrap(), "<art></art>");
+    }
 
     fn write_file(path: &Path) {
         if let Some(parent) = path.parent() {

@@ -210,7 +210,7 @@ mod original_argument_ownership {
     }
 
     #[test]
-    fn original_server_and_vapor_argument_carriers_keep_their_existing_processing() {
+    fn original_server_keys_resolve_setup_refs_and_vapor_keeps_its_carriers() {
         for (ssr, vapor) in [(true, false), (false, true)] {
             let allocator = Allocator::new();
             let source = original_template();
@@ -263,7 +263,20 @@ mod original_argument_ownership {
                 },
             );
             process_directive_expressions(&mut ctx, el, false);
-            assert_eq!(arguments(el), original);
+            let expected = if ssr {
+                // Inline SSR reads a setup ref key through `.value`.
+                original
+                    .iter()
+                    .map(|(content, span, is_static, _)| {
+                        let mut read = content.clone();
+                        read.push_str(".value");
+                        (read, *span, *is_static, true)
+                    })
+                    .collect()
+            } else {
+                original.clone()
+            };
+            assert_eq!(arguments(el), expected);
             assert_eq!(original.len(), 2);
             assert!(ctx.errors.is_empty(), "{:?}", ctx.errors);
         }

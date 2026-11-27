@@ -1,0 +1,11 @@
+0 app/components/ClientBox.client.vue
+0 app/components/Counter.client.vue
+0 app/components/ServerTime.server.vue
+0 app/components/ServerProps.server.vue
+0 app/components/GlobalThing.global.vue
+0 app/components/IslandCard.island.vue
+0 app/components/Header/AccountMenu.client.global.vue
+0 app/components/settings/toggle-row.server.vue
+1 app/components/myWidget.client.vue
+1 app/components/Foo.bar.vue
+1 app/components/Foo.global.client.vue

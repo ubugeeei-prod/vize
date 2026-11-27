@@ -201,8 +201,67 @@ function mergeAdjacentSpans(spans: readonly MarkdownSpan[]): MarkdownSpan[] {
   return merged;
 }
 
+interface InlineLink {
+  readonly label: string;
+  readonly url: string;
+  /** Index just past the closing `)`. */
+  readonly end: number;
+}
+
+/** A search that only moves forward, so text behind the last result is never scanned again. */
+function forwardSearch(search: (from: number) => number): (from: number) => number {
+  let found = Number.NEGATIVE_INFINITY;
+  return (from) => {
+    if (found !== -1 && found < from) found = search(from);
+    return found;
+  };
+}
+
+/**
+ * Match `[label](url)` or `[label](url "title")` at an index of `content`.
+ *
+ * Each part ends at the first character that can end it, so it is located with a
+ * forward search instead of a pattern retried at every index: a long run of
+ * unmatched `[` is scanned once, not once per bracket.
+ */
+function createLinkMatcher(content: string): (index: number) => InlineLink | undefined {
+  const urlBoundary = /[\s)]/gu;
+  const labelEnd = forwardSearch((from) => content.indexOf("]", from));
+  const urlEnd = forwardSearch((from) => {
+    urlBoundary.lastIndex = from;
+    return urlBoundary.exec(content)?.index ?? -1;
+  });
+  // Links whose URL ends at the same whitespace share one title check.
+  let titleFrom = -1;
+  let titleLength = 0;
+
+  return (index) => {
+    if (content[index] !== "[") return undefined;
+    const close = labelEnd(index + 1);
+    if (close <= index + 1 || content[close + 1] !== "(") return undefined;
+    const urlStart = close + 2;
+    const boundary = urlEnd(urlStart);
+    if (boundary <= urlStart) return undefined;
+    let end = boundary;
+    if (content[boundary] !== ")") {
+      if (titleFrom !== boundary) {
+        titleFrom = boundary;
+        titleLength = /^\s+"[^"]*"/u.exec(content.slice(boundary))?.[0].length ?? 0;
+      }
+      end = boundary + titleLength;
+      if (titleLength === 0 || content[end] !== ")") return undefined;
+    }
+    return {
+      label: content.slice(index + 1, close),
+      url: content.slice(urlStart, boundary),
+      end: end + 1,
+    };
+  };
+}
+
 function parseInline(content: string, options: Readonly<MarkdownRenderOptions>): MarkdownSpan[] {
   const spans: MarkdownSpan[] = [];
+  const matchLink = createLinkMatcher(content);
   let plain = "";
   const flush = () => {
     if (plain) spans.push({ text: plain });
@@ -226,12 +285,12 @@ function parseInline(content: string, options: Readonly<MarkdownRenderOptions>):
       continue;
     }
 
-    const link = /^\[([^\]]+)\]\(([^\s)]+)(?:\s+"[^"]*")?\)/u.exec(rest);
+    const link = matchLink(index);
     if (link) {
       flush();
-      spans.push({ text: link[1] ?? "", fg: options.linkFg, underline: true });
-      spans.push({ text: ` (${link[2] ?? ""})`, dim: true });
-      index += link[0].length;
+      spans.push({ text: link.label, fg: options.linkFg, underline: true });
+      spans.push({ text: ` (${link.url})`, dim: true });
+      index = link.end;
       continue;
     }
 

@@ -105,6 +105,7 @@ mod context;
 mod diagnostic;
 pub mod html_content_model;
 pub mod ir;
+mod lent_walk;
 mod linter;
 pub mod markup;
 pub mod native;

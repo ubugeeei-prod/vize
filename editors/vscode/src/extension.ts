@@ -225,6 +225,15 @@ function syncClientToConfiguration(context: ExtensionContext, reason: string): P
 }
 
 async function syncClient(context: ExtensionContext, reason: string): Promise<void> {
+  if (!workspace.isTrusted) {
+    // The server evaluates the project's Vite config and runs the project's
+    // TypeScript runtime. Granting trust schedules the sync that starts it.
+    outputChannel.appendLine(
+      "Vize language server is not started in Restricted Mode: it evaluates the project's Vite config and runs the project's TypeScript runtime. Trust this workspace to start it.",
+    );
+    updateStatusBar("untrusted", "The language server starts once this workspace is trusted.");
+    return;
+  }
   if (
     (client || startingClientGeneration !== undefined) &&
     reason === "project configuration changed"

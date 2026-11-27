@@ -1,7 +1,7 @@
 //! Opening-tag projections for each markup backend.
 
 use super::{MarkupElement, MarkupElementInner};
-use crate::markup::jsx_names::{jsx_attribute_directive_kind, jsx_element_ref};
+use crate::markup::jsx_names::jsx_attribute_directive_kind;
 use crate::markup::l2::binding::{L2Item, walk_items};
 use crate::markup::l2::surface::SurfaceDirective;
 use crate::markup::{MarkupAttribute, MarkupBinding, MarkupDirective, relief_scopes};
@@ -29,11 +29,9 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                for attribute in &unsafe { jsx_element_ref(node) }.opening_element.attributes {
+                for attribute in &node.opening_element.attributes {
                     if let JSXAttributeItem::Attribute(attr) = attribute {
-                        visitor(MarkupAttribute::from_jsx(&raw const **attr, offset));
+                        visitor(MarkupAttribute::from_jsx(attr, offset));
                     }
                 }
             }
@@ -107,13 +105,11 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                for attribute in &unsafe { jsx_element_ref(node) }.opening_element.attributes {
+                for attribute in &node.opening_element.attributes {
                     if let JSXAttributeItem::Attribute(attr) = attribute
                         && jsx_attribute_directive_kind(attr).is_some()
                     {
-                        visitor(MarkupDirective::from_jsx(&raw const **attr, offset));
+                        visitor(MarkupDirective::from_jsx(attr, offset));
                     }
                 }
             }
@@ -162,11 +158,9 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                for attribute in &unsafe { jsx_element_ref(node) }.opening_element.attributes {
+                for attribute in &node.opening_element.attributes {
                     if let JSXAttributeItem::Attribute(attr) = attribute {
-                        visitor(MarkupBinding::from_jsx(&raw const **attr, offset));
+                        visitor(MarkupBinding::from_jsx(attr, offset));
                     }
                 }
             }

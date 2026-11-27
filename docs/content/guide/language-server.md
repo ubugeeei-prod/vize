@@ -86,8 +86,9 @@ shipping query-latency estimates or a general tail bound.
 
 ## Zed
 
-Install the Vize extension for Zed. From a clone of the Vize repository, `vize ide zed --install`
-copies `editors/zed` into Zed for you. Then select the server in your Zed `settings.json`:
+Install the Vize extension for Zed with `vize ide zed --install`. A released `vize` downloads the
+extension that matches its version; a `vize` built in a clone of the Vize repository copies that
+clone's `editors/zed` instead. Then select the server in your Zed `settings.json`:
 
 ```json
 {

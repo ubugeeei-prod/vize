@@ -1,0 +1,33 @@
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from "vue"
+
+// Rendered as its own component, so its refs belong to another instance.
+function Badge() {
+  const icon = useTemplateRef("icon")
+  return String(icon.value)
+}
+
+// Setup never calls this, so the key is not checked against this template.
+function unused() {
+  return useTemplateRef("elsewhere")
+}
+
+// Setup calls this composable, so its key must exist in this template.
+function useFocusTrap() {
+  const dialog = useTemplateRef("dialog")
+  return () => dialog.value?.showModal()
+}
+
+const open = useFocusTrap()
+onMounted(() => {
+  const button: HTMLButtonElement | null = useTemplateRef("trigger").value
+  console.log(button)
+})
+void unused
+</script>
+
+<template>
+  <button ref="trigger" @click="open">Open</button>
+  <dialog ref="dialog" />
+  <Badge />
+</template>

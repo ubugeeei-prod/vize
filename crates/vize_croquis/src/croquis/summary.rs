@@ -169,7 +169,7 @@ impl CroquisSemanticSummary {
             }
             if id.kind.is_definition() {
                 summary.id_definition_count += 1;
-            } else {
+            } else if id.kind.is_reference() {
                 summary.id_reference_count += 1;
             }
         }

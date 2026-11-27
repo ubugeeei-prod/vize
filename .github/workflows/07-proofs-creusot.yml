@@ -18,8 +18,12 @@ on:
       - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
       - crates/vize_croquis/src/scope/chain/creusot.rs
       - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs
+      - crates/vize_incremental/providers/graph/src/recovery/positions/window.rs
       - crates/vize_maestro/src/source_project/style_format/creusot.rs
       - crates/vize_maestro/src/source_project/style_format/header.rs
+      - crates/vize_glyph/src/template/formatter/suppression/creusot.rs
+      - crates/vize_glyph/src/template/formatter/suppression/gap.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/rules/facts/max_template_complexity/original/creusot.rs
       - crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs
@@ -64,8 +68,12 @@ on:
       - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
       - crates/vize_croquis/src/scope/chain/creusot.rs
       - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs
+      - crates/vize_incremental/providers/graph/src/recovery/positions/window.rs
       - crates/vize_maestro/src/source_project/style_format/creusot.rs
       - crates/vize_maestro/src/source_project/style_format/header.rs
+      - crates/vize_glyph/src/template/formatter/suppression/creusot.rs
+      - crates/vize_glyph/src/template/formatter/suppression/gap.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/rules/facts/max_template_complexity/original/creusot.rs
       - crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs

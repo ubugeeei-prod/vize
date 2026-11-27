@@ -1,0 +1,41 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 15
+      },
+      "end": {
+        "line": 0,
+        "character": 35
+      }
+    },
+    "target": "${workspace}/src/partials/card.html"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 5,
+        "character": 8
+      },
+      "end": {
+        "line": 5,
+        "character": 28
+      }
+    },
+    "target": "${workspace}/src/styles/reset.css"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 6,
+        "character": 8
+      },
+      "end": {
+        "line": 6,
+        "character": 27
+      }
+    },
+    "target": "${workspace}/src/styles/theme.css"
+  }
+]

@@ -2,7 +2,7 @@
 
 mod dynamic;
 
-use super::props::{is_dynamic_component_tag, is_simple_identifier, quoted_js_string};
+use super::props::{is_dynamic_component_tag, quoted_js_string};
 use super::{
     ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
     ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SlotAnchor,
@@ -507,19 +507,6 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         "_: 1"
-    }
-
-    /// Render a dynamic directive argument while preserving scoped slot locals.
-    pub(super) fn dynamic_arg_to_string(&mut self, expr: &ExpressionNode) -> String {
-        match expr {
-            ExpressionNode::Simple(simple)
-                if !simple.is_static && is_simple_identifier(simple.content) =>
-            {
-                // A `v-for` alias or slot param is a local, not `_ctx.<key>`.
-                self.strip_ctx_for_scoped_params(&vize_l0::cstr!("_ctx.{}", simple.content))
-            }
-            _ => self.expression_to_string(expr),
-        }
     }
 
     /// Render a template expression and record helper dependencies it references.

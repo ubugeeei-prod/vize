@@ -13,6 +13,7 @@ import {
   decodeUrlComponent,
   HttpError,
   isArtVueSourcePath,
+  isLocalRequest,
   isLoopbackAddress,
   isTrustedSourcePath,
   isVueSourcePath,
@@ -212,6 +213,110 @@ void test("validateDevApiRequest requires same-origin JSON mutations with the se
   };
 
   assert.equal(validateDevApiRequest(remoteMutation, token)?.status, 403);
+});
+
+void test("local requests have a loopback peer, a loopback Host and no forwarding headers", () => {
+  for (const host of [
+    "localhost",
+    "localhost:5173",
+    "LocalHost:5173",
+    "app.localhost:5173",
+    "127.0.0.1:5173",
+    "[::1]:5173",
+  ]) {
+    assert.equal(isLocalRequest(loopbackRequest("GET", { host })), true, host);
+  }
+  assert.equal(isLocalRequest(loopbackRequest("GET", { ":authority": "localhost:5173" })), true);
+
+  for (const host of [
+    "preview.tunnel.example",
+    "192.168.1.10:5173",
+    "localhost.tunnel.example",
+    "notlocalhost:5173",
+    "tunnel.example@localhost:5173",
+    "localhost:5173/tunnel.example",
+    "",
+  ]) {
+    assert.equal(isLocalRequest(loopbackRequest("GET", { host })), false, host);
+  }
+  assert.equal(isLocalRequest(loopbackRequest("GET", {})), false);
+
+  for (const name of ["forwarded", "x-forwarded-for", "x-forwarded-host", "x-real-ip"]) {
+    assert.equal(
+      isLocalRequest(loopbackRequest("GET", { host: "localhost:5173", [name]: "127.0.0.1" })),
+      false,
+      name,
+    );
+  }
+
+  assert.equal(isLocalRequest(request("GET", { host: "localhost:5173" })), false);
+  const remote = request("GET", { host: "localhost:5173" });
+  (remote as IncomingMessage & { socket: { remoteAddress: string } }).socket = {
+    remoteAddress: "192.168.1.20",
+  };
+  assert.equal(isLocalRequest(remote), false);
+});
+
+void test("writes through a forwarder on this machine are refused", () => {
+  const token = "session-token";
+  const forwarded = {
+    "content-type": "application/json",
+    "x-musea-session": token,
+  };
+  const refused = (headers: IncomingMessage["headers"]) => {
+    const error = validateDevApiRequest(loopbackRequest("PUT", headers), token);
+    return error && { status: error.status, message: error.message };
+  };
+
+  assert.deepEqual(
+    refused({
+      ...forwarded,
+      host: "preview.tunnel.example",
+      origin: "https://preview.tunnel.example",
+    }),
+    { status: 403, message: "Musea write APIs are limited to local requests" },
+  );
+  assert.deepEqual(
+    refused({
+      ...forwarded,
+      host: "localhost:5173",
+      origin: "http://localhost:5173",
+      "x-forwarded-for": "203.0.113.7",
+    }),
+    { status: 403, message: "Musea write APIs are limited to local requests" },
+  );
+});
+
+void test("writes name their origin and reads stay open without one", () => {
+  const token = "session-token";
+  const headers = {
+    host: "localhost:5173",
+    "content-type": "application/json",
+    "x-musea-session": token,
+  };
+
+  for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+    const error = validateDevApiRequest(loopbackRequest(method, headers), token);
+    assert.deepEqual(error && { status: error.status, message: error.message }, {
+      status: 403,
+      message: "Musea write APIs require an Origin header",
+    });
+    assert.equal(
+      validateDevApiRequest(
+        loopbackRequest(method, { ...headers, origin: "http://localhost:5173" }),
+        token,
+      ),
+      null,
+    );
+  }
+  assert.equal(
+    validateDevApiRequest(loopbackRequest("GET", { host: "localhost:5173" }), token),
+    null,
+  );
+  assert.equal(
+    validateDevApiRequest(loopbackRequest("GET", { host: "preview.tunnel.example" }), token),
+    null,
+  );
 });
 
 void test("isVueSourcePath rejects a .vue symlink whose realpath is not a Vue file", async () => {

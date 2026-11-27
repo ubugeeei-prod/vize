@@ -6,7 +6,7 @@
 
 use clap::{Args, Subcommand};
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use vize_l0::{String, cstr};
 
@@ -20,7 +20,7 @@ use zed_installation::{get_zed_extensions_dir, zed_dev_extension_dir, zed_status
 mod editor_files;
 
 use crate::commands::lsp::{LspTransport, transport_from_port};
-use editor_files::{copy_dir_all, find_vscode_vsix, find_zed_extension_source};
+use editor_files::{copy_dir_all, find_vscode_vsix, find_zed_extension_source, vscode_source_dir};
 
 const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
 const LEGACY_VSCODE_EXTENSION_ID: &str = "vize.vize";
@@ -140,10 +140,11 @@ fn vscode_install() {
             install_vsix(&path);
         }
         None => {
-            if Path::new("editors/vscode").is_dir() {
+            let source_dir = vscode_source_dir();
+            if source_dir.is_some() {
                 println!("VSIX not found, building from source...");
             }
-            if Path::new("editors/vscode").is_dir() && build_vscode_extension() {
+            if source_dir.is_some_and(|source_dir| build_vscode_extension(&source_dir)) {
                 if let Some(path) = find_vscode_vsix() {
                     install_vsix(&path);
                 } else {
@@ -232,19 +233,13 @@ fn vscode_extension_version(extensions: &str) -> Option<Option<&str>> {
     })
 }
 
-fn build_vscode_extension() -> bool {
-    // Try to find the extension source
-    let source_dir = PathBuf::from("editors/vscode");
-    if !source_dir.exists() {
-        return false;
-    }
-
+fn build_vscode_extension(source_dir: &Path) -> bool {
     println!("Building VSCode extension...");
 
     // Run pnpm install and build
     let install_status = Command::new("pnpm")
         .args(["install"])
-        .current_dir(&source_dir)
+        .current_dir(source_dir)
         .status();
 
     if !install_status.map(|s| s.success()).unwrap_or(false) {
@@ -254,7 +249,7 @@ fn build_vscode_extension() -> bool {
     // Package the extension
     let package_status = Command::new("pnpm")
         .args(["run", "package"])
-        .current_dir(&source_dir)
+        .current_dir(source_dir)
         .status();
 
     package_status.map(|s| s.success()).unwrap_or(false)

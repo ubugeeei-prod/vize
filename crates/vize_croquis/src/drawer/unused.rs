@@ -99,9 +99,13 @@ impl Drawer {
             _ => None,
         };
         if let Some(name) = name {
-            self.croquis
-                .unused_bindings
-                .retain(|candidate| candidate.as_str() != name.as_str());
+            // `const el = useTemplateRef('el')` is wired by its key; the
+            // attribute naming the binding does not read it.
+            if !self.croquis.template_ref_handles.contains(name.as_str()) {
+                self.croquis
+                    .unused_bindings
+                    .retain(|candidate| candidate.as_str() != name.as_str());
+            }
             if self.binding_demand.reads()
                 && let Some(reads) = self.croquis.setup_context.template_binding_reads_mut()
             {
@@ -207,3 +211,6 @@ impl Drawer {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

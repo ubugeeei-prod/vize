@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ for: string }>()
+</script>
+<template><input :id="$props.for"></template>

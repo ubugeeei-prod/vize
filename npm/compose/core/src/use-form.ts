@@ -1,6 +1,7 @@
 import { computed, ref, shallowRef, toRaw, triggerRef } from "vue";
 import type { ComputedRef, Ref, ShallowRef, WritableComputedRef } from "vue";
 
+import { isContainer, readPath, writePath } from "./form-value-paths.ts";
 import { tryOnScopeDispose } from "./scope.ts";
 import { validateStandardSchema } from "./standard-schema.ts";
 import type { NormalizedSchemaIssue, StandardSchemaV1 } from "./standard-schema.ts";
@@ -414,57 +415,6 @@ export interface FormControls<Values extends object, Output> {
   readonly reset: (values?: Values) => void;
 }
 
-type Container = Record<string, unknown> | unknown[];
-
-function isContainer(value: unknown): value is Container {
-  if (Array.isArray(value)) return true;
-  if (typeof value !== "object" || value === null) return false;
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function splitPath(path: string): readonly string[] {
-  return path === "" ? [] : path.split(".");
-}
-
-function readChild(container: Container, key: string): unknown {
-  return Array.isArray(container) ? container[Number(key)] : container[key];
-}
-
-function writeChild(container: Container, key: string, value: unknown): void {
-  if (Array.isArray(container)) container[Number(key)] = value;
-  else container[key] = value;
-}
-
-/** Read a dotted path. */
-function readPath(root: unknown, path: string): unknown {
-  let current = root;
-  for (const key of splitPath(path)) {
-    if (!isContainer(current)) return undefined;
-    current = readChild(current, key);
-  }
-  return current;
-}
-
-/** Write a dotted path, creating intermediate containers. */
-function writePath(root: unknown, path: string, value: unknown): void {
-  const keys = splitPath(path);
-  const last = keys.at(-1);
-  if (last === undefined || !isContainer(root)) return;
-  let current: Container = root;
-  for (let index = 0; index < keys.length - 1; index += 1) {
-    const key = keys[index] ?? "";
-    let next = readChild(current, key);
-    if (!isContainer(next)) {
-      next = /^\d+$/.test(keys[index + 1] ?? "") ? [] : {};
-      writeChild(current, key, next);
-    }
-    if (!isContainer(next)) return;
-    current = next;
-  }
-  writeChild(current, last, value);
-}
-
 function cloneValue<Value>(value: Value): Value {
   return structuredClone(toRaw(value));
 }
@@ -626,7 +576,8 @@ export function useForm<Values extends object, Output = Values>(
     signal: AbortSignal,
   ): Promise<{ readonly errors: Record<string, string[]>; readonly output: unknown }> => {
     const snapshot = values.value;
-    const collected: Record<string, string[]> = {};
+    // No prototype, so a path such as `constructor` is an ordinary key.
+    const collected: Record<string, string[]> = Object.create(null);
     const add = (path: string, messages: readonly string[]): void => {
       if (messages.length === 0) return;
       (collected[path] ??= []).push(...messages);
@@ -659,7 +610,7 @@ export function useForm<Values extends object, Output = Values>(
       );
     }
     await Promise.all(tasks);
-    return { errors: collected, output };
+    return { errors: { ...collected }, output };
   };
 
   const validate = async (): Promise<FormResult<Output>> => {
