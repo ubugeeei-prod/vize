@@ -4,7 +4,7 @@ use vize_patina::{
     native::template::NativeTemplateLintRefusal as Refusal,
     rules::{
         a11y::{NoAccessKey, NoAutofocus},
-        vue::ComponentDefinitionNameCasing,
+        vue::ComponentFileNameCasing,
     },
 };
 use vize_relief::ElementNode;
@@ -87,9 +87,9 @@ fn actual_static_only_filename_instance_intersection_preserves_root_and_binding_
         let mut registry = RuleRegistry::new();
         if reverse {
             registry.register(Box::new(NoAutofocus));
-            registry.register(Box::new(ComponentDefinitionNameCasing));
+            registry.register(Box::new(ComponentFileNameCasing));
         } else {
-            registry.register(Box::new(ComponentDefinitionNameCasing));
+            registry.register(Box::new(ComponentFileNameCasing));
             registry.register(Box::new(NoAutofocus));
         }
         let configured = Linter::with_registry(registry);

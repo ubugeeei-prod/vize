@@ -24,7 +24,7 @@ fn normally_owned_checked_attribute_reports_only_its_exact_component_and_full_ra
         NativeTemplateAttributeProfile::Bindings,
     )
     .unwrap();
-    let rule = "vue/component-definition-name-casing";
+    let rule = "vue/component-file-name-casing";
     let configured =
         Linter::new().with_rule_severity_overrides(vec![(rule.into(), Severity::Error)]);
     let mut context = NativeTemplateLintContext::new(&configured, &root, "/元/exact.vue");
@@ -32,9 +32,9 @@ fn normally_owned_checked_attribute_reports_only_its_exact_component_and_full_ra
     context
         .warn_attribute_with_help(
             &proof,
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", "actual")],
-            "vue/component-definition-name-casing.help",
+            "vue/component-file-name-casing.help",
         )
         .unwrap();
     let result = context.finish();
@@ -77,13 +77,13 @@ fn same_source_buffer_and_equal_span_cannot_substitute_for_the_contexts_original
     .unwrap();
     let configured = Linter::new();
     let mut context = NativeTemplateLintContext::new(&configured, &root, "exact.vue");
-    context.current_rule = "vue/component-definition-name-casing";
+    context.current_rule = "vue/component-file-name-casing";
     assert_eq!(
         context.warn_attribute_with_help(
             &proof,
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", "foreign")],
-            "vue/component-definition-name-casing.help"
+            "vue/component-file-name-casing.help"
         ),
         Err(NativeTemplateLintRefusal::SourceMismatch)
     );

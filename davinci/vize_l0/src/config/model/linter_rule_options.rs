@@ -51,8 +51,8 @@ mod valid_v_slot;
 
 pub use attribute_hyphenation::{AttributeHyphenationConfig, AttributeHyphenationOptions};
 pub use casing::{
-    ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
-    TemplateComponentNameCasing,
+    ComponentDefinitionNameCasingStyle, ComponentNameInTemplateCasingOptions,
+    CustomEventNameCasing, CustomEventNameCasingOptions, TemplateComponentNameCasing,
 };
 pub use configured_vue::{
     CallAfterAwaitOptions, CallAfterAwaitSpec, ConfiguredVueRuleOptions,
@@ -152,6 +152,12 @@ pub struct ConfigLintRuleOptions {
     /// Options for `script/define-macros-order`.
     #[serde(rename = "script/define-macros-order")]
     define_macros_order: Option<DefineMacrosOrderOptions>,
+    /// Casing of the `name` a component definition declares.
+    #[serde(
+        rename = "vue/component-definition-name-casing",
+        skip_serializing_if = "Option::is_none"
+    )]
+    component_definition_name_casing: Option<ComponentDefinitionNameCasingStyle>,
     /// Options for `vue/component-name-in-template-casing`.
     #[serde(rename = "vue/component-name-in-template-casing")]
     component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
@@ -285,6 +291,7 @@ impl ConfigLintRuleOptions {
             && self.stable.is_empty()
             && self.define_props_destructuring.is_none()
             && self.define_macros_order.is_none()
+            && self.component_definition_name_casing.is_none()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.prop_name_casing.is_none()
@@ -366,29 +373,6 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn define_macros_order(&self) -> Option<DefineMacrosOrderOptions> {
         self.define_macros_order.clone()
-    }
-
-    /// Configured casing for `vue/component-name-in-template-casing`.
-    #[inline]
-    pub fn component_name_in_template_casing(&self) -> Option<TemplateComponentNameCasing> {
-        self.component_name_in_template_casing
-            .as_ref()
-            .map(|options| options.casing)
-    }
-
-    /// Authored registration scope for component tag casing.
-    pub fn component_name_in_template_casing_options(
-        &self,
-    ) -> Option<&ComponentNameInTemplateCasingOptions> {
-        self.component_name_in_template_casing.as_ref()
-    }
-
-    /// Configured casing for `script/custom-event-name-casing`.
-    #[inline]
-    pub fn custom_event_name_casing(&self) -> Option<CustomEventNameCasing> {
-        self.custom_event_name_casing
-            .as_ref()
-            .map(|options| options.casing)
     }
 
     /// Configured casing for the component's own prop declarations.

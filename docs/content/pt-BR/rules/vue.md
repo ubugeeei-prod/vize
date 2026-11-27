@@ -69,7 +69,7 @@ Regras de correção da predefinição `essential`.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Exigir diretivas `v-slot` válidas. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Exigir diretivas `v-text` válidas. |  |
 
-## Padrão (28)
+## Padrão (29)
 
 Adicionadas por `happy-path`, a predefinição padrão.
 
@@ -78,6 +78,7 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Aplicar um padrão de nomes de atributos em componentes personalizados. | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Aplicar uma ordem consistente aos atributos. |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Exigir PascalCase ou kebab-case nos nomes de definição de componentes. |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | Exigir PascalCase ou kebab-case nos nomes de arquivo de componentes. |  |
 | <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | Exige tags de fechamento explícitas para elementos HTML cujo fechamento pode ser omitido. | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | Aplicar um padrão de aspas aos atributos HTML. | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Aplicar espaçamento consistente dentro das interpolações com chaves duplas. | ✓ |

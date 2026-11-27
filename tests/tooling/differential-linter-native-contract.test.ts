@@ -315,7 +315,7 @@ void test("whole native linter report rejects forged output, refusal, repeat and
           api: "--native-current-api",
           entry: "template",
           kind: "UnprovidedRule",
-          detail: 'UnprovidedRule { rule: "vue/component-definition-name-casing" }',
+          detail: 'UnprovidedRule { rule: "vue/component-file-name-casing" }',
         };
       });
     },

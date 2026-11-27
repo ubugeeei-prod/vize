@@ -60,6 +60,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/require-prop-comment",
     "vue/sort-keys",
     "vue/html-quotes",
+    "vue/component-definition-name-casing",
     "vue/match-component-file-name",
     "vue/multi-word-component-names",
     "vue/no-array-index-key",

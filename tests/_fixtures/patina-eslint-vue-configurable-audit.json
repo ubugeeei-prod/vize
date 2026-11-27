@@ -21,15 +21,16 @@
     ]
   },
   "summary": {
-    "mapped": 87,
+    "mapped": 88,
     "unimplemented": 23,
-    "intentionalDivergence": 2,
-    "mappedWithTypedOptions": 40,
+    "intentionalDivergence": 1,
+    "mappedWithTypedOptions": 41,
     "mappedWithoutTypedOptions": 47
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
     ["vue/block-order", "vue/sfc-element-order"],
+    ["vue/component-definition-name-casing", "vue/component-definition-name-casing"],
     ["vue/component-name-in-template-casing", "vue/component-name-in-template-casing"],
     ["vue/custom-event-name-casing", "script/custom-event-name-casing"],
     ["vue/define-macros-order", "script/define-macros-order"],

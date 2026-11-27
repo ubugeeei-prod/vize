@@ -193,6 +193,7 @@ export interface VizeRuleOptions {
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/html-quotes"?: HtmlQuotesConfig;
+  "vue/component-definition-name-casing"?: "PascalCase" | "kebab-case";
   "vue/mustache-interpolation-spacing"?: MustacheInterpolationSpacingStyle;
   "vue/v-on-event-hyphenation"?: HyphenationStyle | VOnEventHyphenationOptions;
   "vue/v-bind-style"?: VBindStyleConfig;

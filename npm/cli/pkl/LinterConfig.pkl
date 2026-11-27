@@ -266,6 +266,7 @@ class LintRuleOptions {
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+  `vue/component-definition-name-casing`: ("PascalCase" | "kebab-case")? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null

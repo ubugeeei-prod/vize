@@ -1,10 +1,15 @@
-//! Component `name` sites in one SFC script block.
+//! Component definitions and their static names in one SFC script block.
 //!
-//! A definition increments the file-wide count even when it has no static
-//! name. `*.component(name, ...)` compares `name` without counting on its own.
-//! Reports are dropped by the caller when the count is greater than one.
+//! These are eslint-plugin-vue's component sites: `export default {}` in
+//! `<script>`, objects passed last to `defineComponent`, `defineNuxtComponent`,
+//! `createApp`, `component`, `*.component`, `*.mixin` and `Vue.extend`,
+//! `new Vue({})`, and `defineOptions({})` in `<script setup>`. Each object is
+//! one definition, even without a static name. The first argument of a
+//! two-argument `*.component(name, ...)` is a name without being a definition.
+//! A name is a string literal or a template literal without expressions.
 
-use super::casing::names_match;
+pub(super) mod casing;
+
 use oxc_ast::ast::{
     Argument, CallExpression, ExportDefaultDeclaration, ExportDefaultDeclarationKind, Expression,
     NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
@@ -16,26 +21,21 @@ use oxc_ast_visit::{
 use oxc_parser::ParserReturn;
 use oxc_span::Span;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_l0::{String, ToCompactString};
 
-#[derive(Default)]
-pub(super) struct Scan {
-    pub(super) count: u32,
-    pub(super) misses: Vec<Miss>,
-}
-
-pub(super) struct Miss {
-    pub(super) name: String,
-    pub(super) start: u32,
-    pub(super) end: u32,
+/// What a scan reports. Offsets are SFC byte offsets of the name literal,
+/// quotes included.
+pub(super) trait DefinitionSink {
+    /// One component definition object.
+    fn definition(&mut self);
+    /// One static component name.
+    fn name(&mut self, name: &str, start: u32, end: u32);
 }
 
 pub(super) fn scan_block(
     block: &SfcScriptBlock<'_>,
     parsed: &ParserReturn<'_>,
     setup: bool,
-    stem: &str,
-    scan: &mut Scan,
+    sink: &mut impl DefinitionSink,
 ) {
     if block.src.is_some() || block.content.is_empty() {
         return;
@@ -45,23 +45,21 @@ pub(super) fn scan_block(
     }
     let mut scanner = Scanner {
         setup,
-        stem,
         offset: block.loc.start as u32,
-        scan,
+        sink,
     };
     scanner.visit_program(&parsed.program);
 }
 
-struct Scanner<'scan> {
+struct Scanner<'scan, S> {
     setup: bool,
-    stem: &'scan str,
     offset: u32,
-    scan: &'scan mut Scan,
+    sink: &'scan mut S,
 }
 
-impl Scanner<'_> {
+impl<S: DefinitionSink> Scanner<'_, S> {
     fn count_object(&mut self, object: &ObjectExpression<'_>) {
-        self.scan.count += 1;
+        self.sink.definition();
         self.verify_name_property(object);
     }
 
@@ -74,26 +72,20 @@ impl Scanner<'_> {
                 continue;
             }
             if let Some((name, span)) = static_name(&property.value) {
-                self.consider(&name, span);
+                self.consider(name, span);
             }
             return;
         }
     }
 
     fn consider(&mut self, name: &str, span: Span) {
-        if names_match(name, self.stem) {
-            return;
-        }
-        self.scan.misses.push(Miss {
-            name: name.to_compact_string(),
-            start: self.offset + span.start,
-            end: self.offset + span.end,
-        });
+        self.sink
+            .name(name, self.offset + span.start, self.offset + span.end);
     }
 
     fn note_identifier_call(&mut self, name: &str, call: &CallExpression<'_>) {
         if self.setup && name == "defineOptions" {
-            self.scan.count += 1;
+            self.sink.definition();
             if let Some(argument) = call.arguments.first()
                 && let Some(object) = object_argument(argument)
             {
@@ -141,12 +133,12 @@ impl Scanner<'_> {
             .as_expression()
             .and_then(|expression| static_name(expression))
         {
-            self.consider(&name, span);
+            self.consider(name, span);
         }
     }
 }
 
-impl<'a> Visit<'a> for Scanner<'_> {
+impl<'a, S: DefinitionSink> Visit<'a> for Scanner<'_, S> {
     fn visit_export_default_declaration(&mut self, it: &ExportDefaultDeclaration<'a>) {
         if !self.setup
             && let ExportDefaultDeclarationKind::ObjectExpression(object) = &it.declaration
@@ -183,14 +175,12 @@ fn object_argument<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpressio
     }
 }
 
-fn static_name(expression: &Expression<'_>) -> Option<(String, Span)> {
+fn static_name<'a>(expression: &Expression<'a>) -> Option<(&'a str, Span)> {
     match expression.get_inner_expression() {
-        Expression::StringLiteral(literal) => {
-            Some((literal.value.as_str().to_compact_string(), literal.span))
-        }
+        Expression::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
         Expression::TemplateLiteral(template) => {
             let value = template.single_quasi()?;
-            Some((value.as_str().to_compact_string(), template.span))
+            Some((value.as_str(), template.span))
         }
         _ => None,
     }

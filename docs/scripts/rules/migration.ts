@@ -46,8 +46,8 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
     ),
     "",
     label(
-      "`vue/component-definition-name-casing` has a deliberate scope difference: Vize checks the SFC filename, while ESLint checks the component definition name. The mapping below retains this distinction.",
-      "`vue/component-definition-name-casing` には意図的な適用範囲の差があります。Vize は SFC のファイル名を検査し、ESLint はコンポーネントの定義名を検査します。この差を以下にも残しています。",
+      "`vue/component-definition-name-casing` checks the component definition name, as ESLint does. Vize's SFC file-name check is the separate `vue/component-file-name-casing`, which has no ESLint counterpart.",
+      "`vue/component-definition-name-casing` は ESLint と同じくコンポーネントの定義名を検査します。Vize の SFC ファイル名の検査は別のルール `vue/component-file-name-casing` で、ESLint に対応するルールはありません。",
     ),
     "",
     label(

@@ -5,15 +5,12 @@
 //! or `kebabCase(name)` equals the stem unchanged. `.vue` and `.jsx` are
 //! checked. Several components in one file stay silent.
 
-mod casing;
-mod scan;
-
+use super::component_definitions::{DefinitionSink, casing::names_match, scan_block};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use scan::{Scan, scan_block};
 
-use vize_l0::{String, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 const RULE: &str = "vue/match-component-file-name";
 const HELP: &str = "Rename the component so its name matches the file name.";
@@ -46,20 +43,24 @@ impl Rule for MatchComponentFileName {
             return;
         };
 
-        let mut scan = Scan::default();
+        let mut scan = Scan {
+            stem,
+            count: 0,
+            misses: Vec::new(),
+        };
         if let Some(script) = descriptor.script.as_ref()
             && script.src.is_none()
             && !script.content.is_empty()
             && let Some(parsed) = scripts.script()
         {
-            scan_block(script, parsed, false, stem, &mut scan);
+            scan_block(script, parsed, false, &mut scan);
         }
         if let Some(script) = descriptor.script_setup.as_ref()
             && script.src.is_none()
             && !script.content.is_empty()
             && let Some(parsed) = scripts.script_setup()
         {
-            scan_block(script, parsed, true, stem, &mut scan);
+            scan_block(script, parsed, true, &mut scan);
         }
         if scan.count > 1 {
             return;
@@ -70,6 +71,36 @@ impl Rule for MatchComponentFileName {
                     .with_help(HELP),
             );
         }
+    }
+}
+
+/// Definitions count file-wide; reports are dropped when more than one.
+struct Scan<'stem> {
+    stem: &'stem str,
+    count: u32,
+    misses: Vec<Miss>,
+}
+
+struct Miss {
+    name: String,
+    start: u32,
+    end: u32,
+}
+
+impl DefinitionSink for Scan<'_> {
+    fn definition(&mut self) {
+        self.count += 1;
+    }
+
+    fn name(&mut self, name: &str, start: u32, end: u32) {
+        if names_match(name, self.stem) {
+            return;
+        }
+        self.misses.push(Miss {
+            name: name.to_compact_string(),
+            start,
+            end,
+        });
     }
 }
 

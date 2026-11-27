@@ -91,6 +91,11 @@ export function getRuleOptions(
       }
       break;
     }
+    case "vue/component-definition-name-casing":
+      if (options.length === 1 && (firstOption === "PascalCase" || firstOption === "kebab-case")) {
+        return { ruleOptions: { "vue/component-definition-name-casing": firstOption } };
+      }
+      break;
     case "vue/mustache-interpolation-spacing":
       if (isMustacheInterpolationSpacingStyle(firstOption)) {
         return { ruleOptions: { "vue/mustache-interpolation-spacing": firstOption } };
