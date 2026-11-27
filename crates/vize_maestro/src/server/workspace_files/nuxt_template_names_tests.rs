@@ -35,7 +35,7 @@ fn write(root: &Path, relative: &str, source: &str) {
     std::fs::write(path, source).unwrap();
 }
 
-fn fixture(source: &str) -> vize_carton::String {
+fn fixture(source: &str) -> vize_l0::String {
     std::fs::read_to_string(Path::new(FIXTURE).join(source))
         .unwrap()
         .into()
