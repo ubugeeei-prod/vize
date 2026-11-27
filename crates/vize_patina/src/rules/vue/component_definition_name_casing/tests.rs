@@ -263,6 +263,22 @@ fn escaped_keys_computed_key_trivia_and_line_comments_reach_the_scanner() {
 }
 
 #[test]
+fn computed_member_registrations_follow_the_upstream_identifier_selector() {
+    assert_eq!(
+        pascal("<script>app[component]('bad_name', {})</script>"),
+        ["'bad_name'"]
+    );
+    for member in ["['component']", "[\"component\"]", "[`component`]"] {
+        // Upstream's registration visitor selects an Identifier property.
+        // Its independent definition visitor still checks the object's name.
+        let source = format!(
+            "<script>app{member}('bad_registration', {{ name: 'bad_definition' }})</script>"
+        );
+        assert_eq!(pascal(&source), ["'bad_definition'"], "{member}");
+    }
+}
+
+#[test]
 fn wrapped_typescript_default_objects_keep_definition_names() {
     for expression in [
         "{ name: 'bad_name' } as ComponentOptions",

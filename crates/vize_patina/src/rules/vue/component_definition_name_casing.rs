@@ -249,6 +249,8 @@ fn is_member_name(source: &[u8], at: usize) -> bool {
     match rest.next() {
         // `.component` and `?.component`.
         Some(b'.') => true,
+        // Upstream also selects the identifier in `app[component](...)`.
+        Some(b'[') => true,
         // A block comment before it; let the parse decide.
         Some(b'/') => rest.next() == Some(&b'*'),
         Some(byte) if !byte.is_ascii() => true,

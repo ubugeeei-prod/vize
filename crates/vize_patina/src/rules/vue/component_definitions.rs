@@ -11,8 +11,8 @@
 pub(super) mod casing;
 
 use oxc_ast::ast::{
-    Argument, CallExpression, ExportDefaultDeclaration, Expression, NewExpression,
-    ObjectExpression, ObjectPropertyKind, PropertyKey,
+    Argument, CallExpression, ExportDefaultDeclaration, Expression, MemberExpression,
+    NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
 };
 use oxc_ast_visit::{
     Visit,
@@ -106,10 +106,23 @@ impl<S: DefinitionSink> Scanner<'_, S> {
         let Some(member) = call.callee.get_inner_expression().as_member_expression() else {
             return;
         };
-        let Some(prop) = member.static_property_name() else {
+        let Some(object_name) = identifier_name(member.object()) else {
             return;
         };
-        let Some(object_name) = identifier_name(member.object()) else {
+        // Upstream's registration visitor selects an Identifier property,
+        // including `app[component]`, but not `app['component']`. Component
+        // definition objects below use static names independently.
+        let registration = match member {
+            MemberExpression::StaticMemberExpression(member) => member.property.name == "component",
+            MemberExpression::ComputedMemberExpression(member) => {
+                matches!(&member.expression, Expression::Identifier(name) if name.name == "component")
+            }
+            MemberExpression::PrivateFieldExpression(_) => false,
+        };
+        if registration && call.arguments.len() == 2 {
+            self.verify_argument(call.arguments.first());
+        }
+        let Some(prop) = member.static_property_name() else {
             return;
         };
         let defines_component = if object_name == "Vue" {
@@ -117,9 +130,6 @@ impl<S: DefinitionSink> Scanner<'_, S> {
         } else {
             matches!(prop, "component" | "mixin")
         };
-        if prop == "component" && call.arguments.len() == 2 {
-            self.verify_argument(call.arguments.first());
-        }
         if defines_component && let Some(object) = call.arguments.last().and_then(object_argument) {
             self.count_object(object);
         }
