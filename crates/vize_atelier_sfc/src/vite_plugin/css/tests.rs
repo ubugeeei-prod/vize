@@ -7,9 +7,10 @@ fn resolves_custom_media_and_deep_selectors() {
     let css = "@custom-media --mobile (max-width: 768px);\n.foo { color: red; }\n@media (--mobile) { .foo :deep(.bar) { color: blue; } }";
     let result = resolve_css_imports(css, "/project/Component.vue", &[], false, None);
 
-    assert!(!result.contains("@custom-media"));
-    assert!(result.contains("@media (max-width: 768px)"));
-    assert!(result.contains(".foo .bar"));
+    assert_eq!(
+        result,
+        "\n.foo { color: red; }\n@media (max-width: 768px) { .foo .bar { color: blue; } }"
+    );
 }
 
 #[test]
@@ -42,14 +43,21 @@ fn served_stylesheets_read_only_inside_their_roots() {
     let roots = [root.clone()];
 
     let served = resolve_css_imports_in(css, importer, &[], true, None, Some(&roots));
-    assert!(served.contains(".theme { color: red; }"));
-    assert!(served.contains("@import '../../outside.css';"));
-    assert!(served.contains("/@fs/"));
-    assert!(served.contains("url(../../outside.css)"));
+    // Only `theme.css` and `logo.svg` sit inside the served root.
+    let logo = normalize_path_for_url(&root.join("src").join("./logo.svg"));
+    let expected = std::format!(
+        ".theme {{ color: red; }}\n@import '../../outside.css';\n\
+         .a {{ background: url(\"/@fs{logo}\"); }}\n.b {{ background: url(../../outside.css); }}"
+    );
+    assert_eq!(served.as_str(), expected.as_str());
 
-    // A build reads what the stylesheet names.
+    // A build reads every file the stylesheet names and rewrites no URL.
     let built = resolve_css_imports(css, importer, &[], false, None);
-    assert!(built.contains(".outside { color: blue; }"));
+    assert_eq!(
+        built,
+        ".theme { color: red; }\n.outside { color: blue; }\n\
+         .a { background: url(./logo.svg); }\n.b { background: url(../../outside.css); }"
+    );
 }
 
 #[test]
