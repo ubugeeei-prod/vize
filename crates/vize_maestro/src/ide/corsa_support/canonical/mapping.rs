@@ -111,11 +111,13 @@ pub(crate) fn in_static_attribute_value(source: &str, offset: usize) -> bool {
         let value_end = value_start + length;
         if (value_start..=value_end).contains(&target) {
             // `<slot name="heading">` declares a slot: renaming it is a
-            // symbol rename.
+            // symbol rename. `<script generic="T extends Item">` holds
+            // TypeScript type parameters and their constraints.
             return !name.is_empty()
                 && !name.starts_with([':', '@', '#', '.'])
                 && !name.starts_with("v-")
-                && !(tag_name == "slot" && name == "name");
+                && !(tag_name == "slot" && name == "name")
+                && !(tag_name == "script" && name == "generic");
         }
         index = value_end + 1;
     }
@@ -460,6 +462,12 @@ mod static_attribute_tests {
         let at = |needle: &str| slot.find(needle).unwrap() + 1;
         assert_eq!(
             [at("heading"), at("Hello")].map(|offset| in_static_attribute_value(slot, offset)),
+            [false, true]
+        );
+        let script = r#"<script setup lang="ts" generic="T extends Item">"#;
+        let at = |needle: &str| script.find(needle).unwrap() + 1;
+        assert_eq!(
+            [at("Item"), at("ts\"")].map(|offset| in_static_attribute_value(script, offset)),
             [false, true]
         );
     }

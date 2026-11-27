@@ -23,8 +23,27 @@ fn offset(source: &str, line: usize, column: usize) -> u32 {
     (before + prefix) as u32
 }
 
+/// `content` declares `computed<{ ... } | null>`, so TypeScript, not this
+/// rule, decides whether its `default`-less switch over `entry.type` is
+/// exhaustive; the eslint-plugin-vue report there has no type to go on.
 #[test]
-fn three_original_n8n_getters_keep_complete_authored_reports() {
+fn typed_original_n8n_getter_leaves_its_switch_to_typescript() {
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/linter/computed-return-flow-8828/WorkflowReviewActivityEventEntry.vue.fixture"
+    );
+    let filename = "WorkflowReviewActivityEventEntry.vue";
+    let expected = LintResult {
+        filename: filename.into(),
+        warning_count: 0,
+        error_count: 0,
+        diagnostics: vec![],
+    };
+    let actual = linter().lint_sfc(source, filename);
+    assert_eq!(format!("{actual:#?}"), format!("{expected:#?}"));
+}
+
+#[test]
+fn untyped_original_n8n_getters_keep_complete_authored_reports() {
     for (filename, source, start_line, start_column, end_line, end_column) in [
         (
             "RunStatusPill.vue",
@@ -44,16 +63,6 @@ fn three_original_n8n_getters_keep_complete_authored_reports() {
             33,
             24,
             54,
-            2,
-        ),
-        (
-            "WorkflowReviewActivityEventEntry.vue",
-            include_str!(
-                "../../../tests/_fixtures/differential/linter/computed-return-flow-8828/WorkflowReviewActivityEventEntry.vue.fixture"
-            ),
-            112,
-            11,
-            191,
             2,
         ),
     ] {
@@ -132,6 +141,107 @@ fn reachable_completion_controls() {
         assert_eq!(actual.error_count, errors, "{body}: {actual:#?}");
         assert_eq!(actual.warning_count, 0, "{body}: {actual:#?}");
         assert_eq!(actual.diagnostics.len(), errors, "{body}: {actual:#?}");
+    }
+}
+
+/// A declared return type that excludes `undefined` leaves the exhaustiveness
+/// of a `default`-less switch to TypeScript; every other path is unchanged.
+#[test]
+fn declared_return_types_leave_default_less_switches_to_typescript() {
+    let switch = "switch(kind){case 'a':return 'A';case 'b':return 'B'}";
+    for (source, errors) in [
+        (format!("computed<string>(()=>{{{switch}}})"), 0),
+        (format!("computed((): string=>{{{switch}}})"), 0),
+        (format!("computed(function(): string{{{switch}}})"), 0),
+        (format!("computed<'A' | ('B')>(()=>{{{switch}}})"), 0),
+        (format!("computed<Label>(()=>{{{switch}}})"), 0),
+        (
+            format!("computed<string>({{get(){{{switch}}},set(v){{}}}})"),
+            0,
+        ),
+        (
+            format!("computed({{get(): string{{{switch}}},set(v){{}}}})"),
+            0,
+        ),
+        (
+            format!("export default{{computed:{{label(): string{{{switch}}}}}}}"),
+            0,
+        ),
+        (
+            format!("computed<string>(()=>{{if(ok){{{switch}}}else return 'C'}})"),
+            0,
+        ),
+        (format!("computed<string>(()=>{{if(ok){{{switch}}}}})"), 1),
+        (format!("computed<string>(()=>{{label:{{{switch}}}}})"), 0),
+        (format!("computed(()=>{{{switch}}})"), 1),
+        (
+            format!("export default{{computed:{{label(){{{switch}}}}}}}"),
+            1,
+        ),
+        (format!("computed<string | undefined>(()=>{{{switch}}})"), 1),
+        (format!("computed<(void)>(()=>{{{switch}}})"), 1),
+        (format!("computed<any>(()=>{{{switch}}})"), 1),
+        (format!("computed<unknown>(()=>{{{switch}}})"), 1),
+        (format!("computed((): string | undefined=>{{{switch}}})"), 1),
+        (
+            "computed<string>(()=>{switch(kind){case 'a':break;case 'b':return 'B'}})".into(),
+            1,
+        ),
+        ("computed<string>(()=>{if(ok)return 'A'})".into(), 1),
+        (
+            "computed<string>(()=>{switch(kind){case 'a':return}})".into(),
+            1,
+        ),
+        (
+            "computed<string>(()=>{switch(kind){case 'a':throw Error()}return 'B'})".into(),
+            0,
+        ),
+        (
+            "computed<string>(()=>{try{switch(kind){case 'a':return 'A'}}finally{}})".into(),
+            0,
+        ),
+        (
+            "computed<string>(()=>{try{switch(kind){case 'a':return 'A'}}finally{return}})".into(),
+            1,
+        ),
+    ] {
+        let source = format!("import {{computed}} from 'vue';{source}");
+        let actual = linter().lint_script(&source, "typed.ts");
+        assert_eq!(actual.error_count, errors, "{source}: {actual:#?}");
+        assert_eq!(actual.diagnostics.len(), errors, "{source}: {actual:#?}");
+    }
+}
+
+/// The reporter's exhaustive `computed<string>` switch is clean, and the
+/// untyped and `undefined`-admitting controls in the pinned fixture still report.
+#[test]
+fn pinned_switch_fixture_reports_only_untyped_fallthroughs() {
+    for (filename, source, errors) in [
+        (
+            "ExhaustiveComputed.vue",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/computed-switch-declared-type/ExhaustiveComputed.vue.txt"
+            ),
+            0,
+        ),
+        (
+            "SwitchControls.vue",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/computed-switch-declared-type/SwitchControls.vue.txt"
+            ),
+            2,
+        ),
+        (
+            "OptionsGetters.vue",
+            include_str!(
+                "../../../tests/_fixtures/differential/linter/computed-switch-declared-type/OptionsGetters.vue.txt"
+            ),
+            1,
+        ),
+    ] {
+        let actual = linter().lint_sfc(source, filename);
+        assert_eq!(actual.error_count, errors, "{filename}: {actual:#?}");
+        assert_eq!(actual.diagnostics.len(), errors, "{filename}: {actual:#?}");
     }
 }
 

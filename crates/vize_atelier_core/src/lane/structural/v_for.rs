@@ -21,11 +21,15 @@ fn retained_alias_names<'n, 'a>(alias: &'n Option<ExpressionNode<'a>>) -> Option
 }
 
 /// Transform v-for directive
+///
+/// `node` is the element carrying the directive. It is replaced with the
+/// `ForNode` that renders it.
 pub fn transform_v_for<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent<'a>>,
+    node: &mut TemplateChildNode<'a>,
 ) -> Option<ExitFns<'a>> {
-    transform_for_scope(ctx, exp, false)
+    transform_for_scope(ctx, exp, false, node)
 }
 
 /// [`transform_v_for`], or the lexical scope a patterned-template `v-match`
@@ -35,6 +39,7 @@ pub(in crate::lane) fn transform_for_scope<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent<'a>>,
     match_scope: bool,
+    node: &mut TemplateChildNode<'a>,
 ) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
 
@@ -54,8 +59,7 @@ pub(in crate::lane) fn transform_for_scope<'a>(
     };
 
     // Take the current element from parent
-    let taken = ctx.take_current_node();
-    let taken_node = taken?;
+    let taken_node = ctx.take_node(node);
 
     let element_loc = match &taken_node {
         TemplateChildNode::Element(el) => el.loc.clone(),
@@ -148,7 +152,7 @@ pub(in crate::lane) fn transform_for_scope<'a>(
     };
 
     // Replace placeholder with ForNode
-    ctx.replace_node(TemplateChildNode::For(Box::new_in(for_node, &allocator)));
+    *node = TemplateChildNode::For(Box::new_in(for_node, &allocator));
 
     // Add helpers
     if !match_scope {

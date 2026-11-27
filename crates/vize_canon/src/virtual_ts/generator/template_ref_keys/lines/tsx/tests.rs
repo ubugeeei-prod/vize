@@ -1,5 +1,6 @@
 use super::super::super::InferredCall;
 use super::super::super::TemplateRefKeyChecks;
+use super::super::super::owners::Owner;
 use crate::virtual_ts::generator::script_module::collect_script_module_plan;
 use crate::virtual_ts::{VizeMapping, VizeSubSpan};
 use std::borrow::Cow;
@@ -61,6 +62,7 @@ fn template_ref_callee_and_arrow_share_original_coordinates() {
             name: "useTemplateRef".into(),
             imported,
             statement_start: 0,
+            owner: Owner::Setup,
             literal: None,
         }];
         let helper = "__privateRef";

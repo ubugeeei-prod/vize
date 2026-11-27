@@ -315,6 +315,11 @@ fn extract_runtime_prop_type_from_array_element(
         oxc_ast::ast::ArrayExpressionElement::BooleanLiteral(_) => {
             Some(CompactString::new("boolean"))
         }
+        // Vue accepts `null` beside the constructors of a type array and
+        // infers it as a member of the union: `[String, null]` is
+        // `string | null`. A lone `type: null` is not an element and stays
+        // untyped, as Vue types it `any`.
+        oxc_ast::ast::ArrayExpressionElement::NullLiteral(_) => Some(CompactString::new("null")),
         oxc_ast::ast::ArrayExpressionElement::ObjectExpression(_) => {
             Some(CompactString::new("Record<string, unknown>"))
         }

@@ -1,8 +1,8 @@
 use super::*;
 use crate::SourceLocation;
 use crate::errors::{CompilerError, ErrorCode};
+use crate::lane::TransformContext;
 use crate::lane::traverse::traverse_children;
-use crate::lane::{ParentNode, TransformContext};
 use crate::options::TransformOptions;
 use crate::parser::parse;
 use vize_l0::Allocator;
@@ -13,7 +13,7 @@ fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
-    traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+    traverse_children(&mut ctx, &mut root.children);
     ctx.errors
 }
 
