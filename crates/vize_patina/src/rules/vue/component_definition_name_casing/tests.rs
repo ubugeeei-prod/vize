@@ -277,5 +277,8 @@ fn pinned_issue_sources_report_each_definition_name() {
     }
     let helper = issue_source!("HelperChild.vue.txt");
     assert_eq!(pascal(helper), Vec::<String>::new());
-    assert!(issue_source!("lint.config.mjs.txt").contains(RULE));
+    assert_eq!(
+        issue_source!("lint.config.mjs.txt"),
+        "export default { vue: { linter: { rules: { \"vue/component-definition-name-casing\": \"error\" } } } };\n"
+    );
 }
