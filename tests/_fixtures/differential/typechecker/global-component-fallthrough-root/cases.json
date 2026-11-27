@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "issue": 13721,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig-events.json.txt"
+        },
+        {
+          "file": "components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "Foo.vue",
+          "source": "InputRoot.vue.txt"
+        },
+        {
+          "file": "Bar.vue",
+          "source": "EmitsGlobalRoot.vue.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "Listener.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "listener-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig-events.json.txt"
+        },
+        {
+          "file": "components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "Foo.vue",
+          "source": "InputRoot.vue.txt"
+        },
+        {
+          "file": "Bar.vue",
+          "source": "EmitsGlobalRoot.vue.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "ListenerPayload.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "App.vue",
+          "line": 6,
+          "column": 35,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'KeyboardEvent'."
+        }
+      ]
+    },
+    {
+      "id": "attribute",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig-attrs.json.txt"
+        },
+        {
+          "file": "components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "Foo.vue",
+          "source": "InputRoot.vue.txt"
+        },
+        {
+          "file": "Bar.vue",
+          "source": "GlobalRoot.vue.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "Attribute.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-attribute",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig-attrs.json.txt"
+        },
+        {
+          "file": "components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "Foo.vue",
+          "source": "InputRoot.vue.txt"
+        },
+        {
+          "file": "Bar.vue",
+          "source": "GlobalRoot.vue.txt"
+        },
+        {
+          "file": "App.vue",
+          "source": "UnknownAttribute.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "App.vue",
+          "line": 6,
+          "column": 8,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"nope\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { about?: unknown; accept?: unknown; accesskey?: unknown; alt?: unknown; \"aria-activedescendant\"?: unknown; \"aria-atomic\"?: unknown; \"aria-autocomplete\"?: unknown; \"aria-busy\"?: unknown; \"aria-checked\"?: unknown; ... 208 more ...; width?: unknown; }>'."
+        }
+      ]
+    }
+  ]
+}

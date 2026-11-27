@@ -35,6 +35,7 @@ mod exact_optional_props;
 mod external_esm_module_augmentation;
 mod external_slot_payloads;
 mod fallthrough_builtin_roots;
+mod fallthrough_global_roots;
 mod fallthrough_known_attributes;
 mod generic_component_cast;
 mod generic_component_mount_slots;

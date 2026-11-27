@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ baz: [] }>();
+</script>
+
+<template>
+  <Foo />
+</template>
