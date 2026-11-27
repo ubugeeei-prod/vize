@@ -69,6 +69,8 @@ function run(collected: Collected): void {
     ruleOptionsJson: ruleOptions ? JSON.stringify(ruleOptions) : undefined,
     ...directRuleOptions,
     includeFixes: true,
+    // ESLint also runs in editor servers that lint the same files again after edits, so each call reads fresh type sources
+    runScopedTypeSources: false,
   });
   if (result.filename !== collected.filename) {
     throw new Error("Vize returned diagnostics for another ESLint source");
