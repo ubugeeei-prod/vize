@@ -63,7 +63,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // Same-name bindings add two literal fixtures: both spellings with a
         // modifier, a property bind and a longform bind.
-        + 2,
+        + 2
+        // Component `for` IDs add six literal fixtures.
+        + 6,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -261,6 +263,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         // Nuxt mode suffixes, `v-t` content and a static `is` add two calls on
         // existing literals and four helper-driven calls.
+        + 6
+        // Component `for` IDs add six literal calls.
         + 6,
     rule_fixture_skipped: 87
         + 4
@@ -392,7 +396,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The duplicate-class report-node fixture retains twenty trace lines.
         + 20
         // The two same-name binding fixtures retain twenty trace lines.
-        + 20,
+        + 20
+        // The six component `for` ID fixtures retain forty-one trace lines.
+        + 41,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

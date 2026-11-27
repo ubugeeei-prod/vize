@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import MyInput from './MyInput.vue'
+</script>
+<template>
+  <!-- An id on a component falls through or is forwarded as a prop. -->
+  <label for="email">Email</label>
+  <MyInput id="email" />
+  <!-- A bound static string is the same id. -->
+  <label for="phone">Phone</label>
+  <MyInput :for="'phone'" />
+  <!-- Reported: nothing defines this id. -->
+  <label for="missing">Missing</label>
+  <!-- Reported: ARIA references on components stay checked. -->
+  <MyInput for="search" aria-describedby="search-hint" />
+</template>
