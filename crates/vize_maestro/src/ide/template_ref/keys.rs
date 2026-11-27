@@ -255,3 +255,7 @@ fn is_identifier_name(key: &str) -> bool {
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
+
+#[cfg(test)]
+#[cfg(feature = "native")]
+mod wire_tests;

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/template-ref-key-element-definitions",
+  "provenance": {
+    "fixCommit": "7b56c699fefb018e351e4ac63d936897bcf27b8d",
+    "witnessPath": "crates/vize_maestro/src/ide/template_ref/keys/wire_tests.rs",
+    "witnessTest": "pinned_fixtures_answer_over_the_wire",
+    "inputOrigin": "repository-authored script setup SFC: useTemplateRef('item') registered by a v-for ref=\"item\" element and a bound :ref=\"'item'\"",
+    "contractOrigin": "complete definition response at the call argument: both registering elements, in source order"
+  },
+  "files": [
+    {
+      "runtimePath": "App.vue",
+      "source": "App.vue.txt",
+      "sha256": "d4b18f83721d3c478b1bb64ea6a74ce01bfb6d04b9b148b73a8dbffb87502612"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "method": "textDocument/definition",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "a1a66612b12607caeaa0fd376905fb43c7f9cb4c48977d802b9c84f152649575"
+  },
+  "scope": "standard legacy definition only; production stdio replay required; no native provider credit"
+}

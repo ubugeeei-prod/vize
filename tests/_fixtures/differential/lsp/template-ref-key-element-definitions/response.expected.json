@@ -1,0 +1,34 @@
+{
+  "position": {
+    "line": 3,
+    "character": 48
+  },
+  "result": [
+    {
+      "range": {
+        "end": {
+          "character": 41,
+          "line": 8
+        },
+        "start": {
+          "character": 37,
+          "line": 8
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    },
+    {
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 10
+        },
+        "start": {
+          "character": 12,
+          "line": 10
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  ]
+}
