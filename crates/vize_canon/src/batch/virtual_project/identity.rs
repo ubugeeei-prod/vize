@@ -66,19 +66,34 @@ fn project_virtual_root_for_key(project_root: &Path, project_key: &vize_carton::
 }
 
 fn project_canon_storage_root(project_root: &Path) -> PathBuf {
-    let temporary = std::env::temp_dir();
+    // Without this user's temporary directory, the project root makes the
+    // cache fall through to the checked tree's sibling below.
+    let temporary = user_temporary_root().unwrap_or(project_root);
     if let Some(cache) = std::env::var_os(CACHE_ROOT_ENV).filter(|value| !value.is_empty()) {
-        return configured_cache_root(project_root, Path::new(&cache), &temporary);
+        return configured_cache_root(project_root, Path::new(&cache), temporary);
     }
     #[cfg(test)]
     {
-        let cache = temporary.join(format!("vize-canon-test-{}", std::process::id()));
-        return configured_cache_root(project_root, &cache, &temporary);
+        let cache = std::env::temp_dir().join(format!("vize-canon-test-{}", std::process::id()));
+        return configured_cache_root(project_root, &cache, temporary);
     }
     #[cfg(not(test))]
-    let cache = dirs::cache_dir().unwrap_or_else(std::env::temp_dir);
+    let cache = dirs::cache_dir();
     #[cfg(not(test))]
-    external_cache_root(project_root, &cache, &temporary)
+    external_cache_root(
+        project_root,
+        cache.as_deref().unwrap_or(temporary),
+        temporary,
+    )
+}
+
+/// Where generated projects go when the cache directory cannot hold them: this
+/// user's own directory under the temporary directory, never the shared
+/// temporary directory itself, whose names anyone can create first.
+fn user_temporary_root() -> Option<&'static Path> {
+    static ROOT: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
+    ROOT.get_or_init(|| crate::corsa_bridge::create_user_temporary_root().ok())
+        .as_deref()
 }
 
 fn external_cache_root(project_root: &Path, cache: &Path, temporary: &Path) -> PathBuf {

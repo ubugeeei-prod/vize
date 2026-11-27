@@ -63052,6 +63052,35 @@
       }
     },
     {
+      "id": "typechecker/generated-project-user-storage",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generated-project-user-storage/Probe.vue.txt",
+          "sha256": "5a4c08be608b1eed1ddbf7a0fc54215240b482fd4ef3631fbdb73afc8bf08b06",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/generation-value-import-facts",
       "state": "active",
       "targets": [

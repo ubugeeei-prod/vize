@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const label: string = "ready";
+const count = label.length;
+</script>
+
+<template>
+  <p>{{ label.toUpperCase() }} {{ count.toFixed(1) }} {{ count.trim() }}</p>
+</template>
