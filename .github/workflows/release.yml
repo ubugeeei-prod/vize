@@ -806,10 +806,95 @@ jobs:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: node tools/support/release/publish_open_vsx_extension/main.ts "editor-extensions/$VSIX_SOURCE_PATH"
 
+  release-sbom:
+    name: Generate release SBOMs
+    needs:
+      - version
+      - tag
+      - publish-npm
+      - build-editor-platforms
+      - publication-quota
+    if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+    env:
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      RELEASE_SHA: ${{ needs.version.outputs.sha }}
+      EDITOR_PLATFORMS: ${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+          persist-credentials: false
+      - if: inputs.npm_resume_run == ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: cli-*
+          path: cli-artifacts
+          merge-multiple: true
+      - if: inputs.npm_resume_run != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: cli-*
+          path: cli-artifacts
+          merge-multiple: true
+          run-id: ${{ inputs.npm_resume_run }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+      - if: inputs.npm_resume_run == ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: editor-extensions
+          path: editor-extension-artifacts
+      - if: inputs.npm_resume_run != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: editor-extensions
+          path: editor-extension-artifacts
+          run-id: ${{ inputs.npm_resume_run }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+      - if: inputs.npm_resume_run == '' && env.EDITOR_PLATFORMS == '1'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: editor-extension-platform-*
+          path: editor-extension-artifacts/platform
+          merge-multiple: true
+      - if: inputs.npm_resume_run != '' && env.EDITOR_PLATFORMS == '1'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: editor-extension-platform-*
+          path: editor-extension-artifacts/platform
+          merge-multiple: true
+          run-id: ${{ inputs.npm_resume_run }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a
+        with:
+          artifact-name: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
+          format: cyclonedx-json
+          output-file: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
+          upload-artifact: false
+      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a
+        with:
+          artifact-name: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
+          format: spdx-json
+          output-file: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
+          upload-artifact: false
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-sbom
+          path: |-
+            vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
+            vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
+          if-no-files-found: error
   github-release:
     name: Create GitHub Release
-    needs: [version, tag, publish-npm, build-editor-platforms, publication-quota]
-    if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
+    needs: [version, tag, publish-npm, build-editor-platforms, publication-quota, release-sbom]
+    if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && needs.release-sbom.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # id-token mints the keyless cosign certificate.
@@ -873,18 +958,9 @@ jobs:
           run-id: ${{ inputs.npm_resume_run }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          artifact-name: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
-          format: cyclonedx-json
-          output-file: vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json
-          upload-artifact: false
-      - uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
-        with:
-          artifact-name: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
-          format: spdx-json
-          output-file: vize-${{ needs.version.outputs.tag }}-spdx.sbom.json
-          upload-artifact: false
+          name: release-sbom
       - uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
         with: { cosign-release: v2.4.1 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

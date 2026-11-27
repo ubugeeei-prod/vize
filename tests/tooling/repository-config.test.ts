@@ -76,3 +76,99 @@ test("inserting and reordering workflow steps keeps comments on their owning ste
     assert.equal(renderRepositoryYaml({ steps }, rendered, false), rendered);
   }
 });
+
+test("a new key, a longer flow list and replaced block items keep the rest of the layout", () => {
+  const source = [
+    "jobs:",
+    "  build:",
+    "    needs: [version, tag]",
+    "    steps:",
+    "      - uses: setup # v1",
+    "        with: { node-version-file: package.json }",
+    "      - uses: scan # v2",
+    "        with: { format: spdx }",
+    "      - uses: scan # v2",
+    "        with: { format: cyclonedx }",
+    "      - run: >",
+    "          sign",
+    "          files",
+    "  release:",
+    "    runs-on: ubuntu",
+    "",
+  ].join("\n");
+  const config = {
+    jobs: {
+      build: {
+        needs: ["version", "tag", "scan"],
+        steps: [
+          { uses: "setup", with: { "node-version-file": "package.json" } },
+          { uses: "download", with: { name: "scan" } },
+          { run: "sign files\n" },
+        ],
+      },
+      scan: { needs: ["version"], steps: [{ uses: "scan" }] },
+      release: { "runs-on": "ubuntu" },
+    },
+  };
+  const rendered = renderRepositoryYaml(config, source);
+  assert.deepEqual(parse(rendered), config);
+  assert.equal(
+    rendered,
+    [
+      "jobs:",
+      "  build:",
+      "    needs: [version, tag, scan]",
+      "    steps:",
+      "      - uses: setup # v1",
+      "        with: { node-version-file: package.json }",
+      "      - uses: download",
+      "        with:",
+      "          name: scan",
+      "      - run: >",
+      "          sign",
+      "          files",
+      "  scan:",
+      "    needs:",
+      "      - version",
+      "    steps:",
+      "      - uses: scan",
+      "  release:",
+      "    runs-on: ubuntu",
+      "",
+    ].join("\n"),
+  );
+  assert.equal(renderRepositoryYaml(config, rendered), rendered);
+});
+
+test("a mapping that gains one scalar key gets it in place, in flow and block style", () => {
+  const source = [
+    "steps:",
+    "  - uses: setup # v1",
+    "    with: { node-version-file: package.json }",
+    "  - uses: setup # v1",
+    "    with:",
+    "      cache: true",
+    "",
+  ].join("\n");
+  const config = {
+    steps: [
+      { uses: "setup", with: { version: "1.8.0", "node-version-file": "package.json" } },
+      { uses: "setup", with: { version: "1.8.0", cache: true } },
+    ],
+  };
+  const rendered = renderRepositoryYaml(config, source);
+  assert.equal(
+    rendered,
+    [
+      "steps:",
+      "  - uses: setup # v1",
+      "    with: { version: 1.8.0, node-version-file: package.json }",
+      "  - uses: setup # v1",
+      "    with:",
+      "      version: 1.8.0",
+      "      cache: true",
+      "",
+    ].join("\n"),
+  );
+  assert.equal(renderRepositoryYaml(config, rendered), rendered);
+});
