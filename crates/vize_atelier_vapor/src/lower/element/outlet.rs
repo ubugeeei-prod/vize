@@ -58,11 +58,13 @@ pub(super) fn get_slot_outlet_name<'a>(
     )
 }
 
+/// The outlet's slot props, and whether it carries a template ref to register.
 pub(super) fn get_slot_outlet_props<'a>(
     ctx: &TransformContext<'a>,
     el: &ElementNode<'a>,
-) -> Vec<'a, IRProp<'a>> {
-    get_slot_props::<false>(ctx, el).0
+) -> (Vec<'a, IRProp<'a>>, bool) {
+    let (props, _, _, has_ref) = get_slot_props::<false>(ctx, el);
+    (props, has_ref)
 }
 
 pub(super) fn get_slot_outlet_props_and_scope<'a, 'b>(
@@ -72,15 +74,16 @@ pub(super) fn get_slot_outlet_props_and_scope<'a, 'b>(
     Vec<'a, IRProp<'a>>,
     super::super::key::ScopeDirectives<'a, 'b>,
     Box<'a, SimpleExpressionNode<'a>>,
+    bool,
 ) {
-    let (props, scope, name) = get_slot_props::<true>(ctx, el);
+    let (props, scope, name, has_ref) = get_slot_props::<true>(ctx, el);
     let name = name.unwrap_or_else(|| {
         Box::new_in(
             SimpleExpressionNode::new("default", true, SourceLocation::STUB),
             &ctx.allocator,
         )
     });
-    (props, scope, name)
+    (props, scope, name, has_ref)
 }
 
 fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
@@ -90,9 +93,11 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
     Vec<'a, IRProp<'a>>,
     super::super::key::ScopeDirectives<'a, 'b>,
     Option<Box<'a, SimpleExpressionNode<'a>>>,
+    bool,
 ) {
     let mut scope = super::super::key::ScopeDirectives::new(ctx.is_key_non_reactive());
     let mut name = None;
+    let mut has_ref = false;
     let mut props = Vec::new_in(&ctx.allocator);
 
     for prop in el.props.iter() {
@@ -111,6 +116,7 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
                     continue;
                 }
                 if is_template_ref_prop(attr.name) {
+                    has_ref |= attr.name == "ref";
                     continue;
                 }
 
@@ -148,6 +154,7 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
                             continue;
                         }
                         if arg.is_static && is_template_ref_prop(arg.content) {
+                            has_ref |= arg.content == "ref";
                             continue;
                         }
 
@@ -179,7 +186,7 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
         }
     }
 
-    (props, scope, name)
+    (props, scope, name, has_ref)
 }
 
 /// A template ref on an outlet targets the rendered slot fragment, so it is
@@ -194,7 +201,7 @@ pub(in crate::lower) fn transform_slot<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let (props, scope, name) = get_slot_outlet_props_and_scope(ctx, el);
+    let (props, scope, name, has_ref) = get_slot_outlet_props_and_scope(ctx, el);
     let (once, warning, _) = scope.finish();
     if let Some(warning) = warning {
         ctx.push_warning(warning);
@@ -215,7 +222,9 @@ pub(in crate::lower) fn transform_slot<'a>(
             parent: None,
             anchor: None,
         }));
-    super::template::transform_template_ref(ctx, el, id, block);
+    if has_ref {
+        super::template::transform_template_ref(ctx, el, id, block);
+    }
     block.returns.push(id);
     if once {
         ctx.exit_non_reactive_scope();
