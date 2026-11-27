@@ -1,7 +1,7 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
-use super::component_ref_props::is_inline_ref_callback_prop;
+use super::component_ref_props::{component_ref_callback_type, is_inline_ref_callback_prop};
 use super::inline_callback_classifier::is_direct_inline_function_prop_value;
 use crate::virtual_ts::helpers::{
     component_aria_prop_keys, shared_types, to_camel_case, to_safe_identifier_fragment,
@@ -252,7 +252,7 @@ pub(super) fn prop_alias_type(
 ) -> String {
     if !hoist_shared_preamble {
         if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
-            return String::from("$ComponentRefCallback");
+            return component_ref_callback_type(component_type_name, idx, false);
         }
         let normalized = prop_value_or(
             "$PropValueOr",
@@ -280,12 +280,11 @@ pub(super) fn prop_alias_type(
             resolved
         };
     }
-    let component_ref_callback = shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
     let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
     let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
     let prop_value_or_ref = shared_types::PROP_VALUE_OR.select(hoist_shared_preamble);
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
-        return String::from(component_ref_callback);
+        return component_ref_callback_type(component_type_name, idx, true);
     }
     let normalized = prop_value_or(
         prop_value_or_ref,

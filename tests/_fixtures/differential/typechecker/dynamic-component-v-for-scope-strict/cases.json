@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+  "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+  "checkerOptions": {
+    "strictInstanceGlobals": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "is-before-for",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "IsBeforeFor.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "for-before-is",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ForBeforeIs.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "is-before-for-property-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "IsBeforeFor.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 44,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'kind' does not exist on type '{ type: string; key: string; value: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "is-before-for-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "IsBeforeFor.unknown.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 39,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
+    },
+    {
+      "id": "for-before-is-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ForBeforeIs.unknown.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 61,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
+    }
+  ]
+}

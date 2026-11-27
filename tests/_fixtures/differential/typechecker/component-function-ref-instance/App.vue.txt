@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Exposed from './Exposed.vue'
+import Options from './Options.vue'
+</script>
+
+<template>
+  <Exposed label="a" :ref="(el) => el?.focus()" />
+  <Exposed label="b" :ref="(el) => el?.blur()" />
+  <Exposed label="c" :ref="(el) => { const count: number = el }" />
+  <Options :ref="(el) => el?.greet()" />
+  <Options :ref="(el) => el?.missing()" />
+</template>
