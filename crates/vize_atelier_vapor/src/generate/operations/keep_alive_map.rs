@@ -20,7 +20,10 @@ pub(super) fn dynamic_source(
 ) -> EmitDocument {
     let text = cstr!("() => ({{ [({})]: {} }})", key, value);
     let mapped_value = if map_computed
-        && prop.value_kind == PropValueKind::Expression
+        && matches!(
+            prop.value_kind,
+            PropValueKind::Expression | PropValueKind::RawGetter
+        )
         && !prop.key.is_handler_key
         && key == direct_key
     {

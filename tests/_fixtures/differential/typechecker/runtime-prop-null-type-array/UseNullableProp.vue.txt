@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import NullableProp from './NullableProp.vue'
+const selected = ref<string | null>(null)
+const count = ref<number | null>(null)
+</script>
+<template>
+  <NullableProp :case-id="selected" :count="count" />
+  <NullableProp :case-id="null" :count="null" />
+</template>

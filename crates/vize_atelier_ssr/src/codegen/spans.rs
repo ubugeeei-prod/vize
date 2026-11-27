@@ -13,6 +13,10 @@ use vize_l0::Span;
 
 use super::{SsrCodegenContext, TemplatePart};
 
+/// What a static part needs to stay inert inside a template literal. The
+/// backslash comes first: patterns are tried in order at each byte.
+const TEMPLATE_STATIC_ESCAPES: [(&str, &str); 3] = [("\\", "\\\\"), ("`", "\\`"), ("${", "\\${")];
+
 impl SsrCodegenContext<'_> {
     /// Whether this compile records a source map.
     pub(crate) fn spans_enabled(&self) -> bool {
@@ -125,10 +129,13 @@ impl SsrCodegenContext<'_> {
             .push(TemplatePart::Dynamic(piece));
     }
 
-    /// Write a static template-literal part, escaping `` ` `` and `${`, and
-    /// rebasing its links onto the escaped output.
+    /// Write a static template-literal part, escaping `\`, `` ` `` and `${`,
+    /// and rebasing its links onto the escaped output. Static parts are
+    /// authored HTML, never JavaScript escapes, so a backslash is literal
+    /// text: left alone it would start an escape sequence, and one in front
+    /// of a backtick would cancel that backtick's own escape.
     pub(super) fn push_template_static(&mut self, part: &EmitDocument) {
-        self.out.push_escaped(part, &[("`", "\\`"), ("${", "\\${")]);
+        self.out.push_escaped(part, &TEMPLATE_STATIC_ESCAPES);
     }
 }
 

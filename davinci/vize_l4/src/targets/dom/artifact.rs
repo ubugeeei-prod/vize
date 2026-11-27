@@ -104,6 +104,8 @@ mod run;
 mod slot_root;
 mod slots;
 mod static_cache;
+#[cfg(test)]
+mod string_literal_tests;
 mod style;
 mod style_carrier;
 mod tpl;

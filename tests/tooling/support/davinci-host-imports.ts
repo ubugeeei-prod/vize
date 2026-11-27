@@ -11,6 +11,9 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
     /\bvize_carton::(?:corsa_(?:api_mode|resolver)|VERSION)\b/gu,
     "host_runtime",
   );
+  // Nuxt project facts come from the filesystem. The CLI and the editor share
+  // the one Carton reader so both lint a Nuxt project the same way.
+  storage = storage.replace(/\bvize_carton::nuxt\b/gu, "host_nuxt_project");
   if (file === "crates/vize/src/config.rs") {
     storage = storage.replace(/^pub use vize_carton::config::\*;$/gmu, "host_config_facade");
   }

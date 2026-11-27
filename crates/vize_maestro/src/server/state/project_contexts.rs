@@ -281,6 +281,7 @@ impl ServerState {
         let mut state = ServerState::new();
         state.project_contexts.evaluation_session = self.configuration_evaluation_session();
         state.project_contexts.marker_cache = Arc::clone(&self.project_contexts.marker_cache);
+        state.nuxt_template_globals = Arc::clone(&self.nuxt_template_globals);
         state.documents = self.documents.clone();
         *state.project_contexts.owner.write() = Some(Arc::downgrade(self));
         *state.project_contexts.key.write() = Some(key.clone());

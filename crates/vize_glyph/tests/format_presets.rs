@@ -1,6 +1,6 @@
 //! Block-tag attribute order and formatter presets (#6098).
 
-use vize_glyph::{FormatOptions, FormatPreset, format_sfc};
+use vize_glyph::{BlockSpacing, FormatOptions, FormatPreset, format_sfc};
 
 #[test]
 fn block_attributes_follow_sort_attributes() {
@@ -122,6 +122,7 @@ const id = "a";
         options.reindent_preprocessor_styles,
         defaults.reindent_preprocessor_styles
     );
+    assert_eq!(options.block_spacing, defaults.block_spacing);
 }
 
 #[test]
@@ -141,6 +142,7 @@ fn compact_preset_keeps_dense_authored_layout_at_a_fixed_point() {
     assert!(!options.normalize_v_for_parens);
     assert!(!options.self_close_void_elements);
     assert!(!options.reindent_preprocessor_styles);
+    assert_eq!(options.block_spacing, BlockSpacing::BlankLine);
 
     let formatted = format_sfc(source, &options).expect("compact format").code;
     assert_eq!(formatted.as_str(), expected);
@@ -175,6 +177,7 @@ fn documentation_preset_keeps_examples_readable_at_a_fixed_point() {
     assert!(!options.normalize_v_for_parens);
     assert!(!options.self_close_void_elements);
     assert!(!options.reindent_preprocessor_styles);
+    assert_eq!(options.block_spacing, BlockSpacing::BlankLine);
 
     let formatted = format_sfc(source, &options)
         .expect("documentation format")
@@ -316,6 +319,7 @@ fn default_options_serialize_as_the_published_reference() {
     ] {
         compatibility[key] = serde_json::json!(true);
     }
+    compatibility["blockSpacing"] = serde_json::json!("preserve");
     assert_eq!(
         serde_json::to_value(FormatOptions::prettier_compat()).expect("serialize"),
         compatibility

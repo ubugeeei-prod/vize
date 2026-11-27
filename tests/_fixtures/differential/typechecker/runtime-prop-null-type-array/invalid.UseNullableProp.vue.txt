@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import NullableProp from './NullableProp.vue'
+</script>
+<template>
+  <NullableProp :case-id="1" :count="'1'" />
+</template>

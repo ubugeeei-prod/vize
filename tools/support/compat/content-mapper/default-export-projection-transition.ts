@@ -26,7 +26,7 @@ const bytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(bytes).digest("hex"),
-  "48c528aa98936322ef8162d6013c5f87cd5871d1af8ba05dd928fdbe0f492b57",
+  "7c3d10799a562895a81aa275a15f790ad4071a1083676d012977d09246b2f298",
 );
 const record = JSON.parse(bytes.toString("utf8")) as SourceRecord;
 assert.equal(record.schema, "vize.defaultExportProjectionSource.v1");

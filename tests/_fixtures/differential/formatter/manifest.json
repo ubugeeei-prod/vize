@@ -1823,6 +1823,131 @@
       ]
     },
     {
+      "id": "formatter/sfc/empty-element-closing-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-empty-element-closing-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "50c6353c3491d617cd0e3cc4c2fdc9b3492321f9703551e04bf938255a82399c",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          13797
+        ],
+        "commits": [
+          {
+            "sha": "e82d9a3789ab964ff9a5ff37e87243b021acf6d8",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/tags.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13797,
+            "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+            "symbol": "empty_element_wraps_attributes_when_its_closing_tag_overflows"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+          "symbol": "empty_element_wraps_attributes_when_its_closing_tag_overflows",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence",
+            "LF-CRLF"
+          ],
+          "limitations": [
+            "The fixture covers the default preset at print width 100; the exact-width boundary under the Prettier preset stays in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "empty ordinary and raw-text elements whose start tag plus closing tag crosses print width, next to one that fits exactly"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-empty-element-closing-width/reference.expected.txt",
+              "sha256": "92265a0eac3e2bc0ec08d637ff66fb28f2d0cb03e6a24fba7d421aa6ac114646",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13797,
+                "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+                "symbol": "empty_element_wraps_attributes_when_its_closing_tag_overflows",
+                "assertion": "An empty element wraps its attributes when the start tag plus its closing tag would cross print width."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [],
+          "referenceState": "issue-derived default-preset layout; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/encoded-ampersand-data-6098",
       "state": "active",
       "targets": [
@@ -1971,7 +2096,9 @@
         "config": []
       },
       "provenance": {
-        "issues": [],
+        "issues": [
+          13797
+        ],
         "commits": [
           {
             "sha": "b3858ac9b7d886c07e8c2f1075e13d4fa19bcb57",
@@ -2038,13 +2165,13 @@
           "artifacts": [
             {
               "path": "sfc-hugged-child-whitespace-width/reference.expected.txt",
-              "sha256": "cddda51c2a72ff7abde51a283e4e305a6cdcf074b0291d7bc527609eb6b90a71",
+              "sha256": "48a1d3dab81df7b6844d985621f309777c4b85b6526853b081e4910c65076aaf",
               "role": "repository-authored-regression-reference",
               "provenance": {
                 "revision": "fb43a8ba1883dfd64114b610fe314ed8ce86b777",
                 "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
                 "symbol": "whitespace_only_child_measures_like_an_empty_child",
-                "assertion": "Hugged whitespace children print their first-pass layout and stay byte-stable."
+                "assertion": "Hugged whitespace children print like empty ones, count their closing tag toward print width, and stay byte-stable."
               },
               "mediaType": "text/x-vue",
               "runtimeFileName": "App.vue"
@@ -2059,7 +2186,7 @@
           "missingFields": [
             "structured FormatResult.changed is covered by the Rust convergence witness"
           ],
-          "referenceState": "repository-authored real-project-derived width contract; exact-source Actions required"
+          "referenceState": "repository-authored real-project-derived width contract, re-captured when empty closing tags joined the start-tag width (issue 13797); exact-source Actions required"
         }
       },
       "comparison": {
@@ -3523,6 +3650,270 @@
             "structured-FormatResult.changed; public Rust witness covers this field"
           ],
           "referenceState": "issue-7753-contract-derived-property-quote-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/prettier-block-spacing",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-prettier-block-spacing",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "89bdb8eec216065e111619ff492a5782ad3aff94175f1f0d3b65d9a6ce3f03c5",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "b34a321081a6dcfccf55000cabc722fb14d5badecc7ebf3c5e3aced4ffc65ac8",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          13798
+        ],
+        "commits": [
+          {
+            "sha": "adf4d26d8a37fba461da9d7c9b3b5b2563ab65ab",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/formatter.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13798,
+            "path": "crates/vize_glyph/tests/block_spacing.rs",
+            "symbol": "prettier_preset_keeps_authored_block_spacing"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/block_spacing.rs",
+          "symbol": "prettier_preset_keeps_authored_block_spacing",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The fixture covers the prettier preset; the default blank-line policy, explicit overrides, CRLF, prologue comments and sorted blocks stay in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts-script-setup",
+              "css-scoped",
+              "custom-blocks"
+            ],
+            "selector": "adjacent blocks, a run of blank lines, and a top-level comment attached to a custom block"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-prettier-block-spacing/reference.expected.txt",
+              "sha256": "84baf0e0dffcba5406caef2cf841d60b7a42cf0b491988be0ba66fffb3840b7b",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13798,
+                "path": "crates/vize_glyph/tests/block_spacing.rs",
+                "symbol": "prettier_preset_keeps_authored_block_spacing",
+                "assertion": "Prettier 3.10.1 output: no blank line is added between SFC blocks and a run of blank lines becomes one."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "Prettier 3.10.1 output for an issue-derived SFC; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/prettier-empty-element-closing-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-prettier-empty-element-closing-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "12957701a92cf1b798850a7d7a10006532aebb9d6d2cf6b766e7de0835eae7c9",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "b34a321081a6dcfccf55000cabc722fb14d5badecc7ebf3c5e3aced4ffc65ac8",
+            "role": "project-vue-version-and-formatter-preset"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          13797
+        ],
+        "commits": [
+          {
+            "sha": "e82d9a3789ab964ff9a5ff37e87243b021acf6d8",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/tags.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13797,
+            "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+            "symbol": "prettier_output_with_wrapped_empty_elements_is_unchanged"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+          "symbol": "prettier_output_with_wrapped_empty_elements_is_unchanged",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The reporter's Tags.vue keeps a blank line before <script setup> so the case stays independent of SFC block spacing."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts-script-setup"
+            ],
+            "selector": "Prettier-formatted empty section and textarea with wrapped attributes next to void and self-closing elements"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-prettier-empty-element-closing-width/reference.expected.txt",
+              "sha256": "12957701a92cf1b798850a7d7a10006532aebb9d6d2cf6b766e7de0835eae7c9",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13797,
+                "path": "crates/vize_glyph/tests/empty_element_closing_width.rs",
+                "symbol": "prettier_output_with_wrapped_empty_elements_is_unchanged",
+                "assertion": "Prettier 3.10.1 output: wrapped empty elements stay wrapped and the file is unchanged."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-authored Tags.vue with a blank line before <script setup>, unchanged by Prettier 3.10.1; exact-source Actions required"
         }
       },
       "comparison": {

@@ -126,6 +126,7 @@ The same options are available as CLI flags:
 | `--max-attributes-per-line`        | Wraps after the given number of attributes.                            |
 | `--normalize-directive-shorthands` | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`.          |
 | `--sort-blocks`                    | Toggles canonical SFC block ordering.                                  |
+| `--block-spacing`                  | Chooses `blank-line` or `preserve` between SFC blocks.                 |
 | `--normalize-css-quotes`           | Re-quotes CSS, SCSS and Less strings with the string quote preference. |
 | `--normalize-inline-styles`        | Lays out plain static `style` declarations on one line.                |
 | `--normalize-v-for-parens`         | Wraps multiple `v-for` aliases in parentheses.                         |
@@ -172,6 +173,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `attributeGroups`              | none             | Custom attribute groups, such as `[["id"], ["v-*"], ["*"]]`, in place of the Vue style guide order.                                |
 | `normalizeDirectiveShorthands` | `true`           | Turns `v-bind:`, `v-on:` and `v-slot:` into `:`, `@` and `#`.                                                                      |
 | `sortBlocks`                   | `true`           | Orders blocks as script, script setup, template, styles, custom blocks.                                                            |
+| `blockSpacing`                 | `"blank-line"`   | One blank line between SFC blocks, or `"preserve"` to keep an authored blank line (at most one) and add none, as Prettier does.    |
 | `normalizeCssQuotes`           | `false`          | Re-quotes strings in CSS, SCSS and Less with the `singleQuote` preference.                                                         |
 | `normalizeInlineStyles`        | `false`          | Writes a one-line static `style` attribute as `color: red; top: 0`.                                                                |
 | `normalizeVForParens`          | `false`          | Wraps several `v-for` aliases in parentheses, as in `(item, i) in items`.                                                          |
@@ -289,6 +291,16 @@ to the typed Node and config option `sortBlocks`. An explicit CLI value
 overrides config and a selected preset. `false` preserves authored root-block
 order; `true` uses script, script setup, template, styles, then custom blocks.
 
+Spacing between SFC blocks is projected the same way:
+`--block-spacing <blank-line|preserve>` maps to the typed Node and config
+option `blockSpacing`. The default, `"blank-line"`, writes exactly one blank
+line between blocks. `"preserve"` follows the
+source, as Prettier does: an authored run of blank lines becomes one, and
+blocks written on adjacent lines stay adjacent. The `prettier` preset selects
+`"preserve"`; every other preset keeps `"blank-line"`. A block that
+`sortBlocks` moves off the start of the file has no authored separator and
+takes a blank line.
+
 ## Compact application code
 
 Use the `compact` preset when application templates should stay dense without reordering authored blocks or attributes:
@@ -339,7 +351,8 @@ The preset keeps attributes and blocks in the written order (`sortAttributes: fa
 - writes a one-line `style` attribute as `color: red; top: 0`, without a trailing `;`;
 - writes several `v-for` aliases in parentheses, as in `v-for="(item, i) in items"`;
 - closes void elements, as in `<img src="a.png" />`;
-- re-indents SCSS and Less blocks by nesting depth and tidies their blank lines.
+- re-indents SCSS and Less blocks by nesting depth and tidies their blank lines;
+- keeps the authored spacing between SFC blocks (`blockSpacing: "preserve"`): it adds no blank line and keeps at most one.
 
 On the command line, `vize fmt --preset prettier` applies the same preset. Options resolve in this order: the preset in the config file, the other options in the config file, `--preset`, then the other flags.
 

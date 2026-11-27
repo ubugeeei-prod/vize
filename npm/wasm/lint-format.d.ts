@@ -86,6 +86,8 @@ export interface FormatOptions {
   attributeGroups?: string[][] | null;
   normalizeDirectiveShorthands?: boolean;
   sortBlocks?: boolean;
+  /** Write one blank line between SFC blocks (default), or preserve the authored spacing. */
+  blockSpacing?: "blank-line" | "preserve";
 }
 
 /** Result of formatting a Vue SFC. */

@@ -18,11 +18,10 @@ oracle reports none, each under a reviewed reason and its tracking issue. They
 are added to the exact expectation of their project rather than ignored: a
 documented diagnostic that moves, disappears or gains a neighbour fails the
 corpus, so the ledger can only shrink through a change that also edits it. It
-currently holds two differences. The six `exactType(Component, defineComponent(...))`
-identity assertions of `components` and `defineModel` require the SFC default
-export to be the very type vue-tsc generates, where Vize exports its own
-component contract. In `templateRef`, Vize also checks a `useTemplateRef` key
-inside a local function and reports the key the SFC never registers.
+currently holds one difference: the six `exactType(Component, defineComponent(...))`
+identity assertions of `components` and `defineModel`, which require the SFC
+default export to be the very type vue-tsc generates, where Vize exports its own
+component contract.
 
 The fixture workspace uses the upstream Vue `3.6.0-rc.6` and
 `vue-component-type-helpers` `3.3.11` dependencies, pinned separately from the

@@ -60,6 +60,7 @@ impl MaestroServer {
 
         drop(diagnostic_guard);
 
+        self.log_nuxt_notices().await;
         if let Some(diagnostics) = diagnostics
             && self.state.documents.version(uri) == Some(expected)
             && stamp.is_current(&self.state)
@@ -248,6 +249,17 @@ impl MaestroServer {
             }
         })
         .await;
+    }
+
+    /// Say once, in the client's log, which Nuxt projects skip a rule until
+    /// Nuxt generates their declarations. A diagnostic would sit on a document
+    /// that has nothing wrong with it, and a popup would interrupt the user
+    /// for a state `nuxi dev` or `nuxi prepare` ends on its own.
+    #[cfg(feature = "native")]
+    async fn log_nuxt_notices(&self) {
+        for notice in self.state.take_nuxt_notices() {
+            self.client.log_message(MessageType::INFO, notice).await;
+        }
     }
 
     #[cfg(feature = "native")]

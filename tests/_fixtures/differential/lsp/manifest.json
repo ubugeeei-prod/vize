@@ -3800,6 +3800,63 @@
       }
     },
     {
+      "id": "lsp/regression/nuxt-template-auto-imports",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nuxt-template-auto-imports",
+        "files": [
+          {
+            "path": "package.json.txt",
+            "sha256": "5bbbec757633dcbc268e91dd63a59bd3c09b9626ea5cedd3b6656379ed0cb643"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "sha256": "8146761a41c6f2159a550dc6726d6dd5073431046ccc5957000a865222186f9f"
+          },
+          {
+            "path": "nuxt-package.json.txt",
+            "sha256": "4d3a8eb16927f11a5796ba8f7d7798918f3b5b5f134f0a7214a0d5448e85b704"
+          },
+          {
+            "path": "imports.d.ts.txt",
+            "sha256": "61391117cf3b111982d49e761b5dcc15cf9565b9789167924806dcb66fd033ed"
+          },
+          {
+            "path": "index.vue.txt",
+            "sha256": "27b077223fd9d040a02e2db55e34f63be602709a775b7b2fcd00259b32fa5331"
+          }
+        ]
+      },
+      "case": {
+        "path": "nuxt-template-auto-imports/case.json",
+        "sha256": "e9051ab117e7a316da6e64b0049069df8e05e361a78c27ca290fe57a12d7b12b"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/optional-prop-definition-9857",
       "state": "active",
       "targets": [
