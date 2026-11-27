@@ -28,12 +28,16 @@ with completion and navigation for `.vue` and Musea `.art.vue` files.
 ### Template ref keys
 
 A template ref key, such as `box` in `useTemplateRef("box")` and `ref="box"`, behaves like one
-name. Find references on either spelling lists every place the component spells the key, and
-rename rewrites all of them together. The variable the call is assigned to keeps its own name.
+name. It is also spelled `$refs.box` or `$refs["box"]` (`this.$refs` in a script) and
+`:ref="'box'"`. Find references on any spelling lists every place the component spells the key,
+and rename rewrites all of them together. The variable the call is assigned to keeps its own
+name. Go to definition on a `useTemplateRef` argument or a `$refs` key reaches the elements that
+register the ref.
 
 The key is renamed only when every spelling is known. When the component also reaches refs
-through `$refs`, a dynamic `:ref`, or a `useTemplateRef` argument that isn't a plain string, the
-key gets no rename, so a rename never leaves one spelling behind.
+through a computed `$refs` key, a `:ref` that isn't a plain string, or a `useTemplateRef` argument
+that isn't a plain string, the key gets no rename, so a rename never leaves one spelling behind. A
+key spelled `$refs.box` is renamed only to another identifier.
 
 ## Profiles
 
