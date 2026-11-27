@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const propName = 'some-message'
+const value = 'hello'
+</script>
+
+<template>
+  <Child :[propName]="value" />
+</template>

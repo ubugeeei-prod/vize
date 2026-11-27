@@ -13907,6 +13907,256 @@
       }
     },
     {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.vue.txt",
+          "sha256": "cb721f8d05ffcb1975a76d149be2a8295f253bd6cc97b1fe02eeeb2ed7824dea"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/for-before-is",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "for-before-is",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/ForBeforeIs.vue.txt",
+          "sha256": "d84ebf342c66de514730da8c967813a16a2164a5266bed0c021e79bbad663aa4"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for-property-error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for-property-error",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.invalid.vue.txt",
+          "sha256": "530107c8ff855e0c60adbd3ee077ced805b3198018bd355e9a4b8be890239ad6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for-unknown-name",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.unknown.vue.txt",
+          "sha256": "5333039f7038cb3446b8f977f3b341bc834dfc5ffbf598cca90fb18c8862b584"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/for-before-is-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "for-before-is-unknown-name",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/ForBeforeIs.unknown.vue.txt",
+          "sha256": "c7c0877108d9b7de9b78173df7a60fe11ce77d16ddf73d8a5f2cd6d19cf1b696"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-directive-expression-mapping-10182/dynamic-slot-and-prop",
       "state": "active",
       "targets": [
@@ -14035,7 +14285,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14087,7 +14337,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14139,7 +14389,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14191,7 +14441,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14243,7 +14493,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14295,7 +14545,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14347,7 +14597,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14399,7 +14649,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14451,7 +14701,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
       },
       "inputs": [
         {
@@ -14463,6 +14713,110 @@
           "file": "src/App.vue",
           "path": "dynamic-directive-names-2797/runtime-name-v-for.App.vue.txt",
           "sha256": "270252946879763ad7f45f8d09bd96fea34439bd6ce28ee9e9c8b1f42e57c952"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/kebab-runtime-prop-name-camelized",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "kebab-runtime-prop-name-camelized",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-kebab-name.App.vue.txt",
+          "sha256": "1c448a031e4c683a69ce403d6ffabc8b7ec156209e4ad8e80d7070c776ef60fe"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/kebab-runtime-prop-name-value-checked",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "kebab-runtime-prop-name-value-checked",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "91feaefa09b2effc48674bf816689e5146b3de750bec20dead506ba7b82a9bd2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-kebab-name-wrong-value.App.vue.txt",
+          "sha256": "beb356fe74603398321b6b923ac375d80cf67daf6e45663205a3c363c3e27f2c"
         },
         {
           "file": "src/Child.vue",
@@ -62529,6 +62883,51 @@
       }
     },
     {
+      "id": "typechecker/component-function-ref-instance/function-ref-parameters",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::component_function_ref_instance::function_refs_on_components_receive_the_component_instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-function-ref-instance/tsconfig.json.txt",
+          "sha256": "a4fdcbdc5bf4f4b94f97041df67c33ec2ce139a1790e22587adfd0bbb4c9e30f"
+        },
+        {
+          "file": "src/Exposed.vue",
+          "path": "component-function-ref-instance/Exposed.vue.txt",
+          "sha256": "782f678eec26ca5b0c4bfdebc2581e37f23c4f40ce8490fd43cd637ca1899b90"
+        },
+        {
+          "file": "src/Options.vue",
+          "path": "component-function-ref-instance/Options.vue.txt",
+          "sha256": "a568e447b498fd1091720a1e00c3a22de0bc9d0cd818a126f793d7ff3df553b3"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-function-ref-instance/App.vue.txt",
+          "sha256": "4b7869126d9b2f4e7e50ad87aa1a663a7322494db8a55e1fe54be8913edbf2a6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_function_ref_instance::function_refs_on_components_receive_the_component_instance; the parameter of a function ref on a component is the instance useTemplateRef gives the same component (the exposed surface of a script-setup child, the public instance of an Options API child) or null, where vue-tsc reports every member of Element | ComponentPublicInstance | null. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/component-value-anchor-reuse",
       "state": "active",
       "targets": [
@@ -70927,6 +71326,41 @@
               "ts"
             ],
             "selector": "template_ref_keys::tests::key_checks_follow_the_functions_this_instance_runs: a key is checked against the template only in setup, its callbacks, the default export's `setup` and local functions setup reaches; a function rendered as a component or never called keeps the inferred call without the key check. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/template-ref-parse-recovery/syntax-error-in-setup",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::template_ref_parse_recovery::template_refs_stay_inferred_while_the_script_has_a_syntax_error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "template-ref-parse-recovery/tsconfig.json.txt",
+          "sha256": "a4fdcbdc5bf4f4b94f97041df67c33ec2ce139a1790e22587adfd0bbb4c9e30f"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "template-ref-parse-recovery/App.vue.txt",
+          "sha256": "d746ad44a1424d9a6b18de483402786dda18e952dea9e13f342b47b95b5970cf"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::template_ref_parse_recovery::template_refs_stay_inferred_while_the_script_has_a_syntax_error; while <script setup> has a syntax error, useTemplateRef calls of the recovered parse keep their template element types, and no key is checked against the template. Input-only registration; no native parity claim."
           }
         ]
       }

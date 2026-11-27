@@ -17,6 +17,8 @@ fn dynamic_directive_names_stay_expressions_not_contract_keys() {
             "string-prop-name-supplies-no-required-prop",
             "runtime-prop-name-beside-static-props",
             "v-for-runtime-prop-name",
+            "kebab-runtime-prop-name-camelized",
+            "kebab-runtime-prop-name-value-checked",
         ],
     );
 }
