@@ -1,0 +1,9 @@
+<template>
+  <main class="layout"><slot /></main>
+</template>
+
+<style>
+@import './theme.css';
+@import '../../outside.css';
+.layout { background: url(./logo.svg); }
+</style>
