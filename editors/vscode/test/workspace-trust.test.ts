@@ -173,6 +173,11 @@ function machine(observed: Observed) {
   };
 }
 
+const lifecycleProgram = fs.readFileSync(
+  new URL("./workspace-trust-lifecycle.js", import.meta.url),
+  "utf8",
+);
+
 interface Lifecycle {
   activate(context: object): Promise<void>;
   idle(): Promise<void>;
@@ -191,9 +196,7 @@ function openWindow(trusted: boolean) {
   const editor = editorApi(trusted, observed);
   const context = vm.createContext({ ...realModules, ...editor, ...machine(observed) });
   new vm.Script(body).runInContext(context);
-  const lifecycle = new vm.Script(
-    "({ activate, idle: () => waitForConfigurationIdle(() => configurationSyncTimer !== undefined) })",
-  ).runInContext(context) as Lifecycle;
+  const lifecycle = new vm.Script(lifecycleProgram).runInContext(context) as Lifecycle;
   return {
     ...observed,
     activate: () =>
