@@ -49,6 +49,7 @@ mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
 mod runtime_prop_call;
+mod serialized_island_props;
 mod shared_kebab_case;
 mod shared_usage_gates;
 mod static_emit_gate;
@@ -244,6 +245,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     emit_member_infer::retain_provenance(manifest);
     entry_package_exports::retain_provenance(manifest);
     props_fallback_segment::retain_provenance(manifest);
+    serialized_island_props::retain_provenance(manifest);
 }
 
 #[cfg(test)]
