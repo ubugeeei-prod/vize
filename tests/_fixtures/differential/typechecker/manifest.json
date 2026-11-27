@@ -13907,6 +13907,256 @@
       }
     },
     {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.vue.txt",
+          "sha256": "cb721f8d05ffcb1975a76d149be2a8295f253bd6cc97b1fe02eeeb2ed7824dea"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/for-before-is",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "for-before-is",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/ForBeforeIs.vue.txt",
+          "sha256": "d84ebf342c66de514730da8c967813a16a2164a5266bed0c021e79bbad663aa4"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for-property-error",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for-property-error",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.invalid.vue.txt",
+          "sha256": "530107c8ff855e0c60adbd3ee077ced805b3198018bd355e9a4b8be890239ad6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/is-before-for-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "is-before-for-unknown-name",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/IsBeforeFor.unknown.vue.txt",
+          "sha256": "5333039f7038cb3446b8f977f3b341bc834dfc5ffbf598cca90fb18c8862b584"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-component-v-for-scope-strict/for-before-is-unknown-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-component-v-for-scope-strict",
+      "case": "for-before-is-unknown-name",
+      "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+      "regressionCommit": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "dynamic-component-v-for-scope-strict/cases.json",
+        "sha256": "30c0893212337c439a5cebdc9f11ef774acd91a74821b33ede564cbc4e788b74"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-component-v-for-scope-strict/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-component-v-for-scope-strict/ForBeforeIs.unknown.vue.txt",
+          "sha256": "c7c0877108d9b7de9b78173df7a60fe11ce77d16ddf73d8a5f2cd6d19cf1b696"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-directive-expression-mapping-10182/dynamic-slot-and-prop",
       "state": "active",
       "targets": [
