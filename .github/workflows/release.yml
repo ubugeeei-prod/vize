@@ -893,7 +893,7 @@ jobs:
           if-no-files-found: error
   github-release:
     name: Create GitHub Release
-    needs: [ version, tag, publish-npm, build-editor-platforms, publication-quota, release-sbom ]
+    needs: [version, tag, publish-npm, build-editor-platforms, publication-quota, release-sbom]
     if: ${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && needs.release-sbom.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -1026,7 +1026,7 @@ jobs:
   # with it the cadence, ends once every registry has the version.
   dispatch-verify:
     name: Dispatch the release verification
-    needs: [ version, publish-npm ]
+    needs: [version, publish-npm]
     if: ${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
