@@ -47,6 +47,10 @@ steps = new Listing {
     }
   }
   ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+  new Dynamic {
+    name = "Install ush"
+    uses = "./.github/actions/setup-ush"
+  }
   ci.command("Check Pkl repository configuration", "node tools/commands/generate/repository-config.ts --check")
   new Dynamic {
     name = "Check JS/TS"

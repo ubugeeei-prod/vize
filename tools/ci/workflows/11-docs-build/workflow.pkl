@@ -86,21 +86,21 @@ jobs {
       }
       new Dynamic {
         name = "Install Japanese rendering fonts"
-        run = ci.workflowScript("install-japanese-rendering-fonts.sh")
+        run = ci.workflowProgram("install-japanese-rendering-fonts")
       }
       new Dynamic {
         name = "Check preview resource readiness"
-        run = ci.workflowScript("check-preview-resource-readiness.sh")
+        run = ci.workflowProgram("check-preview-resource-readiness")
       }
       new Dynamic {
         name = "Build docs"
         // The page manifest records this exact source SHA; do not replay an
         // earlier script result when only other source files changed.
-        run = ci.workflowScript("build-docs.sh")
+        run = ci.workflowProgram("build-docs")
       }
       new Dynamic {
         name = "Verify rendered navigation and Japanese reading paths"
-        run = ci.workflowScript("verify-rendered-navigation-and-japanese-reading-paths.sh")
+        run = ci.workflowProgram("verify-rendered-navigation-and-japanese-reading-paths")
       }
       new Dynamic {
         name = "Upload rendered docs screenshots"

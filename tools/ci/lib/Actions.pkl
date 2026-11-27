@@ -44,6 +44,13 @@ function actionScript(file: ScriptName): String = #". "$GITHUB_ACTION_PATH/scrip
 // WSL translates the staged Windows path before its Bash shell expands the variable.
 function wslScript(file: ScriptName): String = #". "$VIZE_CI_FILES/\#(file)""#
 
+// An ush program `scripts/<name>.ush` runs from its committed build, `scripts/compiled/<name>.sh`.
+function workflowProgram(name: ScriptName): String = #"sh "${{ env.VIZE_CI_FILES }}/compiled/\#(name).sh""#
+
+function actionProgram(name: ScriptName): String = #"sh "$GITHUB_ACTION_PATH/scripts/compiled/\#(name).sh""#
+
+function wslProgram(name: ScriptName): String = #"sh "$VIZE_CI_FILES/compiled/\#(name).sh""#
+
 function onFailureOf(step: String): String = "failure() && steps.\(step).outcome == 'failure'"
 
 function checkoutAt(revision: String): Dynamic = new {
