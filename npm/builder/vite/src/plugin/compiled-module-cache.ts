@@ -28,24 +28,28 @@
 
 import type { CompiledModule } from "../types.ts";
 import { normalizeCachePath } from "./cache-path.ts";
+import { CompiledDependencyIndex } from "./compiled-dependency-index.ts";
 import type { FilesystemEpoch } from "./filesystem-epoch.ts";
 import { filesystemPathIdentities } from "./path-identity.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
   readonly #evicted = new Set<string>();
-  readonly #ownersByDependency = new Map<string, Set<string>>();
-  readonly #dependenciesByOwner = new Map<string, Set<string>>();
+  readonly #dependencies: CompiledDependencyIndex;
   readonly #ownersByFileIdentity = new Map<string, Set<string>>();
   readonly #fileIdentitiesByOwner = new Map<string, Set<string>>();
   readonly #epoch: FilesystemEpoch | undefined;
 
   /**
    * Deliberately takes no entries: `Map`'s constructor would call the
-   * overridden `set` from inside `super()`, before `#ownersByDependency` exists.
+   * overridden `set` from inside `super()`, before `#dependencies` exists.
    */
   constructor(epoch?: FilesystemEpoch) {
     super();
     this.#epoch = epoch;
+    this.#dependencies = new CompiledDependencyIndex(
+      (file) => this.pathIdentities(file),
+      epoch ? () => epoch.generation : undefined,
+    );
   }
 
   /** Every filesystem identity of `file`, as this cache's index observes them. */
@@ -67,19 +71,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
     super.set(file, compiled);
     // Before any identity is asked for: a new project revision ends the epoch.
     if (compiled.typeProject) this.#epoch?.observeTypeProject(compiled.typeProject);
-    const dependencies = new Set<string>();
-    for (const dependency of compiled.dependencies ?? []) {
-      for (const key of this.pathIdentities(dependency)) {
-        dependencies.add(key);
-        const owners = this.#ownersByDependency.get(key);
-        if (owners) {
-          owners.add(file);
-        } else {
-          this.#ownersByDependency.set(key, new Set([file]));
-        }
-      }
-    }
-    this.#dependenciesByOwner.set(file, dependencies);
+    this.#dependencies.add(file, compiled.dependencies ?? []);
     const fileIdentities = new Set(this.pathIdentities(file));
     for (const identity of fileIdentities) {
       const owners = this.#ownersByFileIdentity.get(identity);
@@ -98,8 +90,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
 
   override clear(): void {
     this.#evicted.clear();
-    this.#ownersByDependency.clear();
-    this.#dependenciesByOwner.clear();
+    this.#dependencies.clear();
     this.#ownersByFileIdentity.clear();
     this.#fileIdentitiesByOwner.clear();
     super.clear();
@@ -129,7 +120,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   ownersOf(resolvedDependency: string): readonly string[] {
     const owners = new Set<string>();
     for (const identity of this.pathIdentities(resolvedDependency)) {
-      for (const owner of this.#ownersByDependency.get(identity) ?? []) owners.add(owner);
+      for (const owner of this.#dependencies.ownersOf(identity)) owners.add(owner);
     }
     return [...owners];
   }
@@ -147,13 +138,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
     file = normalizeCachePath(file);
     // Compiled again or removed: either way it no longer awaits a recompile.
     this.#evicted.delete(file);
-    for (const dependency of this.#dependenciesByOwner.get(file) ?? []) {
-      const owners = this.#ownersByDependency.get(dependency);
-      if (!owners) continue;
-      owners.delete(file);
-      if (owners.size === 0) this.#ownersByDependency.delete(dependency);
-    }
-    this.#dependenciesByOwner.delete(file);
+    this.#dependencies.delete(file);
     for (const identity of this.#fileIdentitiesByOwner.get(file) ?? []) {
       const owners = this.#ownersByFileIdentity.get(identity);
       if (!owners) continue;
