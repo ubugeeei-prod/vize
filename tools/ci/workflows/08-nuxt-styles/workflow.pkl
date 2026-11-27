@@ -24,7 +24,7 @@ env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
 jobs {
   plan {
     name = "Select affected Nuxt integration"
-    `runs-on` = ci.linux
+    `runs-on` = ci.hostedLinux
     `timeout-minutes` = 3
     outputs { nuxt = "${{ steps.plan.outputs.nuxt }}" }
     env {

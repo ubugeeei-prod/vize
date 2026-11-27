@@ -30,7 +30,7 @@ env:
 jobs:
   plan:
     name: Plan workflow security audit
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: read
@@ -57,7 +57,7 @@ jobs:
     name: Run zizmor
     needs: plan
     if: ${{ !cancelled() && (needs.plan.result != 'success' || needs.plan.outputs.audit != 'false') }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       actions: read

@@ -21,7 +21,7 @@ permissions { contents = "read" }
 jobs {
   cleanup {
     `if` = actionable
-    `runs-on` = ci.linux
+    `runs-on` = ci.hostedLinux
     `timeout-minutes` = 10
     permissions {
       contents = "read"

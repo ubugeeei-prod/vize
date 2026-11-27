@@ -19,6 +19,9 @@ linux = "blacksmith-32vcpu-ubuntu-2404"
 linux2204 = "blacksmith-32vcpu-ubuntu-2204"
 windows = "blacksmith-32vcpu-windows-2025"
 macos = "blacksmith-12vcpu-macos-15"
+// GitHub-hosted, outside the Blacksmith pool, for build-free jobs: planners,
+// reports and short policy checks with no Rust toolchain or sticky disk.
+hostedLinux = "ubuntu-24.04"
 
 function use(action: String): Dynamic = new { uses = action }
 

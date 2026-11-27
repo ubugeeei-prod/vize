@@ -40,7 +40,7 @@ env:
 jobs:
   bun-planner:
     name: Shared source planner on Bun 1.3.14
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/release-smoke-contracts"
@@ -62,7 +62,7 @@ jobs:
 
   node-planner-baseline:
     name: Shared source planner on Node 24.14.0
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/release-smoke-contracts"

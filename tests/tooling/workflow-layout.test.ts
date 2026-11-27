@@ -38,19 +38,29 @@ const approvedRunnerLabels = new Set([
   "windows-2025",
 ]);
 
-// Zero-compute plan and report jobs run on hosted Ubuntu so they never wait
-// behind 32-vCPU build jobs at the Blacksmith concurrency cap (see #10975).
-// They only read plans, gate `needs`, or publish reports: no Rust toolchain,
-// sticky disk or build cache.
-const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
+// Build-free jobs run on hosted Ubuntu so they never wait behind 32-vCPU build
+// jobs at the Blacksmith concurrency cap. They read plans, gate `needs`,
+// publish reports, or run a short policy or Node check: no Rust toolchain,
+// sticky disk or build cache, and well under a minute on the 32-vCPU class.
+const hostedBuildFreeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
   "01-rust-feature-tests.yml": ["rust-feature-plan"],
   "06-browser-oracles.yml": ["changes"],
+  "07-level-dependencies.yml": ["level-dependencies"],
+  "08-nuxt-styles.yml": ["plan"],
+  "08-vite-plus-types.yml": ["real-vite-plugin-types"],
+  "10-musea-browser.yml": ["plan"],
+  "11-zizmor.yml": ["plan", "zizmor"],
+  "cleanup-obsolete-merge-groups.yml": ["cleanup"],
+  "language-project-fixtures.yml": ["language-project-fixtures"],
+  "parcel-transformer.yml": ["packaging-changes"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
+  "release-smoke-contracts.yml": ["bun-planner", "node-planner-baseline"],
+  "title-policy.yml": ["issue-pr-title-policy"],
 };
-const hostedZeroComputeRunner = "ubuntu-24.04";
+const hostedRunner = "ubuntu-24.04";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
@@ -79,7 +89,7 @@ function workflowRunnerLabels(
       return [];
     }
     if (hostedJobs.includes(id)) {
-      assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
+      assert.equal(value["runs-on"], hostedRunner, id);
       return [];
     }
     // A planner-selected skip runs hosted; the selected path is the busy runner.
@@ -123,7 +133,7 @@ test("non-release workflows use maximum Blacksmith runner classes", () => {
     .filter(({ groupId }) => groupId !== "02")
     .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
+      return workflowRunnerLabels(source, hostedBuildFreeJobs[file], file)
         .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });

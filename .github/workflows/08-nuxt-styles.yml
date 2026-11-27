@@ -23,7 +23,7 @@ env:
 jobs:
   plan:
     name: Select affected Nuxt integration
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 3
     outputs:
       nuxt: ${{ steps.plan.outputs.nuxt }}

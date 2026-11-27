@@ -38,7 +38,7 @@ concurrency {
 }
 jobs {
   `language-project-fixtures` {
-    `runs-on` = ci.linux
+    `runs-on` = ci.hostedLinux
     `timeout-minutes` = 5
     env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
     steps = new Listing {

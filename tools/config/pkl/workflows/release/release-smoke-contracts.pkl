@@ -43,7 +43,7 @@ env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
 jobs {
   `bun-planner` {
     name = "Shared source planner on Bun 1.3.14"
-    `runs-on` = ci.linux
+    `runs-on` = ci.hostedLinux
     `timeout-minutes` = 5
     env {
       VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-smoke-contracts"
@@ -75,7 +75,7 @@ jobs {
 
   `node-planner-baseline` {
     name = "Shared source planner on Node 24.14.0"
-    `runs-on` = ci.linux
+    `runs-on` = ci.hostedLinux
     `timeout-minutes` = 5
     env {
       VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-smoke-contracts"
