@@ -214,3 +214,25 @@ void test("a large shared owner set merges without exceeding the call argument l
   assert.equal(owners[count - 1], `owner-${count - 1}`);
   assert.equal(owners[count], "direct-owner");
 });
+
+void test("a unique pending list releases its direct edges before replacement or promotion", () => {
+  const index = new CompiledDependencyIndex(
+    (file) => [file],
+    () => 0,
+  );
+  const inputs = dependencies("pending");
+  index.add("removed", inputs);
+  index.add("small", [inputs[0]]);
+  index.delete("removed");
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["small"]);
+  index.add("replacement", inputs);
+  index.add("second", inputs.slice());
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["small", "replacement", "second"]);
+  index.delete("replacement");
+  index.delete("second");
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["small"]);
+  index.add("replacement", inputs);
+  index.delete("replacement");
+  index.add("replacement", ["/deps/other.ts"]);
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["small"]);
+});

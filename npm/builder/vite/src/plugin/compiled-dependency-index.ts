@@ -6,6 +6,7 @@ interface SharedDependencies {
   owners: Set<string>;
   generation: number;
   fingerprint: number;
+  shared: boolean;
 }
 
 // Unique dependency lists retain the direct index. These bounds also limit the
@@ -42,19 +43,15 @@ export class CompiledDependencyIndex {
     }
     const group = this.#sharedGroup(inputs);
     if (group) {
+      if (!group.shared) this.#indexDirect(file, group.identities);
       group.owners.add(file);
       this.#memberships.set(file, group);
       return;
     }
     const dependencies = new Set<string>();
-    for (const input of inputs) {
-      for (const identity of this.#identities(input)) {
-        dependencies.add(identity);
-        let owners = this.#directOwners.get(identity);
-        if (!owners) this.#directOwners.set(identity, (owners = new Set()));
-        owners.add(file);
-      }
-    }
+    for (const input of inputs)
+      for (const identity of this.#identities(input)) dependencies.add(identity);
+    this.#indexDirect(file, dependencies);
     this.#memberships.set(file, dependencies);
   }
 
@@ -64,16 +61,13 @@ export class CompiledDependencyIndex {
     this.#order.delete(file);
     if (!entry) return;
     if (entry instanceof Set) {
-      for (const identity of entry) {
-        const owners = this.#directOwners.get(identity);
-        owners?.delete(file);
-        if (owners?.size === 0) this.#directOwners.delete(identity);
-      }
+      this.#unindexDirect(file, entry);
       return;
     }
+    if (!entry.shared) this.#unindexDirect(file, entry.identities);
     entry.owners.delete(file);
     if (entry.owners.size !== 0) return;
-    for (const identity of entry.identities) {
+    for (const identity of entry.shared ? entry.identities : []) {
       const groups = this.#sharedOwners.get(identity);
       groups?.delete(entry);
       if (groups?.size === 0) this.#sharedOwners.delete(identity);
@@ -120,6 +114,34 @@ export class CompiledDependencyIndex {
     return result;
   }
 
+  #indexDirect(file: string, identities: Iterable<string>): void {
+    for (const identity of identities) {
+      let owners = this.#directOwners.get(identity);
+      if (!owners) this.#directOwners.set(identity, (owners = new Set()));
+      owners.add(file);
+    }
+  }
+
+  #unindexDirect(file: string, identities: Iterable<string>): void {
+    for (const identity of identities) {
+      const owners = this.#directOwners.get(identity);
+      owners?.delete(file);
+      if (owners?.size === 0) this.#directOwners.delete(identity);
+    }
+  }
+
+  #promote(group: SharedDependencies): void {
+    // A unique list uses only the ordinary direct index. Create the shared
+    // reverse edges when a second owner actually needs the same snapshot.
+    for (const owner of group.owners) this.#unindexDirect(owner, group.identities);
+    for (const identity of group.identities) {
+      let groups = this.#sharedOwners.get(identity);
+      if (!groups) this.#sharedOwners.set(identity, (groups = new Set()));
+      groups.add(group);
+    }
+    group.shared = true;
+  }
+
   #sharedGroup(inputs: readonly string[]): SharedDependencies | undefined {
     // Standalone caches ask the filesystem afresh on every set. Relative paths
     // depend on cwd as well, so neither may share an observed identity list.
@@ -128,7 +150,10 @@ export class CompiledDependencyIndex {
     const fingerprint = dependencyFingerprint(inputs);
     const candidates = this.#groups.get(fingerprint);
     for (const group of candidates ?? []) {
-      if (group.generation === generation && sameInputs(group.inputs, inputs)) return group;
+      if (group.generation === generation && sameInputs(group.inputs, inputs)) {
+        if (!group.shared) this.#promote(group);
+        return group;
+      }
     }
     if (
       this.#groupCount >= MAX_SHARED_GROUPS ||
@@ -147,14 +172,10 @@ export class CompiledDependencyIndex {
       owners: new Set(),
       generation,
       fingerprint,
+      shared: false,
     };
     if (candidates) candidates.add(group);
     else this.#groups.set(fingerprint, new Set([group]));
-    for (const identity of identities) {
-      let groups = this.#sharedOwners.get(identity);
-      if (!groups) this.#sharedOwners.set(identity, (groups = new Set()));
-      groups.add(group);
-    }
     this.#groupCount++;
     this.#inputCount += inputs.length;
     return group;
