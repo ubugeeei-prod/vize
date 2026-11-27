@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString, string_builder::TextBuf};
 
 use super::helper::{Helper, RuntimeHelpers};
 
@@ -13,7 +13,8 @@ mod preamble;
 
 /// Growing JS text plus the helpers the body mentioned.
 pub(super) struct Buf {
-    pub code: String,
+    /// Plain heap text: an append inlines to a capacity check and a copy.
+    pub code: TextBuf,
     indent: u32,
     used: u64,
     /// Transform-analogue registration order (`root.helpers`).
@@ -42,7 +43,7 @@ impl Buf {
     /// on for `inline`, whose `_unref` is its only reader.
     pub(super) fn new(track_visits: bool) -> Self {
         Self {
-            code: String::default(),
+            code: TextBuf::new(),
             indent: 0,
             used: 0,
             preferred: StdVec::new(),
@@ -54,6 +55,7 @@ impl Buf {
         }
     }
 
+    #[inline(always)]
     pub(super) fn push(&mut self, text: &str) {
         self.code.push_str(text);
     }
@@ -61,7 +63,7 @@ impl Buf {
     /// Append the double-quoted JavaScript string literal that spells `value`
     /// exactly. `value` is final text: no entity in it is decoded.
     pub(super) fn push_string_literal(&mut self, value: &str) {
-        vize_l0::js_string::push_js_string_literal(&mut self.code, value);
+        vize_l0::js_string::push_js_string_literal_text(&mut self.code, value);
     }
 
     pub(super) fn newline(&mut self) {

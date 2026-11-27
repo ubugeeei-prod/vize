@@ -13,7 +13,7 @@
 //! their final position is known, always record; appending a fragment rebases
 //! its links onto the offset where it lands.
 
-use vize_l0::{Span, String};
+use vize_l0::{Span, String, string_builder::TextBuf};
 
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
@@ -48,7 +48,8 @@ impl SpanLink {
 /// Generated text plus the links from its bytes to the authored source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EmitDocument {
-    text: String,
+    /// Plain heap text: an append inlines to a capacity check and a copy.
+    text: TextBuf,
     links: Vec<SpanLink>,
     recording: bool,
 }
@@ -63,11 +64,7 @@ impl Default for EmitDocument {
 impl From<String> for EmitDocument {
     /// A recording fragment holding `text` with no links.
     fn from(text: String) -> Self {
-        Self {
-            text,
-            links: Vec::new(),
-            recording: true,
-        }
+        Self::from_parts(text, Vec::new())
     }
 }
 
@@ -80,7 +77,7 @@ impl EmitDocument {
     /// An empty document with room for `capacity` bytes of text.
     pub fn with_capacity(capacity: usize, recording: bool) -> Self {
         Self {
-            text: String::with_capacity(capacity),
+            text: TextBuf::with_capacity(capacity),
             links: Vec::new(),
             recording,
         }
@@ -88,7 +85,7 @@ impl EmitDocument {
 
     /// A fragment holding `text` with no links.
     pub fn plain(text: &str) -> Self {
-        Self::from(String::new(text))
+        Self::from_parts(text, Vec::new())
     }
 
     /// A fragment holding `text` generated from the authored byte `source`.
@@ -120,18 +117,18 @@ impl EmitDocument {
 
     /// The generated text, dropping the links.
     pub fn into_string(self) -> String {
-        self.text
+        self.text.into_compact()
     }
 
     pub fn into_parts(self) -> (String, Vec<SpanLink>) {
-        (self.text, self.links)
+        (self.text.into_compact(), self.links)
     }
 
     /// A recording fragment from text and links over it, the inverse of
     /// [`Self::into_parts`].
-    pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
+    pub fn from_parts(text: impl Into<TextBuf>, links: Vec<SpanLink>) -> Self {
         Self {
-            text,
+            text: text.into(),
             links,
             recording: true,
         }
@@ -161,7 +158,7 @@ impl EmitDocument {
     }
 
     /// Append one unlinked character.
-    #[inline]
+    #[inline(always)]
     pub fn push_char(&mut self, ch: char) {
         self.text.push(ch);
     }

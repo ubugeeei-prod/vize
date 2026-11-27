@@ -93,6 +93,23 @@ impl AsRef<str> for TextBuf {
     }
 }
 
+impl From<&str> for TextBuf {
+    /// A buffer holding `text`, with room for exactly it.
+    #[inline]
+    fn from(text: &str) -> Self {
+        Self(std::string::String::from(text))
+    }
+}
+
+impl From<CompactString> for TextBuf {
+    /// A buffer that continues `text`. A heap-allocated string moves without
+    /// copying.
+    #[inline]
+    fn from(text: CompactString) -> Self {
+        Self(text.into_string())
+    }
+}
+
 impl From<TextBuf> for CompactString {
     #[inline]
     fn from(text: TextBuf) -> Self {

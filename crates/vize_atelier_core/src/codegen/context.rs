@@ -339,7 +339,7 @@ impl CodegenContext {
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
-    #[inline]
+    #[inline(always)]
     pub fn push_str(&mut self, code: &str) {
         self.out.push_str(code);
     }
