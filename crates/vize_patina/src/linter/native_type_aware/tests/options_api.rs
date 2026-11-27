@@ -10,20 +10,10 @@ fn vue3_options_api_boolean_props_are_safe_template_bindings() {
     let linter = Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(vec![RULE_NO_UNSAFE_TEMPLATE_BINDING.into()]))
         .with_type_aware_lint(true);
-    let source = r#"<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    title: String,
-    open: Boolean,
-  },
-})
-</script>
-
-<template>
-  <span :data-open="open">{{ title }}</span>
-</template>"#;
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/options-api-boolean-prop-13392/Component.vue.txt"
+    ));
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert_absent_note(
         &result,

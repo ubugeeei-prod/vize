@@ -2,7 +2,7 @@
   {
     "id": "h11-options-api-runtime-boolean-prop-13392",
     "history": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
-    "source": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  props: {\n    title: String,\n    open: Boolean,\n  },\n})\n</script>\n\n<template>\n  <span :data-open=\"open\">{{ title }}</span>\n</template>",
+    "source": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  props: {\n    title: String,\n    open: Boolean,\n  },\n})\n</script>\n\n<template>\n  <span :data-open=\"open\">{{ title }}</span>\n</template>\n",
     "filename": "Component.vue",
     "entry": "sfc",
     "rule": "type/no-unsafe-template-binding",

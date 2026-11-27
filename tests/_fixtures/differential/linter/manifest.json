@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "43a586457e905854799cb1e23de5668aec2bd4bd73d09d640d40e793d597f780"
+        "sha256": "da40cbdd2bae2953de2a9299e32b1eca0217b6b54d8683e265c9439082df203b"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "998a04851fc0270ee15d45f10d45e397eb1529e2621a3bea92ffcabbcebaf751"
+    "sha256": "b1f8ad51597f8fe0399a47652055eb76f73243e8bf8cc8db1a0bdc853b9e19be"
   },
   "cases": [
     {
@@ -4592,28 +4592,6 @@
       }
     },
     {
-      "id": "linter/current-api/h11-options-api-runtime-boolean-prop-13392",
-      "state": "active",
-      "targets": [
-        "lint"
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "current-api pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
       "id": "linter/current-api/h11-boolean-prop-key-template-binding-6403",
       "state": "active",
       "targets": [
@@ -6772,6 +6750,38 @@
             "dialects": [
               "vue3-sfc",
               "js"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/h11-options-api-runtime-boolean-prop-13392",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "options-api-boolean-prop-13392",
+        "files": [
+          {
+            "path": "Component.vue.txt",
+            "sha256": "ea646b429a5c165fba1e7a8ba31728be4aa9b53957fe1d96e0af72e0bb28c9c8",
+            "role": "issue-authored-reproduction"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
             ],
             "selector": "current-api pinned authored sources"
           }
