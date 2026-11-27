@@ -58,6 +58,12 @@ impl Buf {
         self.code.push_str(text);
     }
 
+    /// Append the double-quoted JavaScript string literal that spells `value`
+    /// exactly. `value` is final text: no entity in it is decoded.
+    pub(super) fn push_string_literal(&mut self, value: &str) {
+        vize_l0::js_string::push_js_string_literal(&mut self.code, value);
+    }
+
     pub(super) fn newline(&mut self) {
         const SPACES: &str = "                                                                ";
         self.code.push('\n');

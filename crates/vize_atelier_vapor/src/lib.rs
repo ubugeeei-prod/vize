@@ -25,6 +25,8 @@ pub mod steps;
 )]
 mod tests;
 #[cfg(test)]
+mod tests_authored_string_literals;
+#[cfg(test)]
 mod tests_block_shapes;
 #[cfg(test)]
 mod tests_component_assets;
