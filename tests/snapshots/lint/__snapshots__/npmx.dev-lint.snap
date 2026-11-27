@@ -816,17 +816,6 @@
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'CommandPalette.client' should be PascalCase or kebab-case",
-        "line": 281,
-        "column": 11,
-        "endLine": 281,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/reference/vue-attribute-order.md",
         "severity": 1,
@@ -861,7 +850,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 4
   },
   {
     "file": "app/components/Compare/ComparisonGrid.vue",
@@ -1373,17 +1362,6 @@
     "file": "app/components/Header/AccountMenu.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccountMenu.client' should be PascalCase or kebab-case",
-        "line": 58,
-        "column": 11,
-        "endLine": 58,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/reference/vue-attribute-order.md",
         "severity": 1,
@@ -1407,40 +1385,17 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/Header/AccountMenu.server.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccountMenu.server' should be PascalCase or kebab-case",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Header/AuthModal.client.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'AuthModal.client' should be PascalCase or kebab-case",
-        "line": 71,
-        "column": 11,
-        "endLine": 71,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
       {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/reference/vue-attribute-hyphenation.md",
@@ -1476,7 +1431,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "app/components/Header/ConnectorModal.vue",
@@ -1564,21 +1519,10 @@
         "endLine": 58,
         "endColumn": 40,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'MobileMenu.client' should be PascalCase or kebab-case",
-        "line": 64,
-        "column": 11,
-        "endLine": 64,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/Header/OrgsDropdown.vue",
@@ -1911,17 +1855,6 @@
     "file": "app/components/Modal.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'Modal.client' should be PascalCase or kebab-case",
-        "line": 49,
-        "column": 11,
-        "endLine": 49,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
@@ -1945,7 +1878,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/Noodle/Artemis/Logo.vue",
@@ -4469,36 +4402,14 @@
         "endLine": 13,
         "endColumn": 42,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollToTop.client' should be PascalCase or kebab-case",
-        "line": 26,
-        "column": 11,
-        "endLine": 26,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/SearchProviderToggle.client.vue",
     "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'SearchProviderToggle.client' should be PascalCase or kebab-case",
-        "line": 20,
-        "column": 11,
-        "endLine": 20,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
@@ -4523,25 +4434,13 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/SearchProviderToggle.server.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'SearchProviderToggle.server' should be PascalCase or kebab-case",
-        "line": 1,
-        "column": 11,
-        "endLine": 1,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/SearchSuggestionCard.vue",
@@ -4732,17 +4631,6 @@
     "file": "app/components/Settings/Toggle.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toggle.client' should be PascalCase or kebab-case",
-        "line": 27,
-        "column": 11,
-        "endLine": 27,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/reference/vue-attribute-order.md",
         "severity": 1,
@@ -4810,25 +4698,13 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "app/components/Settings/Toggle.server.vue",
-    "messages": [
-      {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toggle.server' should be PascalCase or kebab-case",
-        "line": 20,
-        "column": 11,
-        "endLine": 20,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Settings/TranslationHelper.vue",
@@ -5186,17 +5062,6 @@
     "file": "app/components/global/BlueskyPostEmbed.client.vue",
     "messages": [
       {
-        "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
-        "severity": 1,
-        "message": "[vize:vue/component-definition-name-casing] Component file name 'BlueskyPostEmbed.client' should be PascalCase or kebab-case",
-        "line": 122,
-        "column": 11,
-        "endLine": 122,
-        "endColumn": 11,
-        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
         "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/reference/vue-attribute-order.md",
         "severity": 1,
@@ -5253,7 +5118,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "app/error.vue",

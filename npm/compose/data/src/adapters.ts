@@ -9,7 +9,13 @@ import type {
   SerializedDataState,
 } from "./types.ts";
 
-/** HTTP loader failure with the response status and decoded error body. */
+/**
+ * HTTP loader failure with the response status and decoded error body.
+ *
+ * The body stays in process. The JSON form, which is what an SSR snapshot
+ * sends to every visitor, carries the status alone; return the fields a
+ * client needs from `serializeError`.
+ */
 export class DataHttpError extends Error {
   readonly status: number;
   readonly statusText: string;
@@ -21,6 +27,15 @@ export class DataHttpError extends Error {
     this.status = response.status;
     this.statusText = response.statusText;
     this.body = body;
+  }
+
+  toJSON(): { name: string; message: string; status: number; statusText: string } {
+    return {
+      name: this.name,
+      message: this.message,
+      status: this.status,
+      statusText: this.statusText,
+    };
   }
 }
 

@@ -88,6 +88,10 @@ pub struct ScriptParseResult {
     pub(crate) reexecuted_callbacks: Option<Box<super::reexecution::ReexecutedCallbacks>>,
     /// Setup declarations with no resolved script read, when demanded.
     pub unused_bindings: Vec<CompactString>,
+    /// Top-level bindings initialized by `useTemplateRef(key)`. A template
+    /// `ref` attribute with the same name does not read them: the key does
+    /// the wiring.
+    pub(crate) template_ref_handles: FxHashSet<CompactString>,
     pub macros: MacroTracker,
     /// Render certainty folded by the existing statement visit; not serialized.
     pub(crate) nuxt_static_render_script: Option<bool>,
@@ -381,6 +385,7 @@ impl ScriptParseResult {
         summary.value_binding_origins = origins;
         summary.bindings = self.bindings;
         summary.unused_bindings = self.unused_bindings;
+        summary.template_ref_handles = self.template_ref_handles;
         summary.macros = self.macros;
         let incoming = self.nuxt_static_render_script == Some(true);
         summary.nuxt_static_render_script =

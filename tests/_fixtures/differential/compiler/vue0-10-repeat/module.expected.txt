@@ -2,7 +2,8 @@ import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, s
 import { resolveDirective as _resolveDirective } from "vue"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<ul${_ssrRenderAttrs(_attrs)}><li${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _resolveDirective("repeat"), item: _ctx.items))}>${_ssrInterpolate(_ctx.item)}</li></ul>`)
+  const _directive_repeat = _resolveDirective("repeat")
+  _push(`<ul${_ssrRenderAttrs(_attrs)}><li${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_repeat, item: _ctx.items))}>${_ssrInterpolate(_ctx.item)}</li></ul>`)
 }
 
 const _sfc_main = {}

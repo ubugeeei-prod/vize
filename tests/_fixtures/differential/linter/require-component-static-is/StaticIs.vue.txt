@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineProps<{ current: string }>()
+</script>
+
+<template>
+  <component :is="current" />
+  <component is="GlobalBadge" text="by-string" />
+  <component :is="'GlobalBadge'" text="by-string2" />
+  <component is="" />
+  <component />
+</template>

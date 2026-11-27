@@ -109,8 +109,8 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs",
       "role": "Template reference and inferred-call specialization state",
-      "bytes": 11616,
-      "sha256": "73eb2108b0b97d935f70864141d4e45906517fa045a97469d432fdd010cf4868",
+      "bytes": 16557,
+      "sha256": "1dddf9e3656c6d6e2293383c4babfcbf17541000403096c4a9eaa2dff1daa651",
       "callee": "fn emit_for_line"
     },
     {

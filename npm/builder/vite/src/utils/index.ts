@@ -223,7 +223,8 @@ export function generateOutputWithMap(
   const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath, root } =
     options;
 
-  const { emitted, hasExportDefault, exportsSfcMain } = assembleComponentOutput(compiled);
+  const { emitted, exportsDefault, exportsSfcMain, standaloneRender } =
+    assembleComponentOutput(compiled);
 
   // Determine whether to use style imports or inline CSS injection.
   // Import styles through Vite in every mode, including SSR dependency discovery.
@@ -327,9 +328,11 @@ export function generateOutputWithMap(
   }
 
   // Add HMR support in development (skip in production)
-  if (!isProduction && isDev && hasExportDefault) {
+  if (!isProduction && isDev && exportsDefault) {
     const effectiveHmrUpdateType =
-      hmrUpdateType === "template-only" && !supportsTemplateOnlyHmr(emitted.code)
+      hmrUpdateType === "template-only" &&
+      !standaloneRender &&
+      !supportsTemplateOnlyHmr(emitted.code)
         ? "full-reload"
         : (hmrUpdateType ?? "full-reload");
     emitted.edit(`${emitted.code}${generateHmrCode(compiled.scopeId, effectiveHmrUpdateType)}`);

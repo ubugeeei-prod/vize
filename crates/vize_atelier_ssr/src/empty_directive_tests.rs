@@ -50,19 +50,19 @@ fn both_ssr_lanes_keep_custom_directive_value_padding_and_static_values() {
         for (directive, expected) in [
             (
                 "v-masonry",
-                "_ssrGetDirectiveProps(_ctx, _resolveDirective(\"masonry\"))",
+                "_ssrGetDirectiveProps(_ctx, _directive_masonry)",
             ),
             (
                 "v-masonry:foo",
-                "_ssrGetDirectiveProps(_ctx, _resolveDirective(\"masonry\"), void 0, \"foo\")",
+                "_ssrGetDirectiveProps(_ctx, _directive_masonry, void 0, \"foo\")",
             ),
             (
                 "v-masonry.bar",
-                "_ssrGetDirectiveProps(_ctx, _resolveDirective(\"masonry\"), void 0, void 0, { bar: true })",
+                "_ssrGetDirectiveProps(_ctx, _directive_masonry, void 0, void 0, { bar: true })",
             ),
             (
                 "v-masonry:foo.bar",
-                "_ssrGetDirectiveProps(_ctx, _resolveDirective(\"masonry\"), void 0, \"foo\", { bar: true })",
+                "_ssrGetDirectiveProps(_ctx, _directive_masonry, void 0, \"foo\", { bar: true })",
             ),
         ] {
             let baseline = compile(&cstr!("<div {directive}></div>"), lane, false);
@@ -74,7 +74,7 @@ fn both_ssr_lanes_keep_custom_directive_value_padding_and_static_values() {
             let explicit_string = compile(&cstr!("<div {directive}=\"''\"></div>"), lane, false);
             assert_ne!(explicit_string, baseline);
             assert!(
-                explicit_string.contains("\"masonry\"), ''"),
+                explicit_string.contains("_directive_masonry, ''"),
                 "{explicit_string}"
             );
         }

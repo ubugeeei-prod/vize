@@ -258,7 +258,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Static-hidden focusability adds two loop-driven fixture calls.
         + 2
         // Same-name bindings add two literal calls and one table-driven call.
-        + 3,
+        + 3
+        // Nuxt mode suffixes, `v-t` content and a static `is` add two calls on
+        // existing literals and four helper-driven calls.
+        + 6,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -322,7 +325,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Static-hidden focusability loops remain explicit scanner skips.
         + 2
         // The same-name binding tables are one helper-driven scanner skip.
-        + 1,
+        + 1
+        // The four helper-driven suffix, `v-t` and static-`is` calls remain
+        // explicit scanner skips.
+        + 4,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31

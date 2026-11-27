@@ -59,4 +59,4 @@ Depois, execute `vp run lint`.
 - [Regras HTML](../html.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L38)

@@ -1,16 +1,16 @@
 use super::{ParsedAttribute, render_attribute, write_rendered_attribute};
 
 fn write(attr: &str, continuation_depth: usize, indent_continuation: bool) -> String {
-    let mut output = Vec::new();
+    let mut output = vize_l0::string_builder::TextBuf::new();
     write_rendered_attribute(
         &mut output,
         attr,
-        b"\n",
-        b"  ",
+        "\n",
+        "  ",
         continuation_depth,
         indent_continuation,
     );
-    String::from_utf8(output).unwrap()
+    String::from(output.as_str())
 }
 
 #[test]

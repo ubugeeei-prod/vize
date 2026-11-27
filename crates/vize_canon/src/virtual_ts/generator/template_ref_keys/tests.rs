@@ -74,7 +74,11 @@ const form = useTemplateRef('form')
 }
 
 fn generate(script: &str) -> String {
-    let source = format!("import {{ useTemplateRef }} from 'vue';\n{script}");
+    generate_with_import("import { useTemplateRef } from 'vue';\n", script)
+}
+
+fn generate_with_import(import: &str, script: &str) -> String {
+    let source = format!("{import}{script}");
     let usage = usage(&source);
     let script = source.as_str();
     let mut checks = usage.key_checks(true);
@@ -95,13 +99,11 @@ fn generate(script: &str) -> String {
             script[mapping.src_range]
         );
     }
-    ts.strip_prefix("import { useTemplateRef } from 'vue';\n")
-        .unwrap()
-        .into()
+    ts.strip_prefix(import).unwrap().into()
 }
 
 #[test]
-fn only_owned_untyped_calls_outside_functions_infer_template_refs() {
+fn owned_untyped_calls_infer_template_refs_inside_local_functions_too() {
     let script = "const a = useTemplateRef('a')\nfunction f() { useTemplateRef('inner') }\nconst g = () => useTemplateRef('arrow')\nuseTemplateRef(name)\nuseTemplateRef<HTMLElement>('typed')\n";
     let plan = usage_with_global(script, true);
     assert!(plan.needs_registry());
@@ -111,10 +113,59 @@ fn only_owned_untyped_calls_outside_functions_infer_template_refs() {
         .filter_map(|call| call.literal.as_ref())
         .map(|(literal, key)| (&script[literal.clone()], key.as_str()))
         .collect();
-    assert_eq!(keys, [("'a'", "a")]);
+    assert_eq!(
+        keys,
+        [("'a'", "a"), ("'inner'", "inner"), ("'arrow'", "arrow")]
+    );
     assert!(plan.key_checks(false).calls.is_empty());
     assert!(!usage("useTemplateRef<HTMLDivElement, 'custom'>('custom')").needs_registry());
-    assert!(!usage("function nested() { return useTemplateRef('box') }").needs_registry());
+    assert!(
+        usage_with_global("function nested() { return useTemplateRef('box') }", true)
+            .needs_registry()
+    );
+}
+
+#[test]
+fn exported_functions_keep_vues_signature_for_their_callers_templates() {
+    for script in [
+        "export function useBox() { return useTemplateRef('box') }",
+        "export const useBox = () => useTemplateRef('box')",
+        "function useBox() { return useTemplateRef('box') }\nexport { useBox }",
+        "const useBox = () => useTemplateRef('box')\nexport { useBox as useArea }",
+        "function useBox() { return useTemplateRef('box') }\nexport default useBox",
+    ] {
+        assert!(
+            !usage_with_global(script, true).needs_registry(),
+            "{script}"
+        );
+    }
+    // A default-exported component's own `setup()` reads this template.
+    assert!(
+        usage_with_global(
+            "export default { setup() { return { el: useTemplateRef('el') } } }",
+            true
+        )
+        .needs_registry()
+    );
+}
+
+#[test]
+fn vue_namespace_members_infer_template_refs() {
+    assert_eq!(
+        generate_with_import(
+            "import * as Vue from 'vue';\n",
+            "const el = Vue.useTemplateRef('el')\nconst other = Other.useTemplateRef('other')\n"
+        ),
+        "void (null! as $TemplateRefs[\"el\"]); const el = __vizeInferRef('el')\nconst other = Other.useTemplateRef('other')\n"
+    );
+    for script in [
+        "import * as Vue from 'my-vue'\nconst el = Vue.useTemplateRef('el')",
+        "import type * as Vue from 'vue'\nconst el = Vue.useTemplateRef('el')",
+        "import * as Vue from 'vue'\nconst el = Vue?.useTemplateRef('el')",
+        "import * as Vue from 'vue'\nconst el = Vue.useTemplateRef<HTMLElement>('el')",
+    ] {
+        assert!(!usage(script).needs_registry(), "{script}");
+    }
 }
 
 #[test]

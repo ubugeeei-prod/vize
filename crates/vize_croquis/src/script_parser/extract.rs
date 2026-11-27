@@ -37,7 +37,9 @@ pub(in crate::script_parser) use props_type::value_prop_type_roots;
 pub(in crate::script_parser) use provide::extract_inject_expected_type_from_init;
 pub use provide::{detect_provide_inject_call, extract_argument_source, extract_provide_key};
 pub use race::{detect_race_condition_call, prepare_race_analysis};
-pub use reactivity::{detect_reactivity_call, detect_setup_context_violation};
+pub use reactivity::{
+    detect_reactivity_call, detect_setup_context_violation, record_template_ref_handle,
+};
 pub(in crate::script_parser) use runtime_objects::record_static_runtime_object_literal;
 pub(in crate::script_parser) use with_defaults::{
     invalidate_default_expression, invalidate_default_objects,

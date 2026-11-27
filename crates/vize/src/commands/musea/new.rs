@@ -71,7 +71,7 @@ defineArtMeta({
 </style>
 "#;
 
-    if let Err(e) = fs::write(&example_story, example_content) {
+    if let Err(e) = super::files::write_art_file(&example_story, example_content) {
         eprintln!("vize musea new: failed to create example story: {}", e);
         std::process::exit(1);
     }

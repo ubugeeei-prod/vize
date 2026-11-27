@@ -1,0 +1,10 @@
+<template src="./partials/card.html"></template>
+
+<style src="//shared/card.css"></style>
+
+<style>
+@import "./styles/reset.css";
+@import "/styles/theme.css";
+@import "//shared/remote.css";
+@import url("//shared/fonts.css");
+</style>

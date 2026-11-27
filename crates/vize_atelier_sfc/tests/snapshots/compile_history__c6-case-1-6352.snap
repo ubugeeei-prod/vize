@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  let _temp0\n  _push(`<div${_ssrRenderAttrs(_temp0 = _mergeProps(_attrs, _ssrGetDirectiveProps(_ctx, _resolveDirective(\"focus\"), _ctx.ok, _ctx.a+_ctx.b)))}>${(\"textContent\" in _temp0) ? _ssrInterpolate(_temp0.textContent) : _temp0.innerHTML ?? ''}</div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  const _directive_focus = _resolveDirective(\"focus\")\n  let _temp0\n  _push(`<div${_ssrRenderAttrs(_temp0 = _mergeProps(_attrs, _ssrGetDirectiveProps(_ctx, _directive_focus, _ctx.ok, _ctx.a+_ctx.b)))}>${(\"textContent\" in _temp0) ? _ssrInterpolate(_temp0.textContent) : _temp0.innerHTML ?? ''}</div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
             css: None,
             map: None,
             errors: [],

@@ -93,6 +93,13 @@ impl RenameService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<PrepareRenameResponse> {
+        // A static attribute value (`ref="box"`) names no script symbol, even
+        // when a same-spelled binding exists.
+        if ctx.is_in_template()
+            && crate::ide::corsa_support::in_static_attribute_value(&ctx.content, ctx.offset)
+        {
+            return None;
+        }
         if let Some(response) = Self::private_setup_prepare(ctx) {
             return Some(response);
         }

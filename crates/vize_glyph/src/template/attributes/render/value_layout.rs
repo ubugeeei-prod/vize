@@ -5,13 +5,14 @@ use crate::template::directives::should_format_expression;
 use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
 use unicode_width::UnicodeWidthStr;
+use vize_l0::string_builder::TextBuf;
 
 pub(super) fn write_overflowing_value(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     attr: &ParsedAttribute,
     rendered: &str,
-    newline: &[u8],
-    indent: &[u8],
+    newline: &str,
+    indent: &str,
     depth: usize,
     layout: &AttributeLayout<'_>,
 ) -> bool {
@@ -30,19 +31,13 @@ pub(super) fn write_overflowing_value(
         return false;
     };
     let normalized;
-    let value = if newline == b"\r" && value.contains('\r') {
+    let value = if newline == "\r" && value.contains('\r') {
         normalized = value.replace('\r', "\n");
         normalized.as_str()
     } else {
         value
     };
-    let Some(line) = output
-        .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
-        .next()
-        .and_then(|line| core::str::from_utf8(line).ok())
-    else {
-        return false;
-    };
+    let line = crate::template::formatter::current_line(output);
     let indent_width = layout.options.tab_width as usize;
     let width = layout.options.print_width as usize;
     let column = line.split('\t').map(str::width).sum::<usize>()
@@ -52,9 +47,9 @@ pub(super) fn write_overflowing_value(
         return false;
     }
 
-    output.extend_from_slice(attr.name.as_bytes());
-    output.extend_from_slice(b"=\"");
-    output.extend_from_slice(newline);
+    output.push_str(&attr.name);
+    output.push_str("=\"");
+    output.push_str(newline);
     // The existing SFC mask owns all lines after a quote with no same-line
     // value. Emit their final indentation here; its outer writer keeps them raw.
     let mut literal = ValueLines::new(value, Representation::Html);
@@ -63,11 +58,11 @@ pub(super) fn write_overflowing_value(
         if !literal.line_is_raw() {
             write_line_indent(output, line, indent, depth + layout.base_depth + 1);
         }
-        output.extend_from_slice(line.as_bytes());
-        output.extend_from_slice(newline);
+        output.push_str(line);
+        output.push_str(newline);
         literal.advance_line(line);
     }
     write_indent(output, indent, depth + layout.base_depth);
-    output.push(b'"');
+    output.push('"');
     true
 }

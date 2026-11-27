@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+
+<template>
+  <section>
+    <p v-t="'title'"></p>
+    <li v-t="{ path: 'items', args: { count } }"></li>
+    <p v-focus></p>
+  </section>
+</template>

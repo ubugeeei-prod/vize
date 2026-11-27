@@ -81,6 +81,13 @@ impl<'b> TransformExpressions<'b> {
         }
     }
 
+    /// Whether free identifiers are rewritten (`prefix_identifiers`). An
+    /// unprefixed rewrite leaves every name bare for the emitter to scope.
+    #[must_use]
+    pub fn prefixes_identifiers(&self) -> bool {
+        self.scope.prefixes_identifiers()
+    }
+
     /// The transform's rewrite of `expr` at its authored position.
     pub fn expr(
         &self,

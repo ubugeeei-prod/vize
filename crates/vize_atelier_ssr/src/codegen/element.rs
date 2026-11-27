@@ -7,6 +7,7 @@ mod component;
 mod component_props;
 mod css_root;
 mod directive_props;
+mod dynamic_arg;
 mod merged;
 mod plain;
 pub(crate) mod props;

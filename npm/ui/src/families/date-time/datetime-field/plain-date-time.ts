@@ -139,6 +139,8 @@ export function parseIsoDateTime(value: string): PlainDateTime | null {
 }
 
 const zonedDateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+// Callers choose the zone id and its spelling, so the cache has to stay bounded.
+const maximumCachedZonedDateTimeFormatters = 64;
 
 /** Wall-clock date-time of an instant in an IANA time zone; unknown zones return `null`. */
 export function fromEpochMillisecondsDateTime(
@@ -164,6 +166,10 @@ export function fromEpochMillisecondsDateTime(
       });
     } catch {
       return null;
+    }
+    if (zonedDateTimeFormatters.size >= maximumCachedZonedDateTimeFormatters) {
+      const oldest = zonedDateTimeFormatters.keys().next();
+      if (oldest.done !== true) zonedDateTimeFormatters.delete(oldest.value);
     }
     zonedDateTimeFormatters.set(timeZone, formatter);
   }

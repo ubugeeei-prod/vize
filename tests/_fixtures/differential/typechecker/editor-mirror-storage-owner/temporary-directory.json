@@ -1,0 +1,21 @@
+{
+  "schema": "vize.editor-mirror-storage-placement",
+  "version": 1,
+  "workspace": [
+    { "runtimePath": "src/App.vue", "source": "App.vue.txt" },
+    { "runtimePath": "tsconfig.json", "source": "tsconfig.json.txt" }
+  ],
+  "temporaryDirectoryBefore": [
+    { "path": "elsewhere", "kind": "directory" },
+    { "path": "vize-canon", "kind": "link", "target": "elsewhere" }
+  ],
+  "session": {
+    "command": ["lsp"],
+    "environment": { "TMPDIR": "<private temporary directory>/" },
+    "initializationOptions": { "editor": true, "lint": false, "typecheck": true },
+    "open": "src/App.vue",
+    "then": ["textDocument/hover at 1:7", "shutdown", "exit"]
+  },
+  "observed": "storage.observed.json",
+  "observedScope": "every entry under the temporary directory whose name starts with vize-canon, and the link target; the user id is written {uid}"
+}

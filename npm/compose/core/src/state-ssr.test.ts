@@ -131,6 +131,21 @@ void test("global state and event hooks are inert data during render", async () 
   assert.equal(html, "<output>global|1</output>");
 });
 
+void test("global state written during one render is not read by the next", async () => {
+  const useGlobal = createGlobalState(() => shallowRef("initial"));
+  const html = await renderTwice(() =>
+    defineComponent({
+      setup() {
+        const state = useGlobal();
+        const rendered = state.value;
+        state.value = "written by a request";
+        return () => h("output", rendered);
+      },
+    }),
+  );
+  assert.equal(html, "<output>initial</output>");
+});
+
 void test("module-level event hooks skip server setup listeners instead of piling up", async () => {
   const shared = createEventHook<[string]>();
   const opted = createEventHook<[string]>({ serverListeners: "register" });
