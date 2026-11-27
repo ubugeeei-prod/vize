@@ -10,9 +10,11 @@
 //! name.
 //!
 //! Vue camelizes a prop key at runtime, so `:[name]` with `name: 'some-message'`
-//! sets `someMessage`. The key therefore passes through a type-level camelize,
-//! [`CAMELIZED_KEY_ALIAS`], which the checked call declares after itself only
-//! when the usage has such a binding; a `string` name stays `string`.
+//! sets `someMessage`. A literal key therefore passes through a type-level
+//! camelize, [`CAMELIZED_KEY_ALIAS`], when the camelized name is a prop of the
+//! child; any other key stays the attribute Vue passes through as authored. The
+//! checked call declares the alias after itself only when the usage has such a
+//! binding, and a `string` name stays `string`.
 //!
 //! Like a `v-bind="bag"` spread, the entry owns its name and value
 //! expressions: both are mapped to their authored bytes, and
@@ -54,6 +56,7 @@ pub(super) fn append_dynamic_name_entries(
         return;
     };
     let property_key = crate::virtual_ts::generated_names::lib("PropertyKey");
+    let component = crate::virtual_ts::helpers::to_safe_identifier_fragment(usage.name.as_str());
     for prop in &usage.props {
         if !is_dynamic_name_binding(source_context.template, prop) {
             continue;
@@ -63,7 +66,7 @@ pub(super) fn append_dynamic_name_entries(
         };
         append!(
             *ts,
-            "{expr_indent}  ...{{ [(undefined as unknown as <S extends {property_key}>(name: S) => S extends string ? {CAMELIZED_KEY_ALIAS}{idx}<S> : S)("
+            "{expr_indent}  ...{{ [(undefined as unknown as <S extends {property_key}>(name: S) => S extends string ? {CAMELIZED_KEY_ALIAS}{idx}<S> extends keyof __{component}_Props_{idx} ? {CAMELIZED_KEY_ALIAS}{idx}<S> : S : S)("
         );
         append_mapped(
             ts,
