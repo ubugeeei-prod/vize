@@ -16,6 +16,8 @@ on {
       "tools/support/compat/nuxt/nuxt3-module-build.ts"
       "tools/support/compat/nuxt/fixtures/nuxt-component-modes/**"
       "tools/support/compat/nuxt/nuxt-component-modes*"
+      "tools/support/compat/nuxt/fixtures/nuxt-environment-api-generate/**"
+      "tools/support/compat/nuxt/nuxt-environment-api-generate.ts"
       "tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**"
       "tools/support/compat/nuxt/nuxt5-runtime-build.ts"
       "tools/support/node-runtime-identity.cjs"
@@ -215,6 +217,10 @@ jobs {
         run = #"node tools/support/compat/nuxt/nuxt-component-modes.ts "$RUNNER_TEMP/nuxt-component-modes-proof""#
       }
       new Dynamic {
+        name = "Verify client-only generate through the Vite Environment API"
+        run = #"node tools/support/compat/nuxt/nuxt-environment-api-generate.ts "$RUNNER_TEMP/nuxt-environment-api-proof""#
+      }
+      new Dynamic {
         name = "Verify SSR environment ownership and original Nuxt 5 inputs"
         run = ci.workflowScript("verify-ssr-environment-ownership-and-original-nuxt-5.sh")
       }
@@ -260,6 +266,7 @@ jobs {
           path = """
           ${{ runner.temp }}/nuxt3-module-proof
           ${{ runner.temp }}/nuxt-component-modes-proof
+          ${{ runner.temp }}/nuxt-environment-api-proof
           ${{ runner.temp }}/nuxt-prefetch-proof
           ${{ runner.temp }}/nuxt-lint-config-proof
           ${{ runner.temp }}/nuxt-compiler-defaults-proof
