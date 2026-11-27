@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/compile-jsx",
-  "version": "0.474.0",
+  "version": "0.805.0",
   "description": "Vize compiler for Vue JSX and TSX, with VDOM and Vapor output",
   "keywords": [
     "compiler",
