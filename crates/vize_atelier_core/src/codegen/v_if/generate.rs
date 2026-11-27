@@ -6,7 +6,7 @@ use crate::{ExpressionNode, PropNode};
 
 use super::super::{
     context::CodegenContext,
-    helpers::{escape_js_string, is_valid_js_identifier},
+    helpers::escape_js_string,
     props::{StaticMerge, generate_directive_prop_with_static},
 };
 
@@ -85,14 +85,7 @@ pub(super) fn generate_single_prop_for_if(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !is_valid_js_identifier(attr.name);
-            if needs_quotes {
-                ctx.push("\"");
-            }
-            ctx.push(attr.name);
-            if needs_quotes {
-                ctx.push("\"");
-            }
+            ctx.push_key(attr.name);
             ctx.push(": ");
             if let Some(value) = &attr.value {
                 if should_ref_runtime_binding {

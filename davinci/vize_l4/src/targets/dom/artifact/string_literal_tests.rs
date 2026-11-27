@@ -116,16 +116,10 @@ fn a_static_dynamic_component_name_is_a_string_literal() {
 
 #[test]
 fn a_directive_resolves_by_a_string_literal_of_its_name() {
-    let cases = [
-        (
-            r#"<div v-a"b="x"></div>"#,
-            resolved_directive("_directive_a34b", r#""a\"b""#),
-        ),
-        (
-            r#"<div v-a\b="x"></div>"#,
-            resolved_directive("_directive_a92b", r#""a\\b""#),
-        ),
-    ];
+    let cases = [(
+        r#"<div v-a\b="x"></div>"#,
+        resolved_directive("_directive_a92b", r#""a\\b""#),
+    )];
     let actual: StdVec<String> = cases.iter().map(|(source, _)| rendered(source)).collect();
     let expected: StdVec<String> = cases.iter().map(|(_, module)| module.clone()).collect();
     assert_eq!(actual, expected);

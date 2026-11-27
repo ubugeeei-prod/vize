@@ -61,12 +61,14 @@ pub(in crate::targets::dom::artifact) fn push_empty_attr_pair(out: &mut String, 
 }
 
 fn push_pair(out: &mut String, name: &str, value: &str) {
-    let quoted = !is_valid_js_identifier(name);
-    if quoted {
+    if is_valid_js_identifier(name) {
+        out.push_str(name);
+    } else {
+        // Hoisted pairs are built without the emit context: a name that
+        // needs quotes is checked by itself.
+        let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
         out.push('"');
-    }
-    out.push_str(name);
-    if quoted {
+        out.push_str(contents.as_deref().unwrap_or(name));
         out.push('"');
     }
     out.push_str(": \"");

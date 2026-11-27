@@ -3,6 +3,8 @@
 use crate::String;
 use phf::phf_set;
 
+pub mod quoted_name;
+
 /// Reserved props that should not be passed to components
 pub static RESERVED_PROPS: phf::Set<&'static str> = phf_set! {
     "", "key", "ref", "ref_for", "ref_key",

@@ -76,15 +76,7 @@ fn generate_js_child_node_to_bytes_guarded(
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
-                        let key = &exp.content;
-                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
-                        if needs_quote {
-                            out.push('"');
-                            out.push_str(key);
-                            out.push('"');
-                        } else {
-                            out.push_str(key);
-                        }
+                        ctx.write_key(out, exp.content);
                         out.push_str(": ");
                     }
                     ExpressionNode::Compound(_) => out.push_str("null: "),
@@ -212,15 +204,7 @@ fn generate_props_expression_to_bytes(
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
-                        let key = &exp.content;
-                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
-                        if needs_quote {
-                            out.push('"');
-                            out.push_str(key);
-                            out.push('"');
-                        } else {
-                            out.push_str(key);
-                        }
+                        ctx.write_key(out, exp.content);
                         out.push_str(": ");
                     }
                     ExpressionNode::Compound(_) => out.push_str("null: "),

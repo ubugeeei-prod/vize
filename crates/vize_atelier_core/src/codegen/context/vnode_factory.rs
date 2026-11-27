@@ -71,6 +71,7 @@ impl CodegenContext {
             in_v_once: false,
             v_if_branch_counter: 0,
             source: String::default(),
+            quoted_name_escapes: core::cell::Cell::new(None),
         }
     }
 

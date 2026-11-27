@@ -257,8 +257,11 @@ fn generate_component_call(
             ctx.push_indent();
             let name_span = slot.name.loc.span;
             let name_source = (name_span.start < name_span.end).then_some(name_span.start);
+            let escaped = ctx.escaped_name(slot.name.content);
             let mut name = EmitDocument::plain("\"");
-            name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
+            name.push_spanned(
+                &ctx.spanned_at(escaped.as_deref().unwrap_or(slot.name.content), name_source),
+            );
             name.push_str("\":");
             ctx.push_spanned(&name);
             generate_slot_fn(ctx, slot, element_template_map, kind);

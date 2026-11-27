@@ -173,6 +173,9 @@ pub use self::transform_expr::{
 struct EmitCx<'facts> {
     buf: Buf,
     source: &'facts str,
+    /// Whether a quoted name of this emit may need escaping, decided from
+    /// `source` when the first name is quoted.
+    quoted_name_escapes: Option<bool>,
     facts: &'facts L2Analyses,
     texts: &'facts SideTable<TextParts>,
     if_facts: &'facts SideTable<IfAnalysis>,

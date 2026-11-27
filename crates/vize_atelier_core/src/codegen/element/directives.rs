@@ -64,14 +64,14 @@ fn generate_vmodel_entry(
 
         if let Some(modifier) = single_modifier {
             ctx.push("    { ");
-            ctx.push(modifier);
+            ctx.push_key(modifier);
             ctx.push(": true }");
         } else {
             ctx.push("    {");
             for (i, modifier) in active_modifiers.iter().enumerate() {
                 ctx.newline();
                 ctx.push("      ");
-                ctx.push(modifier);
+                ctx.push_key(modifier);
                 ctx.push(": true");
                 if i < active_modifiers.len() - 1 {
                     ctx.push(",");
@@ -132,9 +132,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
         match arg {
             ExpressionNode::Simple(simple) => {
                 if simple.is_static {
-                    ctx.push("\"");
-                    ctx.push(simple.content);
-                    ctx.push("\"");
+                    ctx.push_string_literal(simple.content);
                 } else {
                     ctx.push(simple.content);
                 }
@@ -157,7 +155,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
             if j > 0 {
                 ctx.push(", ");
             }
-            ctx.push(modifier.content);
+            ctx.push_key(modifier.content);
             ctx.push(": true");
         }
         ctx.push(" }");

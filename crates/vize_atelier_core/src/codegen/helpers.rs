@@ -6,7 +6,7 @@ mod escape_gate;
 pub use self::constant_expression::is_constant_simple_expression;
 use self::escape_gate::byte_may_need_js_escaping;
 use crate::RuntimeHelper;
-use vize_l0::{ToCompactString, js_string::push_js_string_literal};
+use vize_l0::{ToCompactString, general::quoted_name};
 
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
@@ -116,11 +116,7 @@ pub fn escape_js_string(s: &str) -> String {
 /// `name` exactly. Unlike [`escape_js_string`], `name` is final text (a tag
 /// name, an already decoded attribute value): no entity in it is decoded.
 pub(super) fn js_string_contents(name: &str) -> String {
-    let mut literal = String::with_capacity(name.len() + 2);
-    push_js_string_literal(&mut literal, name);
-    // Drop the opening and the closing quote.
-    let end = literal.len().saturating_sub(1);
-    String::from(literal.get(1..end).unwrap_or(name))
+    quoted_name::js_string_contents(name)
 }
 
 /// Check if a string is a valid JavaScript identifier (doesn't need quoting)

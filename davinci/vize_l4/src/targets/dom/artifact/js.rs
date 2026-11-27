@@ -150,11 +150,47 @@ pub(super) fn escape_js_string(s: &str) -> String {
 
 pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
     if !is_valid_js_identifier(name) {
-        cx.buf.push("\"");
-        cx.buf.push(name);
-        cx.buf.push("\"");
+        cx.push_quoted_name(name);
     } else {
         cx.buf.push(name);
+    }
+}
+
+impl super::EmitCx<'_> {
+    /// Push an authored name as a double-quoted JavaScript string literal.
+    /// Whether any name of this emit can need escaping is decided once, from
+    /// its source; until a source holds a backslash, names are copied as they
+    /// are.
+    #[inline]
+    pub(super) fn push_quoted_name(&mut self, name: &str) {
+        let escapes = match self.quoted_name_escapes {
+            Some(escapes) => escapes,
+            None => self.scan_source_for_name_escapes(),
+        };
+        if escapes {
+            self.push_escaped_quoted_name(name);
+            return;
+        }
+        self.buf.push("\"");
+        self.buf.push(name);
+        self.buf.push("\"");
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn scan_source_for_name_escapes(&mut self) -> bool {
+        let escapes = vize_l0::general::quoted_name::source_may_need_name_escapes(self.source);
+        self.quoted_name_escapes = Some(escapes);
+        escapes
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_escaped_quoted_name(&mut self, name: &str) {
+        let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
+        self.buf.push("\"");
+        self.buf.push(contents.as_deref().unwrap_or(name));
+        self.buf.push("\"");
     }
 }
 

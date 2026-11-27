@@ -71,6 +71,11 @@ required-features = ["legacy-differential"]
 name = "uppercase_native_event_keys"
 required-features = ["legacy-differential"]
 
+# Both lanes escape quoted names alike.
+[[test]]
+name = "quoted_name_backslashes"
+required-features = ["legacy-differential"]
+
 # The `v-pre` witness compares against the differential lane's legacy
 # entry, the same oracle the shape matrix uses.
 [[test]]

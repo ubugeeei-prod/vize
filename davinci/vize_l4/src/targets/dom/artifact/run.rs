@@ -91,6 +91,7 @@ pub(super) fn emit_dom_observed<'f, P>(
     let mut cx = EmitCx {
         buf: Buf::new(options.inline),
         source: lowered.artifact.source,
+        quoted_name_escapes: None,
         facts,
         texts: &lowered.artifact.texts,
         if_facts: &lowered.artifact.if_facts,

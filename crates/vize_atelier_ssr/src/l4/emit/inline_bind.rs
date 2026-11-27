@@ -67,9 +67,11 @@ pub(super) fn emit(
                 BindName::Static(authored) => authored,
                 _ => name,
             };
+            let escaped = em.ctx.escaped_name(name);
+            let contents = escaped.as_deref().unwrap_or(name);
             match argument_start(em.ctx.source, bind.span, authored) {
-                Some(start) if em.ctx.spans_enabled() => piece.push_mapped(name, start),
-                _ => piece.push_str(name),
+                Some(start) if em.ctx.spans_enabled() => piece.push_mapped(contents, start),
+                _ => piece.push_str(contents),
             }
             piece.push_str("\", ");
             piece.push_spanned(&em.bound_expression(&exp, bind));

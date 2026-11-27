@@ -127,9 +127,7 @@ fn emit_mod_array(cx: &mut EmitCx<'_>, mods: &[&str]) {
         if i > 0 {
             cx.buf.push(",");
         }
-        cx.buf.push("\"");
-        cx.buf.push(modifier);
-        cx.buf.push("\"");
+        cx.push_quoted_name(modifier);
     }
     cx.buf.push("]");
 }

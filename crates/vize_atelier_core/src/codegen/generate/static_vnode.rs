@@ -19,7 +19,7 @@ pub(super) fn generate_static_element_to_bytes(
     out.push_str(el.tag);
     out.push('"');
 
-    let props = build_static_props(el);
+    let props = build_static_props(ctx, el);
     if let Some(props) = &props {
         out.push_str(", ");
         out.push_str(props.as_str());
@@ -96,7 +96,7 @@ fn generate_static_child_array_to_bytes(
 /// Build the props-object literal for a static element, or `None` when it has
 /// no renderable static props. Mirrors the dedupe and quoting rules used by the
 /// main props codegen.
-fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
+fn build_static_props(ctx: &CodegenContext, el: &ElementNode<'_>) -> Option<String> {
     let mut buf = String::default();
     buf.push_str("{ ");
     let mut seen: vize_l0::FxHashSet<vize_l0::String> = vize_l0::FxHashSet::default();
@@ -112,14 +112,7 @@ fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
                 buf.push_str(", ");
             }
             emitted += 1;
-            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
-            if needs_quote {
-                buf.push('"');
-                buf.push_str(attr.name);
-                buf.push('"');
-            } else {
-                buf.push_str(attr.name);
-            }
+            ctx.write_key(&mut buf, attr.name);
             buf.push_str(": \"");
             if let Some(value) = &attr.value {
                 buf.push_str(escape_js_string(value.content).as_str());
