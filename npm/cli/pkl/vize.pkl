@@ -220,7 +220,6 @@ class EnforceStyleAttributeOptions {
 class RestrictedSyntaxSelector {
   /// esquery selector from the supported subset (see the rule options docs).
   selector: String
-
   /// Message reported instead of the default one.
   message: String?
 }
