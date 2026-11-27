@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { renderRepositoryYaml } from "../../tools/support/ci/repository-yaml.ts";
+import { renderRepositoryYaml, type ConfigValue } from "../../tools/support/ci/repository-yaml.ts";
 
 test("updating an action pin changes just the scalar and keeps comments, layout, and anchors", () => {
   const source = [
@@ -96,7 +96,7 @@ test("a new key, a longer flow list and replaced block items keep the rest of th
     "    runs-on: ubuntu",
     "",
   ].join("\n");
-  const config = {
+  const config: ConfigValue = {
     jobs: {
       build: {
         needs: ["version", "tag", "scan"],
@@ -150,7 +150,7 @@ test("a mapping that gains one scalar key gets it in place, in flow and block st
     "      cache: true",
     "",
   ].join("\n");
-  const config = {
+  const config: ConfigValue = {
     steps: [
       { uses: "setup", with: { version: "1.8.0", "node-version-file": "package.json" } },
       { uses: "setup", with: { version: "1.8.0", cache: true } },
