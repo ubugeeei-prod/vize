@@ -167,6 +167,8 @@ vize_musea.workspace = true
 [target.'cfg(unix)'.dependencies]
 # Anchored no-follow descriptor observations; no new dependency version.
 libc.workspace = true
+# Safe `openat`, inotify and `statfs` wrappers; already linked through tempfile.
+rustix = { workspace = true, features = ["fs"] }
 
 [dev-dependencies]
 davinci_harness.workspace = true

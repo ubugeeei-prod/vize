@@ -7,13 +7,15 @@ use std::{
     fs::OpenOptions,
     io,
     os::{
-        fd::{AsRawFd, FromRawFd, OwnedFd},
+        fd::{AsRawFd, OwnedFd},
         unix::ffi::OsStrExt,
         unix::fs::OpenOptionsExt,
     },
     path::{Path, PathBuf},
     sync::Mutex,
 };
+
+use rustix::fs::inotify;
 
 use super::DirectoryMarkers;
 
@@ -61,15 +63,10 @@ struct ChangeTrackerState {
 
 impl Default for ChangeTrackerState {
     fn default() -> Self {
-        // SAFETY: inotify_init1 has no borrowed arguments. A successful return
-        // transfers ownership of a new close-on-exec descriptor to this state.
-        let descriptor = unsafe { libc::inotify_init1(libc::IN_NONBLOCK | libc::IN_CLOEXEC) };
+        let descriptor =
+            inotify::init(inotify::CreateFlags::NONBLOCK | inotify::CreateFlags::CLOEXEC);
         Self {
-            descriptor: (descriptor >= 0).then(|| {
-                // SAFETY: the non-negative descriptor was just created above
-                // and has not been wrapped or transferred elsewhere.
-                unsafe { OwnedFd::from_raw_fd(descriptor) }
-            }),
+            descriptor: descriptor.ok(),
             paths: HashMap::new(),
             watches: HashMap::new(),
             next_token: 1,
@@ -97,19 +94,18 @@ impl ChangeTrackerState {
                 overflows: self.overflows,
             });
         }
-        let descriptor = self.descriptor.as_ref()?.as_raw_fd();
+        let descriptor = self.descriptor.as_ref()?;
         let encoded = CString::new(directory.as_os_str().as_bytes()).ok()?;
         if !supports_local_generations(&encoded) {
             return None;
         }
-        // SAFETY: the tracker owns the live descriptor and `encoded` is a
-        // NUL-terminated pathname for the duration of this call.
         vize_l0::micro_count!("fs.inotify.watch_add.calls", 1);
-        let watch_descriptor =
-            unsafe { libc::inotify_add_watch(descriptor, encoded.as_ptr(), WATCH_MASK) };
-        if watch_descriptor < 0 {
-            return None;
-        }
+        let watch_descriptor = inotify::add_watch(
+            descriptor,
+            encoded.as_c_str(),
+            inotify::WatchFlags::from_bits_retain(WATCH_MASK),
+        )
+        .ok()?;
         let path = directory.to_path_buf();
         self.paths.insert(path.clone(), watch_descriptor);
         if !self.watches.contains_key(&watch_descriptor) {
@@ -134,30 +130,29 @@ impl ChangeTrackerState {
     }
 
     fn drain(&mut self) {
-        let Some(descriptor) = self.descriptor.as_ref().map(AsRawFd::as_raw_fd) else {
-            return;
-        };
         let mut buffer = [0_u8; 16 * 1024];
         loop {
-            // SAFETY: `buffer` is exclusively writable for its complete
-            // supplied length and read does not retain the pointer.
-            vize_l0::micro_count!("fs.inotify.read.calls", 1);
-            let length =
-                unsafe { libc::read(descriptor, buffer.as_mut_ptr().cast(), buffer.len()) };
-            if length < 0 {
-                let error = io::Error::last_os_error();
-                if error.kind() == io::ErrorKind::Interrupted {
-                    continue;
-                }
-                if error.kind() != io::ErrorKind::WouldBlock {
-                    self.disable();
-                }
+            let Some(descriptor) = self.descriptor.as_ref() else {
                 return;
-            }
+            };
+            vize_l0::micro_count!("fs.inotify.read.calls", 1);
+            let length = match rustix::io::read(descriptor, &mut buffer) {
+                Ok(length) => length,
+                Err(error) => {
+                    let error = io::Error::from(error);
+                    if error.kind() == io::ErrorKind::Interrupted {
+                        continue;
+                    }
+                    if error.kind() != io::ErrorKind::WouldBlock {
+                        self.disable();
+                    }
+                    return;
+                }
+            };
             if length == 0 {
                 return;
             }
-            let Some(events) = buffer.get(..length as usize) else {
+            let Some(events) = buffer.get(..length) else {
                 self.disable();
                 return;
             };
@@ -207,11 +202,9 @@ impl ChangeTrackerState {
 
     fn remove_watch(&mut self, descriptor: i32) {
         if let Some(inotify) = self.descriptor.as_ref() {
-            // SAFETY: the tracker owns the inotify descriptor. Removing an
-            // already ignored watch may fail with EINVAL and needs no retry.
-            unsafe {
-                libc::inotify_rm_watch(inotify.as_raw_fd(), descriptor);
-            }
+            // Removing an already ignored watch may fail with EINVAL and needs
+            // no retry.
+            let _ = inotify::remove_watch(inotify, descriptor);
         }
         if let Some(watch) = self.watches.remove(&descriptor) {
             for path in watch.paths {
@@ -242,15 +235,10 @@ fn supports_local_generations(path: &std::ffi::CStr) -> bool {
     const ZFS: u64 = 0x2FC1_2FC1;
     const RAMFS: u64 = 0x8584_58F6;
 
-    let mut storage = std::mem::MaybeUninit::<libc::statfs>::uninit();
-    // SAFETY: `path` is NUL-terminated and live for this call; on success the
-    // kernel has initialized the complete statfs output structure.
     vize_l0::micro_count!("fs.statfs.calls", 1);
-    if unsafe { libc::statfs(path.as_ptr(), storage.as_mut_ptr()) } != 0 {
+    let Ok(filesystem) = rustix::fs::statfs(path) else {
         return false;
-    }
-    // SAFETY: guarded by the successful statfs call above.
-    let filesystem = unsafe { storage.assume_init() };
+    };
     matches!(
         filesystem.f_type as u64,
         EXT | XFS | BTRFS | TMPFS | OVERLAY | ZFS | RAMFS
@@ -269,9 +257,12 @@ pub(super) fn directory_markers(directory: &Path) -> io::Result<DirectoryMarkers
     let mut buffer = [0_u8; 32 * 1024];
     loop {
         vize_l0::micro_count!("fs.getdents64.calls", 1);
-        // SAFETY: the live descriptor belongs to `file`; the writable buffer
-        // remains exclusively borrowed and valid for its full supplied length.
-        // getdents64 writes at most that length and does not retain its pointer.
+        // SAFETY: Linux getdents64(2) writes at most `count` bytes of records
+        // into `dirp` and keeps no pointer after returning. The descriptor
+        // belongs to the live `file`, and `buffer` stays exclusively borrowed
+        // and valid for its full supplied length during the call. rustix has
+        // no per-call wrapper (`RawDir` hides the call and byte counts the
+        // `fs.getdents64.*` counters report), so this stays a raw syscall.
         let length = unsafe {
             libc::syscall(
                 libc::SYS_getdents64,
