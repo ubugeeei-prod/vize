@@ -180,7 +180,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
   rust-feature-tests:
-    name: Rust feature tests (${{ matrix.row }})
+    name: Rust feature tests (${{ matrix.rows }})
     if: ${{ inputs.run-rust && fromJSON(inputs.rust-plan).featureTests }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
@@ -194,7 +194,7 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
-      ROW: ${{ matrix.row }}
+      ROWS: ${{ matrix.rows }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -218,8 +218,8 @@ jobs:
           run-install: false
       - name: Install frozen source dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Run the feature row
-        run: node tools/ci/commands/rust-feature-tests.ts run "$ROW"
+      - name: Run the feature rows
+        run: node tools/ci/commands/rust-feature-tests.ts run "$ROWS"
 
   rust-product-report:
     name: Rust product report
