@@ -201,6 +201,7 @@ impl Drop for EditorStorage {
 #[cfg(test)]
 mod retained_tests;
 mod storage_root;
+pub(crate) use storage_root::create_user_temporary_root;
 use storage_root::sessions_base;
 
 impl Default for EditorMirrorSession {
