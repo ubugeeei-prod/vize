@@ -4,11 +4,12 @@ import CodeHighlight from "../../shared/code-highlight.vue";
 import type { CodeOutputs } from "../atelier/codeOutputs";
 import type { OutputTarget } from "./useStageLadder";
 
-const { outputs, target, theme, backendPages } = defineProps<{
+const { outputs, target, theme, backendPages, hideTargets } = defineProps<{
   outputs: CodeOutputs;
   target: OutputTarget;
   theme: "dark" | "light";
   backendPages?: { step: string; text: string }[];
+  hideTargets?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -40,7 +41,7 @@ const code = computed(() =>
 
 <template>
   <div class="davinci-output">
-    <div class="davinci-subtabs" role="tablist" aria-label="Emitted code">
+    <div v-if="!hideTargets" class="davinci-subtabs" role="tablist" aria-label="Emitted code">
       <button
         v-for="item in TARGETS"
         :key="item.id"

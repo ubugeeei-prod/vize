@@ -24,7 +24,7 @@ const OUTPUT_READY: Record<(typeof TABS)[number], string> = {
   croquis: ".perf-badge",
   "cross-file": ".status-time",
   musea: ".perf-badge",
-  davinci: ".davinci-rail",
+  davinci: ".davinci-layers",
 };
 
 /** Per-tab regions whose content is machine-dependent (measured timings). */

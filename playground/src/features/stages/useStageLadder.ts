@@ -18,12 +18,13 @@ import {
   createEmptyCodeOutputs,
   type CodeOutputs,
 } from "../atelier/codeOutputs";
-import type { RungId } from "./ladder";
+import type { RungId, LadderPage } from "./ladder";
 import { useProductCaptureState, type ProductCapturedResult } from "./productCaptureState";
-import { dumpLines, linesCovering } from "./dumpLines";
+import { dumpLines, type DumpLine } from "./dumpLines";
+import { cursorSpan, traceMatches, tracePages } from "./sourceTrace";
 import { sfcOffsetToTemplateBytes, templateBytesToSfcRange, type Range } from "./offsets";
 import { remarksAt, type StageRemark } from "./remarks";
-import { parseProvenance, recordsForNode } from "./provenance";
+import { parseProvenance } from "./provenance";
 import { graphLineKinds, partitionKinds } from "./partition";
 
 export type StageId = RungId | "l4";
@@ -65,6 +66,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   const cursorBytes = ref<number | null>(null);
   const pageView = ref<PageView>("page");
   const pinnedSpan = ref<Range | null>(null);
+  const previewSpan = ref<Range | null>(null);
   const remarks = computed<StageRemark[]>(() => ladder.value?.remarks ?? []);
 
   const rung = computed(() =>
@@ -99,46 +101,98 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     if (pageView.value !== "diff" || !before || !after) return null;
     return getCompiler()?.buildInspectorDiff(before.text, after.text) ?? null;
   });
-  const linkedLines = computed(() =>
-    cursorBytes.value === null ? [] : linesCovering(lines.value, cursorBytes.value).slice(0, 1),
+  const overviewPages = computed(() =>
+    (ladder.value?.rungs ?? []).map((rung) => {
+      const page = rung.pages.find((page) => page.key === pageKeys.value[rung.id]) ?? rung.pages[0];
+      const lines = dumpLines(page.kind, page.text);
+      const partition = rung.pages.find((page) => page.kind === "partition");
+      const marks =
+        page.kind === "impeto" && partition
+          ? graphLineKinds(page.text, partitionKinds(partition.text))
+          : new Map<number, string>();
+      return { rung, page, lines, marks };
+    }),
   );
-
-  const focusLine = computed(() => hoveredLine.value ?? selectedLine.value);
+  const structuralPages = computed(() => tracePages(ladder.value?.rungs ?? [], page.value));
+  const surfaceUnits = computed(() => {
+    const semantic = ladder.value?.rungs.find(({ id }) => id === "l2")?.pages;
+    const lower =
+      semantic?.find((page) => page.kind === "disegno" && page.pass === "lower") ??
+      semantic?.find((page) => page.kind === "disegno");
+    // Lowering metadata can repeat its owner's span; it is one authored unit.
+    const units = new Map<string, DumpLine>();
+    for (const line of lower ? dumpLines("disegno", lower.text) : []) {
+      if (!line.span) continue;
+      const key = `${line.span.start}:${line.span.end}`;
+      if (!units.has(key)) units.set(key, line);
+    }
+    return [...units.values()];
+  });
+  // Only an explicit selection reveals rows. Hover must never move a scroll viewport.
+  const revealSpan = computed(
+    () =>
+      (selectedLine.value === null ? null : lines.value[selectedLine.value]?.span) ??
+      pinnedSpan.value ??
+      cursorSpan(structuralPages.value, cursorBytes.value),
+  );
+  const focusSpan = computed(() => {
+    if (previewSpan.value) return previewSpan.value;
+    const index = hoveredLine.value ?? selectedLine.value;
+    return (
+      (index === null ? null : lines.value[index]?.span) ??
+      pinnedSpan.value ??
+      cursorSpan(structuralPages.value, cursorBytes.value)
+    );
+  });
+  const linkedLines = computed(() => traceMatches(lines.value, focusSpan.value, page.value?.kind));
+  const focusLine = computed(
+    () => hoveredLine.value ?? selectedLine.value ?? linkedLines.value[0] ?? null,
+  );
   const provenance = computed(() => {
     const s2 = ladder.value?.rungs.find((r) => r.id === "l2");
     const page = s2?.pages.find((p) => p.kind === "provenance");
     return page ? parseProvenance(page.text) : [];
   });
-  /** Why the focused L2 op exists: its lowering record, then pass facts. */
   const focusProvenance = computed(() => {
-    const index = focusLine.value;
-    const node = index === null ? null : (lines.value[index]?.node ?? null);
-    return node === null ? [] : recordsForNode(provenance.value, node);
+    const span = focusSpan.value;
+    return span
+      ? provenance.value.filter(
+          (record) => record.span.start === span.start && record.span.end === span.end,
+        )
+      : [];
   });
-  /** What the passes said about the focused L2 op (remarks at its span). */
-  const focusRemarks = computed(() => {
-    const index = focusLine.value;
-    const line = index === null ? null : lines.value[index];
-    return line?.node === null || !line?.span ? [] : remarksAt(remarks.value, line.span);
-  });
-  const focusSpan = computed(() => {
-    const index = focusLine.value;
-    return index === null ? pinnedSpan.value : (lines.value[index]?.span ?? null);
-  });
+  const focusRemarks = computed(() =>
+    focusSpan.value ? remarksAt(remarks.value, focusSpan.value) : [],
+  );
   const highlights = computed<EditorHighlight[]>(() => {
     const span = focusSpan.value;
     if (!span || !ladder.value || templateStart.value === null) return [];
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
-    return [{ ...range, className: "davinci-provenance", reveal: hoveredLine.value === null }];
+    return [
+      {
+        ...range,
+        className: "davinci-provenance",
+        reveal: hoveredLine.value === null && previewSpan.value === null,
+      },
+    ];
   });
   const focusSource = computed(() => {
     const span = focusSpan.value;
     if (!span || !ladder.value || templateStart.value === null) return null;
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
-    return { span, text: source.value.slice(range.start, range.end) };
+    const line = source.value.slice(0, range.start).split("\n").length;
+    return { span, line, text: source.value.slice(range.start, range.end) };
   });
 
+  function preserveFocus() {
+    pinnedSpan.value = focusSpan.value;
+    previewSpan.value = null;
+    hoveredLine.value = null;
+    selectedLine.value = null;
+  }
+
   function selectStage(next: StageId) {
+    preserveFocus();
     stage.value = next;
     pageView.value = "page";
     selectedLine.value = null;
@@ -146,17 +200,45 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   }
 
   function selectPage(rungId: RungId, key: string) {
+    preserveFocus();
     pageKeys.value = { ...pageKeys.value, [rungId]: key };
     stage.value = rungId;
     if (pageView.value === "remarks") pageView.value = "page";
     selectedLine.value = null;
   }
 
+  function clearFocus() {
+    selectedLine.value = null;
+    hoveredLine.value = null;
+    previewSpan.value = null;
+    pinnedSpan.value = null;
+    cursorBytes.value = null;
+  }
+
+  function selectTraceLine(rungId: RungId, page: LadderPage, line: DumpLine | null) {
+    const span = line?.span ?? null;
+    const alreadySelected =
+      pinnedSpan.value?.start === span?.start &&
+      pinnedSpan.value?.end === span?.end &&
+      stage.value === rungId &&
+      pageKeys.value[rungId] === page.key;
+    selectPage(rungId, page.key);
+    pageView.value = "page";
+    if (alreadySelected || !span) clearFocus();
+    else pinnedSpan.value = span;
+  }
+
+  function hoverTraceLine(line: DumpLine | null) {
+    previewSpan.value = line?.span ?? null;
+  }
+
   function locateRemark(remark: StageRemark) {
+    clearFocus();
     pinnedSpan.value = remark.span;
   }
 
   function onCursor(offset: number) {
+    clearFocus();
     const template = templateStart.value === null ? undefined : ladder.value?.template;
     cursorBytes.value =
       template === undefined
@@ -214,6 +296,12 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
       outputs.value = compiled;
       error.value = null;
       const visible = ladder.value?.rungs ?? [];
+      if (pinnedSpan.value === null && cursorBytes.value === null) {
+        const semantic = overviewPages.value.find(({ rung }) => rung.id === "l2");
+        pinnedSpan.value =
+          semantic?.lines.find((line) => /ui\.(interpolation|model)\b/.test(line.text))?.span ??
+          null;
+      }
       if (stage.value !== "l4" && !visible.some(({ id }) => id === stage.value)) {
         stage.value = visible[0]?.id ?? "l4";
       }
@@ -228,6 +316,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
 
   let timer: ReturnType<typeof setTimeout> | null = null;
   watch(source, () => {
+    clearFocus();
     version++;
     captures.value = {};
     compiledSource.value = null;
@@ -238,6 +327,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     timer = setTimeout(() => void run(), 250);
   });
   watch(outputTarget, () => {
+    clearFocus();
     pageView.value = "page";
     pageKeys.value = {};
     selectedLine.value = null;
@@ -249,7 +339,6 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   watch(lines, () => {
     selectedLine.value = null;
     hoveredLine.value = null;
-    pinnedSpan.value = null;
   });
   let readyCompiler: WasmModule | null = null;
   function runWithNewCompiler(compiler: WasmModule | null) {
@@ -308,6 +397,13 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     focusProvenance,
     focusRemarks,
     highlights,
+    focusSpan,
+    overviewPages,
+    surfaceUnits,
+    revealSpan,
+    clearFocus,
+    selectTraceLine,
+    hoverTraceLine,
     selectStage,
     selectPage,
     locateRemark,
