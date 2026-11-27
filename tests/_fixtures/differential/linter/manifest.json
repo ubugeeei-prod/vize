@@ -22021,6 +22021,42 @@
       }
     },
     {
+      "id": "linter/musea-inferred-target-several-imports",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "musea-inferred-target-several-imports",
+        "files": [
+          {
+            "path": "Composition.art.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "fb366fa746c92d1fbcc5a6283217722fda2019b0c85887ca03643ba64758a9b0"
+          },
+          {
+            "path": "Counter.art.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "0ed54da748a09d34ca5b312f206c909b394fa9a95e5e8121660238d7d20f55dc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-boolean-tsrs-11147",
       "state": "active",
       "targets": [
