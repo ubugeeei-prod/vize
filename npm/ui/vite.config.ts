@@ -6,6 +6,7 @@ import type { Plugin } from "vite";
 import { defineConfig } from "vite-plus";
 
 import { uiStoryVariants } from "./scripts/story-variants.ts";
+import { stripCatalogRegions } from "./scripts/catalog-regions.ts";
 import { uiFamilyCatalog } from "./src/catalog/family-catalog.ts";
 import { buttonStyleAsset } from "./src/components/button/metadata.ts";
 
@@ -205,8 +206,20 @@ export default defineConfig({
       "media-source": "src/media/media-source.ts",
     },
     format: "esm",
+    // Preserve documentation in declarations without shipping it as runtime prose.
+    outputOptions: { comments: { jsdoc: false, legal: true, annotation: true } },
     dts: { vue: true },
-    plugins: [vue(), cssAssetEntrypointPlugin()],
+    plugins: [
+      vue(),
+      cssAssetEntrypointPlugin(),
+      {
+        name: "vize-ui-catalog-regions",
+        renderChunk(code, chunk) {
+          if (chunk.isEntry && chunk.name === "catalog")
+            return stripCatalogRegions(code, chunk.fileName);
+        },
+      },
+    ],
     css: {
       inject: true,
       minify: true,

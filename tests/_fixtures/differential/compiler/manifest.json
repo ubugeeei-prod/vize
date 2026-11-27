@@ -1920,7 +1920,7 @@
       },
       "reference": {
         "path": "inline-method-handlers-10777/module.expected.txt",
-        "sha256": "398180487ab63e1c11ba242e66ebd102c30aacf9a204eaefad16e6b2a3ec13f8",
+        "sha256": "b030a7e86cbedeed9664dbfed127d5795c914862bd5486de229d9f6227b41c14",
         "source": "crates/vize_atelier_sfc/src/compile/tests/inline_handlers.rs:component_method_handlers_are_not_cached"
       },
       "adapters": {
@@ -3792,7 +3792,7 @@
       },
       "reference": {
         "path": "setup-binding-kinds-12404/module.expected.txt",
-        "sha256": "774734972d35c98f97fe1ddf88833e9119dd356d92b7fca8322628f0ebff1401",
+        "sha256": "e06b6b5ddaf20f00fb9e88cbebc3c170ace5d603dbf2cd1b0927b98d920126be",
         "source": "Compiler-under-test module bytes from source-built compiler-cli-ssr-v1 at PR head 4ce24ba46b476b6e5bf26933fe013f1af2c319c5; they are regression bytes, not independent Vue-parity evidence. Only binding metadata is independently checked against @vue/compiler-sfc 3.5.35."
       },
       "adapters": {
@@ -3888,6 +3888,59 @@
       "provenance": {
         "issue": "https://github.com/ubugeeei-prod/vize/issues/10877",
         "reporter": "ubugeeei"
+      }
+    },
+    {
+      "id": "compiler/sfc/setup-var-template-write",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "setup-var-template-write",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "a9660f1c0b7f70e51ec9be385708c9fcac0f09829477364a9291a1d32dc221fc",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "setup-var-template-write/module.expected.txt",
+        "sha256": "6fe2af1b4006232ef51d8209a44e1c41faaf03a3fd68c302317439188cf45745",
+        "source": "A template write to a setup `var` reaches the script variable through the returned accessor pair; regression bytes from the compiler-under-test, behavior in crates/vize_atelier_sfc/tests/setup_let_returns.rs"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {
@@ -5144,7 +5197,7 @@
       },
       "reference": {
         "path": "template-assignment-shorthand-11707/module.expected.txt",
-        "sha256": "f4f34110121d868aef9225b97b124f6984b234caa6e44d3fd3956d8d812021b7",
+        "sha256": "8d340d7834b11a26e83409c3194e8ac94ce296294643819e5fb97222d8380a61",
         "source": "crates/vize_atelier_sfc/tests/template_assignment_patterns.rs:assignment_shorthand_has_a_pinned_ssr_module; DOM inline/separate, SSR and Vapor syntax regression in destructuring_assignment_targets_emit_javascript_in_every_lane"
       },
       "adapters": {

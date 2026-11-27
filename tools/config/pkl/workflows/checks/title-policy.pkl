@@ -27,7 +27,7 @@ env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
 jobs {
   `issue-pr-title-policy` {
     name = "Normalize titles and assignees"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxSmall
     `timeout-minutes` = 5
     steps = new Listing {
       new Dynamic {

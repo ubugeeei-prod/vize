@@ -1,6 +1,3 @@
-import { createRequire } from "node:module";
-import path from "node:path";
-
 import type {
   PatinaLintResult,
   PatinaRuleMeta,
@@ -8,6 +5,7 @@ import type {
   PatinaSettings,
 } from "./model.js";
 import { loadBinding } from "./native.js";
+import { ONE_SHOT_OXLINT_RUN, packageResolution } from "./run-scope.js";
 import { getActivePreset } from "./settings.js";
 
 const VUE_ROUTER_COMPONENTS = ["RouterLink", "RouterView"] as const;
@@ -21,7 +19,7 @@ export function lintPatina(
   enabledRules?: readonly string[],
   ruleOptions?: PatinaRuleOptions,
 ): PatinaLintResult {
-  const resolvedRuleOptions = withVueRouterComponentGlobals(filename, ruleOptions);
+  const resolvedRuleOptions = withVueRouterComponentGlobals(filename, enabledRules, ruleOptions);
   const { ruleOptions: cliRuleOptions, ...directRuleOptions } = resolvedRuleOptions ?? {};
   return loadBinding().lintPatinaSfc(source, {
     filename,
@@ -32,14 +30,18 @@ export function lintPatina(
     typeAware: settings.typeAware,
     corsaPath: settings.corsaPath,
     ruleOptionsJson: cliRuleOptions ? JSON.stringify(cliRuleOptions) : undefined,
+    // One Oxlint CLI run reads each imported type source once; every other host keeps reading fresh ones.
+    runScopedTypeSources: ONE_SHOT_OXLINT_RUN,
     ...directRuleOptions,
   });
 }
 
 function withVueRouterComponentGlobals(
   filename: string,
+  enabledRules: readonly string[] | undefined,
   options: PatinaRuleOptions | undefined,
 ): PatinaRuleOptions | undefined {
+  if (enabledRules && !enabledRules.includes(COMPONENT_REGISTRATION_RULE)) return options;
   if (!isVueRouterResolvableFrom(filename)) return options;
 
   const ruleOptions = options?.ruleOptions ?? {};
@@ -80,14 +82,7 @@ export function withHostGlobals(
   };
 }
 
-function isVueRouterResolvableFrom(filename: string): boolean {
-  try {
-    createRequire(path.resolve(filename)).resolve("vue-router");
-    return true;
-  } catch {
-    return false;
-  }
-}
+const isVueRouterResolvableFrom = packageResolution("vue-router");
 
 export function getPatinaRules(): PatinaRuleMeta[] {
   return loadBinding().getPatinaRules();

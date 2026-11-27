@@ -4,6 +4,20 @@ export const sourceArtifactNames = ["docs", "docs-render-evidence", "playground"
 const sha = /^[0-9a-f]{40}$/;
 const digest = /^sha256:[0-9a-f]{64}$/;
 const hash = /^[0-9a-f]{64}$/;
+export const docsBuildPath = ".github/workflows/11-docs-build.yml";
+export type WorkflowPredecessor = { path: string; workflowId: number; renamedAt: string };
+// Earlier identities of the Docs build. Renaming a workflow file gives it a new path
+// and a new workflow ID, so receipts recorded before the rename name the old ones.
+// Each predecessor is pinned to its exact workflow ID and to attempts started before
+// the renaming merge (2ec49c6c614da9b554db866798704072207e5539) landed on main. It
+// only anchors history: a build being published must come from docsBuildPath.
+export const docsBuildPredecessors: readonly WorkflowPredecessor[] = [
+  {
+    path: ".github/workflows/build-docs.yml",
+    workflowId: 324559823,
+    renamedAt: "2026-11-25T21:57:57Z",
+  },
+];
 
 export type WorkflowRun = {
   id: number;
@@ -95,6 +109,19 @@ export function validateRun(run: WorkflowRun, repositoryId: number, path: string
   assert.equal(run.head_branch, "main", "Actual main branch only");
   assert.match(run.head_sha, sha, "Whole source SHA");
 }
+function validateDocsBuildRun(run: WorkflowRun, repositoryId: number, historical: boolean) {
+  const predecessor = historical
+    ? docsBuildPredecessors.find((item) => item.path === run.path)
+    : undefined;
+  if (!predecessor) return validateRun(run, repositoryId, docsBuildPath);
+  validateRun(run, repositoryId, predecessor.path);
+  assert.equal(run.workflow_id, predecessor.workflowId, "Pinned predecessor workflow identity");
+  const started = Date.parse(run.run_started_at);
+  assert(
+    Number.isFinite(started) && started < Date.parse(predecessor.renamedAt),
+    "Predecessor workflow attempt started before its rename",
+  );
+}
 export function artifactIdentity(artifact: Artifact): ArtifactIdentity {
   return {
     id: artifact.id,
@@ -142,9 +169,9 @@ export function validateBuild(
   expected: { runId: number; attempt: number; sourceSha: string },
   artifacts: Artifact[],
   manifest: ManifestIdentity,
-  available = true,
+  { available = true, historical = false }: { available?: boolean; historical?: boolean } = {},
 ): BuildIdentity {
-  validateRun(run, repositoryId, ".github/workflows/11-docs-build.yml");
+  validateDocsBuildRun(run, repositoryId, historical);
   assert(["push", "schedule", "workflow_dispatch"].includes(run.event), "Trusted Docs trigger");
   assert.equal(run.id, expected.runId, "Triggered Docs run");
   assert.equal(run.run_attempt, expected.attempt, "Triggered Docs attempt");
