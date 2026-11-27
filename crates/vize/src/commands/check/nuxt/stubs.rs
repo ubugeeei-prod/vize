@@ -85,6 +85,14 @@ pub(super) fn declared_name(stub: &str) -> Option<&str> {
     None
 }
 
+/// The name a `type Name<…> = …;` stub declares.
+pub(super) fn declared_type_name(stub: &str) -> Option<&str> {
+    let rest = stub.strip_prefix("type ")?;
+    let end = rest.find(['<', '=', ' ']).unwrap_or(rest.len());
+    let name = rest.get(..end).unwrap_or_default();
+    (!name.is_empty()).then_some(name)
+}
+
 pub(super) fn is_template_component_binding(name: &str) -> bool {
     name.chars()
         .next()

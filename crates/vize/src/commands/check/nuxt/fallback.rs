@@ -19,9 +19,26 @@ use crate::commands::project_nuxt::unwrap_expression;
 
 use super::parsing::{default_export_config_object, find_object_property, nuxt_config_source};
 use super::stubs::{
-    declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
+    declared_name, declared_type_name, push_generic_function_stub, push_named_overload_stubs,
+    push_stub,
 };
+use super::type_auto_imports::TypeAutoImports;
 use fallback_values::fallback_value_stubs;
+
+/// The fallback type aliases whose names no other stub has claimed, claiming
+/// them in turn.
+///
+/// The caller runs this after the source scan, so a type the project exports
+/// itself (its own `Component`) keeps its declaration. Generated re-exports
+/// retain their existing precedence over fallback aliases.
+pub(super) fn claim_fallback_type_alias_stubs(
+    type_auto_imports: &mut TypeAutoImports,
+) -> Vec<String> {
+    fallback_type_alias_stubs()
+        .into_iter()
+        .filter(|stub| declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name)))
+        .collect()
+}
 
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
@@ -29,12 +46,6 @@ pub(super) fn collect_fallback_stubs(
     has_generated_imports: bool,
 ) {
     let mut fallback_names = FxHashSet::default();
-    push_fallback_stub_group(
-        fallback_type_alias_stubs(),
-        stubs,
-        seen_names,
-        &mut fallback_names,
-    );
     push_stub(
         stubs,
         seen_names,
@@ -288,9 +299,9 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
     stubs
 }
 
-/// Type aliases for auto-imported Vue types. Generated `.nuxt` artifacts are
-/// only mined for `declare global` consts and `GlobalComponents` members, so
-/// these aliases have no generated counterpart and are always injected.
+/// Type aliases for auto-imported Vue types, for projects whose generated
+/// manifest does not re-export them: no generated types at all, or a Nuxt
+/// version that predates type auto-imports.
 fn fallback_type_alias_stubs() -> Vec<String> {
     vec![
         "type Composer = any;".into(),

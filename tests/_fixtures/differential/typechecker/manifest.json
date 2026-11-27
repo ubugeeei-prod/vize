@@ -65506,6 +65506,58 @@
       }
     },
     {
+      "id": "typechecker/regression/auto-imported-type-reexports",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "auto-imported-type-reexports/states.ts.txt",
+          "sha256": "127ee9b12bb6a44a5b29c6a14c1b39ff4bc9eace6201b3980dbaa1d833b172df",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "auto-imported-type-reexports/stub.d.ts.txt",
+          "sha256": "60dff8df486e3d331005047a8019839a77bbd2ca2632892510e79c0e07a820e1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "auto-imported-type-reexports/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "auto-imported-type-reexports/ui-kit-index.d.ts.txt",
+          "sha256": "dc9acb49292a61d6e9bfe8043d577d605a18cea1d7c5c6ffcf4aa3427370ab06",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "auto-imported-type-reexports/ui-kit-package.json.txt",
+          "sha256": "230115925a9f5552c424b2ccdd5c47ebbfc606b0e9872d0a3c7f58e32d675ab2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "auto-imported-type-reexports/use.ts.txt",
+          "sha256": "692b6b4b2e61eb221c618bb8ea71425e518209ce0d4dd8c0872e28c41b47eeab",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::auto_imported_type_reexports::auto_imported_type_reexports_are_the_real_types and virtual_project::tests::module_augmentations::type_reexport_stubs_load_mirrored_script_modules; a type auto-imported as a re-export inside a global augmentation (the form Nuxt generates) keeps its type parameters and defaults, answers to a renamed export, resolves a package type through the package, and resolves a project type to the mirrored module a direct import gets; the plain-TypeScript rows are what tsc reports for the same declarations. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/canon-cache-gc-12135",
       "state": "active",
       "targets": [

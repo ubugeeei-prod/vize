@@ -1,8 +1,8 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    BindingPattern, Declaration, Expression, PropertyKey, Statement, TSGlobalDeclaration,
-    TSInterfaceDeclaration, TSModuleBlock, TSModuleDeclaration, TSModuleDeclarationBody,
-    TSSignature, TSTypeAnnotation, VariableDeclaration,
+    BindingPattern, Declaration, ExportNamedDeclaration, Expression, ModuleExportName, PropertyKey,
+    Statement, TSGlobalDeclaration, TSInterfaceDeclaration, TSModuleBlock, TSModuleDeclaration,
+    TSModuleDeclarationBody, TSSignature, TSTypeAnnotation, VariableDeclaration,
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -12,6 +12,22 @@ use vize_l0::{FxHashMap, String, ToCompactString};
 struct InterfaceInfo {
     members: Vec<(String, String)>,
     extends: Vec<String>,
+}
+
+/// What one walk over the `declare global` blocks of a declaration finds.
+#[derive(Debug, Default)]
+pub(super) struct DeclaredGlobals {
+    /// `const name: Type` members as `(name, type text)`.
+    pub(super) values: Vec<(String, String)>,
+    pub(super) type_reexports: Vec<GlobalTypeReexport>,
+}
+
+/// One specifier of `export type { local as exported } from 'specifier'`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct GlobalTypeReexport {
+    pub(super) local: String,
+    pub(super) exported: String,
+    pub(super) specifier: String,
 }
 
 pub(super) fn parse_interface_members_content(
@@ -38,18 +54,18 @@ pub(super) fn parse_global_component_members_content(content: &str) -> Vec<(Stri
     members
 }
 
-pub(super) fn parse_declared_global_values_content(content: &str) -> Vec<(String, String)> {
+pub(super) fn parse_declared_globals_content(content: &str) -> DeclaredGlobals {
     let allocator = Allocator::default();
     let ret = Parser::new(&allocator, content, SourceType::d_ts()).parse();
     if ret.panicked {
-        return Vec::new();
+        return DeclaredGlobals::default();
     }
 
-    let mut values = Vec::new();
+    let mut globals = DeclaredGlobals::default();
     for statement in &ret.program.body {
-        collect_global_values_from_statement(statement, content, &mut values);
+        collect_globals_from_statement(statement, content, &mut globals);
     }
-    values
+    globals
 }
 
 fn collect_interfaces(content: &str) -> FxHashMap<String, InterfaceInfo> {
@@ -207,64 +223,104 @@ fn interface_heritage_name<'a>(
     }
 }
 
-fn collect_global_values_from_statement(
+fn collect_globals_from_statement(
     statement: &Statement,
     content: &str,
-    values: &mut Vec<(String, String)>,
+    globals: &mut DeclaredGlobals,
 ) {
     match statement {
         Statement::TSGlobalDeclaration(global) => {
-            collect_global_values_from_global(global, content, values);
+            collect_globals_from_global(global, content, globals);
         }
         Statement::TSModuleDeclaration(module) => {
-            collect_global_values_from_module(module, content, values);
+            collect_globals_from_module(module, content, globals);
         }
         Statement::ExportNamedDeclaration(export) => {
             if let Some(Declaration::TSGlobalDeclaration(global)) = &export.declaration {
-                collect_global_values_from_global(global, content, values);
+                collect_globals_from_global(global, content, globals);
             }
         }
         _ => {}
     }
 }
 
-fn collect_global_values_from_module(
+fn collect_globals_from_module(
     module: &TSModuleDeclaration,
     content: &str,
-    values: &mut Vec<(String, String)>,
+    globals: &mut DeclaredGlobals,
 ) {
     let Some(body) = &module.body else {
         return;
     };
     match body {
         TSModuleDeclarationBody::TSModuleDeclaration(module) => {
-            collect_global_values_from_module(module, content, values);
+            collect_globals_from_module(module, content, globals);
         }
         TSModuleDeclarationBody::TSModuleBlock(block) => {
             for statement in &block.body {
-                collect_global_values_from_statement(statement, content, values);
+                collect_globals_from_statement(statement, content, globals);
             }
         }
     }
 }
 
-fn collect_global_values_from_global(
+fn collect_globals_from_global(
     global: &TSGlobalDeclaration,
     content: &str,
-    values: &mut Vec<(String, String)>,
+    globals: &mut DeclaredGlobals,
 ) {
     for statement in &global.body.body {
         match statement {
             Statement::VariableDeclaration(declaration) => {
-                collect_variable_values(declaration, content, values);
+                collect_variable_values(declaration, content, &mut globals.values);
             }
             Statement::ExportNamedDeclaration(export) => {
                 if let Some(Declaration::VariableDeclaration(declaration)) = &export.declaration {
-                    collect_variable_values(declaration, content, values);
+                    collect_variable_values(declaration, content, &mut globals.values);
                 }
+                collect_type_reexports(export, &mut globals.type_reexports);
             }
             _ => {}
         }
+    }
+}
+
+/// A global type cannot be declared as an alias of `import('m').T` without
+/// restating its type parameters, so generators re-export it from inside the
+/// global augmentation instead. Value re-exports are left out: a global value
+/// is always spelled as a `const`.
+fn collect_type_reexports(
+    export: &ExportNamedDeclaration,
+    reexports: &mut Vec<GlobalTypeReexport>,
+) {
+    let Some(source) = &export.source else {
+        return;
+    };
+    for specifier in &export.specifiers {
+        if !export.export_kind.is_type() && !specifier.export_kind.is_type() {
+            continue;
+        }
+        let (Some(local), Some(exported)) = (
+            exported_identifier(&specifier.local),
+            exported_identifier(&specifier.exported),
+        ) else {
+            continue;
+        };
+        reexports.push(GlobalTypeReexport {
+            local: local.to_compact_string(),
+            exported: exported.to_compact_string(),
+            specifier: source.value.as_str().to_compact_string(),
+        });
+    }
+}
+
+/// String-literal export names cannot name a global type, so only identifiers
+/// are kept.
+fn exported_identifier<'a>(name: &'a ModuleExportName<'a>) -> Option<&'a str> {
+    match name {
+        ModuleExportName::IdentifierName(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::IdentifierReference(identifier) => Some(identifier.name.as_str()),
+        ModuleExportName::StringLiteral(_) => None,
     }
 }
 
