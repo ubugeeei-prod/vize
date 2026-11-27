@@ -86,7 +86,6 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     /// Whether this attribute matches a normalized HTML attribute name.
-    #[inline]
     pub fn name_eq(&self, expected: &str) -> bool {
         self.name().eq_ignore_ascii_case(expected)
     }

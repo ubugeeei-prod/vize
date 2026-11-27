@@ -63,7 +63,10 @@ impl Buf {
     /// Append the double-quoted JavaScript string literal that spells `value`
     /// exactly. `value` is final text: no entity in it is decoded.
     pub(super) fn push_string_literal(&mut self, value: &str) {
-        vize_l0::js_string::push_js_string_literal_text(&mut self.code, value);
+        // Only asset names take this path; escape into a scratch string.
+        let mut literal = String::default();
+        vize_l0::js_string::push_js_string_literal(&mut literal, value);
+        self.code.push_str(&literal);
     }
 
     pub(super) fn newline(&mut self) {

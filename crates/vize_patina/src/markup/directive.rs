@@ -83,7 +83,6 @@ impl<'a> MarkupDirective<'a> {
     }
 
     /// Whether the directive name matches.
-    #[inline]
     pub fn name_eq(&self, expected: &str) -> bool {
         self.name() == expected
     }

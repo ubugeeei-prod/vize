@@ -36,7 +36,7 @@ impl Text {
     #[inline(always)]
     pub(super) fn push_str(&mut self, text: &str) {
         match self {
-            Self::Fragment(fragment) => push_fragment(fragment, text),
+            Self::Fragment(fragment) => fragment.push_str(text),
             Self::Buffer(buffer) => buffer.push_str(text),
         }
     }
@@ -44,7 +44,7 @@ impl Text {
     #[inline(always)]
     pub(super) fn push(&mut self, ch: char) {
         match self {
-            Self::Fragment(fragment) => push_fragment(fragment, ch.encode_utf8(&mut [0; 4])),
+            Self::Fragment(fragment) => fragment.push(ch),
             Self::Buffer(buffer) => buffer.push(ch),
         }
     }
@@ -62,13 +62,6 @@ impl Text {
             Self::Buffer(buffer) => buffer.into_compact(),
         }
     }
-}
-
-/// One out-of-line append for every fragment, so call sites stay small and
-/// do not depend on whether the `CompactString` append inlines.
-#[inline(never)]
-fn push_fragment(fragment: &mut String, text: &str) {
-    fragment.push_str(text);
 }
 
 impl Deref for Text {
