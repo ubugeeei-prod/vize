@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/tui",
-  "version": "0.474.0",
+  "version": "0.808.0",
   "description": "Build terminal UIs with Vue (Vize Fresco)",
   "keywords": [
     "terminal",
