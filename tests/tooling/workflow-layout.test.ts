@@ -52,7 +52,6 @@ const hostedBuildFreeJobs: Readonly<Record<string, readonly string[]>> = {
   "10-musea-browser.yml": ["plan"],
   "11-zizmor.yml": ["plan", "zizmor"],
   "cleanup-obsolete-merge-groups.yml": ["cleanup"],
-  "language-project-fixtures.yml": ["language-project-fixtures"],
   "parcel-transformer.yml": ["packaging-changes"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
