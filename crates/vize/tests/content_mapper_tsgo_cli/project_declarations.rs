@@ -127,9 +127,12 @@ pub(super) fn check_project_and_declarations() {
     }
     let options_text = std::fs::read_to_string(&options_declaration).unwrap();
     assert!(options_text.contains("$props"), "{options_text}");
+    // The mapped module exports `Options as typeof Options` so metadata readers
+    // reach a value declaration; the emitted default is that same type.
     assert!(
         options_text.contains("declare const Options: typeof __vize_component__")
-            && options_text.contains("export default Options"),
+            && options_text.contains("declare const _default: typeof Options;")
+            && options_text.contains("export default _default;"),
         "{options_text}"
     );
     let public_text = std::fs::read_to_string(&public_declaration).unwrap();
