@@ -382,7 +382,7 @@ pub(super) fn transform_classified_element<'a>(
         }
         ElementType::Slot => {
             let name = get_slot_outlet_name(ctx, el);
-            let props = get_slot_outlet_props(ctx, el);
+            let (props, has_ref) = get_slot_outlet_props(ctx, el);
             let fallback = lower_fallback(ctx, el);
             let slot_outlet = SlotOutletIRNode {
                 flags: 0,
@@ -395,6 +395,9 @@ pub(super) fn transform_classified_element<'a>(
             };
 
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));
+            if has_ref {
+                transform_template_ref(ctx, el, element_id, block);
+            }
         }
         ElementType::Template => {
             // Peeled at entry (no DOM element); emit nothing, never an invalid op.

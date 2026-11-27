@@ -33,7 +33,7 @@ jobs {
     }
     name = "Rust tests (${{ matrix.name }})"
     `if` = "${{ inputs.run-rust }}"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxValidation
     `timeout-minutes` = 20
     strategy {
       `fail-fast` = false

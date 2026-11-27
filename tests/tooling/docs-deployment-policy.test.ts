@@ -5,10 +5,13 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  docsBuildPath,
+  docsBuildPredecessors,
   publicationDecision,
   validateBuild,
   type Comparison,
 } from "../../tools/support/compat/github/docs-deployment-policy.ts";
+import { renamedWorkflowStems } from "./support/workflow-renames.ts";
 import {
   build,
   manifest,
@@ -64,6 +67,17 @@ test("complete native source custody accepts every main trigger and refuses fore
       }),
     /fingerprint/,
   );
+});
+
+test("a build being published requires the current Docs build path, even from its pinned predecessor", () => {
+  const stem = (file: string) => path.basename(file, ".yml");
+  assert.equal(docsBuildPath, ".github/workflows/11-docs-build.yml");
+  for (const predecessor of docsBuildPredecessors) {
+    assert.equal(renamedWorkflowStems.get(stem(docsBuildPath)), stem(predecessor.path));
+    const before = run({ path: predecessor.path, workflow_id: predecessor.workflowId });
+    assert.ok(Date.parse(before.run_started_at) < Date.parse(predecessor.renamedAt));
+    assert.throws(() => build(before), /Trusted workflow path/);
+  }
 });
 
 test("real Git ancestry permits completed ancestors without rollback, and refuses detached sources", () => {

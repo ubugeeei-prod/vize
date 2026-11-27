@@ -24,7 +24,7 @@ jobs:
     permissions: { contents: read, actions: read }
     name: Rust tests (${{ matrix.name }})
     if: ${{ inputs.run-rust }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false

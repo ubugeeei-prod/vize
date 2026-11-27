@@ -23,7 +23,7 @@ const shallow = shallowReactive({ value: 0 });
 const n = 1 + 2;
 const object = {};
 
-const __returned__ = { mutableReactive, n, refs, importedRef, r, object, readonly, readonlyValue, reactive, shallowReadonly, shallowReadonlyValue, shallowReactive, unimportedRef, toRefs, shallow }
+const __returned__ = { get mutableReactive() { return mutableReactive }, set mutableReactive(v) { mutableReactive = v }, n, refs, importedRef, r, object, readonly, readonlyValue, reactive, shallowReadonly, shallowReadonlyValue, shallowReactive, unimportedRef, toRefs, shallow }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 return __returned__
 }

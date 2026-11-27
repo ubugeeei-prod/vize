@@ -208,7 +208,8 @@ const tasks = {
         "src/cli/files-dotfiles.test.ts",
         "src/cli/oxlint.test.ts",
         "src/cli/report-format.test.ts",
-        "src/cli/type-aware-vue.test.ts"
+        "src/cli/type-aware-vue.test.ts",
+        "src/run-scope.test.ts"
       ]
     },
     {

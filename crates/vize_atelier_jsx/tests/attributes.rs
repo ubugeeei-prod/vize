@@ -25,6 +25,16 @@ fn boolean_attribute_has_no_value() {
 }
 
 #[test]
+fn bare_ref_for_attribute_is_a_true_flag() {
+    let bump = Allocator::new();
+    let root = lower_one(&bump, "const a = <li ref={els} ref_for/>;");
+    let directive = as_directive(&root_element(&root).props[1]);
+    assert_eq!(directive.name, "bind");
+    assert_eq!(simple_content(directive.arg.as_ref().unwrap()), "ref_for");
+    assert_eq!(simple_content(directive.exp.as_ref().unwrap()), "true");
+}
+
+#[test]
 fn dynamic_attribute_becomes_bind_directive() {
     let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div class={cls}/>;");
