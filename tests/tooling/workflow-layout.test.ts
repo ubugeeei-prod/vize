@@ -52,6 +52,22 @@ const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
 };
 const hostedZeroComputeRunner = "ubuntu-24.04";
 
+// Build-free planner and policy jobs take the smallest Blacksmith class: they
+// finish in seconds, and a 32-vCPU slot spent on them delays a build job at
+// the pool's concurrency cap. No Rust toolchain, sticky disk or build cache.
+const smallRunnerJobs: Readonly<Record<string, readonly string[]>> = {
+  "07-level-dependencies.yml": ["level-dependencies"],
+  "08-nuxt-styles.yml": ["plan"],
+  "08-vite-plus-types.yml": ["real-vite-plugin-types"],
+  "10-musea-browser.yml": ["plan"],
+  "11-zizmor.yml": ["plan", "zizmor"],
+  "cleanup-obsolete-merge-groups.yml": ["cleanup"],
+  "parcel-transformer.yml": ["packaging-changes"],
+  "release-smoke-contracts.yml": ["bun-planner", "node-planner-baseline"],
+  "title-policy.yml": ["issue-pr-title-policy"],
+};
+const smallRunner = "blacksmith-4vcpu-ubuntu-2404";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
@@ -68,6 +84,7 @@ function workflowRunnerLabels(
   source: string,
   hostedJobs: readonly string[] = [],
   file = "",
+  smallJobs: readonly string[] = [],
 ): string[] {
   const workflow = parse(source) as unknown;
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
@@ -80,6 +97,10 @@ function workflowRunnerLabels(
     }
     if (hostedJobs.includes(id)) {
       assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
+      return [];
+    }
+    if (smallJobs.includes(id)) {
+      assert.equal(value["runs-on"], smallRunner, id);
       return [];
     }
     // A planner-selected skip runs hosted; the selected path is the busy runner.
@@ -123,7 +144,7 @@ test("non-release workflows use maximum Blacksmith runner classes", () => {
     .filter(({ groupId }) => groupId !== "02")
     .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
+      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file, smallRunnerJobs[file])
         .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });
