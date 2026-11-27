@@ -9,7 +9,7 @@ mod element_transform_tests {
     use crate::{
         PropNode, TemplateChildNode,
         errors::{CompilerError, ErrorCode},
-        lane::{ParentNode, TransformContext, traverse::traverse_children},
+        lane::{TransformContext, traverse::traverse_children},
         options::TransformOptions,
         parser::parse,
     };
@@ -20,7 +20,7 @@ mod element_transform_tests {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
         let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
-        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+        traverse_children(&mut ctx, &mut root.children);
         ctx.errors
     }
 
@@ -99,7 +99,7 @@ mod element_transform_tests {
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
         let mut ctx = TransformContext::new(&allocator, root.source, TransformOptions::default());
-        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
+        traverse_children(&mut ctx, &mut root.children);
 
         assert_eq!(ctx.errors.len(), 1);
         assert_eq!(ctx.errors[0].code, ErrorCode::VModelOnScope);
