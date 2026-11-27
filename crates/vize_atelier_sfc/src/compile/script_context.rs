@@ -33,6 +33,7 @@ pub(super) fn collect(
     let mut imports = Vec::new();
     let mut dependencies = Vec::new();
     let mut declarations = Vec::new();
+    let mut bindings = Vec::new();
     if let Some(script) = descriptor.script_setup.as_ref() {
         let collected = context
             .try_collect_imported_types_from_path(
@@ -45,6 +46,7 @@ pub(super) fn collect(
         imports.extend(collected.imports);
         dependencies.extend(collected.dependencies);
         declarations.extend(collected.declarations);
+        bindings.extend(collected.bindings);
     }
     if let Some(script) = descriptor.script.as_ref() {
         let collected = context
@@ -65,6 +67,7 @@ pub(super) fn collect(
             dependencies.dedup();
         }
         declarations.extend(collected.declarations);
+        bindings.extend(collected.bindings);
     }
     // Every type text this component resolves starts in one of these.
     let mut texts = vec![source];
@@ -75,7 +78,7 @@ pub(super) fn collect(
         texts.push(&script.content);
         texts.extend(script.attrs.values().map(AsRef::as_ref));
     }
-    context.merge_referenced_declarations(&declarations, &texts);
+    context.merge_referenced_declarations(&bindings, &declarations, &texts);
     Ok(CollectedContext {
         context,
         imports,
