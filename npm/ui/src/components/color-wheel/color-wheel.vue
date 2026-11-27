@@ -132,7 +132,7 @@ defineExpose({ focus });
       <circle cx="50" cy="50" r="36" />
       <circle data-part="marker" :cx="markerX" :cy="markerY" r="4" />
     </svg>
-    <slot :hue="hue" :color="color" />
+    <slot :hue :color />
   </div>
 </template>
 

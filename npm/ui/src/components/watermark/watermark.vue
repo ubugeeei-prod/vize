@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { CSSProperties } from "vue";
 
 import { watermarkImage } from "./watermark-image.ts";
 import type { WatermarkProps } from "./types.ts";
@@ -12,7 +13,7 @@ defineSlots<{
 }>();
 
 const image = computed(() => watermarkImage({ text, gap, rotate }));
-const overlayStyle = computed(() => ({
+const overlayStyle = computed<CSSProperties>(() => ({
   position: "absolute",
   inset: "0",
   pointerEvents: "none",

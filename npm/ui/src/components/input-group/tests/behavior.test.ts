@@ -82,3 +82,26 @@ test("disables every control from the group", () => {
   assert.equal(button.disabled, true);
   handle.unmount();
 });
+
+test("preserves consumer labels and native field attributes", () => {
+  const handle = mountInteraction(InputGroup, {
+    props: { label: "Contact" },
+    slots: {
+      default: () => [
+        h("label", { for: "contact-site" }, "Website URL"),
+        h(InputGroupInput, { id: "contact-site", autocomplete: "url" }),
+        h(InputGroupTextarea, { "aria-label": "Message", "aria-describedby": "message-help" }),
+        h("span", { id: "message-help" }, "Optional details"),
+      ],
+    },
+  });
+  assert.equal(
+    handle.getByRole("textbox", { name: "Website URL" }).getAttribute("autocomplete"),
+    "url",
+  );
+  assert.equal(
+    handle.getByRole("textbox", { name: "Message" }).getAttribute("aria-describedby"),
+    "message-help",
+  );
+  handle.unmount();
+});
