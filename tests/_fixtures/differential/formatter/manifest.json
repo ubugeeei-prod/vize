@@ -3886,8 +3886,7 @@
       },
       "expectations": {
         "legacy": {
-          "state": "captured",
-          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "state": "pending",
           "artifacts": [
             {
               "path": "sfc-prettier-empty-element-closing-width/reference.expected.txt",
@@ -3909,7 +3908,9 @@
             "candidate-cli-output-bytes",
             "3-pass-idempotence"
           ],
-          "missingFields": [],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
           "referenceState": "issue-authored Tags.vue with a blank line before <script setup>, unchanged by Prettier 3.10.1; exact-source Actions required"
         }
       },
