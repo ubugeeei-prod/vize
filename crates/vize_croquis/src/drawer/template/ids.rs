@@ -49,12 +49,12 @@ fn get_id_kind(attr_name: &str, is_component: bool) -> Option<ElementIdKind> {
     }?;
 
     // Component props such as Quasar's `anchor` are not necessarily HTML ID
-    // references. Keep ARIA references checked, but do not infer non-ARIA
-    // reference semantics from component props.
-    if is_component && matches!(kind, ElementIdKind::OtherReference) {
-        None
-    } else {
-        Some(kind)
+    // references, so only ARIA references stay checked. A component's `for`
+    // may become its control's `id` (Quasar's `QInput`): a possible definition.
+    match kind {
+        ElementIdKind::OtherReference if is_component => None,
+        ElementIdKind::For if is_component => Some(ElementIdKind::ComponentFor),
+        _ => Some(kind),
     }
 }
 

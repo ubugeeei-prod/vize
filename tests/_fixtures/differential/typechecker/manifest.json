@@ -69767,6 +69767,86 @@
       }
     },
     {
+      "id": "typechecker/runtime-prop-null-type-array/nullable-values-accepted",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::runtime_prop_null_type_array::null_in_a_runtime_type_array_is_part_of_the_prop_type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-prop-null-type-array/tsconfig.json.txt",
+          "sha256": "63ec9c41a082724175a04c8767ae1a437058c36c9537789d0c8fb40d91fd866f"
+        },
+        {
+          "file": "NullableProp.vue",
+          "path": "runtime-prop-null-type-array/NullableProp.vue.txt",
+          "sha256": "c938aa4a3e33b3fdadf8bdfaa8acf82055abed96dcbe3f4e5c4681b35af4030a"
+        },
+        {
+          "file": "UseNullableProp.vue",
+          "path": "runtime-prop-null-type-array/UseNullableProp.vue.txt",
+          "sha256": "9dc75d69971b91f99f3402b15636ff538662131e7a79d3ca492df90dbf6dcb55"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::runtime_prop_null_type_array::null_in_a_runtime_type_array_is_part_of_the_prop_type; a runtime prop typed `[String, null]` or `[Number, null]` accepts `string | null` / `number | null` and a literal null from the parent template, as Vue infers the union. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/runtime-prop-null-type-array/other-values-still-checked",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::runtime_prop_null_type_array::null_in_a_runtime_type_array_is_part_of_the_prop_type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "runtime-prop-null-type-array/tsconfig.json.txt",
+          "sha256": "63ec9c41a082724175a04c8767ae1a437058c36c9537789d0c8fb40d91fd866f"
+        },
+        {
+          "file": "NullableProp.vue",
+          "path": "runtime-prop-null-type-array/NullableProp.vue.txt",
+          "sha256": "c938aa4a3e33b3fdadf8bdfaa8acf82055abed96dcbe3f4e5c4681b35af4030a"
+        },
+        {
+          "file": "UseNullableProp.vue",
+          "path": "runtime-prop-null-type-array/invalid.UseNullableProp.vue.txt",
+          "sha256": "3b4aa64361ff9450215a3c535922622a9a93006daaebf3291b3c2684ed6d897c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::runtime_prop_null_type_array::null_in_a_runtime_type_array_is_part_of_the_prop_type; a value outside the inferred union is still TS2322 against the constructor member of `[String, null]` / `[Number, null]`. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/runtime-proptype-call-result-11734/object-proptype-retains-editor",
       "state": "active",
       "targets": [
@@ -70453,6 +70533,35 @@
               "ts"
             ],
             "selector": "template_ref_keys::tests::{vue_namespace_members_infer_template_refs, owned_untyped_calls_infer_template_refs_inside_local_functions_too, exported_functions_keep_vues_signature_for_their_callers_templates}; template_ref_registry::component_target_tests: `Vue.useTemplateRef`, calls inside local functions, ref-valued `:is` targets and static `is` all read the template registry. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/template-ref-key-check-owners/keys-checked-where-this-instance-runs",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-ref-key-check-owners/Owners.vue.txt",
+          "sha256": "0b23e66ca24cbfc5b07c36d7805a004411bd9d35e80f100bae123c5d2cbed8ef",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "template_ref_keys::tests::key_checks_follow_the_functions_this_instance_runs: a key is checked against the template only in setup, its callbacks, the default export's `setup` and local functions setup reaches; a function rendered as a component or never called keeps the inferred call without the key check. Input-only registration; no native parity credit."
           }
         ]
       }
