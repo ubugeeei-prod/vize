@@ -14,3 +14,4 @@ export const wrongLabel: Box<number, boolean> = { value: 1, label: "yes" };
 export const wrongCrate: Crate<string> = { value: 1 };
 export const wrongChip: Chip<number> = { value: "one" };
 export const tooMany: Box<number, boolean, string> = { value: 1 };
+export const fakeToken: Token = { describe: () => "token" };

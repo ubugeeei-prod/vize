@@ -64830,7 +64830,7 @@
         },
         {
           "path": "auto-imported-type-reexports/use.ts.txt",
-          "sha256": "a1cf10d2a9897439f99fdc3b3849ba56054859ffdea2f7c632edc0ccd3ee884f",
+          "sha256": "692b6b4b2e61eb221c618bb8ea71425e518209ce0d4dd8c0872e28c41b47eeab",
           "role": "regression-reproduction"
         }
       ],

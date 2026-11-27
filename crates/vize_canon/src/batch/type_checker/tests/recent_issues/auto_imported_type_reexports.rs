@@ -112,6 +112,12 @@ fn auto_imported_type_reexports_are_the_real_types() {
             2707,
             "Generic type 'Box<T, Label>' requires between 1 and 2 type arguments.",
         ),
+        (
+            17,
+            14,
+            2741,
+            "Property 'brand' is missing in type '{ describe: () => string; }' but required in type 'Token'.",
+        ),
     ]
     .map(|(line, column, code, message)| {
         (
