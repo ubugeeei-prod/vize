@@ -13,6 +13,7 @@ import { resizableFamilyCatalog } from "./family-catalog-resizable.ts";
 import { splitButtonFamilyCatalog } from "./family-catalog-split-button.ts";
 import { stickyFamilyCatalog } from "./family-catalog-sticky.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
+import { surfaceFamilyCatalog } from "./family-catalog-surfaces.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { chartFamilyCatalog } from "./family-catalog-charts.ts";
@@ -100,6 +101,7 @@ const allFamilyCatalogEntries = [
   ...resizableFamilyCatalog,
   ...stickyFamilyCatalog,
   ...actionFamilyCatalog,
+  ...surfaceFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
   ...chartFamilyCatalog,
