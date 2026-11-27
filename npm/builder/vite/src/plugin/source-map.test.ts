@@ -18,7 +18,12 @@ import { fileURLToPath } from "node:url";
 
 import { compileFile } from "../compiler.ts";
 import { generateOutputWithMap } from "../utils/index.ts";
-import { MappedModule, parseSourceMap, shiftMappedLines } from "../utils/source-map.ts";
+import {
+  composeSourceMaps,
+  MappedModule,
+  parseSourceMap,
+  shiftMappedLines,
+} from "../utils/source-map.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { toVirtualId } from "../virtual.ts";
 import { loadSfcModule } from "../test/sfc-module.ts";
@@ -294,5 +299,17 @@ assert.deepEqual(
 );
 
 fs.rmSync(projectRoot, { recursive: true, force: true });
+
+// Composition keeps unmapped columns unmapped. Inner: column 0 maps to 0:0,
+// column 5 is unmapped, column 10 maps to 0:5. Outer: column 0 traces to inner
+// 0:0, column 1 is unmapped, column 2 traces to inner 0:10 and column 3 to the
+// unmapped inner 0:6. The one-field segments keep columns 1 and 3 from
+// inheriting a mapped position, and leave the source deltas of column 2 intact.
+const composed = composeSourceMaps(
+  { version: 3, sources: ["step.js"], names: [], mappings: "AAAA,C,CAAU,CAAJ" },
+  { version: 3, sources: ["App.vue"], names: [], mappings: "AAAA,K,KAAK" },
+);
+assert.equal(composed.mappings, "AAAA,C,CAAK,C", "unmapped segment boundaries survive composition");
+assert.deepEqual(composed.sources, ["App.vue"]);
 
 console.log("vite-plugin-vize source map tests passed!");
