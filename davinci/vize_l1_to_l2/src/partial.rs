@@ -7,7 +7,7 @@
 //! interiors are not recovered: a `v-for` alias is a fact only when the
 //! lowering already recorded it as a simple identifier.
 
-mod facts;
+mod analysis;
 mod page;
 
 use alloc::vec::Vec;
@@ -18,7 +18,7 @@ use vize_l1::markup::{SurfaceTree, parse};
 
 use crate::lower::{Lowered, lower};
 
-use facts::{PartialHoles, PartialRegions, PartialScopes, PartialTemplateAnalysis, REGISTRY};
+use analysis::{PartialHoles, PartialRegions, PartialScopes, PartialTemplateAnalysis, REGISTRY};
 use page::collect;
 
 /// An L1 hole that a kept fragment was lowered beside.

@@ -4,7 +4,7 @@ use super::{Observed, bridge, expression};
 use vize_l0::{Allocator, id::NodeId};
 use vize_l1::embed::Lang;
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind},
+    ir::{DeclarationKind, InitializerKind},
     resolution::Usage,
 };
 use vize_l3::decision::dom::{

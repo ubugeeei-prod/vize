@@ -83,14 +83,14 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
-pub use vize_l2::analysis::model_facts::{ModelAnalysis, ModelFault};
+pub use vize_l2::analysis::model_analysis::{ModelAnalysis, ModelFault};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::ProvenanceSink;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
-use vize_l2::artifact::L2TemplateParts;
+use vize_l2::template::L2TemplateParts;
 
 mod check;
 use check::check_model;

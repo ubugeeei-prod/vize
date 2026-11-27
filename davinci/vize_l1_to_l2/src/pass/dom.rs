@@ -8,7 +8,7 @@ use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline}
 use crate::lower::Lowered;
 use vize_l2::provenance::ProvenanceSink;
 
-use vize_l2::analysis::pass_facts::L2Analyses;
+use vize_l2::analysis::pass_analysis::L2Analyses;
 
 use super::{L2_STAGE, TransformProfile, hoist, legacy, vmodel, vslot};
 

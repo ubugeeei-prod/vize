@@ -3,9 +3,9 @@
 use super::VaporAnalysis;
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, build};
 use vize_l2::{
-    artifact::L2Template,
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeSelectedSetup, NativeTemplateL2Ir, NativeTemplateView},
+    template::L2Template,
 };
 
 /// The real selected setup and its own completed template stay borrowed.

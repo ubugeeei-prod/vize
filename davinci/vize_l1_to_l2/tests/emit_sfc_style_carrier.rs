@@ -18,7 +18,7 @@ use vize_l0::pass::BudgetObserver;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower_source_block;
-use vize_l4::targets::dom::artifact::{emit_dom, emit_dom_source};
+use vize_l4::targets::dom::template::{emit_dom, emit_dom_source};
 
 fn block_between<'a>(source: &'a str, open: &str, close: &str) -> (&'a str, u32) {
     let tag = source.find(open).expect("opening tag");

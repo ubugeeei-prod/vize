@@ -1,7 +1,7 @@
 //! Borrowed queries over the checked expression tables of one File.
 use super::{Model, PositionQueryError, TemplateQueryError, template::check_template_offset};
 use crate::{
-    file::{BindingRef, L2Ir, ScopeId},
+    ir::{BindingRef, L2Ir, ScopeId},
     resolution::Occurrence,
 };
 use vize_l0::{Span, id::NodeId};

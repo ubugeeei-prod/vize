@@ -3,7 +3,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::syntax::{EmbedHole, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]

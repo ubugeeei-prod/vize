@@ -6,11 +6,11 @@ use oxc_ast::ast::{JSXChild, JSXElement, JSXElementName, JSXExpression};
 use oxc_ast_visit::Visit;
 use oxc_span::GetSpan;
 use vize_l0::{Box, Vec};
-use vize_l2::artifact::OpFamily;
 use vize_l2::op::{
     BindOp, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp, Namespace, Op, Region,
     TextOp,
 };
+use vize_l2::template::OpFamily;
 
 use super::attributes::{Owner, Props, props};
 use super::control_flow::control_flow;

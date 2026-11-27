@@ -3,7 +3,7 @@ use super::support::*;
 use crate::{HelpLevel, Severity};
 use vize_l0::Allocator;
 use vize_l2::{
-    file::vue::ExposureIssueKind,
+    ir::vue::ExposureIssueKind,
     lang::js::{
         CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
         SetupIssue, SetupIssueKind, StatementEvent, VueSetup,
@@ -88,7 +88,7 @@ fn selected_child_custody_refuses_another_original_component_even_in_same_source
 struct Interrupt;
 impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
-    fn unit(&mut self, _: &vize_l2::file::ScriptUnit) {}
+    fn unit(&mut self, _: &vize_l2::ir::ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
     fn declared(&mut self, _: DeclaredEvent<'_, 'a>) {
         panic!("authentic interruption");
@@ -131,7 +131,7 @@ fn actual_declaration_interruption_cannot_become_a_whole_primitive_setup_receipt
         [(
             0,
             script_span(SOURCE),
-            vize_l2::file::L2IrIssueKind::InterruptedProgram
+            vize_l2::ir::L2IrIssueKind::InterruptedProgram
         )]
     );
     assert_eq!(file.issues(), []);

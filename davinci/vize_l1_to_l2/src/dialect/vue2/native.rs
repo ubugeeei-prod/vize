@@ -4,7 +4,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Span, id::NodeId};
 use vize_l1::framework::vue::version::v2::surface::{ComponentExpressionPool, RetainedTextRefusal};
-use vize_l2::artifact::{Builder, L2Template, L2TemplateError, RejectedL2Template};
+use vize_l2::template::{Builder, L2Template, L2TemplateError, RejectedL2Template};
 
 #[cfg(any())]
 mod children;

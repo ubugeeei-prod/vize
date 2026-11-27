@@ -14,7 +14,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    file::{DeclarationKind, Namespace, vue::ExposureIssueKind},
+    ir::{DeclarationKind, Namespace, vue::ExposureIssueKind},
     lang::js::{
         L2IrProducer, NativeSetupIssueKind, NativeTemplateIssueKind, NativeTemplateOwner,
         ProgramInput, ProgramScope, SetupIssueKind, VueSetup,

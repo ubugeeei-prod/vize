@@ -3,11 +3,11 @@
 use super::Visibility;
 use crate::native::{ConstructionBody, ConstructionFactory};
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
-use vize_l2::file::{TemplateBody, TemplateChildRegion, TemplateWalkRegion};
+use vize_l2::ir::{TemplateBody, TemplateChildRegion, TemplateWalkRegion};
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{ComponentFactory, L2TemplateError};
 
 pub(super) struct VueNative<'r, 'g, 'f, 'a> {
     region: &'r mut TemplateWalkRegion<'g, 'f, 'a, Visibility>,

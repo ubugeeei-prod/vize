@@ -28,7 +28,7 @@ pub use operand::{
     ConditionKind, ModelHead, StaticBindingHead,
 };
 pub use selected::{ScriptSelection, SelectedTemplateComponent, TemplateGrammar};
-pub use tag_facts::{TagAnalysis, TagAnalysisKind, TagAnalysisRefusal};
+pub use tag_analysis::{TagAnalysis, TagAnalysisKind, TagAnalysisRefusal};
 pub use tag_facts_component::ComponentTagAnalysis;
 pub use text::{RootText, RootTextError, RootTextProfile, RootTextView};
 pub use text_value::{TextValue, TextValueError, TextValueFailure, TextValueView};
@@ -121,7 +121,7 @@ impl<'a> OwnedComponent<'a> {
 
 #[cfg(test)]
 mod reborrow_tests;
-mod tag_facts;
+mod tag_analysis;
 mod tag_facts_component;
 #[cfg(test)]
 mod tests;

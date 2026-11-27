@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
-    file::{
+    ir::{
         DeclarationKind, InitializerKind, Namespace, NativeL2IrAttributeValueState,
         NativeL2IrModelKind, NativeL2IrModelState,
     },

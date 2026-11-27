@@ -146,7 +146,7 @@ test("all owned storage equals the reviewed per-file inventory", () => {
 
 test("production inventory excludes cfg(test) size evidence", () => {
   const byFile = new Map(expectedRows.map((row) => [row.file, row]));
-  assert.deepEqual(byFile.get("davinci/vize_l4/src/targets/dom/artifact/on.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("davinci/vize_l4/src/targets/dom/template/on.rs")?.storage.allocVec, {
     directPaths: 0,
     boundUses: 0,
   });

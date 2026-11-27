@@ -2,7 +2,7 @@
 
 use oxc_span::SourceType;
 use vize_l0::Span;
-use vize_l2::file::{Namespace, ScopeId, ScriptProfile, ScriptUnitId};
+use vize_l2::ir::{Namespace, ScopeId, ScriptProfile, ScriptUnitId};
 use vize_l2::resolution::BindingId;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,7 +59,7 @@ pub enum VueL2IrIssueKind {
     ScriptAfterTemplate,
     DuplicateTemplate,
     PreviousIssues,
-    InvalidProgram(vize_l2::file::L2IrIssueKind),
+    InvalidProgram(vize_l2::ir::L2IrIssueKind),
     SetupExport,
     UnsupportedOptions,
     UnsupportedCall { optional: bool },

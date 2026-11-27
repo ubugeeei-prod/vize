@@ -1,11 +1,11 @@
 use vize_l0::{Allocator, Box, Span, Vec};
 use vize_l2::{
-    artifact::{L2Template, L2TemplateParts},
     expr::ExprRef,
     op::{
         BindOp, BindingOp, CommentOp, DynamicName, ElementOp, InterpolationOp, Namespace, Op,
         Region, TextOp,
     },
+    template::{L2Template, L2TemplateParts},
 };
 
 pub const SOURCE: &str = "x + y 1 'a' id class style";

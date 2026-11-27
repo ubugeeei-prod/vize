@@ -1,6 +1,6 @@
 //! Expression-producing template operations and their original lexical resolution.
 use super::{ExpressionReferenceRef, Model, TemplateQueryError, check_template_offset};
-use crate::{file::build::ScopedResolution, query::ScopeRef};
+use crate::{ir::build::ScopedResolution, query::ScopeRef};
 use vize_l0::{Span, id::NodeId};
 
 /// Operation that attached an expression resolution to the canonical File.

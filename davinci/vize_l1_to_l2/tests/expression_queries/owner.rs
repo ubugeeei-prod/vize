@@ -5,10 +5,10 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l2::{
-    artifact::ComponentFactory,
     expr::JsExpr,
-    file::{Declaration, TemplatePolicy, TemplateScope},
+    ir::{Declaration, TemplatePolicy, TemplateScope},
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
+    template::ComponentFactory,
 };
 
 #[derive(Clone, Copy)]

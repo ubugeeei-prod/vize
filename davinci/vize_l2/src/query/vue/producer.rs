@@ -2,10 +2,10 @@
 //! source, static-hoist policy and scope all come from the same SFC.
 
 use super::{Observed, OrdinaryFamilies, VueAnalysis, VueL2Ir};
-use crate::artifact::L2TemplateError;
-use crate::file::{L2IrIssueKind, RejectedL2Ir, TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::framework::vue::{OptionsObserver, OrdinaryObserver, SetupObserver};
+use crate::ir::{L2IrIssueKind, RejectedL2Ir, TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::lang::js::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
+use crate::template::L2TemplateError;
 use alloc::boxed::Box;
 use oxc_parser::AdmittedProgram;
 use vize_l0::Allocator;

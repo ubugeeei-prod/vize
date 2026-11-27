@@ -158,7 +158,7 @@ fn three_original_checkbox_models_retain_all_target_mode_attempts_before_verdict
             }
         }
     }
-    if core::mem::size_of::<vize_l2::file::Declaration>() != 96 {
+    if core::mem::size_of::<vize_l2::ir::Declaration>() != 96 {
         failures.push("original Declaration layout must stay96".into());
     }
     let complete = failures.is_empty()
@@ -179,8 +179,8 @@ fn three_original_checkbox_models_retain_all_target_mode_attempts_before_verdict
         "nativeCaptureComplete":complete,"failures":failures,
         "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
         "refusalInputPack":refusal_pack,
-        "layouts":{"declaration":core::mem::size_of::<vize_l2::file::Declaration>(),
-            "nativeModel":core::mem::size_of::<vize_l2::file::NativeL2IrModel<'_>>(),
+        "layouts":{"declaration":core::mem::size_of::<vize_l2::ir::Declaration>(),
+            "nativeModel":core::mem::size_of::<vize_l2::ir::NativeL2IrModel<'_>>(),
             "modelOp":core::mem::size_of::<vize_l2::op::ModelOp<'_>>()},
     });
     finish::write(capture, complete)

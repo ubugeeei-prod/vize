@@ -49,13 +49,13 @@ pub(crate) struct Cx<'a, P> {
     pub consumed_expressions: Vec<ExprRef<'a>>,
     pub for_facts: SideTable<super::forop::ForParts>,
     pub if_facts: SideTable<super::if_keys::IfAnalysis>,
-    pub wrappers: SideTable<vize_l2::analysis::fragment_facts::BranchFragments>,
-    pub for_wrappers: SideTable<vize_l2::analysis::fragment_facts::LoopFragment>,
+    pub wrappers: SideTable<vize_l2::analysis::fragment_analysis::BranchFragments>,
+    pub for_wrappers: SideTable<vize_l2::analysis::fragment_analysis::LoopFragment>,
     pub caps: super::caps::LegacyCaps,
     pub foreign_dialect: Option<super::foreign::ForeignDialect<'a>>,
     /// Op families this lowering built, set where the op is minted —
     /// see `lower::features`.
-    pub features: vize_l2::artifact::LoweringFeatures,
+    pub features: vize_l2::template::LoweringFeatures,
     custom_element_patterns: Vec<String>,
     custom_element_predicate: Option<fn(&str) -> bool>,
     /// Directive contracts from `vue.plugins` (#13074); empty without a plan.
@@ -100,7 +100,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             for_wrappers: SideTable::new(),
             caps,
             foreign_dialect: None,
-            features: vize_l2::artifact::LoweringFeatures::EMPTY,
+            features: vize_l2::template::LoweringFeatures::EMPTY,
             custom_element_patterns: custom_element_patterns.to_vec(),
             custom_element_predicate,
             directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
@@ -116,7 +116,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     /// Called where the op is minted, never from a rule name: a decision
     /// that *failed* still leaves an op behind (a malformed `v-for` keeps
     /// its `ui.for` under the escape), and the planner must see it.
-    pub(crate) fn observe(&mut self, family: vize_l2::artifact::OpFamily) {
+    pub(crate) fn observe(&mut self, family: vize_l2::template::OpFamily) {
         self.features = self.features.observing(family);
     }
 
@@ -174,7 +174,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
         span: Span,
         source: &str,
     ) {
-        self.observe(vize_l2::artifact::OpFamily::TextCompound);
+        self.observe(vize_l2::template::OpFamily::TextCompound);
         if let Some(id) = node {
             parts.assert_compound_laws(id, span, source);
             self.record_text(
@@ -199,7 +199,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn attach_wrappers(
         &mut self,
         node: Option<NodeId>,
-        keys: vize_l2::analysis::fragment_facts::BranchFragments,
+        keys: vize_l2::analysis::fragment_analysis::BranchFragments,
     ) {
         if let Some(id) = node {
             self.wrappers.insert(id, keys);
@@ -210,7 +210,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn attach_for_wrapper(
         &mut self,
         node: Option<NodeId>,
-        wrapper: vize_l2::analysis::fragment_facts::LoopFragment,
+        wrapper: vize_l2::analysis::fragment_analysis::LoopFragment,
     ) {
         if let Some(id) = node {
             self.for_wrappers.insert(id, wrapper);

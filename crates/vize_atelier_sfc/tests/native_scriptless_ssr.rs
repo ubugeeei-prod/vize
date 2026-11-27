@@ -11,7 +11,7 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::embed::syntax::{EmbedHole, ForRefusal};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
-    file::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
+    ir::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
     lang::js::{HandlerInputErrorKind, NativeTemplateIssueKind},
     op::{BindingOp, OnOp, Op, Region},
     resolution::ResolutionErrorKind,

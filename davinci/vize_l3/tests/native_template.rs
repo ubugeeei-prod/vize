@@ -179,7 +179,7 @@ fn equal_source_foreign_child_cannot_reach_native_analysis() -> Result<(), &'sta
     }
     let output = original.finish();
     check(output.view().is_err())?;
-    check(!output.file().is_some_and(vize_l2::file::L2Ir::is_complete))?;
+    check(!output.file().is_some_and(vize_l2::ir::L2Ir::is_complete))?;
     Ok(())
 }
 
@@ -218,7 +218,7 @@ fn original_html_whitespace_refuses_before_native_decisions() -> Result<(), &'st
         }
         let output = original.finish();
         check(output.view().is_err())?;
-        check(!output.file().is_some_and(vize_l2::file::L2Ir::is_complete))?;
+        check(!output.file().is_some_and(vize_l2::ir::L2Ir::is_complete))?;
     }
     Ok(())
 }

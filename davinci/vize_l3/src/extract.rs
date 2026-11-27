@@ -31,7 +31,7 @@ use alloc::vec::Vec;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
 use crate::op::L3Ir;
-use crate::placement::facts::Index;
+use crate::placement::analysis::Index;
 use crate::placement::{Placement, PlacementRecord};
 use measure::{Choice, Model};
 

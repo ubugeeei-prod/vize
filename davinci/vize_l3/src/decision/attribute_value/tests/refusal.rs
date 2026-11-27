@@ -1,10 +1,10 @@
 use super::*;
 use vize_l0::{Span, Vec};
 use vize_l2::{
-    artifact::ComponentFactory,
-    file::{Declaration, TemplatePolicy, TemplateScope},
+    ir::{Declaration, TemplatePolicy, TemplateScope},
     lang::js::L2IrProducer,
     op::{Attribute, Namespace},
+    template::ComponentFactory,
 };
 
 #[test]
@@ -58,8 +58,8 @@ fn foreign_element_sibling_slot_node_duplicate_and_out_of_order_rows_stickily_re
 #[test]
 fn complete_neutral_value_without_any_original_row_cannot_pass_native_consumption() -> Test {
     struct Empty;
-    impl<'a> vize_l2::artifact::ComponentBody<'a> for Empty {
-        fn run<R: vize_l2::artifact::ComponentFactory<'a>>(
+    impl<'a> vize_l2::template::ComponentBody<'a> for Empty {
+        fn run<R: vize_l2::template::ComponentFactory<'a>>(
             self,
             _: &mut R,
             _: vize_l0::id::NodeId,

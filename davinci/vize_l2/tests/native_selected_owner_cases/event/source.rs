@@ -78,7 +78,7 @@ fn authentic_completed_setup_bindings_resolve_in_the_exact_original_handler_scop
         return Err("exact original setup unit");
     };
     let binding = file
-        .lookup(unit.scope, "value", vize_l2::file::Namespace::Value)
+        .lookup(unit.scope, "value", vize_l2::ir::Namespace::Value)
         .ok_or("actual setup binding")?;
     let declaration = binding.declaration().ok_or("actual script declaration")?;
     equal(declaration.script_unit(), Some(unit.id))?;

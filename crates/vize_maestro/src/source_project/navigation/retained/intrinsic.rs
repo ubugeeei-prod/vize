@@ -4,7 +4,7 @@ use super::{NavigationRefusal, RetainedNavigation, Span};
 use crate::source_project::navigation::{IntrinsicTagTarget, coordinates};
 use tower_lsp::lsp_types::Position;
 use vize_l2::{
-    file::ScriptUnit,
+    ir::ScriptUnit,
     lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent},
     resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind},
 };

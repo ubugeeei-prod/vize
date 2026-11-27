@@ -2,7 +2,7 @@
 //! Position, formatting and emission consumers can visit the same partition.
 
 pub use crate::component::ComponentDef;
-use crate::file::ScriptProfile;
+use crate::ir::ScriptProfile;
 use alloc::vec::Vec;
 use vize_l0::{Lang, Span};
 use vize_l1::embed::{

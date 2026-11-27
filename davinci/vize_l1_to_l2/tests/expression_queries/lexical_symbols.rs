@@ -4,7 +4,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock};
 use vize_l2::{
-    file::{L2Ir, ReferenceTarget},
+    ir::{L2Ir, ReferenceTarget},
     resolution::Usage,
 };
 

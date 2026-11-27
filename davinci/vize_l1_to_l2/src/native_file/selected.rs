@@ -11,11 +11,11 @@ use vize_l1::{
     markup::{ComponentSourceError, InterpolationFailure, SelectedTemplateComponent},
 };
 use vize_l2::{
-    artifact::L2TemplateError,
     lang::js::{
         NativeScopedTemplateIssueKind, NativeTemplateIssue, NativeTemplateL2Ir,
         NativeTemplateOwner, NativeTemplateView, RejectedNativeTemplateOwner,
     },
+    template::L2TemplateError,
 };
 
 #[cfg(test)]

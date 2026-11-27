@@ -23,9 +23,9 @@
 //! The TS-27 verifier (`L3V010`) re-derives every recorded alternative and
 //! every committed choice; `PlacementPage` is the companion Dump page.
 
+pub(crate) mod analysis;
 mod annotate;
 pub mod dump;
-pub(crate) mod facts;
 mod kind;
 mod record;
 

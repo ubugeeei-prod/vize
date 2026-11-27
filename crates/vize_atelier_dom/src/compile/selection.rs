@@ -115,8 +115,8 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
 /// compile this to the identity.
 #[inline]
 pub(super) fn noting_refusal<T>(
-    emitted: Result<T, vize_l4::targets::dom::artifact::EmitError>,
-) -> Result<T, vize_l4::targets::dom::artifact::EmitError> {
+    emitted: Result<T, vize_l4::targets::dom::template::EmitError>,
+) -> Result<T, vize_l4::targets::dom::template::EmitError> {
     #[cfg(feature = "legacy-differential")]
     if let Err(error) = &emitted {
         differential::note_emit_refusal(*error);
@@ -132,7 +132,7 @@ pub(super) fn noting_refusal<T>(
 pub mod differential {
     use core::cell::Cell;
 
-    use vize_l4::targets::dom::artifact::EmitError;
+    use vize_l4::targets::dom::template::EmitError;
 
     std::thread_local! {
         static FORCE_LEGACY: Cell<bool> = const { Cell::new(false) };
@@ -163,7 +163,7 @@ pub mod differential {
 
     /// Take the typed error L2 returned for this thread's latest DOM
     /// compile, so a corpus sweep can attribute `emit_refused` templates to
-    /// their [`vize_l4::targets::dom::artifact::UnsupportedReason`] bucket. `None` when L2
+    /// their [`vize_l4::targets::dom::template::UnsupportedReason`] bucket. `None` when L2
     /// emitted the module or the selector never ran it.
     pub fn take_emit_refusal() -> Option<EmitError> {
         EMIT_REFUSAL.with(Cell::take)

@@ -6,7 +6,7 @@
 use super::{JsxL2IrProducer, JsxMarkupIssue, JsxMarkupIssueKind};
 use crate::{
     analysis::template_complexity,
-    file::L2Ir,
+    ir::L2Ir,
     op::{Namespace, Op},
 };
 use alloc::{vec, vec::Vec};

@@ -143,7 +143,7 @@ test(
 
 test("source changes and runtime witnesses require the executable native carrier", () => {
   for (const path of [
-    "davinci/vize_l4/src/targets/dom/artifact/fragment.rs",
+    "davinci/vize_l4/src/targets/dom/template/fragment.rs",
     "crates/vize_armature/src/parser/whitespace.rs",
     "crates/vize_armature/src/parser/whitespace/tests.rs",
     "crates/vize_atelier_dom/tests/dev_root_fragment.rs",

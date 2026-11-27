@@ -5,8 +5,8 @@ use super::native::VueNative;
 use crate::native::ConstructionFactory;
 use crate::vue_file::{NativeTemplateProfile, NativeTemplateVisibility};
 use vize_l0::Span;
-use vize_l2::artifact::L2TemplateError;
-use vize_l2::file::{TemplateIssue, TemplateWalkRegion};
+use vize_l2::ir::{TemplateIssue, TemplateWalkRegion};
+use vize_l2::template::L2TemplateError;
 
 pub(crate) struct NativeVueWalk<'g, 'f, 'a> {
     lower: TemplateWalkRegion<'g, 'f, 'a, NativeTemplateVisibility>,

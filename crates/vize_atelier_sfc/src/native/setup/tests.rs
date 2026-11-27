@@ -157,12 +157,12 @@ fn capture_pack(pack: Value, count: usize, capture_env: &str, schema: &str) -> R
                 "{id}: root setup scope"
             );
             require!(
-                declaration.initializer == vize_l2::file::InitializerKind::PrimitiveLiteral,
+                declaration.initializer == vize_l2::ir::InitializerKind::PrimitiveLiteral,
                 "{id}: original primitive fact"
             );
             if let Some(immutable) = fixture.get("immutableBindings").and_then(Value::as_array) {
                 require!(
-                    (declaration.kind == vize_l2::file::DeclarationKind::Const)
+                    (declaration.kind == vize_l2::ir::DeclarationKind::Const)
                         == immutable.contains(name),
                     "{id}: genuine immutable declaration class"
                 );

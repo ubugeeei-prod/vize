@@ -13,7 +13,7 @@ use crate::support;
 use vize_l0::diag::{Severity, Stage};
 use vize_l1_to_l2::exemptions;
 use vize_l1_to_l2::pass::vmodel;
-use vize_l2::analysis::model_facts::{ModelAnalysis, ModelFault};
+use vize_l2::analysis::model_analysis::{ModelAnalysis, ModelFault};
 
 use support::{assert_transformed_sound, with_transformed};
 

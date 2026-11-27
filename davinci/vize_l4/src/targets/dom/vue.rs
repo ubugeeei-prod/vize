@@ -3,7 +3,7 @@
 use core::cell::Cell;
 
 use vize_l0::id::NodeId;
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_l2::{expr::ExprRef, resolution::Occurrence};
 use vize_l3::decision::{
     dom::{

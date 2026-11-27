@@ -121,7 +121,7 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
     let refused = attempt(&arena, encoded, false);
     assert!(refused.view().is_err());
     let partial = refused.file().unwrap();
-    let [crate::file::RejectedL2IrFor::Syntax(original)] = partial.rejected_for_heads() else {
+    let [crate::ir::RejectedL2IrFor::Syntax(original)] = partial.rejected_for_heads() else {
         panic!("original native For syntax refusal")
     };
     assert_eq!(

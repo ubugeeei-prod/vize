@@ -1,5 +1,5 @@
 use super::*;
-use vize_l4::targets::dom::artifact::SurfacePreflight;
+use vize_l4::targets::dom::template::SurfacePreflight;
 
 fn template(source: &str) -> SfcTemplateBlock<'_> {
     SfcTemplateBlock {

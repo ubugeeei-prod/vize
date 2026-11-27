@@ -129,7 +129,7 @@ impl<'s, 'a> Retained<'s, 'a> {
             }
             ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::ParseRejected => {
                 self.invalid_parse_rejected |=
-                    !vize_l4::targets::dom::artifact::parse_rejected_expression_is_raw_js(
+                    !vize_l4::targets::dom::template::parse_rejected_expression_is_raw_js(
                         &expression,
                         allow_identifier,
                     );

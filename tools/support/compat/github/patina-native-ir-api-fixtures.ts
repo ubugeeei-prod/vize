@@ -26,7 +26,7 @@ export const patinaNativeIrApiRegistration = {
       {
         path: patinaNativeIrApiConsumer,
         role: "required-rust-consumer",
-        sha256: "6bb113c95205e96ca08da77925c27cee3251bbb832ef5b2b34cdca20bc4947b5",
+        sha256: "f595ce1e8e1671808c955126e04c050f5f510539d4989f9081d007fdd5602d22",
       },
     ],
   },

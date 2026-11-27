@@ -8,7 +8,7 @@ use crate::decision::dom::{
     vue::{VueReadKind, VueRenderRead},
 };
 use vize_l2::{
-    file::{DeclarationKind, Namespace},
+    ir::{DeclarationKind, Namespace},
     resolution::Usage,
 };
 

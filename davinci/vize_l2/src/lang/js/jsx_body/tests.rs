@@ -5,8 +5,8 @@
 
 use super::*;
 extern crate std;
-use crate::file::ScriptUnit;
-use crate::lang::js::file::observer::{
+use crate::ir::ScriptUnit;
+use crate::lang::js::ir::observer::{
     CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
 use crate::resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind};
@@ -144,7 +144,7 @@ fn late_unbalanced_header_rolls_back_actual_expression_and_cannot_seal() -> LawR
     assert_eq!(file.issues().len(), 1);
     assert_eq!(
         file.issues().first().ok_or("issue")?.kind,
-        crate::file::L2IrIssueKind::InvalidSpan
+        crate::ir::L2IrIssueKind::InvalidSpan
     );
     Ok(())
 }

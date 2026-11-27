@@ -6,7 +6,7 @@ use super::{NativeComponent, NativeEmbed, NativeHole, NativeProduced, RejectedNa
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::diag::Diagnostic;
 use vize_l1::embed::{Lang, syntax::EmbedSyntax};
-use vize_l2::artifact::ComponentFactory;
+use vize_l2::template::ComponentFactory;
 
 mod vue;
 pub use vue::{NativeVueConstructionError, NativeVueProduced, RejectedNativeVueComponent};

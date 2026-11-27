@@ -2,11 +2,11 @@
 use super::policy::Visibility;
 use super::profile::NativeTemplateProfile;
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
-use vize_l2::file::TemplateRegion;
+use vize_l2::ir::TemplateRegion;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{ComponentBody, ComponentFactory, L2TemplateError};
 mod native;
 mod walk;
 

@@ -2,7 +2,7 @@
 // lowering module identity retained by the compatibility owner.
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::artifact::OpFamily;
+use vize_l2::template::OpFamily;
 
 use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Element;
@@ -12,8 +12,8 @@ use vize_l2::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 
-pub use vize_l2::analysis::for_facts::{ForName, ForParts};
-use vize_l2::analysis::fragment_facts::LoopFragment;
+pub use vize_l2::analysis::for_analysis::{ForName, ForParts};
+use vize_l2::analysis::fragment_analysis::LoopFragment;
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, attr_text, element_core, template_unwraps};

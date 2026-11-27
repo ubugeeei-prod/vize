@@ -146,10 +146,11 @@ fn neutral_no_observer_macro_call_completion_cannot_bypass_the_vue_view() {
     .unwrap();
     let file = observed.file(&arena).unwrap();
     assert!(file.is_complete());
-    assert!(file.references().iter().all(|reference| matches!(
-        reference.target,
-        vize_l2::file::ReferenceTarget::Resolved(_)
-    )));
+    assert!(
+        file.references()
+            .iter()
+            .all(|reference| matches!(reference.target, vize_l2::ir::ReferenceTarget::Resolved(_)))
+    );
     assert_eq!(
         kind(observed.view(&file).unwrap()).unwrap(),
         ExposureIssueKind::ScriptCall

@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{L2Ir, L2IrIssueKind};
+use vize_l2::ir::{L2Ir, L2IrIssueKind};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 pub type LawResult<T = ()> = Result<T, &'static str>;

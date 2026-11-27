@@ -17,7 +17,7 @@ use core::fmt;
 
 use crate::op::OpKind;
 use crate::placement::Placement;
-use crate::placement::facts::{Index, contains, reads};
+use crate::placement::analysis::{Index, contains, reads};
 
 /// `_renderEffect(() => ` plus `)`: the wrapper one effect unit costs.
 pub const EFFECT_UNIT_BYTES: u64 = 21;

@@ -1,10 +1,10 @@
 //! A separate original-Model read/write receipt, never a generic read policy.
 
-use super::{DomAnalysis, PropertyRole, ValueKind, file::matches_expression};
+use super::{DomAnalysis, PropertyRole, ValueKind, l2ir::matches_expression};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     expr::ExprRef,
-    file::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
+    ir::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
     op::{BindingOp, ElementOp, ModelOp},
     resolution::{Occurrence, Usage},
 };

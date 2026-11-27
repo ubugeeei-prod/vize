@@ -126,11 +126,11 @@ fn dom_diverges(source: &str) -> bool {
 
     let new_allocator = Allocator::new();
     let Ok(new_output) =
-        vize_l4::targets::dom::artifact::emit_dom_source_patch_facts_observed_with_options(
+        vize_l4::targets::dom::template::emit_dom_source_patch_facts_observed_with_options(
             &new_allocator,
             &template.content,
             vize_l1_to_l2::LegacyCaps::VUE3,
-            &vize_l4::targets::dom::artifact::DomEmitOptions::DEFAULT,
+            &vize_l4::targets::dom::template::DomEmitOptions::DEFAULT,
         )
     else {
         return false;

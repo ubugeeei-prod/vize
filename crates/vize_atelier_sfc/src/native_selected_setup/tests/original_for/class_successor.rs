@@ -3,8 +3,8 @@ use super::*;
 use serde_json::{Value, json};
 use vize_l0::Span;
 use vize_l1::markup::AttributeValueOperand;
-use vize_l2::file::L2Ir;
-use vize_l2::file::NativeL2IrAttributeValueState;
+use vize_l2::ir::L2Ir;
+use vize_l2::ir::NativeL2IrAttributeValueState;
 use vize_l3::decision::dom::{DomRejection, DomUnsupported};
 use vize_l4::{
     targets::dom::{DomError, DomErrorKind, emit_selected_setup_template},

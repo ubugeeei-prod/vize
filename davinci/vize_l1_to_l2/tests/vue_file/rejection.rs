@@ -2,10 +2,10 @@ use super::support::{construct, script, whole_span};
 use vize_l0::{Allocator, Vec};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
-use vize_l2::artifact::{ComponentBody, ComponentFactory};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::op::Namespace;
+use vize_l2::template::{ComponentBody, ComponentFactory};
 
 #[test]
 fn ordinary_only_local_is_not_template_context_and_failure_retains_original_owners() {

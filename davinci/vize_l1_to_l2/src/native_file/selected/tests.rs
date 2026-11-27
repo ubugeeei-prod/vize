@@ -10,7 +10,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::RejectedL2IrHandler,
+    ir::RejectedL2IrHandler,
     op::{BindingOp, OnOp, Op, Region},
 };
 

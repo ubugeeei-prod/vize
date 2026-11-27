@@ -10,10 +10,10 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
 use vize_l2::{
-    artifact::ComponentFactory,
-    file::{Declaration, TemplatePolicy, TemplateScope},
+    ir::{Declaration, TemplatePolicy, TemplateScope},
     lang::js::L2IrProducer,
     op::Op,
+    template::ComponentFactory,
 };
 
 fn options() -> DescriptorOptions {

@@ -9,8 +9,8 @@ use crate::vue_file::{NativeTemplateProfile, VueL2IrRegion};
 use alloc::boxed::Box;
 use vize_l0::{SourceBlock, diag::Diagnostic};
 use vize_l1::embed::syntax::EmbedSyntax;
-use vize_l2::artifact::L2TemplateError;
-use vize_l2::file::TemplateIssue;
+use vize_l2::ir::TemplateIssue;
+use vize_l2::template::L2TemplateError;
 
 /// Source, interruption and repeat refusal retain the original pending owner.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

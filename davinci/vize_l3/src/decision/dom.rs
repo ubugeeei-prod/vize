@@ -14,17 +14,17 @@ pub(super) mod build;
 mod context;
 pub mod control;
 mod dependencies;
-pub(in crate::decision) mod file;
 mod for_head;
 mod handler;
+pub(in crate::decision) mod l2ir;
 mod model;
 pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
-pub use file::{DomL2IrAnalysis, DomL2IrExpression, build_dom_file_decisions};
 pub use for_head::DomL2IrForHead;
 pub use handler::DomL2IrHandler;
+pub use l2ir::{DomL2IrAnalysis, DomL2IrExpression, build_dom_file_decisions};
 pub use model::DomL2IrModel;
 
 /// A complete expression's references all have explicitly declared context bindings.

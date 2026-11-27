@@ -3,7 +3,7 @@ use vize_l0::Allocator;
 use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::lower_sfc_native;
 use vize_l1_to_l2::vue_file::VueScriptRole;
-use vize_l2::file::Namespace;
+use vize_l2::ir::Namespace;
 
 #[test]
 fn setup_only_and_script_only_need_no_synthetic_ordinary_or_template() {

@@ -1,7 +1,7 @@
 //! Sealed original output custody, whole modules and absolute source maps.
 
 use vize_l0::Allocator;
-use vize_l2::file::NativeL2IrInterpolationState;
+use vize_l2::ir::NativeL2IrInterpolationState;
 use vize_l2::op::Op;
 use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{

@@ -1,7 +1,7 @@
 //! Runtime text-model realization from a distinct authenticated read/write row.
 
 use vize_l0::id::NodeId;
-use vize_l2::file::NativeL2IrModelKind;
+use vize_l2::ir::NativeL2IrModelKind;
 use vize_l2::op::{BindingOp, ElementOp, ModelOp};
 use vize_l3::decision::dom::{DomChild, DomL2IrModel, PropertyRole};
 

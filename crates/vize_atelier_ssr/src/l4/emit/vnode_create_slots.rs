@@ -3,7 +3,7 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
-use vize_l4::targets::dom::artifact::TransformContent;
+use vize_l4::targets::dom::template::TransformContent;
 
 use super::create_slots::{Dynamic, Entry};
 use super::slots::ComponentSlots;

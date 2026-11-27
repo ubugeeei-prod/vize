@@ -11,7 +11,7 @@ use vize_l1_to_l2::native_file::{
     NativeSfcObservation, lower_sfc_with_lexical_initializers, lower_sfc_with_listener_references,
 };
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind, L2Ir},
+    ir::{DeclarationKind, InitializerKind, L2Ir},
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
     query::Model,
 };

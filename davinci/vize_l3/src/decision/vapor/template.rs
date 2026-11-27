@@ -3,9 +3,9 @@
 use super::{VaporAnalysis, VaporL2IrAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
-    artifact::L2Template,
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeTemplateL2Ir, NativeTemplateView},
+    template::L2Template,
 };
 
 /// Only a moved original template completion can authorize native Vapor output.
@@ -29,7 +29,7 @@ use vize_l2::{
 /// ```
 /// A complete manually populated File is not original template completion:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l3::decision::vapor::build_template_vapor_decisions;
 /// fn forge(l2ir: &L2Ir<'_>) { let _ = build_template_vapor_decisions(l2ir); }
 /// ```
@@ -73,6 +73,6 @@ pub fn build_template_vapor_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
 ) -> Result<TemplateVaporAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    let analysis = super::file::build_original_file_decisions(file)?;
+    let analysis = super::l2ir::build_original_file_decisions(file)?;
     Ok(TemplateVaporAnalysis { view, analysis })
 }

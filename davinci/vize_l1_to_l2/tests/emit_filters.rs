@@ -13,7 +13,7 @@ use support::with_transformed_caps;
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
 use vize_l1_to_l2::LegacyCaps;
-use vize_l4::targets::dom::artifact::{
+use vize_l4::targets::dom::template::{
     DomEmitOptions, emit_dom, emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 

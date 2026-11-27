@@ -2,7 +2,7 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l2::op::{self as l2, DynamicName};
-use vize_l4::targets::dom::artifact::TransformContent;
+use vize_l4::targets::dom::template::TransformContent;
 
 use crate::codegen::element::props::{is_simple_identifier, quoted_js_string};
 use crate::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind};

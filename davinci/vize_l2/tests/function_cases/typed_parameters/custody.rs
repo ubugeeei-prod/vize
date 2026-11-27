@@ -5,7 +5,7 @@ use oxc_ast::ast::{Statement, TSType};
 use oxc_parser::ParseOptions;
 use oxc_span::GetSpan;
 use vize_l0::String;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::ProgramInput;
 
 #[test]

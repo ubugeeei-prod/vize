@@ -3,7 +3,7 @@
 use vize_atelier_core::steps::erase_typescript_params;
 use vize_l0::{FxHashSet, String, id::NodeId};
 use vize_l2::op::ForOp;
-use vize_l4::targets::dom::artifact::{
+use vize_l4::targets::dom::template::{
     TransformScopeMark, exceptional_for_binding_names, rewrite_for_alias_expressions,
 };
 

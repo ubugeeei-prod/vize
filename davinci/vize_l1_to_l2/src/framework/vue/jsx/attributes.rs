@@ -4,9 +4,9 @@
 use oxc_ast::ast::{JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue};
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Box, Vec};
-use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
+use vize_l2::template::OpFamily;
 
 use super::children::contains_jsx;
 use super::directives::directive;

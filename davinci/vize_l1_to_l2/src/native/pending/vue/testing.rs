@@ -5,10 +5,10 @@ use crate::native::{ConstructionBody, ConstructionFactory};
 use core::cell::Cell;
 use vize_l0::{Allocator, Span, id::NodeId};
 use vize_l2::{
-    artifact::L2TemplateError,
     expr::JsExpr,
     op::{Attribute, Namespace},
     provenance::ProvenanceRecord,
+    template::L2TemplateError,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]

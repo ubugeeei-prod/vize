@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::{DeclarationKind, Namespace};
+use vize_l2::ir::{DeclarationKind, Namespace};
 
 #[test]
 fn only_real_direct_program_const_let_and_var_bindings_supply_the_bounded_view() {
@@ -118,6 +118,6 @@ fn ordinary_runtime_names_and_escaped_unicode_use_actual_semantic_identities() {
 #[test]
 #[cfg(target_pointer_width = "64")]
 fn new_inline_authority_fields_have_actual_measured_layout() {
-    assert_eq!(core::mem::size_of::<vize_l2::file::ScriptUnit>(), 48);
-    assert_eq!(core::mem::align_of::<vize_l2::file::ScriptUnit>(), 8);
+    assert_eq!(core::mem::size_of::<vize_l2::ir::ScriptUnit>(), 48);
+    assert_eq!(core::mem::align_of::<vize_l2::ir::ScriptUnit>(), 8);
 }

@@ -1,5 +1,5 @@
 use super::JsxL2Ir;
-use crate::file::{Reference, ScopeId, ScriptUnitId};
+use crate::ir::{Reference, ScopeId, ScriptUnitId};
 use crate::resolution::SyntaxKind;
 use core::ops::Range;
 use vize_l0::Span;

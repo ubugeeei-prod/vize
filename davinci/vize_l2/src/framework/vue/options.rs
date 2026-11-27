@@ -15,7 +15,7 @@
 mod class;
 mod read;
 
-use crate::file::{ScopeId, ScriptUnit};
+use crate::ir::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 use alloc::vec::Vec;

@@ -308,7 +308,7 @@
     "davinci/vize_l2_to_l3/tests/vue_render_support/constants.rs": "davinci/vize_l2_to_l3/tests/vue_render/vue_render_constants.rs",
     "davinci/vize_l2_to_l3/tests/vue_render_support/mod.rs": "davinci/vize_l2_to_l3/tests/vue_render/vue_render_support/mod.rs",
     "davinci/vize_l2_to_l3/tests/vue_render_support/properties.rs": "davinci/vize_l2_to_l3/tests/vue_render/vue_render_properties.rs",
-    "davinci/vize_l4/src/targets/dom/file_tests.rs": "davinci/vize_l4/src/targets/dom/file/tests.rs",
+    "davinci/vize_l4/src/targets/dom/file_tests.rs": "davinci/vize_l4/src/targets/dom/l2ir/tests.rs",
     "davinci/vize_l4/tests/jsx_js_module.rs": "davinci/vize_l4/tests/jsx_js_module/main.rs",
     "davinci/vize_l4/tests/native_dom_file/support.rs": "tests/davinci_test_support/src/native_dom_file.rs",
     "davinci/vize_l4/tests/native_vue_reads.rs": "davinci/vize_l4/tests/native_vue_reads/main.rs",

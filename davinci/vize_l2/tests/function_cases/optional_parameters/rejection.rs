@@ -1,6 +1,6 @@
 use super::{Allocator, DeclarationKind, Namespace, Parser, SourceType, finish};
 use vize_l0::cstr;
-use vize_l2::file::{L2IrIssueKind, ReferenceTarget};
+use vize_l2::ir::{L2IrIssueKind, ReferenceTarget};
 
 #[test]
 fn unsupported_optional_types_retain_both_original_issue_sites() {

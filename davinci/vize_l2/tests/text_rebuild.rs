@@ -7,7 +7,7 @@
 //! libFuzzer.
 
 use vize_l0::{Span, String};
-use vize_l2::analysis::text_facts::{TextPart, rebuild_source};
+use vize_l2::analysis::text_analysis::{TextPart, rebuild_source};
 
 /// The rebuild rule spelled with one `push_str` per piece.
 fn oracle(parts: &[TextPart]) -> String {

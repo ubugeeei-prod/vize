@@ -1,7 +1,7 @@
 // Borrowed surface validation at the actual parse boundary.
 
 use super::{DomEmitBudget, EmitInvocation, emit_dom_source_with_options_and_observer_captured};
-use crate::targets::dom::artifact::{DomEmit, DomEmitOptions, EmitError};
+use crate::targets::dom::template::{DomEmit, DomEmitOptions, EmitError};
 use vize_l0::{
     Allocator, TemplateSyntaxMode,
     dump::capture::CaptureSink,
@@ -159,7 +159,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<div id='x'>text</div>";
         let options = DomEmitOptions::DEFAULT;
-        let expected = crate::targets::dom::artifact::emit_dom_source_strict_slots_with_options(
+        let expected = crate::targets::dom::template::emit_dom_source_strict_slots_with_options(
             &arena,
             source,
             LegacyCaps::VUE3,

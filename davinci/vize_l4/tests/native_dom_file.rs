@@ -4,7 +4,7 @@ use davinci_test_support::native_dom_file as support;
 use support::{construct, script};
 use vize_l0::Allocator;
 use vize_l2::{
-    file::{Namespace, TemplateScope},
+    ir::{Namespace, TemplateScope},
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};

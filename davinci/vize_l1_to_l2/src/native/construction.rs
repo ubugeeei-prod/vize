@@ -1,10 +1,10 @@
 //! Private recursive construction; public diagnostics keep their original bound.
 
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{ComponentBody, ComponentFactory, L2TemplateError};
 
 /// A body called by the actual owner's private construction capability.
 pub(crate) trait ConstructionBody<'a> {

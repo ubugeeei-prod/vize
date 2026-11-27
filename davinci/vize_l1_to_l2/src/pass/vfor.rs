@@ -14,7 +14,7 @@
 //!
 //! [`ScopeAnalysis`]: vize_l2::scope::ScopeAnalysis
 
-pub use vize_l2::analysis::for_facts::{ForName, ForParts as ForFacts};
+pub use vize_l2::analysis::for_analysis::{ForName, ForParts as ForFacts};
 
 /// The pass name kept for existing folio/report strings.
 pub const NAME: &str = "v-for";

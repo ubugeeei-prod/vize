@@ -3,7 +3,7 @@
 use super::NativeSfc;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, L2Ir, L2IrResolution, Reference, ReferenceTarget, ScopeId},
+    ir::{BindingRef, L2Ir, L2IrResolution, Reference, ReferenceTarget, ScopeId},
     query::{Model, PositionQueryError},
     resolution::{Occurrence, Usage},
 };

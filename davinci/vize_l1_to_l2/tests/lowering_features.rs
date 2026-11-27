@@ -29,9 +29,9 @@ use vize_l0::pass::BudgetObserver;
 use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::run_transform;
 use vize_l1_to_l2::{LegacyCaps, lower, lower_with_caps};
-use vize_l2::analysis::pass_facts::L2Analyses;
-use vize_l2::artifact::{L2TemplateParts, LoweringFeatures, OpFamily};
+use vize_l2::analysis::pass_analysis::L2Analyses;
 use vize_l2::dump::Page as L2Page;
+use vize_l2::template::{L2TemplateParts, LoweringFeatures, OpFamily};
 
 /// Controls whose absent families the planner is supposed to save walks on.
 ///

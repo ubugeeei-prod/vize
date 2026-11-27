@@ -11,7 +11,7 @@ use crate::lower::TextParts;
 use crate::pass::walk::PageWalk;
 use vize_l2::op::vue::asset_identifier;
 
-use vize_l2::analysis::pass_facts::FilterAssets;
+use vize_l2::analysis::pass_analysis::FilterAssets;
 
 mod compound;
 

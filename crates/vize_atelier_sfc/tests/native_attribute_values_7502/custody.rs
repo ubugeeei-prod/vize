@@ -5,7 +5,7 @@ use vize_l0::{Span, String, cstr};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l1_to_l2::native_file::{NativeSelectedSfcIssueKind, NativeSelectedSfcObservation};
 use vize_l2::{
-    file::{L2Ir, NativeL2IrAttributeValueState},
+    ir::{L2Ir, NativeL2IrAttributeValueState},
     op::Op,
     walk::NodeRef,
 };

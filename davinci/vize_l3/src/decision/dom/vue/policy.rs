@@ -2,7 +2,7 @@
 
 use super::VueReadKind;
 use vize_l2::{
-    file::{BindingRef, DeclarationKind, vue::VueExposure},
+    ir::{BindingRef, DeclarationKind, vue::VueExposure},
     resolution::{Occurrence, Usage},
 };
 

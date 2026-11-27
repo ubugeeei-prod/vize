@@ -29,12 +29,12 @@ impl crate::codegen::SsrCodegenContext<'_> {
             .as_ref()
             .map(crate::bindings::binding_table);
         let mut expressions = if self.jsx_closure {
-            vize_l4::targets::dom::artifact::TransformExpressions::unprefixed(
+            vize_l4::targets::dom::template::TransformExpressions::unprefixed(
                 self.source,
                 self.options.is_ts,
             )
         } else {
-            vize_l4::targets::dom::artifact::TransformExpressions::new(
+            vize_l4::targets::dom::template::TransformExpressions::new(
                 self.source,
                 table.as_ref(),
                 self.options.is_ts,

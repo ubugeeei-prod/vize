@@ -1,7 +1,7 @@
 use super::{lower, observe};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
 
 #[test]

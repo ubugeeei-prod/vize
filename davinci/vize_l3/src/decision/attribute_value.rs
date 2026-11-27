@@ -3,16 +3,16 @@
 use super::DecisionBuildError;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::L2Template,
-    file::{L2Ir, L2IrAttributeValue, NativeL2IrAttributeValueState},
+    ir::{L2Ir, L2IrAttributeValue, NativeL2IrAttributeValueState},
     op::ElementOp,
+    template::L2Template,
 };
 
 /// Complete original value custody from the actual selected File's sole walk.
 /// This keeps the whole normal observations and maps borrowed from that File;
 /// it is not a new attribute table, target-name policy or decoded-source factory.
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l3::decision::OriginalAttributeAnalysis;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>) {
 ///     let _ = OriginalAttributeAnalysis { l2ir, consumed: 0 };

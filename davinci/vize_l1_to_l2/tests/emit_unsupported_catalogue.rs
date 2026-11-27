@@ -5,7 +5,7 @@
 
 use std::vec::Vec;
 
-use vize_l4::targets::dom::artifact::UnsupportedReason as Reason;
+use vize_l4::targets::dom::template::UnsupportedReason as Reason;
 
 const SOURCE: &[Reason] = &[
     Reason::ArrayBuiltinCannotUseSlotObject,

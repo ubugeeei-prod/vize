@@ -11,7 +11,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const emitRoot = path.join(repoRoot, "davinci", "vize_l4", "src", "targets", "dom", "artifact.rs");
+const emitRoot = path.join(repoRoot, "davinci", "vize_l4", "src", "targets", "dom", "template.rs");
 const runPath = path.join(
   repoRoot,
   "davinci",
@@ -19,7 +19,7 @@ const runPath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "run.rs",
 );
 const patchPath = path.join(
@@ -29,7 +29,7 @@ const patchPath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "patch.rs",
 );
 const patchStoragePath = path.join(
@@ -39,7 +39,7 @@ const patchStoragePath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "patch",
   "storage.rs",
 );
@@ -50,7 +50,7 @@ const patchTestsPath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "patch",
   "tests.rs",
 );
@@ -61,7 +61,7 @@ const vnodePath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "vnode.rs",
 );
 const componentPath = path.join(
@@ -71,7 +71,7 @@ const componentPath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "component.rs",
 );
 const dispatchPath = path.join(
@@ -81,7 +81,7 @@ const dispatchPath = path.join(
   "src",
   "targets",
   "dom",
-  "artifact",
+  "template",
   "dispatch.rs",
 );
 

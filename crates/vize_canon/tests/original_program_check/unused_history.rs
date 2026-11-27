@@ -1,7 +1,7 @@
 //! The authored Batch control gains neutral custody, without a native oracle.
 
 use super::*;
-use vize_l2::file::{DeclarationKind, Namespace};
+use vize_l2::ir::{DeclarationKind, Namespace};
 use vize_l4::targets::ts::project_program;
 
 #[test]

@@ -6,7 +6,7 @@ mod support;
 use vize_l0::{Allocator, SourceRoot, Span, String, cstr};
 use vize_l1::embed::syntax::{ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::{L2IrBuilder, L2IrIssueKind, Namespace};
+use vize_l2::ir::{L2IrBuilder, L2IrIssueKind, Namespace};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l4::targets::ts::{
     MappingError, ProjectionError, SourceKind, project_program, project_program_no_links,
@@ -258,8 +258,8 @@ fn equal_copy_source_is_rejected_before_file_unit_mint() {
 
 #[test]
 fn authentic_nested_units_and_mixed_template_nodes_remain_outside_program_projection() {
-    use vize_l2::artifact::ComponentFactory;
-    use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
+    use vize_l2::ir::{Declaration, TemplatePolicy, TemplateScope};
+    use vize_l2::template::ComponentFactory;
     #[derive(Clone, Copy)]
     struct NoBindings;
     impl TemplatePolicy for NoBindings {

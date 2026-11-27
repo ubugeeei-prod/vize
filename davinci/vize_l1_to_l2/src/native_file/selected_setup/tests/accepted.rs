@@ -151,7 +151,7 @@ fn equal_sources_and_shared_source_keep_distinct_normal_whole_owners() -> Result
             .next()
             .ok_or("actual foreign setup row")?;
         check(
-            matches!(first.setup().binding(foreign_binding), Err(issue) if issue.kind == vize_l2::file::vue::ExposureIssueKind::ForeignBinding),
+            matches!(first.setup().binding(foreign_binding), Err(issue) if issue.kind == vize_l2::ir::vue::ExposureIssueKind::ForeignBinding),
         )?;
         check(!core::ptr::eq(first.setup().l2ir(), other.setup().l2ir()))?;
         check(first.setup().program().source() == other.setup().program().source())?;

@@ -29,7 +29,7 @@ fn generated_alias_prefixes_keep_the_earliest_owned_resolution_refusal() {
         );
         assert!(compiled.observation().admitted().is_none());
         let owner = compiled.observation().original().template().unwrap();
-        let [vize_l2::file::RejectedL2IrFor::Resolution { input, error }] = rejected_heads(owner)
+        let [vize_l2::ir::RejectedL2IrFor::Resolution { input, error }] = rejected_heads(owner)
         else {
             panic!("original prefix refusal: {alias}");
         };
@@ -57,7 +57,7 @@ fn generated_alias_prefixes_keep_the_earliest_owned_resolution_refusal() {
 
 fn rejected_heads<'o, 'a>(
     owner: &'o vize_l2::lang::js::NativeTemplateL2Ir<'a>,
-) -> &'o [vize_l2::file::RejectedL2IrFor<'a>] {
+) -> &'o [vize_l2::ir::RejectedL2IrFor<'a>] {
     owner
         .file()
         .map(|file| file.rejected_for_heads())
@@ -189,7 +189,7 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
         Some(NativeSelectedSetupSfcDomError::Observation)
     ));
     let owner = literal.observation().original().template().unwrap();
-    let [vize_l2::file::RejectedL2IrFor::Syntax(input)] = rejected_heads(owner) else {
+    let [vize_l2::ir::RejectedL2IrFor::Syntax(input)] = rejected_heads(owner) else {
         panic!("whole zero-occurrence refusal");
     };
     assert_eq!(

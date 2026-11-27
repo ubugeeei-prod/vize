@@ -2,7 +2,7 @@
 //! Retained expressions use the existing real JS load-path constructor.
 
 use vize_l0::{Allocator, Box, Span, String, Vec};
-use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, take_carrier_key};
+use vize_l2::analysis::if_analysis::{BranchKey, BranchKeyKind, take_carrier_key};
 use vize_l2::dump::{Op as DumpOp, Page};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{

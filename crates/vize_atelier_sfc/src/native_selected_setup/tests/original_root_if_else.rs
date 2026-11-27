@@ -1,7 +1,7 @@
 //! Genuine two-branch originals replay whole independently reviewed captures.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeL2IrConditionalState, op::Op, resolution::Usage};
+use vize_l2::{expr::ExprRef, ir::NativeL2IrConditionalState, op::Op, resolution::Usage};
 use vize_l3::decision::dom::control::ConditionalFallback;
 
 #[test]

@@ -8,7 +8,7 @@ use std::sync::{Arc, mpsc::Receiver};
 use tower_lsp::lsp_types::{Location, Position};
 use vize_l0::{Allocator, Span};
 use vize_l1_to_l2::native_file::lower_selected_sfc_native;
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_l2::query::{Model, TemplateSymbolRef};
 
 use super::super::{

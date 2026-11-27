@@ -3,7 +3,7 @@
 use vize_l0::id::NodeId;
 use vize_l2::{
     expr::ExprRef,
-    file::{
+    ir::{
         DeclarationKind, InitializerKind, L2Ir, L2IrResolution, Namespace, NativeL2IrModelKind,
         NativeL2IrModelState,
     },

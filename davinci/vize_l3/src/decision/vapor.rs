@@ -10,14 +10,14 @@ use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 
 pub(super) mod build;
 mod expression;
-mod file;
+mod l2ir;
 mod model;
 mod setup;
 mod template;
 #[cfg(test)]
 mod tests;
 pub use expression::{VaporExpression, VaporValueKind};
-pub use file::{VaporL2IrAnalysis, build_vapor_file_decisions};
+pub use l2ir::{VaporL2IrAnalysis, build_vapor_file_decisions};
 pub use model::VaporModel;
 pub use setup::{SelectedSetupVaporAnalysis, build_selected_setup_vapor_decisions};
 pub use template::{TemplateVaporAnalysis, build_template_vapor_decisions};

@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use sha2::{Digest, Sha256};
 use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
 use vize_l2::query::Model;
-use vize_l2::{file::DeclarationKind, lang::js::JsxL2IrProducer};
+use vize_l2::{ir::DeclarationKind, lang::js::JsxL2IrProducer};
 use vize_l4::targets::ts::{ProgramProjection, SourceKind};
 
 fn uri(path: &Path) -> String {

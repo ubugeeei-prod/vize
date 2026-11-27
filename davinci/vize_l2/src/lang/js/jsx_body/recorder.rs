@@ -1,6 +1,6 @@
 use super::records::Record;
-use crate::file::ScriptUnit;
-use crate::lang::js::file::observer::{
+use crate::ir::ScriptUnit;
+use crate::lang::js::ir::observer::{
     CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
 use crate::resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind};

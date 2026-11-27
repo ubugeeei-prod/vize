@@ -1,8 +1,8 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::L2Template;
 use vize_l2::expr::ExprRef;
 use vize_l2::resolution::{BindingId, BindingLookup, ResolutionTable, resolve_expression};
+use vize_l2::template::L2Template;
 use vize_l3::decision::{
     build_decisions, build_dom_decisions,
     dom::{ContextOnly, DomUnsupported},

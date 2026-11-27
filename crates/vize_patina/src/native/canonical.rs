@@ -6,7 +6,7 @@
 
 use vize_l0::{Span, diag::MessageLookup};
 use vize_l1_to_l2::native_file::NativeSfc;
-use vize_l2::{file::L2Ir, lang::js::JsxMarkupL2Ir, op::Op, walk::NodeRef};
+use vize_l2::{ir::L2Ir, lang::js::JsxMarkupL2Ir, op::Op, walk::NodeRef};
 
 use super::{NativeLintFinding, tabindex_no_positive};
 
@@ -44,7 +44,7 @@ pub enum NativeCanonicalLintRefusal {
 /// An actual native Vue/JSX owner's canonical File, never caller-joined parts.
 ///
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_patina::native::canonical::NativeCanonicalLint;
 /// fn forge<'a>(l2ir: &L2Ir<'a>) {
 ///     let _ = NativeCanonicalLint { l2ir };

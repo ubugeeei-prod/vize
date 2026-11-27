@@ -1,5 +1,5 @@
 use vize_l0::{Span, String, cstr};
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind};
 
 use super::{JsxEmitError, JsxEmitErrorKind};

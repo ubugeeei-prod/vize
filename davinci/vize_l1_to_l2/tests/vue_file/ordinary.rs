@@ -3,9 +3,9 @@ use vize_l0::{Allocator, Vec};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::NativeComponent;
 use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
-use vize_l2::artifact::{ComponentBody, ComponentFactory};
 use vize_l2::lang::js::ProgramInput;
 use vize_l2::op::Namespace;
+use vize_l2::template::{ComponentBody, ComponentFactory};
 
 #[test]
 fn original_js_and_ts_empty_default_complete_with_directives_comments_and_zero_bindings() {

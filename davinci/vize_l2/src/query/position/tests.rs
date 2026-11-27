@@ -3,7 +3,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
 
-use crate::file::{
+use crate::ir::{
     Declaration, L2IrBuilder, L2IrIssueKind, Namespace, TemplatePolicy, TemplateScope,
 };
 use crate::lang::js::{L2IrProducer, ProgramInput, ProgramScope};

@@ -10,10 +10,10 @@ use crate::decision::{
 };
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::L2Template,
-    file::{BindingRef, DeclarationKind, L2Ir},
+    ir::{BindingRef, DeclarationKind, L2Ir},
     lang::js::{NativeSelectedSetup, NativeTemplateView},
     resolution::{Occurrence, Usage},
+    template::L2Template,
 };
 
 /// Native runtime reads borrow the normal whole setup owner and its own template.

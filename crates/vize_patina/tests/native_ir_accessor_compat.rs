@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::container::vue::{DescriptorOptions, L1Ir};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_patina::native::{
     canonical::NativeCanonicalLint,
     sfc::{NativeSfcLintOwner, NativeSfcTemplateOwner},

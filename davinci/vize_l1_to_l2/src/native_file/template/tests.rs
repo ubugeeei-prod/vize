@@ -15,7 +15,7 @@ use vize_l1::{
     embed::Lang,
     markup::SurfaceParseOptions,
 };
-use vize_l2::{artifact::Builder, file::L2IrIssueKind};
+use vize_l2::{ir::L2IrIssueKind, template::Builder};
 
 fn row<'a>(
     allocator: &'a Allocator,

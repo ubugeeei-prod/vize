@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, SourceBlock, Span};
 use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 pub fn syntax<'a>(

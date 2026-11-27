@@ -123,7 +123,7 @@ fn new_vnode_helper_alias_keeps_earliest_reserved_alias_and_whole_original_input
         .map(|file| file.rejected_for_heads())
         .or_else(|| owner.rejected_file().map(|file| file.rejected_for_heads()))
         .unwrap();
-    let [vize_l2::file::RejectedL2IrFor::Resolution { input, error }] = rejected else {
+    let [vize_l2::ir::RejectedL2IrFor::Resolution { input, error }] = rejected else {
         panic!("whole reserved alias");
     };
     assert_eq!(

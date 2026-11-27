@@ -1,7 +1,7 @@
 use super::*;
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 
 #[test]
 fn foreign_bytes_second_program_and_foreign_same_numeric_unit_refuse() -> Result<(), &'static str> {

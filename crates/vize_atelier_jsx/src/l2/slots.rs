@@ -2,10 +2,10 @@ use std::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box, Span, String, Vec};
-use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, DynamicName, SlotContentOp};
 use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
+use vize_l2::template::OpFamily;
 use vize_relief::{DirectiveNode, ExpressionNode};
 
 use super::{L2Refusal, ProjectCx, lower_expression, simple_identifier};

@@ -8,7 +8,7 @@
 
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
 use vize_l0::Span;
-use vize_l2::file::{L2Ir, ScriptUnit};
+use vize_l2::ir::{L2Ir, ScriptUnit};
 use vize_l2::lang::js::JsxL2Ir;
 
 #[cfg(feature = "component-projection")]
@@ -64,7 +64,7 @@ pub enum ProjectionError {
 ///
 /// A detached document cannot construct a projection:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l4::{targets::ts::ProgramProjection, write::EmitDocument};
 /// fn forge(l2ir: &L2Ir<'_>, document: EmitDocument) {
 ///     let _ = ProgramProjection { l2ir, document };
@@ -72,7 +72,7 @@ pub enum ProjectionError {
 /// ```
 /// The actual File cannot be dropped while the projection is live:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l4::targets::ts::project_program;
 /// fn discard(l2ir: L2Ir<'_>) {
 ///     let projection = project_program(&l2ir).unwrap();
@@ -128,7 +128,7 @@ pub fn project_program_no_links<'file, 'arena>(
 ///
 /// A separately supplied File cannot establish JSX ownership:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l4::targets::ts::project_jsx_program;
 /// fn forge(l2ir: &L2Ir<'_>) { let _ = project_jsx_program(l2ir); }
 /// ```

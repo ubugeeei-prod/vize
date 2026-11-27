@@ -10,8 +10,8 @@ use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::{ModelAnalysis, SlotAnalysis};
-use vize_l2::analysis::if_facts::{BranchKeyKind, IfAnalysis};
-use vize_l2::analysis::text_facts::TextParts;
+use vize_l2::analysis::if_analysis::{BranchKeyKind, IfAnalysis};
+use vize_l2::analysis::text_analysis::TextParts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 use super::slots::{POutlet, PUnit, has_slot_content, l2_outlet, l2_slot_active, l2_unit};

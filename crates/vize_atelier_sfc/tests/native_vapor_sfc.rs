@@ -247,7 +247,7 @@ fn completed_original_click_file_is_refused_by_vapor_decisions() {
 #[test]
 fn original_numeric_for_refusal_keeps_the_actual_rejected_head() {
     use vize_l1::embed::syntax::ForRefusal;
-    use vize_l2::{file::RejectedL2IrFor, lang::js::NativeTemplateIssueKind};
+    use vize_l2::{ir::RejectedL2IrFor, lang::js::NativeTemplateIssueKind};
     let arena = Allocator::default();
     let source = r#"<template><div v-for="item in 2"/></template>"#;
     let compilation = compile_native_vapor_sfc(&arena, source, Default::default());

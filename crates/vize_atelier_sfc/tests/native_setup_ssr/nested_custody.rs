@@ -1,6 +1,6 @@
 //! Every original nested negative's custody law, now required on accepted output.
 use vize_l2::{
-    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeSelectedSetup, op::Op,
+    expr::ExprRef, ir::NativeL2IrInterpolationState, lang::js::NativeSelectedSetup, op::Op,
 };
 
 pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {

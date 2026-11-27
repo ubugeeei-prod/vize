@@ -1,6 +1,6 @@
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::L2TemplateError;
-use vize_l2::file::L2IrBuilder;
+use vize_l2::ir::L2IrBuilder;
+use vize_l2::template::L2TemplateError;
 
 #[test]
 fn file_owner_seals_the_actual_checked_canonical_tree() {

@@ -3,7 +3,7 @@
 use super::VaporUnsupported;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, L2IrResolution, NativeL2IrModel},
+    ir::{BindingRef, L2IrResolution, NativeL2IrModel},
     lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,

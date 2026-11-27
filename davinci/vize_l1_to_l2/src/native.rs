@@ -13,11 +13,11 @@ use vize_l1::embed::syntax::{EmbedHole, EmbedSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::markup::{SurfaceChild, Token};
-use vize_l2::artifact::{
-    Builder, L2Template, L2TemplateError, L2TemplateParts, RejectedL2Template,
-};
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{
+    Builder, L2Template, L2TemplateError, L2TemplateParts, RejectedL2Template,
+};
 
 mod construction;
 pub(crate) use construction::{ConstructionBody, ConstructionFactory};

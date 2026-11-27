@@ -8,9 +8,9 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 
-use vize_l2::artifact::L2TemplateParts;
 use vize_l2::op::Region;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
+use vize_l2::template::L2TemplateParts;
 
 #[cfg(any())]
 mod caps;

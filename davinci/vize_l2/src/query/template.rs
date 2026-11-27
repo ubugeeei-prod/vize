@@ -1,7 +1,7 @@
 //! Queries over sealed attached Handler/OriginalFor rows, never bare coordinates.
 
 use super::{Model, PositionQueryError};
-use crate::file::{BindingRef, L2Ir, L2IrForHead, L2IrHandler, ScopeId};
+use crate::ir::{BindingRef, L2Ir, L2IrForHead, L2IrHandler, ScopeId};
 use crate::resolution::{HandlerBinding, HandlerDeclaration, HandlerScopeId, Usage};
 use vize_l0::Span;
 
@@ -19,7 +19,7 @@ pub enum TemplateQueryError {
 /// The implicit `$event` has a binding but no authored declaration site.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::L2IrHandler, query::HandlerLocalRef};
+/// use vize_l2::{ir::L2IrHandler, query::HandlerLocalRef};
 /// use vize_l2::resolution::HandlerBinding;
 /// fn forge<'f, 'a>(handler: L2IrHandler<'f, 'a>, binding: &'f HandlerBinding<'a>) {
 ///     let _ = HandlerLocalRef { handler, binding };
@@ -101,7 +101,7 @@ enum Origin<'f, 'a> {
 /// One original declaration/use, borrowed with its actual immutable File owner.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, query::Model};
+/// use vize_l2::{ir::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
 ///     let site = Model::new(&l2ir).template_symbol_at_offset(offset).unwrap().unwrap();
 ///     drop(l2ir);

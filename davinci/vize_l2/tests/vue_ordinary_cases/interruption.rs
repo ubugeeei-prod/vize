@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::ScriptUnit;
+use vize_l2::ir::ScriptUnit;
 use vize_l2::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use vize_l2::resolution::ResolutionErrorKind;
 

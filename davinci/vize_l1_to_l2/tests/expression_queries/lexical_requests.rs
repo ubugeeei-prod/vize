@@ -10,7 +10,7 @@ use vize_l0::{
 use vize_l1::container::vue::DescriptorOptions;
 use vize_l1_to_l2::native_file::lower_sfc_with_lexical_initializers;
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind},
+    ir::{DeclarationKind, InitializerKind},
     query::ComponentListenerIssue,
 };
 

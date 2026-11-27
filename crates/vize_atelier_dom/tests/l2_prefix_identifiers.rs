@@ -9,7 +9,7 @@ use crate::support;
 
 use vize_atelier_core::options::{CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::template::{DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     ("interpolation", "<div>{{ msg }}</div>"),

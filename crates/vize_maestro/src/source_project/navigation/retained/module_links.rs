@@ -6,7 +6,7 @@ use tower_lsp::lsp_types::{DocumentLink, Range, Url};
 use vize_l0::{SourceBlock, Span, String};
 use vize_l1::embed::syntax::EmbedSyntax;
 use vize_l2::{
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{ModuleSourceError, OriginalModuleSources, ProgramInput, ProgramInputError},
 };
 

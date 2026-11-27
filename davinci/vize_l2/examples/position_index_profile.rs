@@ -7,7 +7,7 @@ use oxc_span::SourceType;
 use std::{hint::black_box, time::Instant};
 use vize_l0::{Allocator, SourceRoot, String, append};
 use vize_l2::{
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
     query::Model,
 };

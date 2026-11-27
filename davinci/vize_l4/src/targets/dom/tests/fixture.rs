@@ -2,13 +2,13 @@
 
 use alloc::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId};
-use vize_l2::artifact::{L2Template, L2TemplateParts};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{
     Attribute, BindOp, BindingOp, CommentOp, DynamicName, ElementOp, InterpolationOp, Namespace,
     OnOp, Op, Region, TextOp,
 };
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{L2Template, L2TemplateParts};
 
 mod extra;
 

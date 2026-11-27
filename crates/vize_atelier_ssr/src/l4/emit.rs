@@ -32,12 +32,12 @@ mod vnode_props;
 
 use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
-use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
-use vize_l2::analysis::if_facts::IfAnalysis;
-use vize_l2::analysis::text_facts::TextParts;
+use vize_l2::analysis::fragment_analysis::{BranchFragments, LoopFragment};
+use vize_l2::analysis::if_analysis::IfAnalysis;
+use vize_l2::analysis::text_analysis::TextParts;
 use vize_l2::expr::ExprRef;
 use vize_l2_to_l3::PartitionKind;
-use vize_l4::targets::dom::artifact::{TransformContent, TransformExpressions};
+use vize_l4::targets::dom::template::{TransformContent, TransformExpressions};
 
 use super::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringPlan, SsrStringSegment,
@@ -264,7 +264,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     fn consume(
         &self,
-        rewritten: vize_l4::targets::dom::artifact::TransformedExpr,
+        rewritten: vize_l4::targets::dom::template::TransformedExpr,
     ) -> Result<String> {
         // `_unref` only arises for inline render closures, which this lane
         // refuses up front; reaching it anyway is a broken option gate.

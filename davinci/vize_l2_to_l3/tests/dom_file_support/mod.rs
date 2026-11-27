@@ -2,7 +2,7 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
-use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
+use vize_l2::ir::{Declaration, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::L2IrProducer;
 
 #[derive(Clone, Copy)]

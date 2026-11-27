@@ -49,8 +49,8 @@ pub(crate) fn resolve_handler_facts<'a>(
     })
 }
 
-mod facts;
-pub use facts::{
+mod analysis;
+pub use analysis::{
     HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,
     HandlerReference, HandlerScope, HandlerScopeId, HandlerSyntax,
 };

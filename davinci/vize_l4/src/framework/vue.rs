@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, line_index::utf16_offset};
 use vize_l1_to_l2::{native::NativeEmbed, native_file::NativeSfc};
 use vize_l2::{
-    expr::ExprRef, file::L2Ir, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
+    expr::ExprRef, ir::L2Ir, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
 };
 
 use super::{MappingError, SourceKind};

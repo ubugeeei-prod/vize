@@ -15,7 +15,7 @@ import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
 await test("original native Vapor source qualifies a fresh affected-PR capture without prose admissions", () => {
   for (const path of [
     "davinci/vize_l1/src/container/vue/descriptor/policy.rs",
-    "davinci/vize_l2/src/lang/js/file/native.rs",
+    "davinci/vize_l2/src/lang/js/ir/native.rs",
     "davinci/vize_l1_to_l2/src/native_file/selected.rs",
     "davinci/vize_l3/src/decision/vapor/build.rs",
     "davinci/vize_l4/src/targets/vapor/component.rs",

@@ -4,7 +4,7 @@
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
-use vize_l4::targets::dom::artifact::TransformContent;
+use vize_l4::targets::dom::template::TransformContent;
 
 use super::{Emitter, Result};
 use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
@@ -67,10 +67,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     fn directive_value(&mut self, value: &vize_l2::expr::ExprRef<'_>) -> Result<String> {
         match self.exprs.expr(value, TransformContent::Decoded) {
             Ok(rewritten) => self.consume(rewritten),
-            Err(vize_l4::targets::dom::artifact::TransformRefusal::InvalidExpression) => {
+            Err(vize_l4::targets::dom::template::TransformRefusal::InvalidExpression) => {
                 Ok(value.source().to_compact_string())
             }
-            Err(vize_l4::targets::dom::artifact::TransformRefusal::ExpressionKind) => {
+            Err(vize_l4::targets::dom::template::TransformRefusal::ExpressionKind) => {
                 Err(crate::l4::LegacyReason::ExpressionOrEncoding.into())
             }
         }

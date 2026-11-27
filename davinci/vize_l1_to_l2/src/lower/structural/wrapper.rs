@@ -7,7 +7,7 @@
 //! attributes stay recorded drops.
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::analysis::fragment_facts::{FragmentAttr, FragmentClass, FragmentKey};
+use vize_l2::analysis::fragment_analysis::{FragmentAttr, FragmentClass, FragmentKey};
 use vize_l2::provenance::ProvenanceSink;
 
 use vize_l0::id::NodeId;

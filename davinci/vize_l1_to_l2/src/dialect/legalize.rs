@@ -9,7 +9,7 @@
 //! table is unchanged, a single `needs_sugar()` read.
 
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
-use vize_l2::analysis::pass_facts::FilterAssets;
+use vize_l2::analysis::pass_analysis::FilterAssets;
 
 use super::LegacyCaps;
 use crate::lower::Lowered;

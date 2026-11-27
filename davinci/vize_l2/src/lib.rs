@@ -8,7 +8,7 @@
 //! - Entry: built by `vize_l1_to_l2::lower_sfc_native(allocator, source, options)`
 //!   from an `L1Ir`; this crate defines the IR and its queries, not a producer.
 //! - Next level: `vize_l2_to_l3::lower_ir(allocator, &l2ir)` builds a `vize_l3::L3Ir`.
-//! - The DOM and SSR compile paths still read `artifact::L2TemplateParts`
+//! - The DOM and SSR compile paths still read `template::L2TemplateParts`
 //!   through `vize_l1_to_l2::Lowered` instead of an `L2Ir`
 //!   (`docs/davinci/decisions/2026-11-24-level-ir-names.md`).
 //!
@@ -61,13 +61,12 @@
 extern crate alloc;
 
 pub mod analysis;
-pub mod artifact;
 pub mod component;
 pub mod dialect;
 pub mod dump;
 pub mod expr;
-pub mod file;
 pub mod framework;
+pub mod ir;
 pub mod lang;
 pub mod op;
 pub mod provenance;
@@ -76,6 +75,7 @@ pub mod registry;
 pub mod resolution;
 pub mod scope;
 pub mod summary;
+pub mod template;
 pub mod verify;
 pub mod walk;
 
@@ -83,7 +83,7 @@ pub mod walk;
 pub mod module;
 
 /// Source-bound Vue/JS file semantics and its canonical component region.
-pub use file::L2Ir;
+pub use ir::L2Ir;
 
 #[cfg(feature = "expanded-css")]
 pub mod style;

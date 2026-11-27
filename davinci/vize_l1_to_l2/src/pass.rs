@@ -24,7 +24,7 @@
 use vize_l0::pass::{
     PassDesc, PassEvent, PassFailure, PassObserver, Pipeline, run_pipeline_remarked,
 };
-use vize_l2::analysis::pass_facts::L2Analyses;
+use vize_l2::analysis::pass_analysis::L2Analyses;
 
 use crate::lower::Lowered;
 

@@ -9,12 +9,12 @@ use crate::lang::js::NativeForInput;
 
 mod borrowed;
 pub(crate) use borrowed::resolve_for_facts;
+mod analysis;
 mod declaration;
-mod facts;
 mod sink;
+pub use analysis::{ForAlias, ForAliasId, ForAliasRole, ForResolvedBinding};
 pub use declaration::ForAliasDeclaration;
 pub(in crate::resolution) use declaration::OriginalForAlias;
-pub use facts::{ForAlias, ForAliasId, ForAliasRole, ForResolvedBinding};
 
 /// A decoded-relative error in one of the two original source namespaces.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

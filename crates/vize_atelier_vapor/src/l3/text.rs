@@ -3,7 +3,7 @@
 
 use oxc_allocator::HashMap;
 use vize_carton::Allocator;
-use vize_l2::analysis::text_facts::TextPart;
+use vize_l2::analysis::text_analysis::TextPart;
 use vize_l3::operand::{OperandRole, OperandValue, ValueKind};
 
 use super::{AdmissionFailure, LegacyReason, native::validate::reference, retained::Retained};
@@ -99,7 +99,7 @@ pub(super) fn capture<'a>(
     Ok(())
 }
 
-/// `vize_l2::analysis::text_facts::rebuild_source(parts) == text`, without building
+/// `vize_l2::analysis::text_analysis::rebuild_source(parts) == text`, without building
 /// the rebuilt string.
 fn rebuilds(parts: &[TextPart], mut text: &str) -> bool {
     for part in parts {

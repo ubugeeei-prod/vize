@@ -215,7 +215,7 @@ fn original_shadow_scopes_source_holes_and_foreign_family_refusals_are_not_name_
 
 #[test]
 fn genuine_original_file_refusal_stays_sticky_for_highlight_requests() {
-    use vize_l2::file::L2IrIssueKind::{UnresolvedReference, UnsupportedSyntax};
+    use vize_l2::ir::L2IrIssueKind::{UnresolvedReference, UnsupportedSyntax};
     let (_, project) = project("const {value}=other;value;", "javascript");
     let first = block_on(project.highlights(&uri(), Position::new(0, 7)));
     let Err(NavigationRefusal::Producer(issues)) = &first else {

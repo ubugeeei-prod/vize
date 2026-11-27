@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, L2IrResolution, NativeL2IrModelState},
+    ir::{DeclarationKind, L2IrResolution, NativeL2IrModelState},
     resolution::Usage,
 };
 use vize_l3::decision::ssr::{

@@ -1,6 +1,6 @@
 //! Resolve authored static component owners against their original setup import.
 use super::{BindingRef, Model};
-use crate::file::{DeclarationKind, L2IrIssueKind, Namespace, ScopeId, TemplateIssue};
+use crate::ir::{DeclarationKind, L2IrIssueKind, Namespace, ScopeId, TemplateIssue};
 use crate::{
     op::{BindingOp, ComponentOp, Op},
     walk::{NodeEvent, NodeRef},

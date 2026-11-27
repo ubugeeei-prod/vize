@@ -147,7 +147,7 @@ The formatter owns horizontal layout. These rules own vertical layout, which no 
 
 1. **Between items**: exactly one blank line between top-level items, impl members and class members.
    Exceptions: a run of `use`/`import` lines, a run of `mod` declarations, a run of one-line `const`s that form one table, and consecutive one-line `type` aliases.
-   Example `davinci/vize_l4/src/targets/dom/artifact/buf.rs:193-215`: about 20 three-line `use_*` methods are packed with no blank lines.
+   Example `davinci/vize_l4/src/targets/dom/template/buf.rs:193-215`: about 20 three-line `use_*` methods are packed with no blank lines.
    → one blank line between them, or better, delete the wrappers and call `buf.mark(Helper::WithKeys)` (class C).
    Today 1,808 Rust items follow a `}` with no blank line.
 2. **Inside a function**: one blank line separates steps, meaning the paragraphs a reader would name. Put one before the final `return` or tail expression when the body is more than about 8 lines, and one after a guard block (`let … else { return }` or an early-return `if`) that precedes the main work. No blank line directly after `{` or before `}`.

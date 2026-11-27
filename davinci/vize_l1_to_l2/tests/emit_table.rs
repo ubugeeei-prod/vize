@@ -14,7 +14,7 @@ use support::{assert_transformed_sound, with_transformed};
 use vize_l0::Allocator;
 use vize_l1_to_l2::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
 use vize_l2::op::Op;
-use vize_l4::targets::dom::artifact::emit_dom;
+use vize_l4::targets::dom::template::emit_dom;
 
 fn shipped(source: &str) -> String {
     let allocator = Allocator::new();

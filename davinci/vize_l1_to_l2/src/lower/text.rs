@@ -96,7 +96,7 @@ pub(crate) use condense::suppresses_condense;
 pub(crate) use lane::{Lane, TextWhitespace, block_offset, block_span};
 pub use lane::{RunShape, TextLane, TextRun, TextSource};
 pub(crate) use run::lower_text_run;
-pub use vize_l2::analysis::text_facts::{TextPart, TextParts, rebuild_source};
+pub use vize_l2::analysis::text_analysis::{TextPart, TextParts, rebuild_source};
 
 #[cfg(debug_assertions)]
 pub(crate) fn debug_assert_text_family_gaps(ops: &[Op<'_>]) {

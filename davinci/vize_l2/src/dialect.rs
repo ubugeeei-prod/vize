@@ -2,7 +2,7 @@
 //!
 //! A document is not an SFC and does not enter the component lowering. Its
 //! dialect-specific semantic views stay here instead of pretending to be a
-//! component [`crate::artifact::L2Template`].
+//! component [`crate::template::L2Template`].
 
 pub mod petite;
 

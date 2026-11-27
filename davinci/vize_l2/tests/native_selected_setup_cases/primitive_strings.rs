@@ -1,5 +1,5 @@
 use super::{Allocator, check, complete, owner};
-use vize_l2::file::{DeclarationKind, InitializerKind};
+use vize_l2::ir::{DeclarationKind, InitializerKind};
 
 #[test]
 fn original_decoded_primitive_strings_keep_selected_setup_and_exact_value_class()

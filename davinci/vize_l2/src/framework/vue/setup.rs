@@ -17,7 +17,7 @@ use super::contract::{
     self, ComponentContract, ContractCheckpoint, ContractDraft, LocalTypes, PropsDraft,
 };
 use super::{MacroKind, lookup, unwrap_ts};
-use crate::file::{ScopeId, ScriptUnit};
+use crate::ir::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 use alloc::vec::Vec;

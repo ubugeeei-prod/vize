@@ -1,7 +1,7 @@
 //! The original refused source becomes positive only with its genuine provider.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeL2IrInterpolationState, op::Op};
+use vize_l2::{expr::ExprRef, ir::NativeL2IrInterpolationState, op::Op};
 
 #[test]
 fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read() {

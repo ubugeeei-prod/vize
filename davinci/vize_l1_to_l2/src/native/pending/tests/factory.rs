@@ -1,8 +1,8 @@
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use vize_l2::expr::JsExpr;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
+use vize_l2::template::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 
 pub(super) struct Callbacks {
     pub source_panics: bool,

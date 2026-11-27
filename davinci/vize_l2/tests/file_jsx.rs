@@ -9,7 +9,7 @@ mod support {
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, Span};
-use vize_l2::file::{InitializerKind, L2IrIssueKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{InitializerKind, L2IrIssueKind, Namespace, ReferenceTarget};
 use vize_l2::resolution::Usage;
 
 #[test]

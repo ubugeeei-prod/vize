@@ -18,7 +18,7 @@ use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, cstr};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower;
-use vize_l4::targets::dom::artifact::emit_dom;
+use vize_l4::targets::dom::template::emit_dom;
 
 const VFOR_THREE_ALIASES: &str = r#"<li v-for="(item, key, index) in items">{{ item }}</li>"#;
 // v-on-storage-synthetic:start

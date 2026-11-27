@@ -6,7 +6,7 @@ use crate::{
     write::{LinkSink, Writer},
 };
 use vize_l0::{String, cstr, id::NodeId};
-use vize_l2::{file::NativeL2IrModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
+use vize_l2::{ir::NativeL2IrModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
 use vize_l3::decision::vapor::{SelectedSetupVaporAnalysis, VaporModel};
 
 pub(super) fn write<'owner, 'arena, L: LinkSink>(

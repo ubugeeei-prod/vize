@@ -268,11 +268,11 @@ fn assert_original_identifier(source: &str, span: Span, cooked: &str) {
 fn assert_wrapper_key(
     source: &str,
     root: SourceRoot<'_>,
-    key: &vize_l2::analysis::fragment_facts::FragmentKey,
+    key: &vize_l2::analysis::fragment_analysis::FragmentKey,
 ) {
     match key {
-        vize_l2::analysis::fragment_facts::FragmentKey::Static { span, .. }
-        | vize_l2::analysis::fragment_facts::FragmentKey::Dynamic { span, .. } => {
+        vize_l2::analysis::fragment_analysis::FragmentKey::Static { span, .. }
+        | vize_l2::analysis::fragment_analysis::FragmentKey::Dynamic { span, .. } => {
             assert_span(source, root, *span, "wrapper key");
         }
     }

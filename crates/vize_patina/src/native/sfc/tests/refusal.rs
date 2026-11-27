@@ -6,7 +6,7 @@ use crate::{
 };
 use vize_l0::Allocator;
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l2::file::vue::ExposureIssueKind;
+use vize_l2::ir::vue::ExposureIssueKind;
 use vize_l2::lang::js::{SetupIssue, SetupIssueKind};
 
 #[test]
@@ -308,7 +308,7 @@ fn the_two_original_string_witnesses_supply_provider_and_actual_bounded_builtin_
             [(
                 "text",
                 span(source, "text"),
-                vize_l2::file::InitializerKind::PrimitiveLiteral,
+                vize_l2::ir::InitializerKind::PrimitiveLiteral,
                 true
             )]
         );

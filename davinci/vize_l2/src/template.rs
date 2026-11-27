@@ -1,0 +1,319 @@
+//! The canonical L2 artifact, independent of any input lowering.
+//!
+//! [`L2TemplateParts`] is the one artifact every producer hands to L2
+//! consumers: ops plus semantic side tables. The transitional Vue lowering
+//! holds it unsealed beside its conversion bookkeeping; native producers
+//! seal it into an [`L2Template`].
+//!
+//! Construction consumes the existing region and retained `ExprRef`
+//! payloads: it neither parses expressions nor materializes a dump. The
+//! immutable owner seals page order, so scopes and provenance cannot be
+//! silently detached by mutation. Consuming it with `into_parts` ends
+//! that seal; a producer must check its changed parts again.
+
+use alloc::boxed::Box;
+use alloc::vec::Vec;
+use vize_l0::{Span, id::NodeId, side_table::SideTable};
+
+use crate::analysis::for_analysis::ForParts;
+use crate::analysis::fragment_analysis::{BranchFragments, LoopFragment};
+use crate::analysis::if_analysis::IfAnalysis;
+use crate::analysis::text_analysis::TextParts;
+use crate::op::Region;
+use crate::provenance::ProvenanceRecord;
+use crate::scope::{ScopeAnalysis, ScopeTag};
+use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
+
+mod builder;
+mod check;
+mod features;
+pub(crate) use builder::ElementAllocation;
+pub use builder::{
+    BranchBuilder, Builder, CallbackForHead, ComponentBody, ComponentFactory, HostForBuilder,
+    HostForHead, RegionBuilder,
+};
+pub use features::{LoweringFeatures, OpFamily};
+#[cfg(test)]
+mod tests;
+
+/// The canonical L2 artifact: ops plus the semantic side tables every
+/// consumer reads.
+///
+/// Source coordinates are file-absolute UTF-8 bytes. Decoded or synthesized
+/// expression text may live in the arena; it need not equal its authored
+/// source slice. Side tables are keyed by exact page-local node ids. Target
+/// choices, input capabilities and conversion bookkeeping have no fields
+/// here. `P` is the provenance sink the producer chose; only the default,
+/// record-keeping sink can be sealed into an [`L2Template`].
+pub struct L2TemplateParts<'a, P = Vec<ProvenanceRecord>> {
+    /// The complete authored source, borrowed for this compile.
+    pub source: &'a str,
+    /// The normalized, arena-resident owned region.
+    pub root: Region<'a>,
+    /// Decisions in producer order, including failed decisions with no node.
+    pub provenance: P,
+    /// Binding introduction facts keyed by exact page-local node ids.
+    pub scopes: SideTable<ScopeAnalysis>,
+    /// The recorded parts of every merged text/interpolation run, keyed by
+    /// its compound `ui.interpolation` op.
+    pub texts: SideTable<TextParts>,
+    /// Consumed `ui.for` scope views, keyed by the `ui.for` op.
+    pub for_facts: SideTable<ForParts>,
+    /// Branch-key facts, keyed by the `ui.if` op.
+    pub if_facts: SideTable<IfAnalysis>,
+    /// Unwrapped branch carriers, keyed by the `ui.if` op.
+    pub branch_fragments: SideTable<BranchFragments>,
+    /// Unwrapped loop-body carriers, keyed by the `ui.for` op.
+    pub loop_fragments: SideTable<LoopFragment>,
+    /// The op families the producer built, for pass planning.
+    pub features: LoweringFeatures,
+}
+
+/// Prints the ownership fields, then only the populated side tables, so a
+/// native artifact with no derived facts prints exactly its owned parts.
+impl<P: core::fmt::Debug> core::fmt::Debug for L2TemplateParts<'_, P> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        // Reviewed SFC fixtures pin this output byte for byte, so it keeps the
+        // name the type had when they were frozen.
+        let mut out = f.debug_struct("ArtifactParts");
+        out.field("source", &self.source)
+            .field("root", &self.root)
+            .field("provenance", &self.provenance)
+            .field("scopes", &self.scopes);
+        if !self.texts.is_empty() {
+            out.field("texts", &self.texts);
+        }
+        if !self.for_facts.is_empty() {
+            out.field("for_facts", &self.for_facts);
+        }
+        if !self.if_facts.is_empty() {
+            out.field("if_facts", &self.if_facts);
+        }
+        if !self.branch_fragments.is_empty() {
+            out.field("branch_fragments", &self.branch_fragments);
+        }
+        if !self.loop_fragments.is_empty() {
+            out.field("loop_fragments", &self.loop_fragments);
+        }
+        if self.features != LoweringFeatures::EMPTY {
+            out.field("features", &self.features);
+        }
+        out.finish()
+    }
+}
+
+impl<'a, P: Default> L2TemplateParts<'a, P> {
+    /// An artifact over `root` with no decisions and empty side tables.
+    #[must_use]
+    pub fn new(source: &'a str, root: Region<'a>) -> Self {
+        Self {
+            source,
+            root,
+            provenance: P::default(),
+            scopes: SideTable::new(),
+            texts: SideTable::new(),
+            for_facts: SideTable::new(),
+            if_facts: SideTable::new(),
+            branch_fragments: SideTable::new(),
+            loop_fragments: SideTable::new(),
+            features: LoweringFeatures::EMPTY,
+        }
+    }
+}
+
+/// A sealed native L2 template. It exposes no mutable tree or side tables.
+pub struct L2Template<'a> {
+    parts: L2TemplateParts<'a>,
+    node_count: u32,
+}
+
+/// Reviewed SFC fixtures pin this output byte for byte, so it keeps the name
+/// the type had when they were frozen.
+impl core::fmt::Debug for L2Template<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Artifact")
+            .field("parts", &self.parts)
+            .field("node_count", &self.node_count)
+            .finish()
+    }
+}
+
+/// A failed constructor retains the actual partial tree and all decisions.
+///
+/// Boxing the parts only on rejection keeps the result's error small; it
+/// does not copy arena nodes or expression payloads.
+#[derive(Debug)]
+pub struct RejectedL2Template<'a> {
+    /// The first deterministic invariant failure.
+    pub error: L2TemplateError,
+    /// The original inputs, available for repair or diagnostic reporting.
+    pub parts: Box<L2TemplateParts<'a>>,
+}
+
+/// Which canonical conditional form was violated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IfShape {
+    /// A conditional owns no branches.
+    Empty,
+    /// Its first branch has no condition.
+    LeadingElse,
+    /// An unconditional branch appears before the last branch.
+    NonTrailingElse,
+}
+
+/// Checked ownership errors, reported without a compiler panic.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum L2TemplateError {
+    /// The complete source does not fit in the shared u32 coordinate space.
+    SourceLimit,
+    /// At least one node did not fit in the shared NodeId space.
+    NodeLimit,
+    /// A producer's child callback unwound before completing an owner.
+    UnfinishedOwner { node: NodeId },
+    /// An attached binding has no element or component owner.
+    BindingWithoutOwner { span: Span },
+    /// An attached binding would be numbered after its owner's child region.
+    BindingAfterChild { node: NodeId, span: Span },
+    /// A static binding name is empty or does not equal its authored range.
+    InvalidBindingName { node: NodeId, span: Span },
+    /// A direct whole-handler reference names a different attached node.
+    InvalidHandlerReference { node: NodeId, handler: NodeId },
+    /// A whole original head names a different introducing node.
+    InvalidOriginalForReference { node: NodeId, original: NodeId },
+    /// A host loop's binding is not the collection plus the authored left side.
+    InvalidHostFor { node: NodeId },
+    /// An authored span is inverted, outside source, or cuts UTF-8.
+    InvalidSpan { node: Option<NodeId>, span: Span },
+    /// A node or payload span escapes its immediate source owner.
+    OutsideOwner {
+        node: NodeId,
+        span: Span,
+        owner: Span,
+    },
+    /// A structured conditional is not canonical.
+    InvalidIf { node: NodeId, shape: IfShape },
+    /// A provenance record refers to a node absent from this artifact.
+    DanglingProvenance { record: usize, node: NodeId },
+    /// A scope fact refers to a node absent from this artifact.
+    DanglingScope { node: NodeId },
+    /// A text, control-flow or fragment fact refers to a node absent from
+    /// this artifact.
+    DanglingFact { node: NodeId },
+    /// A scope fact is attached to a node with no binding introduction site.
+    InvalidScopeSite { node: NodeId },
+    /// A binding introduction site lacks its scope identity.
+    MissingScope { node: NodeId },
+    /// A retained JS root span does not index its own expression source.
+    InvalidJsSpan { node: NodeId, span: Span },
+    /// A native expression's decode coordinates belong to different source bytes.
+    MismatchedJsSource { node: NodeId, span: Span },
+    /// Scope tags are not a unique dense set starting at zero.
+    InvalidScopeTag { node: NodeId, tag: ScopeTag },
+    /// This diagnostic factory has no File recorder for an original listener reference.
+    #[cfg(feature = "component-listener-queries")]
+    MissingEventRecorder { span: Span },
+}
+
+impl<'a> L2Template<'a> {
+    /// Consume native parts, checking their invariants once at creation.
+    ///
+    /// The node count is derived in the same walk that checks spans,
+    /// expressions, branches and scope sites. This is a provider constructor,
+    /// not a new pipeline phase, release verifier, or reparsing adapter.
+    pub fn try_new(parts: L2TemplateParts<'a>) -> Result<Self, RejectedL2Template<'a>> {
+        match check::check(&parts) {
+            Ok(node_count) => Ok(Self { parts, node_count }),
+            Err(error) => Err(RejectedL2Template {
+                error,
+                parts: Box::new(parts),
+            }),
+        }
+    }
+
+    /// The complete authored source.
+    #[must_use]
+    pub fn source(&self) -> &'a str {
+        self.parts.source
+    }
+
+    /// The borrowed native tree. Mutation requires consuming this owner.
+    #[must_use]
+    pub fn root(&self) -> &Region<'a> {
+        &self.parts.root
+    }
+
+    /// Every numbered node, including attached bindings.
+    #[must_use]
+    pub fn node_count(&self) -> u32 {
+        self.node_count
+    }
+
+    /// Whether this artifact numbers the provided stage-local id.
+    ///
+    /// NodeId carries no cross-artifact identity. Consumers must retain the
+    /// artifact borrow alongside their tables; equal indices in two owners
+    /// are not evidence of shared nodes.
+    #[must_use]
+    pub fn contains_node(&self, node: NodeId) -> bool {
+        node.index() < self.node_count
+    }
+
+    /// Sparse immutable scope facts; use sorted_entries for printing.
+    #[must_use]
+    pub fn scopes(&self) -> &SideTable<ScopeAnalysis> {
+        &self.parts.scopes
+    }
+
+    /// Producer-ordered provenance, including unsuccessful decisions.
+    #[must_use]
+    pub fn provenance(&self) -> &[ProvenanceRecord] {
+        &self.parts.provenance
+    }
+
+    /// The sealed parts, side tables included.
+    #[must_use]
+    pub fn parts(&self) -> &L2TemplateParts<'a> {
+        &self.parts
+    }
+
+    /// Visit each exact numbered node once in page preorder.
+    ///
+    /// A sealed artifact cannot exhaust the id space. The fallible shared
+    /// walk still reports an invariant failure rather than hiding a prefix.
+    pub fn visit_nodes<'s>(
+        &'s self,
+        visit: &mut impl FnMut(NodeId, NodeRef<'s, 'a>),
+    ) -> Result<(), NodeLimit> {
+        crate::walk::visit_nodes(&mut PageWalk::new(), &self.parts.root.ops, visit)
+    }
+
+    /// Nested traversal for bottom-up consumers, with no second id mint.
+    pub fn visit_events<'s>(
+        &'s self,
+        visit: &mut impl FnMut(NodeEvent<'s, 'a>),
+    ) -> Result<(), NodeLimit> {
+        crate::walk::visit_events(&mut PageWalk::new(), &self.parts.root.ops, visit)
+    }
+
+    /// Consume the seal to change the tree or its facts.
+    ///
+    /// Previously derived tables are invalid after changing page order;
+    /// producers must update them and reconstruct an Artifact.
+    #[must_use]
+    pub fn into_parts(self) -> L2TemplateParts<'a> {
+        self.parts
+    }
+}
+
+#[cfg(feature = "sparse-region-walk")]
+impl<'a> L2Template<'a> {
+    /// Visit every numbered node in canonical preorder. Markup leaf regions
+    /// and tail children reuse the current frame. Structural control ops use
+    /// the shared nested event walker.
+    pub fn visit_markup_preorder<'s>(
+        &'s self,
+        visit: &mut impl FnMut(NodeId, NodeRef<'s, 'a>),
+    ) -> Result<(), NodeLimit> {
+        crate::walk::visit_sealed_nodes(&mut PageWalk::new(), &self.parts.root.ops, visit)
+    }
+}

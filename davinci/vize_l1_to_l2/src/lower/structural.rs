@@ -14,12 +14,12 @@
 //! holds the `ui.for` which holds the element.
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::artifact::OpFamily;
+use vize_l2::template::OpFamily;
 
 use vize_l0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
 use vize_l1::markup::{Attribute, Element, SurfaceChild};
 
-use vize_l2::analysis::fragment_facts::{BranchFragments, FragmentKey};
+use vize_l2::analysis::fragment_analysis::{BranchFragments, FragmentKey};
 use vize_l2::op::{IfBranch, IfOp, Namespace, Op, Region};
 use vize_l2::provenance::ProvenanceSink;
 

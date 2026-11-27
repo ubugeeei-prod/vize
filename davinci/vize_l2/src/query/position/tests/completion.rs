@@ -4,12 +4,12 @@ use super::{
     Allocator, L2IrBuilder, L2IrIssueKind, L2IrProducer, ProgramScope, SourceRoot, SourceType,
     Span, TemplateScope, Values, append, file, offset, refused,
 };
-use crate::artifact::ComponentFactory;
 use crate::expr::JsExpr;
-use crate::file::ScriptUnit;
+use crate::ir::ScriptUnit;
 use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, ProgramInput, StatementEvent};
 use crate::query::Model;
 use crate::resolution::ResolutionErrorKind;
+use crate::template::ComponentFactory;
 use alloc::boxed::Box;
 use oxc_parser::Parser;
 

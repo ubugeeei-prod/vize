@@ -12,7 +12,7 @@ use crate::decision::{
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeTemplateIssue, NativeTemplateL2Ir, NativeTemplateView},
     op::Op,
     walk::{NodeEvent, NodeRef},

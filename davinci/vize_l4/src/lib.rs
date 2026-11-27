@@ -20,7 +20,7 @@
 //! - [`targets`] — the DOM, SSR and Vapor emitters and the type-check
 //!   projection.
 //!
-//! The production DOM emitter ([`targets::dom::artifact`]) is the exception to
+//! The production DOM emitter ([`targets::dom::template`]) is the exception to
 //! the rules above until the native DOM target replaces it: it reads the
 //! canonical L2 artifact and pass facts, re-parses retained expressions it
 //! cannot reuse, and erases TypeScript through oxc. Its source-level entry

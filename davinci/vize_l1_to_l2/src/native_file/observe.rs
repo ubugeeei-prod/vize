@@ -5,7 +5,7 @@ use vize_l0::SourceBlock;
 use vize_l1::container::vue::{L1Ir, ScriptRole, ScriptView};
 use vize_l1::css::StyleSyntax;
 use vize_l1::embed::{Lang, syntax::EmbedSyntax};
-use vize_l2::file::ScriptUnitId;
+use vize_l2::ir::ScriptUnitId;
 
 /// Original selected role, original syntax and the actually minted unit, if any.
 #[derive(Debug)]

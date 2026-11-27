@@ -26,7 +26,7 @@ use super::{L2Ir, Observed};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String, cstr};
-use vize_l2::file::{L2IrIssueKind, ScriptUnit, vue::ExposureIssueKind};
+use vize_l2::ir::{L2IrIssueKind, ScriptUnit, vue::ExposureIssueKind};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope, SetupIssue,
     SetupIssueKind, StatementEvent, VueSetup,

@@ -11,7 +11,7 @@ use vize_l1::embed::{
     syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::file::{
+use vize_l2::ir::{
     L2Ir,
     vue::{ExposureIssue, ExposureIssueKind, VueExposure},
 };

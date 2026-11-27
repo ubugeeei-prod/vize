@@ -9,7 +9,7 @@ use vize_l0::{Span, String, cstr};
 
 use super::{Violation, ViolationCode};
 use crate::op::{L3Ir, Op, OpId, OpKind};
-use crate::placement::facts::{Index, contains};
+use crate::placement::analysis::{Index, contains};
 use crate::placement::{Placement, PlacementRecord};
 
 pub(super) fn check(l3ir: &L3Ir<'_>, out: &mut Vec<Violation>) {

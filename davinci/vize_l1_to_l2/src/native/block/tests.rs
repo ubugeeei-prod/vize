@@ -1,9 +1,9 @@
 use super::NativeComponent;
 use vize_l0::{Allocator, SourceRoot, Span, cstr};
 use vize_l1::embed::Lang;
-use vize_l2::artifact::Builder;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
+use vize_l2::template::Builder;
 
 #[test]
 fn whole_file_template_block_keeps_absolute_entities_and_the_same_once_ast() {

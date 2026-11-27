@@ -3,7 +3,7 @@
 use crate::support;
 use vize_l0::{Span, String, side_table::SideTable};
 use vize_l1_to_l2::{lower, pass};
-use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfAnalysis};
+use vize_l2::analysis::if_analysis::{BranchKey, BranchKeyKind, IfAnalysis};
 use vize_l2::dump::Op;
 
 fn span(source: &str, token: &str) -> Result<Span, String> {
