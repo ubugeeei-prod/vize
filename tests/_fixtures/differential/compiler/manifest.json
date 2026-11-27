@@ -4933,7 +4933,9 @@
       "reference": {
         "path": "stylesheet-served-roots/module.expected.txt",
         "sha256": "086bd88f52549bb3607804009785d0fba41b4955da76019e3c4f00fe32ff6347",
-        "source": "crates/vize_atelier_sfc/src/vite_plugin/css.rs:served_stylesheets_read_only_inside_their_roots"
+        "cssPath": "stylesheet-served-roots/style.expected.css",
+        "cssSha256": "3972fc00302f48d0c21c2d7556b091bfeee9f992aa5b5793ee72156a0852b4ad",
+        "source": "crates/vize_atelier_sfc/src/vite_plugin/css/tests.rs:served_stylesheets_read_only_inside_their_roots"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
