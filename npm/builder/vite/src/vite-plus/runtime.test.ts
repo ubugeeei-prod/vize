@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { availableVueRules, resetAvailableVueRulesForTests } from "./runtime.ts";
 
@@ -139,33 +139,15 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
   );
 });
 
-void test("the installed Vite+ returns its rule catalog from a gitignored cache", (t) => {
-  const installed = createRequire(import.meta.url).resolve("vite-plus/package.json");
-  const owner = fs.mkdtempSync(path.join(os.tmpdir(), "vize-ignored-rule-catalog-"));
-  const project = path.join(owner, "project with spaces");
-  fs.mkdirSync(path.join(project, "node_modules"), { recursive: true });
-  fs.writeFileSync(path.join(project, "package.json"), '{"private":true}');
-  fs.writeFileSync(path.join(project, ".gitignore"), ".cache/\n");
-  fs.symlinkSync(path.dirname(installed), path.join(project, "node_modules/vite-plus"), "junction");
-  const initialized = spawnSync("git", ["init", "--quiet", project], { encoding: "utf8" });
-  assert.equal(initialized.status, 0, initialized.stderr);
-
-  const previous = { cwd: process.cwd(), cache: process.env.XDG_CACHE_HOME };
-  t.after(() => {
-    process.chdir(previous.cwd);
-    restoreEnvironment("XDG_CACHE_HOME", previous.cache);
-    resetAvailableVueRulesForTests();
-    fs.rmSync(owner, { recursive: true, force: true });
-  });
-  process.chdir(project);
-  process.env.XDG_CACHE_HOME = path.join(owner, "ordinary-cache");
-  resetAvailableVueRulesForTests();
-  const expected = [...availableVueRules()].sort();
-  assert.ok(expected.includes("valid-define-props"));
-
-  process.env.XDG_CACHE_HOME = path.join(project, ".cache");
-  resetAvailableVueRulesForTests();
-  assert.deepEqual([...availableVueRules()].sort(), expected);
+void test("the installed Vite+ returns its rule catalog from a gitignored cache", () => {
+  // Vite loads this Node package in Node. Bun's test runner otherwise launches
+  // Vite+ through Bun, which takes a separate bunx/native-install path.
+  const node = process.versions.bun ? "node" : process.execPath;
+  const program = fileURLToPath(
+    new URL("../../scripts/test-programs/vite-plus-runtime/ignored-cache.mjs", import.meta.url),
+  );
+  const result = spawnSync(node, [program], { encoding: "utf8", timeout: 120_000 });
+  assert.equal(result.status, 0, result.error?.message ?? result.stderr);
 });
 
 function restoreEnvironment(name: string, value: string | undefined): void {
