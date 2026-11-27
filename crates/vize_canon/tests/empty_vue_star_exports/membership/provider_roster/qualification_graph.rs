@@ -264,6 +264,14 @@ fn verify_parcel_update(
 
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
     if let Some(previous_lock) =
+        crate::package_task_history::before_parser_free_builders("pnpm-lock.yaml", lock)
+    {
+        let predecessor = authorize(previous, &previous_lock, package)?
+            .ok_or("the parser-free builders require a qualified predecessor")?;
+        let successor = crate::package_task_history::qualification_successor;
+        return successor(&predecessor, &previous_lock, lock).map(Some);
+    }
+    if let Some(previous_lock) =
         crate::package_task_history::before_vite_resolver_importer("pnpm-lock.yaml", lock)
     {
         let predecessor = authorize(previous, &previous_lock, package)?

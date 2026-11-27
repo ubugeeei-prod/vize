@@ -56,6 +56,7 @@ const packages = [
     entrypoints: [
       new URL("builder/shared/mapped-module.ts", npmRoot),
       new URL("builder/shared/module-output.ts", npmRoot),
+      new URL("builder/shared/generated-names.ts", npmRoot),
       new URL("builder/shared/native-shape.ts", npmRoot),
       new URL("builder/shared/hot-reload.ts", npmRoot),
     ],

@@ -1,20 +1,22 @@
 import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import type { GenerateOutputOptions } from "../utils/index.ts";
+import { withModuleShape } from "../../test/oxc-module-output.ts";
 
 /**
  * Compiled SFCs without a `<script>` block, as the native compiler emits them,
  * with the options each production and SSR caller passes. The modules are
  * copies, so the pinned outputs only move when the plugin's assembly does.
+ * Each carries the shape the native compiler reports with it.
  */
 const filePath = "/app/components/Note.vue";
 const root = "/app";
 
-const templateOnlyClient: CompiledModule = {
+const templateOnlyClient: CompiledModule = withModuleShape({
   code: 'import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n\nconst _hoisted_1 = { class: "a" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock("p", _hoisted_1, "hi " + _toDisplayString(_ctx.msg), 1 /* TEXT */))\n}',
   scopeId: "da4a867b",
   hasScoped: false,
   styles: [],
-};
+});
 
 const scopedStyle: StyleBlockInfo = {
   content: ".a{color:red}",
@@ -25,29 +27,29 @@ const scopedStyle: StyleBlockInfo = {
   index: 0,
 };
 
-const scopedStyleClient: CompiledModule = {
+const scopedStyleClient: CompiledModule = withModuleShape({
   code: 'import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n\nconst _hoisted_1 = { class: "a" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock("p", _hoisted_1, "hi"))\n}',
   scopeId: "da4a867b",
   hasScoped: true,
   css: ".a[data-v-da4a867b]{color:red}",
   styles: [scopedStyle],
-};
+});
 
-const scopedStyleSsr: CompiledModule = {
+const scopedStyleSsr: CompiledModule = withModuleShape({
   code: 'import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"\nimport { mergeProps as _mergeProps } from "vue"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_mergeProps({ class: "a" }, _attrs))} data-v-da4a867b>hi</p>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main',
   scopeId: "da4a867b",
   hasScoped: true,
   css: ".a[data-v-da4a867b]{color:red}",
   styles: [scopedStyle],
-};
+});
 
 /** A render-only SSR module, the shape the plugin shims with `{ ssrRender }`. */
-const ssrRenderOnly: CompiledModule = {
+const ssrRenderOnly: CompiledModule = withModuleShape({
   code: 'import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}>hi</p>`)\n}',
   scopeId: "da4a867b",
   hasScoped: false,
   styles: [],
-};
+});
 
 const production = { isProduction: true, isDev: false, filePath, root };
 /** The SFC module loader compiles SSR requests with `isDev: false`. */

@@ -232,13 +232,65 @@ fn finalized_shapes_match_the_exact_output_after_typescript_stripping() {
 }
 
 #[test]
-fn invalid_or_jsx_output_keeps_its_original_fallback() {
+fn invalid_output_is_returned_unchanged_without_a_shape() {
     use super::finalize_module_output;
-    for source in ["const = = =", "export default <div />", "return {}"] {
+    for source in ["const = = =", "return {}"] {
         for preserve_typescript in [false, true] {
             let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
             assert_eq!(code, source);
             assert_eq!(shape, None);
         }
     }
+}
+
+/// JSX is left for the bundler to lower, so the module is returned unchanged,
+/// and its shape still comes from the native parse. The runtime imports were
+/// never separated from the type-only ones, so HMR must refuse the snapshot.
+#[test]
+fn jsx_output_is_returned_unchanged_with_its_shape() {
+    use super::finalize_module_output;
+    for source in [
+        "const _sfc_main = { render: () => <div /> };\nexport default _sfc_main;\n",
+        "import { ref } from 'vue';\nconst n = ref<number>(1);\nexport default { setup: () => () => <b>{n.value}</b> };\n",
+    ] {
+        let expected = analyze_module_shape(source).expect("JSX output parses as TSX");
+        assert!(expected.has_default_export);
+        for preserve_typescript in [false, true] {
+            let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
+            assert_eq!(code, source);
+            let shape = shape.expect("JSX output has a shape");
+            assert!(shape.has_side_effect_import);
+            assert_eq!(
+                SfcModuleShape {
+                    has_side_effect_import: expected.has_side_effect_import,
+                    ..shape
+                },
+                expected
+            );
+        }
+    }
+    let shape = shape("const _sfc_main = { render: () => <div /> };\nexport default _sfc_main;\n");
+    assert!(shape.has_sfc_main_defined);
+    assert!(shape.default_export_is_sfc_main);
+}
+
+/// TSX is only the second attempt: a `<T>value` assertion is not JSX.
+#[test]
+fn a_type_assertion_still_parses_as_typescript() {
+    let shape = shape("const n = <number>1;\nexport default { n };\n");
+    assert!(shape.has_default_export);
+}
+
+/// An invalid module with two default exports reports the first one.
+#[test]
+fn the_first_of_two_default_exports_is_reported() {
+    let code = "export default { a: 1 };\nexport default _sfc_main\n";
+    let shape = shape(code);
+    assert_eq!(shape.default_export_start, Some(0));
+    assert_eq!(
+        &code[..shape.default_export_end.unwrap() as usize],
+        "export default { a: 1 };"
+    );
+    assert!(!shape.default_export_is_sfc_main);
+    assert_eq!(shape.default_export_local, None);
 }
