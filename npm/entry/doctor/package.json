@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/doctor",
-  "version": "0.474.0",
+  "version": "0.809.0",
   "description": "Vize doctor: whole-application health analysis for Vue projects",
   "keywords": [
     "analysis",

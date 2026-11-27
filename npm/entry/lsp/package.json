@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/lsp",
-  "version": "0.474.0",
+  "version": "0.809.0",
   "description": "Vize language server for Vue, JSX and TSX",
   "keywords": [
     "editor",
