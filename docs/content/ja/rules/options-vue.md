@@ -120,46 +120,6 @@ export default defineConfig({
 ルート設定が修飾子を許可していても、一致する設定で `allowModifiers: false` を明示すれば、
 既定の禁止方針に戻ります。
 
-<span id="vue-component-definition-name-casing"></span>
-
-## `vue/component-definition-name-casing`：コンポーネント定義名の表記
-
-オプションは eslint-plugin-vue と同じ `"PascalCase"`（既定）または `"kebab-case"` です。
-`export default {}` や `defineComponent({})` などのコンポーネント定義の静的な `name`、
-`defineOptions({ name })`、`app.component(name, component)` の第 1 引数が対象です。
-ファイル名はオプションを持たない `vue/component-file-name-casing` が検査します。
-
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({}).withVue({
-  linter: {
-    rules: { "vue/component-definition-name-casing": "warn" },
-    ruleOptions: { "vue/component-definition-name-casing": "kebab-case" },
-  },
-});
-```
-
-この設定で報告される例：
-
-```vue
-<script setup lang="ts">
-defineOptions({ name: "MyComponent" });
-</script>
-```
-
-設定に沿った例：
-
-```vue
-<script setup lang="ts">
-defineOptions({ name: "my-component" });
-</script>
-```
-
-計算で求める名前は検査しません。コンポーネント名を変えると `<KeepAlive include>` や
-再帰的な自己参照から見つからなくなるため、ルールは名前を書き換えず、変換後の表記を help に示します。
-オプションだけではルールを有効にしません。
-
 <span id="vue-component-name-in-template-casing"></span>
 
 ## `vue/component-name-in-template-casing`：コンポーネントタグの命名規則

@@ -289,6 +289,44 @@ export default defineConfig({}).withVue({
 <template><p>Item</p></template>
 ```
 
+## `vue/component-definition-name-casing`
+
+オプションは eslint-plugin-vue と同じ `"PascalCase"`（既定）または `"kebab-case"` です。
+`export default {}` や `defineComponent({})` などのコンポーネント定義の静的な `name`、
+`defineOptions({ name })`、`app.component(name, component)` の第 1 引数が対象です。
+ファイル名はオプションを持たない `vue/component-file-name-casing` が検査します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/component-definition-name-casing": "warn" },
+    ruleOptions: { "vue/component-definition-name-casing": "kebab-case" },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
+```
+
+設定に沿った例：
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "my-component" });
+</script>
+```
+
+計算で求める名前は検査しません。コンポーネント名を変えると `<KeepAlive include>` や
+再帰的な自己参照から見つからなくなるため、ルールは名前を書き換えず、変換後の表記を help に示します。
+オプションだけではルールを有効にしません。
+
 ## `vue/no-use-v-if-with-v-for`
 
 同じ要素の `v-if` でループ項目を意図的に絞り込むプロジェクトでは、
