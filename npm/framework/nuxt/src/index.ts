@@ -1,4 +1,3 @@
-import { injectNuxtComponentImports } from "./components";
 import { createNuxtComponentBridge } from "./component-hmr";
 import { setupLintInspector } from "./lint/generation";
 import { setupNuxtLint } from "./lint/module-setup";
@@ -15,7 +14,7 @@ import { patchNuxtVueTypeGatedTransform } from "./vue-transform-bridge";
 import "./schema";
 import { getDetectedNuxtMajor, hasNuxtViteCompilerSupport } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
-import { NUXT_TRANSFORM_BRIDGE_ID_FILTER } from "./module-id";
+import { createNuxtTransformBridge, type NuxtUnimportContext } from "./transform-bridge";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
   resolveNuxtBridgeOptions,
@@ -33,12 +32,10 @@ import { registerNuxtContentMapper } from "./content-mapper";
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
-  isVizeJsxModuleId,
   isVizeVirtualVueModuleId,
   normalizeVizeVirtualVueModuleId,
   preserveExplicitVueImportsFromNuxtAutoImports,
   preserveExplicitVueImportsFromVizeModuleSource,
-  stabilizeNuxtInjectedKeysForVizeVirtualModule,
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 import { dedupeVueRuntimePackages, externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
@@ -51,7 +48,6 @@ type VitePluginWithTransform = {
   [VIZE_NUXT_AUTO_IMPORT_PATCHED]?: boolean;
 };
 type NuxtKit = typeof import("@nuxt/kit");
-type BridgeContext = { environment?: object };
 type NuxtWithBuilderOptions = {
   _version?: string;
   version?: string;
@@ -373,12 +369,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   // fills the gap by applying the same transforms in a post-processing step.
 
   // Capture unimport context for composable auto-imports (useRoute, ref, computed, etc.)
-  let unimportCtx: {
-    injectImports: (
-      code: string,
-      id?: string,
-    ) => Promise<{ code: string; s: unknown; imports: unknown[] }>;
-  } | null = null;
+  let unimportCtx: NuxtUnimportContext | null = null;
   if (usesVizeCompiler && bridgeOptions.autoImports) {
     nuxt.hook("imports:context", (ctx: unknown) => {
       unimportCtx = ctx as typeof unimportCtx;
@@ -403,98 +394,15 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
       bridgeOptions.stableInjectedKeys);
 
   if (shouldAddNuxtTransformBridge) {
-    await addNuxtVitePlugin({
-      name: "vizejs:nuxt-transform-bridge",
-      enforce: "post" as const,
-      hotUpdate: nuxtComponentResolver?.hotUpdate,
-      transform: {
-        filter: { id: NUXT_TRANSFORM_BRIDGE_ID_FILTER },
-        async handler(this: BridgeContext, code: string, id: string, ...args: unknown[]) {
-          // Bridge owned Vue query IDs and in-place JSX/TSX components.
-          // Legacy null-byte and .vue.ts[x] IDs remain supported.
-          if (!isVizeGeneratedVueModuleId(id) && !isVizeJsxModuleId(id)) return;
-
-          let result = code;
-          let changed = false;
-
-          // 1. Component auto-imports: replace _resolveComponent("Name") with direct imports
-          // Nuxt's LoaderPlugin normally does this, but skips \0-prefixed IDs.
-          const resolveComponent = nuxtComponentResolver?.resolverFor(
-            this.environment,
-            id,
-            isViteSsrTransform(args) ? "server" : "client",
-          );
-          if (resolveComponent && bridgeFastPath.hasComponentBridgeInput(result)) {
-            const nextComponentResult = injectNuxtComponentImports(result, resolveComponent);
-            if (nextComponentResult !== result) {
-              result = nextComponentResult;
-              changed = true;
-            }
-          }
-
-          // 2. i18n function injection: inject useI18n() for $t, $rt, $d, $n, $tm, $te
-          // @nuxtjs/i18n's TransformI18nFunctionPlugin skips \0-prefixed IDs.
-          // Must inject inside the setup() function body, not at module top level.
-          // Parse the virtual module so string literals, comments, and Vue template
-          // globals do not look like setup-scope runtime helper calls.
-          if (bridgeOptions.i18n && bridgeFastPath.hasI18nBridgeInput(result)) {
-            const { injectNuxtI18nHelpers } = await import("./i18n");
-            const nextResult = injectNuxtI18nHelpers(result, id);
-            if (nextResult !== result) {
-              result = nextResult;
-              changed = true;
-            }
-          }
-
-          // 3. Composable auto-imports: inject useRoute, ref, computed, useI18n, etc.
-          // Nuxt's unimport TransformPlugin normally does this, but skips \0-prefixed IDs.
-          // Runs after i18n injection so unimport picks up the `useI18n` reference.
-          if (unimportCtx) {
-            try {
-              const beforeUnimport = result;
-              const injected = await unimportCtx.injectImports(result, id);
-              if (injected.imports && injected.imports.length > 0) {
-                result = preserveExplicitVueImportsFromNuxtAutoImports(
-                  beforeUnimport,
-                  injected.code,
-                );
-                changed = true;
-              }
-            } catch {
-              // Ignore errors — auto-imports might not be needed for all modules
-            }
-          }
-
-          if (bridgeOptions.autoImports) {
-            const nextResult = preserveExplicitVueImportsFromVizeModuleSource(id, result);
-            if (nextResult !== result) {
-              result = nextResult;
-              changed = true;
-            }
-          }
-
-          if (bridgeOptions.stableInjectedKeys && bridgeFastPath.hasStableKeyBridgeInput(result)) {
-            const stableKeyResult = stabilizeNuxtInjectedKeysForVizeVirtualModule(result, id);
-            if (stableKeyResult !== result) {
-              result = stableKeyResult;
-              changed = true;
-            }
-          }
-
-          if (isViteBuild && !isViteSsrTransform(args)) {
-            const clientRuntimeResult = bridgeFastPath.rewriteBareVueImportsToClientRuntime(result);
-            if (clientRuntimeResult !== result) {
-              result = clientRuntimeResult;
-              changed = true;
-            }
-          }
-
-          if (changed) {
-            return { code: result, map: null };
-          }
-        },
-      },
-    });
+    await addNuxtVitePlugin(
+      createNuxtTransformBridge({
+        bridge: bridgeOptions,
+        components: nuxtComponentResolver,
+        getUnimportContext: () => unimportCtx,
+        isBuild: () => isViteBuild,
+        isSsrTransform: isViteSsrTransform,
+      }),
+    );
   }
 
   // ─── UnoCSS bridge: patch filter to accept vize virtual modules ────────
