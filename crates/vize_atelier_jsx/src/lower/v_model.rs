@@ -53,15 +53,20 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
         let span = target.span();
         let source = self.mapper().slice(span);
-        self.report(JsxDiagnostic::error(
+        let message = if is_optional_chain(target) {
+            format_args!(
+                "v-model target `{source}` is an optional chain, which cannot be assigned to; \
+                 v-model needs a variable or property reference."
+            )
+            .to_compact_string()
+        } else {
             format_args!(
                 "v-model target `{source}` cannot be assigned to; \
                  v-model needs a variable or property reference."
             )
-            .to_compact_string(),
-            span.start,
-            span.end,
-        ));
+            .to_compact_string()
+        };
+        self.report(JsxDiagnostic::error(message, span.start, span.end));
         true
     }
 
@@ -276,10 +281,24 @@ pub(crate) fn is_assignable_target(expr: &Expression<'_>) -> bool {
         Expression::TSSatisfiesExpression(inner) => is_assignable_target(&inner.expression),
         Expression::TSNonNullExpression(inner) => is_assignable_target(&inner.expression),
         Expression::TSTypeAssertion(inner) => is_assignable_target(&inner.expression),
-        // `a?.b = x` is not legal JavaScript, but babel accepts an
-        // OptionalMemberExpression as a v-model target, so matching it here keeps
-        // the diagnostic from firing where babel stays quiet.
+        // `a?.b = x` is not legal JavaScript. `@vue/babel-plugin-jsx` and
+        // Vue's template compiler both emit that assignment anyway, a module
+        // that does not parse; Vize's template compiler rejects it, and so
+        // does this check.
+        _ => false,
+    }
+}
+
+/// Whether `expr` is an optional chain (`a?.b`), seen through the wrappers
+/// [`is_assignable_target`] looks through.
+fn is_optional_chain(expr: &Expression<'_>) -> bool {
+    match expr {
         Expression::ChainExpression(_) => true,
+        Expression::ParenthesizedExpression(inner) => is_optional_chain(&inner.expression),
+        Expression::TSAsExpression(inner) => is_optional_chain(&inner.expression),
+        Expression::TSSatisfiesExpression(inner) => is_optional_chain(&inner.expression),
+        Expression::TSNonNullExpression(inner) => is_optional_chain(&inner.expression),
+        Expression::TSTypeAssertion(inner) => is_optional_chain(&inner.expression),
         _ => false,
     }
 }

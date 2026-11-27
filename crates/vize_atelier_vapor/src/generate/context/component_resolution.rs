@@ -1,3 +1,4 @@
+use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{String, ToCompactString, camelize, capitalize, cstr};
 
 use super::GenerateContext;
@@ -9,35 +10,22 @@ impl<'a> GenerateContext<'a> {
         }
 
         let bindings = self.binding_metadata?;
-        let resolve_base = |name: &str| {
-            if bindings.bindings.contains_key(name) {
-                return Some(name.to_compact_string());
-            }
-            let camel = camelize(name);
-            if bindings.bindings.contains_key(camel.as_str()) {
-                return Some(camel);
-            }
-            let pascal = capitalize(&camel);
-            if bindings.bindings.contains_key(pascal.as_str()) {
-                return Some(pascal);
-            }
-            None
+        let (base, suffix) = match component.split_once('.') {
+            Some((base, suffix)) => (base, Some(suffix)),
+            None => (component, None),
         };
-
-        if let Some((base, suffix)) = component.split_once('.') {
-            let resolved_base = resolve_base(base)?;
-            return Some(if self.jsx_closure {
-                cstr!("{}.{}", resolved_base, suffix)
-            } else {
-                cstr!("_ctx.{}.{}", resolved_base, suffix)
-            });
-        }
-        resolve_base(component).map(|binding| {
-            if self.jsx_closure {
-                binding
-            } else {
-                cstr!("_ctx.{}", binding)
-            }
+        let (binding, is_prop) = resolve_setup_reference(bindings, base)?;
+        // A prop is read off the render function's `$props`, as Vue does.
+        let owner = if self.jsx_closure {
+            ""
+        } else if is_prop {
+            "$props."
+        } else {
+            "_ctx."
+        };
+        Some(match suffix {
+            Some(suffix) => cstr!("{owner}{binding}.{suffix}"),
+            None => cstr!("{owner}{binding}"),
         })
     }
 
@@ -76,4 +64,41 @@ impl<'a> GenerateContext<'a> {
             component.to_compact_string()
         }
     }
+}
+
+/// The binding a component tag names, and whether it is a prop: Vue's
+/// `resolveSetupReference` tries the tag, its camelized and its PascalCased
+/// spelling for a setup binding first and for a prop last. A renamed props
+/// destructure (`{ icon: Icon }`) is not a setup reference, so its tag
+/// resolves as an asset.
+pub(crate) fn resolve_setup_reference(
+    bindings: &BindingMetadata,
+    name: &str,
+) -> Option<(String, bool)> {
+    let mut prop = None;
+    let mut candidate = |candidate: String| match bindings.bindings.get(candidate.as_str()) {
+        Some(BindingType::Props) => {
+            prop.get_or_insert(candidate);
+            None
+        }
+        Some(BindingType::PropsAliased) | None => None,
+        Some(_) => Some(candidate),
+    };
+    if let Some(binding) = candidate(name.to_compact_string()) {
+        return Some((binding, false));
+    }
+    let camel = camelize(name);
+    if camel.as_str() != name
+        && let Some(binding) = candidate(camel.clone())
+    {
+        return Some((binding, false));
+    }
+    let pascal = capitalize(&camel);
+    if pascal.as_str() != name
+        && pascal.as_str() != camel.as_str()
+        && let Some(binding) = candidate(pascal)
+    {
+        return Some((binding, false));
+    }
+    prop.map(|binding| (binding, true))
 }

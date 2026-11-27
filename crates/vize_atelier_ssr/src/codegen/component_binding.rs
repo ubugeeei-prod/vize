@@ -11,21 +11,38 @@ struct ComponentBinding {
 impl<'a> SsrCodegenContext<'a> {
     pub(crate) fn resolve_component_binding_expr(&mut self, component: &str) -> Option<String> {
         let binding = self.resolve_component_binding(component)?;
-        let needs_unref = !self.jsx_closure
-            && self.options.inline
-            && matches!(
-                binding.binding_type,
-                BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
-            );
+        // A prop is read off the props object (`__props` inline, `$props`
+        // otherwise), through `_unref` as Vue does.
+        let is_prop = !self.jsx_closure && binding.binding_type == BindingType::Props;
+        let needs_unref = is_prop
+            || (!self.jsx_closure
+                && self.options.inline
+                && matches!(
+                    binding.binding_type,
+                    BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
+                ));
         let mut resolved = String::default();
 
         if needs_unref {
             self.use_core_helper(RuntimeHelper::Unref);
             resolved.push_str("_unref(");
-        } else if !self.options.inline && !self.jsx_closure {
-            resolved.push_str("$setup.");
         }
-        resolved.push_str(binding.name.as_str());
+        if is_prop {
+            resolved.push_str(if self.options.inline {
+                "__props[\""
+            } else {
+                "$props[\""
+            });
+            resolved.push_str(&super::element::props::escape_js_string(
+                binding.name.as_str(),
+            ));
+            resolved.push_str("\"]");
+        } else {
+            if !needs_unref && !self.options.inline && !self.jsx_closure {
+                resolved.push_str("$setup.");
+            }
+            resolved.push_str(binding.name.as_str());
+        }
         if needs_unref {
             resolved.push(')');
         }
@@ -43,19 +60,31 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let metadata = self.options.binding_metadata.as_ref()?;
+        // Vue's `resolveSetupReference`: setup bindings first, then a prop.
+        // A renamed props destructure (`{ icon: Icon }`) is not a setup
+        // reference, so its tag resolves as an asset.
         let resolve_base = |name: &str| {
-            if let Some(binding_type) = metadata.bindings.get(name) {
-                return Some((name.to_compact_string(), *binding_type));
+            let mut prop_fallback = None;
+            let mut candidate = |candidate: String| match metadata.bindings.get(candidate.as_str())
+            {
+                Some(BindingType::Props) => {
+                    prop_fallback.get_or_insert((candidate, BindingType::Props));
+                    None
+                }
+                Some(BindingType::PropsAliased) | None => None,
+                Some(binding_type) => Some((candidate, *binding_type)),
+            };
+            if let Some(binding) = candidate(name.to_compact_string()) {
+                return Some(binding);
             }
             let camel = camelize(name);
-            if let Some(binding_type) = metadata.bindings.get(camel.as_str()) {
-                return Some((camel, *binding_type));
+            if let Some(binding) = candidate(camel.clone()) {
+                return Some(binding);
             }
-            let pascal = capitalize(camel.as_str());
-            metadata
-                .bindings
-                .get(pascal.as_str())
-                .map(|binding_type| (pascal, *binding_type))
+            if let Some(binding) = candidate(capitalize(camel.as_str())) {
+                return Some(binding);
+            }
+            prop_fallback
         };
 
         let (base, suffix) = component

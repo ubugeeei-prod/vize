@@ -35,11 +35,15 @@ impl CodegenContext {
             return false;
         };
 
-        let needs_unref = self.options.inline
-            && matches!(
-                binding.binding_type,
-                BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
-            );
+        // A prop is read off the props object (`__props` in the inlined
+        // render function, `$props` otherwise), through `_unref` as Vue does.
+        let is_prop = binding.binding_type == BindingType::Props;
+        let needs_unref = is_prop
+            || (self.options.inline
+                && matches!(
+                    binding.binding_type,
+                    BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
+                ));
         if needs_unref {
             self.use_helper(RuntimeHelper::Unref);
             self.push(self.helper(RuntimeHelper::Unref));
@@ -47,7 +51,16 @@ impl CodegenContext {
         }
         // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
         // Expression identifiers stay `$setup.msg`.
-        if self.options.inline {
+        if is_prop {
+            self.push(if self.options.inline {
+                "__props[\""
+            } else {
+                "$props[\""
+            });
+            let escaped = super::helpers::escape_js_string(binding.name.as_str());
+            self.push(escaped.as_str());
+            self.push("\"]");
+        } else if self.options.inline {
             self.push(binding.name.as_str());
         } else {
             self.push("$setup[\"");
@@ -74,13 +87,16 @@ impl CodegenContext {
 
         let resolve_base = |name: &str| {
             let mut prop_fallback = None;
+            // Vue's `resolveSetupReference`: setup bindings first, then a
+            // prop. A renamed props destructure (`{ icon: Icon }`) is not a
+            // setup reference, so its tag resolves as an asset.
             let mut resolve_candidate = |candidate: String| {
-                if let Some(binding_type) = metadata.bindings.get(candidate.as_str()) {
-                    if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
-                        prop_fallback.get_or_insert((candidate, *binding_type));
-                    } else {
-                        return Some((candidate, *binding_type));
+                match metadata.bindings.get(candidate.as_str()) {
+                    Some(BindingType::Props) => {
+                        prop_fallback.get_or_insert((candidate, BindingType::Props));
                     }
+                    Some(BindingType::PropsAliased) | None => {}
+                    Some(binding_type) => return Some((candidate, *binding_type)),
                 }
                 None
             };

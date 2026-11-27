@@ -14,6 +14,8 @@ pub mod errors;
 mod l4;
 pub mod options;
 #[cfg(test)]
+mod props_component_tag_tests;
+#[cfg(test)]
 mod setup_dynamic_key_tests;
 #[cfg(test)]
 mod sfc_fixture_tests;

@@ -1,8 +1,9 @@
 //! Component tags that resolve to a script binding
 //! (`CodegenContext::resolve_component_binding` /
 //! `push_component_binding_tag`, non-inline): the tag, its camelized and
-//! PascalCased spellings, with props bindings kept only as a fallback,
-//! and a dotted `Foo.Bar` suffix carried through.
+//! PascalCased spellings, with a prop kept only as a fallback (a renamed
+//! props destructure never resolves), and a dotted `Foo.Bar` suffix
+//! carried through.
 
 use vize_l0::{String, camelize, capitalize};
 
@@ -50,11 +51,15 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
     // binding straight from the closure, through `_unref` when the script
     // may have rebound it.
     let inline = cx.scope.inline();
-    let needs_unref = inline
-        && matches!(
-            binding.kind,
-            BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
-        );
+    // A prop is read off the props object (`__props` inline, `$props`
+    // otherwise), through `_unref` as Vue does.
+    let is_prop = binding.kind == BindingKind::Props;
+    let needs_unref = is_prop
+        || (inline
+            && matches!(
+                binding.kind,
+                BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
+            ));
     if needs_unref {
         cx.buf.use_helper(Helper::Unref);
         cx.buf.push(Helper::Unref.alias());
@@ -63,7 +68,12 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
     // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
     // Expression identifiers stay `$setup.msg`. A dotted tag keeps the
     // suffix outside the brackets (`$setup["Ns"].Item`).
-    if inline {
+    if is_prop {
+        cx.buf.push(if inline { "__props[\"" } else { "$props[\"" });
+        cx.buf
+            .push(super::super::js::escape_js_string(binding.name.as_str()).as_str());
+        cx.buf.push("\"]");
+    } else if inline {
         cx.buf.push(binding.name.as_str());
     } else {
         cx.buf.push("$setup[\"");
@@ -107,14 +117,20 @@ fn candidate(
     candidate: String,
     prop_fallback: &mut Option<(String, BindingKind)>,
 ) -> Option<(String, BindingKind)> {
+    // Vue's `resolveSetupReference`: setup bindings first, then a prop. A
+    // renamed props destructure (`{ icon: Icon }`) is not a setup
+    // reference, so its tag resolves as an asset.
     let kind = table.kind(candidate.as_str())?;
-    if kind.is_props() {
-        if prop_fallback.is_none() {
-            *prop_fallback = Some((candidate, kind));
+    match kind {
+        BindingKind::Props => {
+            if prop_fallback.is_none() {
+                *prop_fallback = Some((candidate, kind));
+            }
+            None
         }
-        return None;
+        BindingKind::PropsAliased => None,
+        _ => Some((candidate, kind)),
     }
-    Some((candidate, kind))
 }
 
 #[cfg(test)]
