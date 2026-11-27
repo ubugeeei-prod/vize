@@ -1,8 +1,4 @@
 {
-  "linter/current-api/h11-options-api-runtime-boolean-prop-13392": {
-    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-options-api-runtime-boolean-prop-13392.snap",
-    "sha256": "fcfe79edd77986f6b334f756a143137f0f831300dd20a736830454580736b552"
-  },
   "linter/current-api/ref-string-untyped": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__ref-string-untyped.snap",
     "sha256": "126d2b99b87ecc8a6005572590733177df45adfeef0a2becd8a425b363ef6b1f"
