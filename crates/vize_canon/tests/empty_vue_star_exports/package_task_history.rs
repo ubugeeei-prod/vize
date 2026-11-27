@@ -3,7 +3,11 @@ use crate::support;
 use serde::Deserialize;
 use std::{collections::BTreeMap, fs, io, sync::OnceLock};
 
+mod parser_free_builders;
 mod vite_resolver_importer;
+#[cfg(test)]
+pub(crate) use parser_free_builders::current_lock_before_parser_free_builders;
+pub(crate) use parser_free_builders::{before_parser_free_builders, qualification_successor};
 pub(crate) use vite_resolver_importer::before_vite_resolver_importer;
 
 #[derive(Deserialize)]
@@ -35,6 +39,9 @@ fn revisions() -> &'static BTreeMap<String, Vec<PackageRevision>> {
 }
 
 pub(crate) fn restore(path: &str, current: String) -> String {
+    let current = before_parser_free_builders(path, current.as_bytes())
+        .map(|body| String::from_utf8(body).expect("UTF-8 parser-free builders predecessor"))
+        .unwrap_or(current);
     let current = before_vite_resolver_importer(path, current.as_bytes())
         .map(|body| String::from_utf8(body).expect("UTF-8 resolver importer predecessor"))
         .unwrap_or(current);
@@ -45,6 +52,8 @@ pub(crate) fn restore(path: &str, current: String) -> String {
 
 /// Only the current, byte-exact dependency graph has the translation-worker predecessor.
 pub(crate) fn before_translation_worker(path: &str, body: &[u8]) -> Option<Vec<u8>> {
+    let parser_free = before_parser_free_builders(path, body);
+    let body = parser_free.as_deref().unwrap_or(body);
     let predecessor = before_vite_resolver_importer(path, body);
     let body = predecessor.as_deref().unwrap_or(body);
     let revision = revisions().get(path)?.first()?;
