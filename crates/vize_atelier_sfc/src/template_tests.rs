@@ -243,7 +243,6 @@ const isRootSelected = ref(false)
             experimental_self_component: false,
             bindings: Some(&binding_metadata),
             script_tables: Some(script_tables),
-            collect_map: false,
             authored_source: None,
             pug_source_map: None,
         },

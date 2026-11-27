@@ -4,7 +4,9 @@ import {
   isTypeScriptSource,
   moduleShapeFactsReference,
   type ParseModule,
+  templateMapReference,
   typescriptErasureReference,
+  withoutTemplateSegments,
 } from "./typescript-erasure-reference.ts";
 
 type ComponentModuleShape = NonNullable<ExposurePacket["moduleShape"]> & {
@@ -18,6 +20,8 @@ type RuntimeOptionRow = {
   single?: ExposurePacket[];
   batch?: { results: ExposurePacket[] };
   stats?: { outputBytes: number };
+  function?: ExposurePacket;
+  functionBatch?: { results: ExposurePacket[] };
   [key: string]: unknown;
 };
 
@@ -115,7 +119,8 @@ export function setupComponentBracketReference(
 }
 
 // `erased` is the current row: a TypeScript source's packets advance by the
-// per-piece erasure only after its program, offsets and map check out.
+// per-piece erasure only after its program, offsets and map check out, and
+// every packet's map by the template segments its render gained.
 export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   row: T,
   sourceFiles: readonly string[],
@@ -127,19 +132,41 @@ export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   const out = structuredClone(row);
   const advance = (packets: ExposurePacket[], current: ExposurePacket[] | undefined) =>
     packets.map((packet, index) => {
-      const closed = closedSetupReference(packet, sourceFiles[index]);
-      if (!isTypeScriptSource(sourceFiles[index])) {
-        return moduleShapeFactsReference(closed, parse);
+      const source = sourceFiles[index];
+      const closed = closedSetupReference(packet, source);
+      if (!isTypeScriptSource(source)) {
+        return templateMapReference(
+          moduleShapeFactsReference(closed, parse),
+          current?.[index],
+          source,
+        );
       }
       assert.ok(current?.[index], "the current row holds every TypeScript packet");
       const assertProgram =
         row.target === "dom" && row.options.inlineTemplate === true && index === 2
           ? assertExternalMaybeRefReadProgram
           : undefined;
-      return typescriptErasureReference(closed, current[index], parse, assertProgram);
+      const scriptMapped = withoutTemplateSegments(current[index], source);
+      return templateMapReference(
+        typescriptErasureReference(closed, scriptMapped, parse, assertProgram),
+        current[index],
+        source,
+      );
     });
   if (out.single) out.single = advance(out.single, erased.single);
   if (out.batch) out.batch.results = advance(out.batch.results, erased.batch?.results);
+  // A standalone row compiles the one source its options name; a row that
+  // names none keeps its packets as they are.
+  const standalone = /^\.\/Case-(\d+)\.vue$/.exec(String(row.options.filename))?.[1];
+  if (standalone !== undefined) {
+    const source = sourceFiles[Number(standalone)];
+    if (out.function) out.function = templateMapReference(out.function, erased.function, source);
+    if (out.functionBatch) {
+      out.functionBatch.results = out.functionBatch.results.map((packet, position) =>
+        templateMapReference(packet, erased.functionBatch?.results[position], source),
+      );
+    }
+  }
   if (row.target === "dom" && row.options.inlineTemplate === undefined && out.single && out.batch) {
     out.single[7] = setupComponentBracketReference(out.single[7], "Lazy");
     out.batch.results[7] = setupComponentBracketReference(out.batch.results[7], "Lazy");

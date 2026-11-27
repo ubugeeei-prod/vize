@@ -67,6 +67,35 @@ impl Runs {
         self.points.push((out, src));
     }
 
+    /// Record that `line`, a slice of `origin`, was copied to `out` and
+    /// followed by a `\n`. A `\n` that follows it in `origin` too counts as
+    /// copied, so lines written one after another extend one run. A `line`
+    /// that is not inside `origin` records nothing.
+    pub(crate) fn copy_line(&mut self, out: usize, origin: &str, line: &str) {
+        let start = (line.as_ptr() as usize).checked_sub(origin.as_ptr() as usize);
+        let Some(src) = start.filter(|src| src + line.len() <= origin.len()) else {
+            return;
+        };
+        let newline = origin.as_bytes().get(src + line.len()) == Some(&b'\n');
+        self.copy(out, src, line.len() + usize::from(newline));
+    }
+
+    /// Record `lines`, slices of `origin`, written from `at` on: each after
+    /// `indent` synthesized bytes and before a `\n`.
+    pub(crate) fn copy_lines<'o>(
+        &mut self,
+        mut at: usize,
+        origin: &'o str,
+        lines: impl Iterator<Item = &'o str>,
+        indent: usize,
+    ) {
+        for line in lines {
+            at += indent;
+            self.copy_line(at, origin, line);
+            at += line.len() + 1;
+        }
+    }
+
     /// Append `other`, whose offsets are relative to its own text, at `at`.
     pub(crate) fn append(&mut self, at: usize, other: &Runs) {
         for run in &other.runs {

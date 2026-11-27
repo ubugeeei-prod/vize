@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 
 /** `@babel/parser`'s `parse`, read from the caller's installed Vue compiler. */
 export type ParseModule = (code: string, options: Record<string, unknown>) => BabelFile;
@@ -291,4 +292,185 @@ function anchors(map: string, code: string, parsed: BabelFile) {
     }
   });
   return result;
+}
+
+type Segment = { column: number; authored?: [number, number, number]; name?: number };
+
+/** Every generated line's segments, with absolute positions. */
+function decodeMappings(mappings: string): Segment[][] {
+  let sourceIndex = 0,
+    sourceLine = 0,
+    sourceColumn = 0,
+    nameIndex = 0;
+  return mappings.split(";").map((line) => {
+    let column = 0;
+    return line
+      .split(",")
+      .filter(Boolean)
+      .map((text) => {
+        const fields = vlq(text);
+        column += fields[0];
+        if (fields.length === 1) return { column };
+        assert(fields.length === 4 || fields.length === 5);
+        sourceIndex += fields[1];
+        sourceLine += fields[2];
+        sourceColumn += fields[3];
+        const segment: Segment = { column, authored: [sourceIndex, sourceLine, sourceColumn] };
+        if (fields.length === 5) {
+          nameIndex += fields[4];
+          segment.name = nameIndex;
+        }
+        return segment;
+      });
+  });
+}
+
+function encodeMappings(lines: Segment[][]): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const field = (value: number) => {
+    let rest = value < 0 ? -value * 2 + 1 : value * 2;
+    let out = "";
+    do {
+      const digit = rest % 32;
+      rest = Math.floor(rest / 32);
+      out += alphabet[rest > 0 ? digit + 32 : digit];
+    } while (rest > 0);
+    return out;
+  };
+  let sourceIndex = 0,
+    sourceLine = 0,
+    sourceColumn = 0,
+    nameIndex = 0;
+  const encoded = lines.map((line) => {
+    let column = 0;
+    return line
+      .map((segment) => {
+        let out = field(segment.column - column);
+        column = segment.column;
+        if (!segment.authored) return out;
+        const [index, authoredLine, authoredColumn] = segment.authored;
+        out += field(index - sourceIndex);
+        out += field(authoredLine - sourceLine);
+        out += field(authoredColumn - sourceColumn);
+        [sourceIndex, sourceLine, sourceColumn] = segment.authored;
+        if (segment.name !== undefined) {
+          out += field(segment.name - nameIndex);
+          nameIndex = segment.name;
+        }
+        return out;
+      })
+      .join(",");
+  });
+  return encoded.join(";").replace(/;+$/, "");
+}
+
+/** Whether a segment is authored inside the SFC's `<template>` block. */
+function templateSegments(source: string): (segment: Segment) => boolean {
+  const require = createRequire(import.meta.url);
+  const runtime = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE;
+  const compiler = runtime
+    ? createRequire(require.resolve("vue/package.json", { paths: [runtime] }))
+    : require;
+  const { parse } = compiler("@vue/compiler-sfc") as typeof import("@vue/compiler-sfc");
+  const block = parse(source, { sourceMap: false, ignoreEmpty: false }).descriptor.template;
+  const lineStarts = [0];
+  for (const match of source.matchAll(/\n/g)) {
+    lineStarts.push(match.index + 1);
+  }
+  return ({ authored }) => {
+    if (!block || !authored || authored[0] !== 0) return false;
+    const [, line, column] = authored;
+    const start = lineStarts[line];
+    if (start === undefined || column < 0) return false;
+    const offset = start + column;
+    const next = lineStarts[line + 1];
+    if (offset > (next === undefined ? source.length : next - 1)) return false;
+    return offset >= block.loc.start.offset && offset <= block.loc.end.offset;
+  };
+}
+
+/**
+ * The candidate packet as its map was before the render mapped back to the
+ * template: without the segments authored inside `<template>`, and
+ * without a map when none remain. The references above describe this view.
+ */
+export function withoutTemplateSegments<T extends ErasedPacket>(current: T, source: string): T {
+  if (current.map == null) return current;
+  assert.equal(typeof current.map, "string", "maps are serialized");
+  const map = JSON.parse(current.map as string) as { mappings: string };
+  const inTemplate = templateSegments(source);
+  const all = decodeMappings(map.mappings);
+  const lines = all.map((line) => line.filter((segment) => !inTemplate(segment)));
+  if (lines.every((line, index) => line.length === all[index].length)) return current;
+  const out = structuredClone(current);
+  if (lines.every((line) => line.length === 0)) delete out.map;
+  else out.map = JSON.stringify({ ...map, mappings: encodeMappings(lines) });
+  return out;
+}
+
+// Advance one preserved packet by the reviewed template provenance:
+// the render of a component maps back to its template. The candidate's map is
+// accepted only when it keeps every preserved segment and every other map
+// field, and each segment it gains is authored inside `<template>`. A packet
+// whose script emitted no segment gains its map, where the candidate lists it.
+// Every other field stays the preserved producer's.
+export function templateMapReference<T extends ErasedPacket>(
+  preserved: T,
+  current: ErasedPacket | undefined,
+  source: string,
+): T {
+  if (current?.map == null || current.map === preserved.map) return preserved;
+  assert.equal(typeof current.map, "string", "maps are serialized");
+  const { mappings, ...fields } = JSON.parse(current.map as string) as {
+    mappings: string;
+    sourcesContent?: unknown;
+  };
+  let kept = "";
+  if (preserved.map == null) {
+    assert.deepEqual(fields.sourcesContent, [source], "a gained map describes this source");
+  } else {
+    assert.equal(typeof preserved.map, "string", "maps are serialized");
+    const { mappings: before, ...preservedFields } = JSON.parse(preserved.map as string);
+    assert.deepEqual(fields, preservedFields, "the map keeps every other field");
+    kept = before;
+  }
+  const key = (line: number, { column, authored, name }: Segment) =>
+    `${line}:${column}>${authored?.join(":") ?? ""}#${name ?? ""}`;
+  const gained = new Map<string, { segment: Segment; count: number }>();
+  decodeMappings(mappings).forEach((line, index) => {
+    for (const segment of line) {
+      const position = key(index, segment);
+      const existing = gained.get(position);
+      if (existing) existing.count++;
+      else gained.set(position, { segment, count: 1 });
+    }
+  });
+  decodeMappings(kept).forEach((line, index) => {
+    for (const segment of line) {
+      const position = key(index, segment);
+      const existing = gained.get(position);
+      assert(existing, "the map keeps every preserved segment");
+      if (--existing.count === 0) gained.delete(position);
+    }
+  });
+  assert(gained.size > 0, "a changed map gains template segments");
+  const inTemplate = templateSegments(source);
+  for (const [position, { segment }] of gained) {
+    assert(inTemplate(segment), `${position}: a gained segment is authored in the template`);
+  }
+  const out: ErasedPacket = structuredClone(preserved);
+  if (preserved.map != null) {
+    out.map = current.map;
+    return out as T;
+  }
+  // The gained map takes the place the candidate packet lists it in.
+  const names = Object.keys(current);
+  const previous = names[names.indexOf("map") - 1];
+  const placed: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(out)) {
+    if (name !== "map") placed[name] = value;
+    if (name === previous) placed.map = current.map;
+  }
+  placed.map ??= current.map;
+  return placed as T;
 }

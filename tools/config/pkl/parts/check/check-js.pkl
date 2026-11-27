@@ -48,6 +48,7 @@ steps = new Listing {
   }
   ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
   ci.command("Check Pkl repository configuration", "node tools/commands/generate/repository-config.ts --check")
+  ci.command("Check generated composed crates", "node tools/commands/generate/composed-crates.ts --check")
   new Dynamic {
     name = "Check JS/TS"
     `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"

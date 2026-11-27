@@ -28,6 +28,22 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
+    sfc_map_copy! {
+        plain {}
+        composed {
+            /// Write `text` directly, anchored at the authored byte `source`
+            /// while a map is recorded.
+            #[cold]
+            #[inline(never)]
+            pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+                if self.spans_enabled() {
+                    self.out.anchor(source);
+                }
+                self.push(text);
+            }
+        }
+    }
+
     /// Write `text` directly, anchored at `source` when there is one.
     pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
         match source {

@@ -1,0 +1,334 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_ssr/src/codegen.rs by `node tools/commands/generate/composed-crates.ts`.
+// Edit the source and run the command again.
+//! SSR code generation.
+//!
+//! SSR code generation produces JavaScript that uses template literals and `_push()` calls
+//! to build HTML strings on the server side.
+
+/// Write a component's setup binding read. A composed map anchors it at the
+/// authored byte `source`.
+macro_rules! push_setup_binding {
+    ($ctx:expr, $binding:expr, $source:expr) => {
+        sfc_map_copy!(
+            plain { $ctx.push($binding) }
+            composed { $ctx.push_anchored($binding, $source) }
+        )
+    };
+}
+
+mod children;
+mod component_binding;
+mod component_resolution;
+pub(crate) mod css_vars;
+pub(crate) mod element;
+pub(crate) mod helpers;
+mod module_parts;
+pub(crate) mod scope_prefix;
+mod spans;
+
+use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
+pub use crate::shared::{SsrCodegenResult, SsrSfcContext};
+use vize_atelier_core_composed::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
+use vize_l0::{Allocator, FxHashSet, SmallVec, String};
+
+/// A part of a template literal, carrying the authored spans it copies.
+#[derive(Debug)]
+pub(crate) enum TemplatePart {
+    /// Static string content
+    Static(EmitDocument),
+    /// Dynamic expression
+    Dynamic(EmitDocument),
+}
+
+/// SSR codegen context
+pub struct SsrCodegenContext<'a> {
+    pub(crate) allocator: &'a Allocator,
+    pub(crate) options: &'a SsrCompilerOptions,
+    /// Current component name for opt-in experimental self references.
+    pub(crate) component_name: Option<String>,
+    /// Whether the reserved `<Self>` tag resolves to the current component.
+    pub(crate) experimental_self_component: bool,
+    /// Whether slot outlets contribute this component's own slotted scope ID.
+    pub(crate) slotted: bool,
+    development: bool,
+    runtime_module_name: String,
+    pub(crate) jsx_closure: bool,
+    /// The structured emission document: generated code plus, when a Source
+    /// Map v3 document is requested, the links from its bytes to the template.
+    pub(crate) out: EmitDocument,
+    /// Indent level
+    pub(crate) indent_level: u32,
+    /// Used SSR helpers
+    pub(crate) ssr_helpers: FxHashSet<RuntimeHelper>,
+    /// Used core helpers (from vue)
+    pub(crate) core_helpers: FxHashSet<RuntimeHelper>,
+    /// Current template literal parts being accumulated
+    pub(crate) current_template_parts: SmallVec<[TemplatePart; 8]>,
+    /// Whether currently within a slot scope
+    pub(crate) with_slot_scope_id: bool,
+    /// Vue captures the owner scope when creating an outlet's fallback VNodes.
+    pub(crate) vnode_slot_fallback: bool,
+    /// Template-local identifiers from v-for and scoped slots.
+    pub(crate) scoped_params: std::vec::Vec<FxHashSet<String>>,
+    /// Stack of `v-model` expressions on currently-open `<select>` ancestors.
+    /// When non-empty, an `<option>` child uses the top entry to render
+    /// `selected` for the matching value. Vue's SSR runtime tracks the same
+    /// state in JS via `_temp`; we thread it through codegen instead. (#962)
+    pub(crate) select_v_model_stack: std::vec::Vec<String>,
+    /// The source string node-loc spans index into, used to recover covered
+    /// text from a `SourceLocation`.
+    pub(crate) source: &'a str,
+    /// Filename recorded in the Source Map v3 `file` and `sources` fields.
+    source_map_filename: String,
+    /// `_tempN` bindings allocated by merged-props elements.
+    pub(crate) temps: u32,
+    /// Where the render body starts, so temp declarations land there.
+    body_start: usize,
+    /// Directive names resolved through `_resolveDirective`, in first-use
+    /// order, each declared once as `_directive_<name>`.
+    resolved_directives: std::vec::Vec<String>,
+    /// Where asset declarations land: before the CSS-variable prelude.
+    assets_start: usize,
+}
+
+impl<'a> SsrCodegenContext<'a> {
+    pub fn new(allocator: &'a Allocator, options: &'a SsrCompilerOptions, source: &'a str) -> Self {
+        Self::new_with_experimental_options(
+            allocator,
+            options,
+            source,
+            SsrCompilerExperimentalOptions::default(),
+        )
+    }
+
+    pub fn new_with_experimental_options(
+        allocator: &'a Allocator,
+        options: &'a SsrCompilerOptions,
+        source: &'a str,
+        experimental_options: SsrCompilerExperimentalOptions,
+    ) -> Self {
+        let component_name = experimental_options
+            .component_name
+            .or_else(|| options.component_name.clone());
+        let source_map_filename = experimental_options
+            .source_map_filename
+            .unwrap_or_else(|| "template.vue".into());
+        Self {
+            allocator,
+            options,
+            component_name,
+            experimental_self_component: experimental_options.self_component,
+            slotted: true,
+            development: false,
+            runtime_module_name: String::from("vue"),
+            jsx_closure: false,
+            source,
+            out: EmitDocument::with_capacity(1024, experimental_options.source_map),
+            indent_level: 0,
+            ssr_helpers: FxHashSet::default(),
+            core_helpers: FxHashSet::default(),
+            current_template_parts: SmallVec::new(),
+            with_slot_scope_id: false,
+            vnode_slot_fallback: false,
+            scoped_params: std::vec::Vec::new(),
+            select_v_model_stack: std::vec::Vec::new(),
+            source_map_filename,
+            temps: 0,
+            body_start: 0,
+            resolved_directives: std::vec::Vec::new(),
+            assets_start: 0,
+        }
+    }
+
+    pub(crate) fn set_runtime_module_name(&mut self, runtime_module_name: &str) {
+        self.runtime_module_name = String::from(runtime_module_name);
+    }
+
+    pub(crate) fn apply_sfc_context(&mut self, context: SsrSfcContext) {
+        self.slotted = context.slotted;
+        self.development = context.development;
+        self.jsx_closure = context.jsx_closure;
+    }
+
+    pub(crate) fn conditional_comment_vnode(&self) -> &'static str {
+        if self.development {
+            "_createCommentVNode(\"v-if\", true)"
+        } else {
+            "_createCommentVNode(\"\", true)"
+        }
+    }
+
+    /// Apply an explicit host-owned emission role before generating an AST.
+    #[must_use]
+    pub fn with_host_context(mut self, context: SsrSfcContext) -> Self {
+        self.apply_sfc_context(context);
+        self
+    }
+
+    /// Generate SSR code from the AST
+    pub fn generate(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
+        vize_atelier_core_composed::walk_probe::record_walk(
+            vize_atelier_core_composed::walk_probe::WalkStage::SsrCodegen,
+        );
+        // Transforms can rewrite setup bindings to `_unref(...)` in SSR
+        // expressions. SSR codegen does not walk helper symbols the same way as
+        // DOM codegen, so carry the root helper through explicitly.
+        if root.helpers.contains(&RuntimeHelper::Unref) {
+            self.use_core_helper(RuntimeHelper::Unref);
+        }
+
+        let is_fragment = css_vars::root_is_fragment(&root.children);
+
+        self.begin_render(root.loc.span.start);
+        self.process_root_children(&root.children, is_fragment, false, false);
+        self.finish_render()
+    }
+
+    /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
+    /// by the legacy walker and the L4 string-plan emitter. The signature is
+    /// anchored at `template_start`, the template section's authored start.
+    pub(crate) fn begin_render(&mut self, template_start: u32) {
+        self.push_mapped(
+            "function ssrRender(_ctx, _push, _parent, _attrs",
+            template_start,
+        );
+        if self.options.binding_metadata.is_some() && !self.jsx_closure {
+            self.push(", $props, $setup, $data, $options");
+        }
+        self.push(") {\n");
+        self.indent_level += 1;
+        self.assets_start = self.out.len();
+
+        if let Some(css_vars) = &self.options.ssr_css_vars {
+            self.push_indent();
+            self.push("const _cssVars = { style: ");
+            self.push(css_vars);
+            self.push(" }\n");
+            self.use_core_helper(RuntimeHelper::MergeProps);
+            self.push_indent();
+            self.push("_attrs = _mergeProps(_attrs, _cssVars)\n");
+        }
+        self.mark_body_start();
+    }
+
+    /// Close `ssrRender` and assemble the module parts.
+    pub(crate) fn finish_render(mut self) -> SsrCodegenResult {
+        self.flush_push();
+        self.indent_level -= 1;
+        self.push("}\n");
+        self.declare_temps();
+        self.declare_directives();
+
+        let preamble = self.build_preamble();
+
+        let map = self.out.is_recording().then(|| {
+            sfc_map_copy!(
+                plain {
+                    self.out
+                        .source_map(self.source_map_filename.as_str(), self.source)
+                }
+                composed {
+                    self.out
+                        .composed_source_map(self.source_map_filename.as_str(), self.source)
+                }
+            )
+        });
+        let code = self.out.into_string();
+
+        SsrCodegenResult {
+            code,
+            preamble,
+            map,
+        }
+    }
+
+    /// Push static string content to the current template literal.
+    ///
+    /// Adjacent static chunks are coalesced before `flush_push`, so deeply nested
+    /// SSR templates emit fewer `_push(...)` calls and allocate fewer intermediate
+    /// strings while preserving dynamic expression boundaries.
+    pub(crate) fn push_string_part_static(&mut self, s: &str) {
+        if let Some(TemplatePart::Static(last)) = self.current_template_parts.last_mut() {
+            last.push_str(s);
+        } else {
+            self.current_template_parts
+                .push(TemplatePart::Static(EmitDocument::plain(s)));
+        }
+    }
+
+    /// Push dynamic expression to the current template literal
+    pub(crate) fn push_string_part_dynamic(&mut self, expr: &str) {
+        self.current_template_parts
+            .push(TemplatePart::Dynamic(EmitDocument::plain(expr)));
+    }
+
+    /// Flush the current template literal as a _push() call.
+    ///
+    /// Template parts are buffered as a `SmallVec` because most elements contain
+    /// only a handful of static/dynamic pieces. Taking the buffer here lets the
+    /// context reuse the allocation for subsequent chunks while writing directly
+    /// into the final byte buffer.
+    pub(crate) fn flush_push(&mut self) {
+        if self.current_template_parts.is_empty() {
+            return;
+        }
+
+        // Take ownership of parts to avoid borrow issues
+        let parts = std::mem::take(&mut self.current_template_parts);
+
+        self.push_indent();
+        self.push("_push(`");
+
+        for part in &parts {
+            match part {
+                TemplatePart::Static(s) => {
+                    self.push_template_static(s);
+                }
+                TemplatePart::Dynamic(expr) => {
+                    self.push("${");
+                    self.push_spanned(expr);
+                    self.push("}");
+                }
+            }
+        }
+
+        self.push("`)\n");
+    }
+
+    /// Use an SSR helper
+    pub(crate) fn use_ssr_helper(&mut self, helper: RuntimeHelper) {
+        self.ssr_helpers.insert(helper);
+    }
+
+    /// Use a core helper (from vue)
+    pub(crate) fn use_core_helper(&mut self, helper: RuntimeHelper) {
+        self.core_helpers.insert(helper);
+    }
+
+    pub(crate) fn push_scoped_params(&mut self, params: FxHashSet<String>) {
+        self.scoped_params.push(params);
+    }
+
+    pub(crate) fn pop_scoped_params(&mut self) {
+        self.scoped_params.pop();
+    }
+
+    pub(crate) fn strip_ctx_for_scoped_params(&self, content: &str) -> String {
+        scope_prefix::strip_scope_prefixes_for_scoped_params(&self.scoped_params, content)
+    }
+
+    /// Push raw code to the buffer
+    pub(crate) fn push(&mut self, s: &str) {
+        self.out.push_str(s);
+    }
+
+    /// Push indentation
+    pub(crate) fn push_indent(&mut self) {
+        for _ in 0..self.indent_level {
+            self.out.push_str("  ");
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests;
