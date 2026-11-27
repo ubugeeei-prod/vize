@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { qualifyDeployment } from "../../tools/support/compat/github/docs-deployment-custody.ts";
-import { artifactIdentity } from "../../tools/support/compat/github/docs-deployment-policy.ts";
+import {
+  artifactIdentity,
+  docsBuildPredecessors,
+} from "../../tools/support/compat/github/docs-deployment-policy.ts";
 import { repositoryId, run, sourceArtifacts, sourceSha } from "./support/docs-deployment.ts";
 
 import { verifySolePagesWriter } from "../../tools/support/compat/github/docs-deployment-writers.ts";
@@ -42,6 +45,30 @@ test("durable custody is qualified by its exact primary writer log, source run, 
     sourceSha,
   );
   assert.deepEqual(artifactIdentity({ ...pages, expired: true }), receipt.pagesArtifact);
+});
+
+test("receipts from the renamed Docs build anchor history only through its pinned predecessor", async () => {
+  const { api, publisher, job, deployment, receipt, values } = custodyFixture();
+  const [predecessor] = docsBuildPredecessors;
+  const recorded = "/actions/runs/" + receipt.build.runId + "/attempts/1";
+  const before = run({ path: predecessor.path, workflow_id: predecessor.workflowId });
+  values.set(recorded, before);
+  assert.equal(
+    (await qualifyDeployment(api, repositoryId, deployment, publisher, job)).sourceSha,
+    sourceSha,
+  );
+  for (const [mutation, reason] of [
+    [{ workflow_id: 42 }, /Pinned predecessor workflow identity/],
+    [{ run_started_at: predecessor.renamedAt }, /started before its rename/],
+    [{ run_started_at: "2026-11-26T00:00:00Z" }, /started before its rename/],
+    [{ path: ".github/workflows/docs.yml" }, /Trusted workflow path/],
+  ] as const) {
+    values.set(recorded, { ...before, ...mutation });
+    await assert.rejects(
+      () => qualifyDeployment(api, repositoryId, deployment, publisher, job),
+      reason,
+    );
+  }
 });
 
 test("deleted historical artifacts retain the floor authenticated by the original publisher log", async () => {
