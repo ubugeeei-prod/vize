@@ -233,8 +233,10 @@ fn append_prop_check_helpers_text(
     ts.push_str(
         "  type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;\n",
     );
+    // A wrapper's final constructor can infer `unknown` for the optional raw
+    // marker. Only a known instance shape may take precedence over static props.
     ts.push_str(
-        "  type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;\n",
+        "  type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? unknown extends __P ? false : true : false : false;\n",
     );
     ts.push_str(
         "  type $HasStaticRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? false : true : false : false;\n",
