@@ -214,13 +214,19 @@ export function availableVueRules(): Set<string> {
   try {
     // A standalone project prevents recursive loading of defineConfig while
     // asking the installed CLI for its public rule catalog.
-    const result = spawnSync(process.execPath, [binary, "lint", "--rules", "--format=json"], {
-      cwd: directory,
-      encoding: "utf8",
-      env: process.env,
-      timeout: 60_000,
-      maxBuffer: 4 * 1024 * 1024,
-    });
+    // An explicit operand prevents Vite+ from enumerating the workspace before
+    // forwarding --rules. The owned manifest exists even in a gitignored cache.
+    const result = spawnSync(
+      process.execPath,
+      [binary, "lint", "--rules", "--format=json", "package.json"],
+      {
+        cwd: directory,
+        encoding: "utf8",
+        env: process.env,
+        timeout: 60_000,
+        maxBuffer: 4 * 1024 * 1024,
+      },
+    );
     if (result.error && "code" in result.error && result.error.code === "ETIMEDOUT") {
       const available = new Set<string>();
       catalogs.set(binary, available);
@@ -228,7 +234,7 @@ export function availableVueRules(): Set<string> {
     }
     if (result.error || result.status !== 0) {
       throw new Error(
-        `Cannot read installed Vite+ lint rules: ${result.error?.message ?? result.stderr}`,
+        `Cannot read installed Vite+ lint rules: ${result.error?.message ?? (result.stderr.trim() || result.stdout.trim() || `exit status ${result.status}`)}`,
       );
     }
     const rules = JSON.parse(result.stdout) as { scope: string; value: string }[];

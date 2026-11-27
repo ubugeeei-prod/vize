@@ -1,7 +1,9 @@
 import { readToolingProgram } from "../../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -135,6 +137,35 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     fs.readdirSync(catalogs).some((name) => name.endsWith(".tmp")),
     false,
   );
+});
+
+void test("the installed Vite+ returns its rule catalog from a gitignored cache", (t) => {
+  const installed = createRequire(import.meta.url).resolve("vite-plus/package.json");
+  const owner = fs.mkdtempSync(path.join(os.tmpdir(), "vize-ignored-rule-catalog-"));
+  const project = path.join(owner, "project with spaces");
+  fs.mkdirSync(path.join(project, "node_modules"), { recursive: true });
+  fs.writeFileSync(path.join(project, "package.json"), '{"private":true}');
+  fs.writeFileSync(path.join(project, ".gitignore"), ".cache/\n");
+  fs.symlinkSync(path.dirname(installed), path.join(project, "node_modules/vite-plus"), "junction");
+  const initialized = spawnSync("git", ["init", "--quiet", project], { encoding: "utf8" });
+  assert.equal(initialized.status, 0, initialized.stderr);
+
+  const previous = { cwd: process.cwd(), cache: process.env.XDG_CACHE_HOME };
+  t.after(() => {
+    process.chdir(previous.cwd);
+    restoreEnvironment("XDG_CACHE_HOME", previous.cache);
+    resetAvailableVueRulesForTests();
+    fs.rmSync(owner, { recursive: true, force: true });
+  });
+  process.chdir(project);
+  process.env.XDG_CACHE_HOME = path.join(owner, "ordinary-cache");
+  resetAvailableVueRulesForTests();
+  const expected = [...availableVueRules()].sort();
+  assert.ok(expected.includes("component-definition-name-casing"));
+
+  process.env.XDG_CACHE_HOME = path.join(project, ".cache");
+  resetAvailableVueRulesForTests();
+  assert.deepEqual([...availableVueRules()].sort(), expected);
 });
 
 function restoreEnvironment(name: string, value: string | undefined): void {
