@@ -88,7 +88,8 @@ rayon.workspace = true
 vize_canon = { workspace = true, features = ["native"] }
 
 [target.'cfg(all(not(target_arch = "wasm32"), unix))'.dependencies]
-libc.workspace = true
+# The session-store liveness probe (`kill(pid, 0)`); already linked through tempfile.
+rustix = { workspace = true, features = ["process"] }
 
 [dev-dependencies]
 insta.workspace = true
