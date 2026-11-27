@@ -110,6 +110,10 @@ node tools/support/github/docs-preview-readiness.ts $log $evidence
   long call after ` \` with one flag per line.
 - Reach files next to the program with `std::path::from_source`, not with
   `$VIZE_CI_FILES`.
+- Use only the portable std. The functions of the
+  [optional runtime](https://github.com/ubugeeei-prod/ush/blob/main/docs/std-runtime.md),
+  such as `std::int::sub`, call ush when the build runs, so the generator refuses
+  them. Integer arithmetic such as `n + -1` compiles to the shell's own.
 - Put helpers that several programs share in a `lib/` module, such as
   `tools/ci/lib/github.ush`, and import it with `mod "../../../lib/github.ush"`.
   Modules are inlined into each build and have no build of their own.
