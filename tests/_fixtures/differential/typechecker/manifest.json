@@ -63476,6 +63476,226 @@
       }
     },
     {
+      "id": "typechecker/global-component-fallthrough-root/attribute",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-component-fallthrough-root/tsconfig-attrs.json.txt",
+          "sha256": "0a57baec65789ff7b46daee65966482fd66a9722f2db8a5ef295129f2ea69737"
+        },
+        {
+          "file": "components.d.ts",
+          "path": "global-component-fallthrough-root/components.d.ts.txt",
+          "sha256": "58b0b9e063fa011a445d1bf6f8f8dedd26ca34880fb59452dd64dd8ba5f72ec2"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "global-component-fallthrough-root/InputRoot.vue.txt",
+          "sha256": "35e538ebb8597deef13594026751fbad6798250cb6e072eedf6943a53249434d"
+        },
+        {
+          "file": "Bar.vue",
+          "path": "global-component-fallthrough-root/GlobalRoot.vue.txt",
+          "sha256": "20f83ef219105d10939f0cbd947d276935f87a414428e72db4e1d47281ee8ea5"
+        },
+        {
+          "file": "App.vue",
+          "path": "global-component-fallthrough-root/Attribute.vue.txt",
+          "sha256": "70f2b4ee3392eb3b5a181c90d17e52def495ff29d374442dc574de07a9a2963f"
+        },
+        {
+          "file": "cases.json",
+          "path": "global-component-fallthrough-root/cases.json",
+          "sha256": "4e2051b05c4a581b773ea5e458664615f3e24ad944e4dbbca7f3f3fc6adf82dd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root; with fallthroughAttributes and strictComponentAttrs, a native attribute of the global root's native root is a known attribute of the component. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/global-component-fallthrough-root/listener",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-component-fallthrough-root/tsconfig-events.json.txt",
+          "sha256": "f3cf7212e7a67227453a6eeb4f2d4bc12cf71b0f87df4aaf28468168b164f143"
+        },
+        {
+          "file": "components.d.ts",
+          "path": "global-component-fallthrough-root/components.d.ts.txt",
+          "sha256": "58b0b9e063fa011a445d1bf6f8f8dedd26ca34880fb59452dd64dd8ba5f72ec2"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "global-component-fallthrough-root/InputRoot.vue.txt",
+          "sha256": "35e538ebb8597deef13594026751fbad6798250cb6e072eedf6943a53249434d"
+        },
+        {
+          "file": "Bar.vue",
+          "path": "global-component-fallthrough-root/EmitsGlobalRoot.vue.txt",
+          "sha256": "2937523083d66959f640ee7b163a2809febe9b9e2484550344db55e8de56923a"
+        },
+        {
+          "file": "App.vue",
+          "path": "global-component-fallthrough-root/Listener.vue.txt",
+          "sha256": "c6f193e9e894b0a745bce433c92827ed340cb454fdc16b86b94c2d3c761daaf7"
+        },
+        {
+          "file": "cases.json",
+          "path": "global-component-fallthrough-root/cases.json",
+          "sha256": "4e2051b05c4a581b773ea5e458664615f3e24ad944e4dbbca7f3f3fc6adf82dd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root; with fallthroughAttributes and checkUnknownEvents, a native listener that falls through to a root only GlobalComponents declares is a known event of a component with emits. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/global-component-fallthrough-root/listener-payload",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-component-fallthrough-root/tsconfig-events.json.txt",
+          "sha256": "f3cf7212e7a67227453a6eeb4f2d4bc12cf71b0f87df4aaf28468168b164f143"
+        },
+        {
+          "file": "components.d.ts",
+          "path": "global-component-fallthrough-root/components.d.ts.txt",
+          "sha256": "58b0b9e063fa011a445d1bf6f8f8dedd26ca34880fb59452dd64dd8ba5f72ec2"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "global-component-fallthrough-root/InputRoot.vue.txt",
+          "sha256": "35e538ebb8597deef13594026751fbad6798250cb6e072eedf6943a53249434d"
+        },
+        {
+          "file": "Bar.vue",
+          "path": "global-component-fallthrough-root/EmitsGlobalRoot.vue.txt",
+          "sha256": "2937523083d66959f640ee7b163a2809febe9b9e2484550344db55e8de56923a"
+        },
+        {
+          "file": "App.vue",
+          "path": "global-component-fallthrough-root/ListenerPayload.vue.txt",
+          "sha256": "05a65e4fa250d35386816167f40371f4826a92cdfc2acc7bf0ea1d586c8e665a"
+        },
+        {
+          "file": "cases.json",
+          "path": "global-component-fallthrough-root/cases.json",
+          "sha256": "4e2051b05c4a581b773ea5e458664615f3e24ad944e4dbbca7f3f3fc6adf82dd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root; with fallthroughAttributes and checkUnknownEvents, the listener's payload is typed by the global root's native root (KeyboardEvent), so a missing member is TS2339. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/global-component-fallthrough-root/unknown-attribute",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "global-component-fallthrough-root/tsconfig-attrs.json.txt",
+          "sha256": "0a57baec65789ff7b46daee65966482fd66a9722f2db8a5ef295129f2ea69737"
+        },
+        {
+          "file": "components.d.ts",
+          "path": "global-component-fallthrough-root/components.d.ts.txt",
+          "sha256": "58b0b9e063fa011a445d1bf6f8f8dedd26ca34880fb59452dd64dd8ba5f72ec2"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "global-component-fallthrough-root/InputRoot.vue.txt",
+          "sha256": "35e538ebb8597deef13594026751fbad6798250cb6e072eedf6943a53249434d"
+        },
+        {
+          "file": "Bar.vue",
+          "path": "global-component-fallthrough-root/GlobalRoot.vue.txt",
+          "sha256": "20f83ef219105d10939f0cbd947d276935f87a414428e72db4e1d47281ee8ea5"
+        },
+        {
+          "file": "App.vue",
+          "path": "global-component-fallthrough-root/UnknownAttribute.vue.txt",
+          "sha256": "e893bcddf20037266e9e6bbefb12f9c129c342e7cff4ccd805bd1b2ca0d7bf96"
+        },
+        {
+          "file": "cases.json",
+          "path": "global-component-fallthrough-root/cases.json",
+          "sha256": "4e2051b05c4a581b773ea5e458664615f3e24ad944e4dbbca7f3f3fc6adf82dd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_global_roots::reported_projects_forward_through_a_global_component_root; with fallthroughAttributes and strictComponentAttrs, an attribute the global root does not declare stays TS2353. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/global-component-listener-11373/original-three-components",
       "state": "active",
       "targets": [

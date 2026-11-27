@@ -9,13 +9,14 @@ use vize_croquis::Croquis;
 use vize_relief::RootNode;
 
 use crate::virtual_ts::{
-    component_reference::resolved_component_binding_reference, generated_names as names,
+    component_reference::{global_component_type_as, resolved_component_binding_reference},
+    generated_names as names,
     types::VirtualTsOptions,
 };
 
 /// The bindings a component root resolves through. A root that is not a
-/// setup binding (a globally registered component, an unresolved tag) keeps
-/// the open `Record<string, unknown>` surface.
+/// setup binding is the `GlobalComponents` entry for its tag, and a tag
+/// nothing registers keeps the open `Record<string, unknown>` surface.
 pub(in crate::virtual_ts::generator) struct FallthroughComponentScope<'a> {
     pub(in crate::virtual_ts::generator) summary: &'a Croquis,
     pub(in crate::virtual_ts::generator) options: &'a VirtualTsOptions,
@@ -135,6 +136,8 @@ fn targets_type_ref(
 ) -> String {
     let check_required = scope.is_some_and(|scope| scope.check_required);
     let mut ty = crate::virtual_ts::TextBuf::default();
+    // Component roots read from `GlobalComponents`, by tag and inferred name.
+    let mut global_roots: Vec<(&str, String)> = Vec::new();
     for (index, target) in targets.iter().enumerate() {
         let (root, surface) = match target {
             FallthroughRootTarget::Native(root) => {
@@ -146,8 +149,7 @@ fn targets_type_ref(
             FallthroughRootTarget::Component(root) => {
                 // A component root forwards what the rendered component
                 // accepts: its public props and the listener props of its
-                // emits, plus whatever it forwards itself. Only a resolved
-                // setup binding has that surface; anything else stays open.
+                // emits, plus whatever it forwards itself.
                 // The optional surface is a non-homomorphic mapped type over
                 // the resolved one, so a root whose module does not resolve
                 // (`typeof X` is TypeScript's error type, which every
@@ -155,18 +157,25 @@ fn targets_type_ref(
                 // `any`) degrades to an index signature instead of poisoning
                 // the consumer's whole check with `any`. The required surface
                 // keeps the root's own modifiers, which that mapping drops.
-                let Some(reference) = scope
-                    .filter(|scope| scope.resolve_component_roots)
-                    .and_then(|scope| {
-                        resolved_component_binding_reference(
-                            scope.summary,
-                            scope.options,
-                            scope.syntactic_type_only_imported_names,
-                            root.tag.as_str(),
-                        )
-                    })
-                else {
+                let Some(resolving) = scope.filter(|scope| scope.resolve_component_roots) else {
                     return open_attrs();
+                };
+                // A tag no setup binding owns is the component Vue resolves
+                // from the registry, which `GlobalComponents` types. The whole
+                // surface is decided inside that lookup, so a tag nothing
+                // registers keeps the open surface exactly as before.
+                let component = match resolved_component_binding_reference(
+                    resolving.summary,
+                    resolving.options,
+                    resolving.syntactic_type_only_imported_names,
+                    root.tag.as_str(),
+                ) {
+                    Some(reference) => cstr!("typeof {reference}"),
+                    None => {
+                        let name = cstr!("__vizeRoot{}", global_roots.len());
+                        global_roots.push((root.tag.as_str(), name.clone()));
+                        name
+                    }
                 };
                 let mut surface = names::helper(
                     if check_required {
@@ -176,8 +185,8 @@ fn targets_type_ref(
                     },
                     &[""],
                 );
-                surface.push_str("<typeof ");
-                surface.push_str(reference.as_str());
+                surface.push('<');
+                surface.push_str(component.as_str());
                 surface.push('>');
                 if check_required
                     && scope.is_some_and(|scope| scope.checks.check_unknown_fallthrough_props)
@@ -213,7 +222,11 @@ fn targets_type_ref(
             ty.push('>');
         }
     }
-    ty.into_compact()
+    let mut ty = ty.into_compact();
+    for (tag, name) in global_roots.iter().rev() {
+        ty = global_component_type_as(tag, name, |_| ty.clone(), open_attrs().as_str());
+    }
+    ty
 }
 
 /// The union of string literal keys an `Omit` removes.
