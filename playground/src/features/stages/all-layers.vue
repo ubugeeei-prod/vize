@@ -83,7 +83,7 @@ function changePage(id: RungId, event: Event) {
         @resize="emit('resize', $event)"
         @reset="emit('resetWidths')"
       />
-      <header class="dv-layer-header">
+      <div class="dv-layer-header">
         <div class="dv-layer-heading">
           <h3>{{ layer.id.toUpperCase() }} IR</h3>
           <span class="dv-layer-alias">{{ layer.name }}</span>
@@ -105,7 +105,7 @@ function changePage(id: RungId, event: Event) {
               : (layer.data?.rung.facts.join(" · ") ?? "not captured")
           }}</span>
         </div>
-      </header>
+      </div>
       <template v-if="layer.data">
         <div class="dv-page-picker">
           <select
@@ -150,7 +150,7 @@ function changePage(id: RungId, event: Event) {
             )
           "
         />
-        <footer class="dv-layer-footer">
+        <div class="dv-layer-footer">
           <span>{{ layer.data.lines.length }} lines</span>
           <span v-if="layer.data.marks.size" class="dv-partition-legend"
             ><span class="dv-static-dot">●</span>
@@ -167,7 +167,7 @@ function changePage(id: RungId, event: Event) {
             }}
             source spans</span
           >
-        </footer>
+        </div>
       </template>
       <div v-else class="dv-layer-empty">
         <span class="dv-empty-glyph">∅</span>
@@ -189,7 +189,7 @@ function changePage(id: RungId, event: Event) {
         @resize="emit('resize', $event)"
         @reset="emit('resetWidths')"
       />
-      <header class="dv-layer-header">
+      <div class="dv-layer-header">
         <div class="dv-layer-heading">
           <h3>L4 IR</h3>
           <span class="dv-layer-alias">Emit</span>
@@ -211,7 +211,7 @@ function changePage(id: RungId, event: Event) {
             }}</span
           >
         </div>
-      </header>
+      </div>
       <OutputView
         :target
         :outputs
@@ -220,12 +220,12 @@ function changePage(id: RungId, event: Event) {
         hide-targets
         @update:target="emit('target', $event)"
       />
-      <footer
+      <div
         class="dv-layer-footer"
         title="The capture exposes emitted code without per-operation source spans."
       >
         <span>Same compile run</span><span>No span feed</span>
-      </footer>
+      </div>
     </section>
   </div>
 </template>

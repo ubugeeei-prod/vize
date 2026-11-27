@@ -28,12 +28,12 @@ const {
   reveal?: Range | null;
 }>();
 
-const displayLines = computed(() => (notation === "dsl" ? irNotation(kind, lines) : lines));
-
 const emit = defineEmits<{
   highlight: [number | null];
   select: [number | null];
 }>();
+
+const displayLines = computed(() => (notation === "dsl" ? irNotation(kind, lines) : lines));
 
 const root = useTemplateRef<HTMLDivElement>("root");
 

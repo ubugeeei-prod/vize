@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import "./stage-playground-styles.vue";
 import "./workbench-styles.vue";
+import "./workbench-layers-styles.vue";
 import AllLayers from "./all-layers.vue";
 import PaneResizer from "./pane-resizer.vue";
 import SurfaceView from "./surface-view.vue";
@@ -229,8 +230,8 @@ function snippet(text: string): string {
             {{ snippet(record.after) }}</span
           >
           <span
-            v-for="(remark, index) in focusRemarks"
-            :key="index"
+            v-for="remark in focusRemarks"
+            :key="`${remark.stage}:${remark.pass}:${remark.name}:${remark.span.start}:${remark.span.end}`"
             :class="['davinci-why', 'remark', remark.kind]"
             :title="remark.args.map(formatArg).join(' ')"
             >{{ remark.kind }} {{ remark.name }}</span
@@ -280,7 +281,7 @@ function snippet(text: string): string {
         :ladder
         :span="focusSpan"
         :reveal="revealSpan"
-        :surface-units="surfaceUnits"
+        :surface-units
         :target="outputTarget"
         :outputs
         :theme
