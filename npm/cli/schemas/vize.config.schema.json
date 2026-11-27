@@ -565,6 +565,11 @@
         "script/no-restricted-members": {
           "$ref": "#/definitions/NoRestrictedMembersOptions"
         },
+        "vue/component-definition-name-casing": {
+          "default": "PascalCase",
+          "type": "string",
+          "enum": ["PascalCase", "kebab-case"]
+        },
         "vue/component-name-in-template-casing": {
           "type": "object",
           "properties": {

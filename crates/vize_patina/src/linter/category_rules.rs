@@ -53,6 +53,7 @@ fn is_style_rule_name(rule_name: &str) -> bool {
         "vue/attribute-hyphenation"
             | "vue/attribute-order"
             | "vue/component-definition-name-casing"
+            | "vue/component-file-name-casing"
             | "vue/component-name-in-template-casing"
             | "vue/html-quotes"
             | "vue/html-self-closing"

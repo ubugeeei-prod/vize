@@ -251,6 +251,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/attribute-order": "テンプレートの属性を一定の順に並べます。",
   "vue/component-definition-name-casing":
     "コンポーネント定義名を PascalCase または kebab-case に揃えます。",
+  "vue/component-file-name-casing":
+    "コンポーネントのファイル名を PascalCase または kebab-case に揃えます。",
   "vue/component-name-in-template-casing":
     "テンプレート内のコンポーネント名を指定した形式に揃えます。",
   "vue/html-button-has-type": "button に有効な type を明示します。",

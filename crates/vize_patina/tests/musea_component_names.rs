@@ -5,7 +5,7 @@ use vize_patina::{LintPreset, LintResult, Linter, RuleRegistry, Severity};
 
 const BUTTON: &str = include_str!("fixtures/musea-component-names/my-button.art.vue.txt");
 const BADGE: &str = include_str!("fixtures/musea-component-names/Badge.art.vue.txt");
-const CASING: &str = "vue/component-definition-name-casing";
+const CASING: &str = "vue/component-file-name-casing";
 const MULTI_WORD: &str = "vue/multi-word-component-names";
 
 fn names() -> Linter {

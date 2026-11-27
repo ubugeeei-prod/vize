@@ -23,6 +23,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = overlay.strict_boolean_expressions {
             self.strict_boolean_expressions = Some(options);
         }
+        if let Some(style) = overlay.component_definition_name_casing {
+            self.component_definition_name_casing = Some(style);
+        }
         if let Some(options) = &overlay.component_name_in_template_casing {
             self.component_name_in_template_casing = Some(options.clone());
         }

@@ -30,7 +30,10 @@ impl RuleRegistry {
         registry.register(Box::new(
             crate::rules::vue::NoReservedComponentNames::default(),
         ));
-        registry.register(Box::new(crate::rules::vue::ComponentDefinitionNameCasing));
+        registry.register(Box::new(
+            crate::rules::vue::ComponentDefinitionNameCasing::default(),
+        ));
+        registry.register(Box::new(crate::rules::vue::ComponentFileNameCasing));
         registry.register(Box::new(crate::rules::vue::HtmlQuotes::default()));
         registry.register(Box::new(crate::rules::vue::HtmlEndTags));
         registry.register(Box::new(

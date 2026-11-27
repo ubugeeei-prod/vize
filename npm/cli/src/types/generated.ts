@@ -286,6 +286,7 @@ export interface LintRuleOptions {
   };
   "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
+  "vue/component-definition-name-casing"?: "PascalCase" | "kebab-case";
   "vue/component-name-in-template-casing"?: {
     casing?: "PascalCase" | "kebab-case";
     registeredComponentsOnly?: boolean;
