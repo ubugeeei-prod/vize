@@ -5,6 +5,7 @@ use std::{fs, path::Path};
 use vize_l0::{String, ToCompactString, profile, profiler::global_profiler};
 
 use super::dts_ast;
+pub(super) use super::dts_ast::{DeclaredGlobals, GlobalTypeReexport};
 use super::dts_import_aliases::{
     ImportTypeAliases, collect_import_type_aliases, rewrite_import_type_aliases,
 };
@@ -66,28 +67,26 @@ pub(super) fn parse_interface_members_content(
         .collect()
 }
 
-pub(super) fn parse_declared_global_values(
-    path: &Path,
-) -> Result<Vec<(String, String)>, std::io::Error> {
+/// Read one declaration and return what its `declare global` blocks declare,
+/// with every relative module specifier made absolute so the result stays
+/// valid once it is copied out of the file.
+pub(super) fn parse_declared_globals(path: &Path) -> Result<DeclaredGlobals, std::io::Error> {
     let content = read_dts(path)?;
     let base_dir = path.parent().unwrap_or_else(|| Path::new("."));
-    Ok(parse_declared_global_values_content(&content, base_dir))
+    Ok(parse_declared_globals_content(&content, base_dir))
 }
 
-pub(super) fn parse_declared_global_values_content(
-    content: &str,
-    source_dir: &Path,
-) -> Vec<(String, String)> {
+pub(super) fn parse_declared_globals_content(content: &str, source_dir: &Path) -> DeclaredGlobals {
     let import_aliases = collect_import_type_aliases(content, source_dir);
-    dts_ast::parse_declared_global_values_content(content)
-        .into_iter()
-        .map(|(name, type_annotation)| {
-            (
-                name,
-                normalize_rewritten_type(type_annotation.as_str(), source_dir, &import_aliases),
-            )
-        })
-        .collect()
+    let mut globals = dts_ast::parse_declared_globals_content(content);
+    for (_, type_annotation) in &mut globals.values {
+        *type_annotation =
+            normalize_rewritten_type(type_annotation.as_str(), source_dir, &import_aliases);
+    }
+    for reexport in &mut globals.type_reexports {
+        reexport.specifier = rewrite_relative_specifier(reexport.specifier.as_str(), source_dir);
+    }
+    globals
 }
 
 fn read_dts(path: &Path) -> Result<String, std::io::Error> {
