@@ -189,6 +189,13 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
   publisher.run = originalPublisherRun;
 }
 
+// Pull requests also measure the instruction ceilings; the job is otherwise unchanged.
+function restoreQueueOnlyInstructionCeilings(job: Job) {
+  const pullRequest = "github.event_name == 'pull_request' || ";
+  assert.equal(String(job.if).split(pullRequest).length, 2, "one pull-request ceilings predicate");
+  job.if = String(job.if).replace(pullRequest, "");
+}
+
 test("maximum non-release runners preserve every original job contract", () => {
   let selectedJobs = 0,
     protectedJobs = 0,
@@ -214,6 +221,7 @@ test("maximum non-release runners preserve every original job contract", () => {
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreQueueOnlyInstructionCeilings(restored.jobs["instruction-counts"]);
       restoreCoverageSummaryPublisher(restored.jobs.coverage, before.jobs.coverage);
       restoreTestReportComment(restored, before);
       restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
