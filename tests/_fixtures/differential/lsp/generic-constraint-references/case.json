@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "id": "lsp/regression/generic-constraint-references",
+  "provenance": {
+    "fixCommit": "00bbe01a9ceedb9d79022d4a470d92682a57a81b",
+    "inputRevision": "e82d9a3789ab964ff9a5ff37e87243b021acf6d8",
+    "witnessPath": "tests/tooling/lsp-generic-attribute-navigation.test.ts",
+    "witnessTest": "generic attribute type parameters navigate like script setup code",
+    "inputOrigin": "The generic attribute project of the generic references case, queried at the imported constraint",
+    "contractOrigin": "References from a constraint in the generic attribute equal the references from its script import, declaration included"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85"
+    },
+    {
+      "source": "types.ts.txt",
+      "runtimePath": "types.ts",
+      "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "8882f61d56de6c3885729b21902203edc22491a9252fea72257d2f3a1f3e4e0c"
+  },
+  "method": "textDocument/references",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Type-service-backed references from a generic attribute constraint and from its import; source-inspected input custody does not establish native whole-product parity"
+}
