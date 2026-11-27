@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "import { ssrRenderSuspense as _ssrRenderSuspense } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _ssrRenderSuspense(_push, {\n    default: () => {\n      if ($setup.visible) {\n        _push(`<div>ready</div>`)\n      } else {\n        _push(`<!---->`)\n      }\n    },\n    _: 1\n  })\n}\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nlet visible = true;\n\nconst __returned__ = { visible }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            code: "import { ssrRenderSuspense as _ssrRenderSuspense } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _ssrRenderSuspense(_push, {\n    default: () => {\n      if ($setup.visible) {\n        _push(`<div>ready</div>`)\n      } else {\n        _push(`<!---->`)\n      }\n    },\n    _: 1\n  })\n}\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nlet visible = true;\n\nconst __returned__ = { get visible() { return visible }, set visible(v) { visible = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
             css: None,
             map: None,
             errors: [],

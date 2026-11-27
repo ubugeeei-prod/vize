@@ -22,7 +22,7 @@ const { onPing, hooks } = useHandlers()
 let swap = () => {}
 const fnRef = ref(() => {})
 
-const __returned__ = { swap, ref, MyButton, fnRef, onPing, useHandlers, hooks }
+const __returned__ = { get swap() { return swap }, set swap(v) { swap = v }, ref, MyButton, fnRef, onPing, useHandlers, hooks }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 return __returned__
 }

@@ -63,6 +63,7 @@
     "directives/v-pre": "children/dynamic-value",
     "directives/v-cloak": "children/dynamic-value",
     "props/key-replacement": "props/key-value",
+    "props/ref-callback": "props/ref-value",
     "tsx/typed-expressions": "tsx/child-value"
   }
 }

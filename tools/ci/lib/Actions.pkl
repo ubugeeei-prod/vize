@@ -19,6 +19,12 @@ linux = "blacksmith-32vcpu-ubuntu-2404"
 linux2204 = "blacksmith-32vcpu-ubuntu-2204"
 windows = "blacksmith-32vcpu-windows-2025"
 macos = "blacksmith-12vcpu-macos-15"
+// The smallest class we use, for build-free jobs (planners and short policy
+// checks with no Rust toolchain or sticky disk). They finish in seconds, and
+// a 32-vCPU slot spent on them delays a build job at the pool's cap.
+linuxSmall = "blacksmith-4vcpu-ubuntu-2404"
+// Source checks keep their complete commands on the available mid-size pool.
+linuxValidation = "blacksmith-16vcpu-ubuntu-2404"
 
 function use(action: String): Dynamic = new { uses = action }
 

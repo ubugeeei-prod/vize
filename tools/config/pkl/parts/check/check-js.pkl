@@ -1,6 +1,6 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 15
 permissions {
   contents = "read"
