@@ -10,7 +10,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_formatter::{QuoteStyle, format_program};
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
-use vize_l0::expression_guard::expression_is_safe_to_parse;
+use vize_l0::expression_guard::{MAX_EXPRESSION_NESTING_DEPTH, expression_is_safe_to_parse};
 use vize_l0::{String, ToCompactString};
 
 #[inline]
@@ -207,7 +207,11 @@ fn format_template_expression(
     attribute_depth: Option<usize>,
     attribute_layout: Option<(&str, &str, &str)>,
 ) -> Option<FormattedExpression> {
-    if !expression_is_safe_to_parse(trim_expression(expr)) {
+    let trimmed = trim_expression(expr);
+    // Each nesting level the parser recurses or backtracks on takes at least
+    // one byte, so text no longer than the depth limit cannot reach it and
+    // skips the scan.
+    if trimmed.len() > MAX_EXPRESSION_NESTING_DEPTH && !expression_is_safe_to_parse(trimmed) {
         return None;
     }
     format_expression_with_layout(
