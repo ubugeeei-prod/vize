@@ -11,7 +11,7 @@ import { createServer, isFileServingAllowed, resolveConfig, type ResolvedConfig 
 
 import { vize } from "../index.ts";
 import { loadHook } from "./load.ts";
-import { createServedFileCheck } from "./served-files.ts";
+import { createServedFileCheck, servedStylesheetRoots } from "./served-files.ts";
 import type { VizePluginState } from "./state.ts";
 
 const require = createRequire(import.meta.url);
@@ -223,4 +223,15 @@ void test("the dev server answers for an outside SFC as Vite does for any outsid
   assert.equal(linkedImport, `${linked}?vue&vize`);
   assert.equal(await status(linkedImport), 200);
   assert.equal(await status(outside), 403);
+});
+
+void test("served stylesheets read from the strict allow list only on the client", () => {
+  const server = (strict: boolean) =>
+    ({
+      server: { config: { server: { fs: { strict, allow: ["/work/app", "/work/packages"] } } } },
+    }) as unknown as Pick<VizePluginState, "server">;
+  assert.deepEqual(servedStylesheetRoots(server(true), false), ["/work/app", "/work/packages"]);
+  assert.equal(servedStylesheetRoots(server(true), true), undefined);
+  assert.equal(servedStylesheetRoots(server(false), false), undefined);
+  assert.equal(servedStylesheetRoots({ server: null }, false), undefined);
 });

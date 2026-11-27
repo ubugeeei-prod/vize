@@ -42,8 +42,26 @@ pub fn resolve_css_imports(
     is_dev: bool,
     dev_url_base: Option<&str>,
 ) -> String {
+    resolve_css_imports_in(css, importer, alias_rules, is_dev, dev_url_base, None)
+}
+
+/// [`resolve_css_imports`] for a dev server that serves only `readable_roots`.
+///
+/// An `@import` is inlined, and a `url()` rewritten to `/@fs/`, only for a file
+/// inside one of the roots (Vite's `server.fs.allow`). Anything else is left
+/// as authored, for Vite's own resolver and its `server.fs` rules. `None`
+/// reads every file the stylesheet names, as a build does.
+pub fn resolve_css_imports_in(
+    css: &str,
+    importer: &str,
+    alias_rules: &[CssAliasRule],
+    is_dev: bool,
+    dev_url_base: Option<&str>,
+    readable_roots: Option<&[PathBuf]>,
+) -> String {
+    let readable = Readable::new(readable_roots);
     let mut custom_media: SmallVec<[CustomMedia; 4]> = SmallVec::new();
-    let mut result = inline_css_imports(css, importer, alias_rules, &mut custom_media);
+    let mut result = inline_css_imports(css, importer, alias_rules, &readable, &mut custom_media);
 
     parse_custom_media(result.as_str(), &mut custom_media);
     result = replace_regex_all(CUSTOM_MEDIA_LINE_RE.as_ref(), result.as_str(), "");
@@ -57,11 +75,43 @@ pub fn resolve_css_imports(
     }
 
     if is_dev {
-        result = resolve_dev_urls(result.as_str(), importer, alias_rules, dev_url_base);
+        result = resolve_dev_urls(
+            result.as_str(),
+            importer,
+            alias_rules,
+            &readable,
+            dev_url_base,
+        );
     }
 
     result = css_scope::unwrap_deep_selectors(result.as_str());
     collapse_excess_blank_lines(result.as_str())
+}
+
+/// The files a stylesheet may read: all of them, or those inside some roots.
+struct Readable {
+    roots: Option<std::vec::Vec<PathBuf>>,
+}
+
+impl Readable {
+    fn new(roots: Option<&[PathBuf]>) -> Self {
+        let roots = roots.map(|roots| {
+            roots
+                .iter()
+                .map(|root| std::fs::canonicalize(root).unwrap_or_else(|_| root.clone()))
+                .collect()
+        });
+        Self { roots }
+    }
+
+    /// Whether `path` names an existing file this stylesheet may read.
+    fn allows(&self, path: &Path) -> bool {
+        let Some(roots) = &self.roots else {
+            return path.exists();
+        };
+        std::fs::canonicalize(path)
+            .is_ok_and(|real| roots.iter().any(|root| real.starts_with(root)))
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -74,6 +124,7 @@ fn inline_css_imports(
     css: &str,
     importer: &str,
     alias_rules: &[CssAliasRule],
+    readable: &Readable,
     custom_media: &mut SmallVec<[CustomMedia; 4]>,
 ) -> String {
     let mut output = String::with_capacity(css.len());
@@ -92,7 +143,7 @@ fn inline_css_imports(
         };
 
         let replacement = resolve_css_path(import_path, importer, alias_rules)
-            .filter(|path| path.exists())
+            .filter(|path| readable.allows(path))
             .and_then(|path| std::fs::read_to_string(path).ok());
 
         output.push_str(css.get(last..matched.start()).unwrap_or_default());
@@ -137,6 +188,7 @@ fn resolve_dev_urls(
     css: &str,
     importer: &str,
     alias_rules: &[CssAliasRule],
+    readable: &Readable,
     dev_url_base: Option<&str>,
 ) -> String {
     let bytes = css.as_bytes();
@@ -163,7 +215,7 @@ fn resolve_dev_urls(
         }
 
         let replacement = resolve_css_path(trimmed, importer, alias_rules)
-            .filter(|path| path.exists())
+            .filter(|path| readable.allows(path))
             .map(|path| {
                 let normalized = normalize_path_for_url(&path);
                 let base = dev_url_base.unwrap_or("/");
@@ -421,6 +473,35 @@ mod tests {
             result,
             ".icon::before { content: \"→\"; }\n\n.日本語 { color: red; }"
         );
+    }
+
+    #[test]
+    fn served_stylesheets_read_only_inside_their_roots() {
+        let holder = tempfile::tempdir().unwrap();
+        let root = holder.path().join("app");
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(root.join("src/theme.css"), ".theme { color: red; }").unwrap();
+        std::fs::write(root.join("src/logo.svg"), "<svg/>").unwrap();
+        std::fs::write(
+            holder.path().join("outside.css"),
+            ".outside { color: blue; }",
+        )
+        .unwrap();
+        let importer = root.join("src/App.vue");
+        let importer = importer.to_str().unwrap();
+        let css = "@import './theme.css';\n@import '../../outside.css';\n\
+                   .a { background: url(./logo.svg); }\n.b { background: url(../../outside.css); }";
+        let roots = [root.clone()];
+
+        let served = resolve_css_imports_in(css, importer, &[], true, None, Some(&roots));
+        assert!(served.contains(".theme { color: red; }"));
+        assert!(served.contains("@import '../../outside.css';"));
+        assert!(served.contains("/@fs/"));
+        assert!(served.contains("url(../../outside.css)"));
+
+        // A build reads what the stylesheet names.
+        let built = resolve_css_imports(css, importer, &[], false, None);
+        assert!(built.contains(".outside { color: blue; }"));
     }
 
     #[test]

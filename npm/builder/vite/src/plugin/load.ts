@@ -27,7 +27,7 @@ import {
   normalizeStyleVirtualId,
 } from "./load-style.ts";
 import { loadCustomBlock } from "./custom-block-load.ts";
-import { isServedFileAllowed } from "./served-files.ts";
+import { isServedFileAllowed, servedStylesheetRoots } from "./served-files.ts";
 import { getSfcModuleRequest, loadSfcModuleSource } from "./sfc-module.ts";
 
 export { normalizeVueServerRendererImport };
@@ -178,6 +178,7 @@ export function loadHook(
         state.cssAliasRules,
         state.server !== null,
         currentBase,
+        servedStylesheetRoots(state, !!loadOptions?.ssr),
       );
     }
     return null;

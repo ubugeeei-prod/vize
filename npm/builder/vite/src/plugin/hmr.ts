@@ -15,6 +15,7 @@ import {
 import { collectCustomBlockModules } from "./custom-block-hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { resolveCssImports } from "../utils/css.ts";
+import { servedStylesheetRoots } from "./served-files.ts";
 import {
   collectModulesByFile,
   getStyleModuleFileCandidates,
@@ -284,6 +285,7 @@ async function handleVueFileHotUpdate(
           state.cssAliasRules,
           true,
           state.clientViteBase,
+          servedStylesheetRoots(state, false),
         ),
       },
     });
