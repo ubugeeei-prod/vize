@@ -7,7 +7,7 @@ strategy {
     surface = List("fresco", "ui")
   }
 }
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 35
 env {
 

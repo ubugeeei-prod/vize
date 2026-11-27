@@ -9,8 +9,8 @@
   "originalReferencePath": "tsx-syntax-edges.original.snap",
   "originalReferenceBytes": 1978,
   "originalReferenceSha256": "2df10d46a6f15bc6f71299a2a03312e0d3a0cb5eed745caf53e847b2e32006d3",
-  "currentReferenceBytes": 2244,
-  "currentReferenceSha256": "6dccb4d88e47bc655434544839155f437059342b9393521c4264e4b2bb53841c",
+  "currentReferenceBytes": 2213,
+  "currentReferenceSha256": "ec6df97a0adcd14c1d40562d3d8cd8d110cbd30d142fa9e4573f7566d4a10490",
   "actualFailure": {
     "run": 37417123222,
     "job": 112120054162,

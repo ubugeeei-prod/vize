@@ -114,7 +114,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_component_reads(
                         scripts.parses(),
                         Some(&l2),
-                        self.macro_type_resolution(filename),
+                        self.sfc_macro_type_resolution(descriptor, filename),
                         self.read_demand(),
                         derived,
                     )
@@ -122,7 +122,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_lint_with_template(
                         scripts.parses(),
                         Some(&l2),
-                        self.macro_type_resolution(filename),
+                        self.sfc_macro_type_resolution(descriptor, filename),
                         self.read_demand(),
                         derived,
                     )
