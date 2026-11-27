@@ -28,7 +28,6 @@ jobs:
     env:
       # Reusable workflows retain the caller's workflow name.
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/level-instruction-counts"
-      MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -38,50 +37,41 @@ jobs:
           node-version-file: package.json
           run-install: false
       - name: Install pinned measurement Rust
-        if: env.MEASURE == 'true'
         run: rustup toolchain install 1.100.0 --profile minimal
       - name: Install Callgrind and matching client request headers
-        if: env.MEASURE == 'true'
         run: . "${{ env.VIZE_CI_FILES }}/install-callgrind-and-matching-client-request-headers.sh"
       - uses: ./.github/actions/setup-wild-http-recovery
-        if: env.MEASURE == 'true'
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: env.MEASURE == 'true'
         with:
           key: instruction-counts-v2
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
         run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.ts
       - name: Test default harness and client request windows
-        if: env.MEASURE == 'true'
         run: . "${{ env.VIZE_CI_FILES }}/test-default-harness-and-client-request-windows.sh"
       - name: Measure original formatter routines three times without Criterion sampling
-        if: env.MEASURE == 'true'
         run: node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts"
       - name: Measure each stage three times without Criterion sampling
-        if: env.MEASURE == 'true'
         run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
       - name: Verify pinned registry and immutable base ratchet
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
         run: . "${{ env.VIZE_CI_FILES }}/verify-pinned-registry-and-immutable-base-ratchet.sh"
       - name: Enforce pinned ceilings
-        if: env.MEASURE == 'true'
         run: . "${{ env.VIZE_CI_FILES }}/enforce-pinned-ceilings.sh"
       - name: Enforce original formatter ceilings
-        if: env.MEASURE == 'true'
         run: . "${{ env.VIZE_CI_FILES }}/enforce-original-formatter-ceilings.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ always() && env.MEASURE == 'true' }}
+        if: always()
         with:
           name: instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/instruction-counts
           if-no-files-found: warn
           retention-days: 30
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ always() && env.MEASURE == 'true' }}
+        if: always()
         with:
           name: formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/formatter-instruction-counts

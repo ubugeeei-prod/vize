@@ -122,7 +122,7 @@ export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): 
   return aggregateNeedsResults(needs, skippable);
 }
 
-/** The outer Check report requires measured ceilings in the queue and full qualification. */
+/** The outer Check report requires measured ceilings on every event it reports. */
 export function aggregateCheckReportResults(needs: unknown, eventName: unknown): GateReport {
   if (
     !["pull_request", "merge_group", "schedule", "workflow_dispatch"].includes(eventName as string)
@@ -132,12 +132,7 @@ export function aggregateCheckReportResults(needs: unknown, eventName: unknown):
   if (!needs || typeof needs !== "object" || !Object.hasOwn(needs, "instruction-counts")) {
     throw new Error("Check report needs context is missing instruction-counts");
   }
-  return aggregateNeedsResults(
-    needs,
-    eventName === "pull_request"
-      ? { "instruction-counts": "queue and full qualification only" }
-      : {},
-  );
+  return aggregateNeedsResults(needs, {});
 }
 
 /** Full qualification requires both the exhaustive package matrix and both-host project replay. */
