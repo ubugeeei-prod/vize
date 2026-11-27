@@ -36,15 +36,22 @@ export function restorePinnedWildAction(
 /** The Vite+ CLI release that `vpVersion` in tools/ci/lib/Actions.pkl pins. */
 export const pinnedVpVersion = "1.8.0";
 
-/** Reverse the Vite+ CLI pin on setup-vp steps recorded before it existed. */
-export function restoreVpVersionPin(
-  steps: Array<{ uses?: string; with?: Record<string, unknown> }>,
-): number {
+type SetupStep = { uses?: string; with?: Record<string, unknown> };
+const isSetupVp = (step: SetupStep) => step.uses?.startsWith("voidzero-dev/setup-vp@") === true;
+
+/**
+ * Reverse the Vite+ CLI pin on setup-vp steps recorded before it existed. With
+ * `before`, each step gets back the version its recorded counterpart passed.
+ */
+export function restoreVpVersionPin(steps: SetupStep[], before?: SetupStep[]): number {
+  const previous = before?.filter(isSetupVp).map((step) => step.with?.version);
   let restored = 0;
   for (const step of steps) {
-    if (!step.uses?.startsWith("voidzero-dev/setup-vp@")) continue;
+    if (!isSetupVp(step)) continue;
     assert.equal(step.with?.version, pinnedVpVersion);
-    delete step.with.version;
+    const original = previous?.[restored];
+    if (original === undefined) delete step.with!.version;
+    else step.with!.version = original;
     restored += 1;
   }
   return restored;

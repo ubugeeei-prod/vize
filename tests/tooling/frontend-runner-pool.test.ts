@@ -23,6 +23,7 @@ import {
   checkWorkflowJobSources,
   restorePinnedWildAction,
   restoreRustToolchainPin,
+  restoreVpVersionPin,
 } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
@@ -205,6 +206,9 @@ test("maximum non-release runners preserve every original job contract", () => {
         original,
       );
     }
+    // Every setup-vp step now passes the pinned Vite+ CLI version.
+    for (const [id, job] of Object.entries(restored.jobs))
+      restoreVpVersionPin(job.steps ?? [], before.jobs[id]?.steps);
     let restoredWildSteps = 0;
     if (specification.name === "check") {
       restoredWildSteps += Object.values(restored.jobs).reduce(

@@ -120,16 +120,14 @@ function scalarEdits(
 ): boolean {
   if (isMap(node) && isMapping(previous) && isMapping(value)) {
     if (!insertedKey(node, value, edits, source)) return false;
-    return (
-      node.items.every((pair) => {
-        if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
-        const key = pair.key.value;
-        return (
-          Object.hasOwn(value, key) &&
-          scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered, source)
-        );
-      })
-    );
+    return node.items.every((pair) => {
+      if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
+      const key = pair.key.value;
+      return (
+        Object.hasOwn(value, key) &&
+        scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered, source)
+      );
+    });
   }
   if (isSeq(node) && Array.isArray(previous) && Array.isArray(value)) {
     const plainValues = node.items.every(
@@ -140,7 +138,14 @@ function scalarEdits(
       (plainValues ||
         sequenceSources(previous, value, ordered).every((source, index) => source === index)) &&
       value.every((child, index) =>
-        scalarEdits(node.items[index] as Node | null, previous[index]!, child, edits, ordered, source),
+        scalarEdits(
+          node.items[index] as Node | null,
+          previous[index]!,
+          child,
+          edits,
+          ordered,
+          source,
+        ),
       )
     );
   }

@@ -84,7 +84,7 @@
   },
   "typescript-provider-vsix": {
     "before": "d22338f949d4e20c373c8a7feab76b19d07c2a297858b2336a41e3401ec9e46e",
-    "workflow": "474a4b8070052cbd3e819b504fb064b311fb933ea8f3efafcdfc544f8af4d6ee",
+    "workflow": "b68eae8b42b0a45b776fe00b06d5f05b54271fc7c1f851f7931cbef5cdc7511c",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
