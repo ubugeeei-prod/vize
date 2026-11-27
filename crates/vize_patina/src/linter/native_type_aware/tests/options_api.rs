@@ -108,3 +108,64 @@ export default defineComponent({
         "Options API props should stay typed in template",
     );
 }
+
+#[test]
+fn options_api_boolean_props_with_comments_keep_their_checked_type() {
+    if !corsa_available() {
+        return;
+    }
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(vec![RULE_NO_UNSAFE_TEMPLATE_BINDING.into()]))
+        .with_type_aware_lint(true);
+    for expression in [
+        "open /* explanation */",
+        "/* explanation */ open",
+        "open // explanation\n",
+    ] {
+        let source = format!(
+            r#"<script lang="ts">
+export default {{ props: {{ open: {{ type: Boolean, required: true }} }} }};
+</script><template><span :data-open="{expression}" /></template>"#
+        );
+        let result = lint_sfc_with_corsa(&linter, &source, "CommentedOptionsProp.vue");
+        assert_absent_note(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING, expression);
+    }
+}
+
+#[test]
+fn options_api_setup_and_data_bindings_shadow_props_without_hiding_any() {
+    if !corsa_available() {
+        return;
+    }
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(vec![RULE_NO_UNSAFE_TEMPLATE_BINDING.into()]))
+        .with_type_aware_lint(true);
+    for option in ["setup", "data"] {
+        let source = format!(
+            r#"<script lang="ts">
+export default {{
+  props: {{ open: {{ type: Boolean, required: true }} }},
+  {option}() {{ return {{ open: 1 as any }}; }},
+}};
+</script><template><span :data-open="open" /></template>"#
+        );
+        let result = lint_sfc_with_corsa(&linter, &source, "SetupShadowsProp.vue");
+        assert_reports(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
+    }
+}
+
+#[test]
+fn options_api_explicit_any_props_stay_unsafe() {
+    if !corsa_available() {
+        return;
+    }
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(vec![RULE_NO_UNSAFE_TEMPLATE_BINDING.into()]))
+        .with_type_aware_lint(true);
+    let source = r#"<script lang="ts">
+import type { PropType } from 'vue';
+export default { props: { open: { type: null as unknown as PropType<any>, required: true } } };
+</script><template><span :data-open="open" /></template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "AnyOptionsProp.vue");
+    assert_reports(&result, RULE_NO_UNSAFE_TEMPLATE_BINDING);
+}

@@ -3,6 +3,7 @@
 
 use vize_croquis::{Croquis, ScopeKind};
 use vize_l0::{String, cstr};
+use vize_relief::BindingType;
 
 /// Resolve an authored reference from its recorded template expression scope.
 /// Script and template offsets overlap, so a flat offset-based scope lookup
@@ -15,6 +16,16 @@ pub(super) struct OptionsPropScope<'a> {
 
 impl OptionsPropScope<'_> {
     pub fn is_prop_reference(self, name: &str, authored: usize) -> bool {
+        // Setup returns and data precede props in Vue's instance lookup.
+        // Their authored types, including `any`, must stay authoritative.
+        if self
+            .summary
+            .bindings
+            .get(name.trim())
+            .is_some_and(|kind| !matches!(kind, BindingType::Props | BindingType::PropsAliased))
+        {
+            return false;
+        }
         let Some(relative) = u32::try_from(authored)
             .ok()
             .and_then(|offset| offset.checked_sub(self.template_offset))
@@ -24,7 +35,8 @@ impl OptionsPropScope<'_> {
         let Some(expression) = self.summary.template_expressions.iter().find(|expression| {
             expression.start <= relative
                 && relative < expression.end
-                && expression.content.trim() == name.trim()
+                && vize_croquis::drawer::strip_js_comments(&expression.content).trim()
+                    == name.trim()
         }) else {
             return false;
         };
