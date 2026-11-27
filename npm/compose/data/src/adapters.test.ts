@@ -6,8 +6,11 @@ import {
   createDataTestAdapter,
   createFetchDataResource,
   createStreamDataResource,
+  DataHttpError,
   defineDataResource,
+  hydrateDataClient,
   hydrateDataClientFromStream,
+  serializeDataSnapshot,
   streamDataSnapshot,
 } from "./index.ts";
 
@@ -69,4 +72,38 @@ void test("queue-backed test adapter records contexts and deterministic failures
     adapter.calls.map(({ input }) => input.id),
     ["one", "two"],
   );
+});
+
+void test("a failed fetch keeps the upstream body in process and out of the snapshot", async () => {
+  const resource = createFetchDataResource<"article.failed", { id: string }, { title: string }>({
+    key: "article.failed",
+    source: "../fixtures/ArticleView.vue",
+    endpoint: ({ id }) => `https://example.test/articles/${id}`,
+    fetch: async () =>
+      new Response("upstream error page", { status: 502, statusText: "Bad Gateway" }),
+  });
+  const server = createDataClient({ now: () => 100 });
+  const state = await server.load(resource, { id: "intro" });
+  const error = state.status === "error" ? state.error : undefined;
+  assert.ok(error instanceof DataHttpError);
+  assert.equal(error.body, "upstream error page");
+
+  const serialized = {
+    status: "error",
+    key: "article.failed",
+    input: { id: "intro" },
+    requestKey: 'article.failed:{"id":"intro"}',
+    error: {
+      name: "DataHttpError",
+      message: "HTTP 502 Bad Gateway",
+      status: 502,
+      statusText: "Bad Gateway",
+    },
+    updatedAt: 100,
+  };
+  const payload: unknown = JSON.parse(JSON.stringify(serializeDataSnapshot(server)));
+  assert.deepEqual(payload, { schemaVersion: 1, resources: [serialized] });
+
+  const client = hydrateDataClient(payload as Parameters<typeof hydrateDataClient>[0]);
+  assert.deepEqual(client.peek(resource, { id: "intro" }), serialized);
 });

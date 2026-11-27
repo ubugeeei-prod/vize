@@ -133,11 +133,11 @@ fn an_unowned_global_call_does_not_demand_inferred_ref_instances() {
 }
 
 #[test]
-fn typed_and_nested_calls_do_not_demand_inferred_ref_instances() {
+fn typed_and_exported_calls_do_not_demand_inferred_ref_instances() {
     for script in [
         "import { useTemplateRef } from 'vue'; const box = useTemplateRef<HTMLElement>('box');",
         "import { useTemplateRef as r } from 'vue'; const box = r<HTMLElement, 'box'>('box');",
-        "import { useTemplateRef } from 'vue'; function nested() { return useTemplateRef('box'); }",
+        "import { useTemplateRef } from 'vue'; export function nested() { return useTemplateRef('box'); }",
         "const text = 'useTemplateRef'; // useTemplateRef('box')",
     ] {
         assert!(

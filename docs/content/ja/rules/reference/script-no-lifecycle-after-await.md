@@ -66,4 +66,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L49)

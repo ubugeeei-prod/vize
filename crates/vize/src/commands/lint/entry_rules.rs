@@ -1,6 +1,7 @@
 //! Batch resolution of declaration-ordered `entries[].linter.rules`.
 
 use std::path::{Path, PathBuf};
+use vize_carton::nuxt::auto_imports::NuxtRoots;
 use vize_l0::{
     FxHashMap, String,
     config::{
@@ -15,7 +16,6 @@ use vize_patina::{
 mod nuxt_globals;
 
 use super::{LintArgs, ResolvedLintPreset};
-use crate::commands::project_nuxt::auto_imports::NuxtRoots;
 #[cfg(test)]
 use crate::lint_plan::matcher::GlobSequence;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};

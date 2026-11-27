@@ -2,7 +2,7 @@
 use super::super::{FormatResult, GlyphFormatter, estimate_output_size, template_block};
 use super::{TemplateOnlyDescriptor, template_only};
 use crate::{EndOfLine, FormatError, FormatOptions};
-use vize_l0::String;
+use vize_l0::string_builder::TextBuf;
 
 impl GlyphFormatter<'_> {
     /// Format the complete original source selected by L1. The descriptor
@@ -16,7 +16,7 @@ impl GlyphFormatter<'_> {
         let write = |options: &FormatOptions| {
             let block = template_only(observed);
             let mut output =
-                Vec::with_capacity(estimate_output_size(source, core::slice::from_ref(&block)));
+                TextBuf::with_capacity(estimate_output_size(source, core::slice::from_ref(&block)));
             template_block::write_template_block(
                 &mut output,
                 &block,
@@ -26,10 +26,8 @@ impl GlyphFormatter<'_> {
                 self.preserve_template_whitespace,
             )?;
             // The block writer ends with the closing tag even for empty content.
-            output.extend_from_slice(options.newline_bytes());
-            // SAFETY: the same template writer emits UTF-8 source and formatting
-            // text; the only subsequent bytes are an ASCII line ending.
-            let code = unsafe { String::from_utf8_unchecked(output) };
+            output.push_str(options.newline_string());
+            let code = output.into_compact();
             let changed = code != source;
             Ok(FormatResult { code, changed })
         };

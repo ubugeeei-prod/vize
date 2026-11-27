@@ -1,6 +1,7 @@
 //! Wrap only authored HTML whitespace outside JavaScript interpolation syntax.
 use super::{TemplateFormatter, parse_interpolation_range, suppression::LineJoiner};
 use unicode_width::UnicodeWidthStr;
+use vize_l0::string_builder::TextBuf;
 
 impl TemplateFormatter<'_> {
     fn display_width(&self, text: &str) -> usize {
@@ -8,18 +9,14 @@ impl TemplateFormatter<'_> {
             + text.bytes().filter(|byte| *byte == b'\t').count() * self.options.tab_width as usize
     }
 
-    fn output_column(&self, output: &[u8]) -> usize {
-        let line = output
-            .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
-            .next()
-            .unwrap_or_default();
-        self.display_width(core::str::from_utf8(line).unwrap_or_default())
-            + self.base_depth * self.options.tab_width as usize
+    fn output_column(&self, output: &str) -> usize {
+        let line = super::current_line(output);
+        self.display_width(line) + self.base_depth * self.options.tab_width as usize
     }
 
     pub(super) fn write_wrapped_text_run(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         text: &str,
         range: (usize, usize),
         depth: usize,
@@ -32,11 +29,10 @@ impl TemplateFormatter<'_> {
         let suffix = name.map_or(0, |name| name.len() + 3);
         let width = self.options.print_width as usize;
         // UTF-8 bytes bound display width in the ordinary tab-free path.
-        let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
-        let line = output.get(line_start..).unwrap_or_default();
+        let line = super::current_line(output);
         if line.len() + self.base_depth * self.options.tab_width as usize + text.len() + suffix
             <= width
-            && memchr::memchr(b'\t', line).is_none()
+            && memchr::memchr(b'\t', line.as_bytes()).is_none()
             && !text.contains('\t')
         {
             return false;
@@ -52,18 +48,15 @@ impl TemplateFormatter<'_> {
         // indentation. The matching closing `>` stays inside tag syntax too.
         let hugged = name.is_some();
         if hugged {
-            let line = output
-                .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
-                .next()
-                .unwrap_or_default();
-            if line.last() == Some(&b'>')
+            let line = super::current_line(output);
+            if line.ends_with('>')
                 && line
                     .get(..line.len().saturating_sub(1))
-                    .is_some_and(|prefix| prefix.iter().all(|byte| matches!(byte, b' ' | b'\t')))
+                    .is_some_and(|prefix| prefix.bytes().all(|byte| matches!(byte, b' ' | b'\t')))
             {
-                output.pop();
-                output.extend_from_slice(self.indent);
-                output.push(b'>');
+                output.truncate(output.len() - 1);
+                output.push_str(self.indent);
+                output.push('>');
             }
         }
         let mut previous_end = 0;
@@ -82,15 +75,15 @@ impl TemplateFormatter<'_> {
                     + closing
                     > width
             {
-                output.extend_from_slice(self.newline);
+                output.push_str(self.newline);
                 self.write_indent(output, depth);
             } else {
-                output.extend_from_slice(gap.as_bytes());
+                output.push_str(gap);
             }
-            output.extend_from_slice(word.as_bytes());
+            output.push_str(word);
             previous_end = end;
         }
-        output.extend_from_slice(self.newline);
+        output.push_str(self.newline);
         if hugged {
             joiner.wrapped_text(range.1);
         }
@@ -102,7 +95,7 @@ impl TemplateFormatter<'_> {
     #[inline]
     pub(super) fn following_text_overflows<const CANONICAL: bool>(
         &self,
-        output: &[u8],
+        output: &str,
         source: &str,
         start: usize,
     ) -> bool {
@@ -122,7 +115,7 @@ impl TemplateFormatter<'_> {
     #[inline(never)]
     fn following_inline_text_overflows<const CANONICAL: bool>(
         &self,
-        output: &[u8],
+        output: &str,
         tail: &str,
     ) -> bool {
         let mut end = 0;

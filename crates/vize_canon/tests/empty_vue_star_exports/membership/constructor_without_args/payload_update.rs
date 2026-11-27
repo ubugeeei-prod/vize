@@ -36,6 +36,7 @@ mod jsx_shared_helpers;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod lib_type_shadowing_audit;
+mod library_kebab_listeners;
 mod library_props_fallthrough;
 mod listener_contract;
 mod listener_relations;

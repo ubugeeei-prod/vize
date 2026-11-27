@@ -13,7 +13,7 @@ use super::{
         children::{generate_children, generate_children_force_array, is_directive_comment},
         context::CodegenContext,
         expression::generate_expression,
-        helpers::{is_builtin_component, to_valid_asset_identifier},
+        helpers::{is_builtin_component, js_string_contents, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -335,7 +335,7 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
         ctx.use_helper(RuntimeHelper::ResolveDynamicComponent);
         ctx.push(ctx.helper(RuntimeHelper::ResolveDynamicComponent));
         ctx.push("(\"");
-        ctx.push(component_name);
+        ctx.push(&js_string_contents(component_name));
         ctx.push("\")");
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);

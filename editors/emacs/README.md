@@ -12,6 +12,9 @@ By default, Eglot lets the server read `vue` settings from `vite.config.*` and
 `vueCompilerOptions` from `tsconfig.json`, including nested projects.
 Set `vize-eglot-profile` or pass a named profile to override project features.
 
+The server evaluates the project's Vite config and uses the project's TypeScript runtime, so
+enable it only for projects you trust.
+
 Profiles:
 
 - `lint`: enables lint diagnostics; disables type checking, editor features,

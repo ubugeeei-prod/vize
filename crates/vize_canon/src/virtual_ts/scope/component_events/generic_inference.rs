@@ -27,6 +27,8 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) component_type_name: &'a str,
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
+    /// The authored kebab listener key as a TS string literal, or `never`.
+    pub(super) raw_prop_key: &'a str,
     /// Alias that is `true` for a vue-tsc generic library export.
     pub(super) library: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
@@ -372,10 +374,11 @@ pub(super) fn generate_inferred_emit_args(
     } else {
         "unknown[]"
     };
-    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+    let library_args =
+        super::listener_contract::library_listener_args(&emit_props, prop_key, ctx.raw_prop_key);
     append!(
         *ts,
-        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
+        "{indent}type {inferred_args} = {library} extends true ? {library_args} : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
     );
     let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
         let contextless_listener = cstr!(

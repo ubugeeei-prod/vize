@@ -3,6 +3,19 @@ const { test } = require("node:test");
 const { createMappedLanguageService } = require("../../npm/typescript-plugin/language-service.cjs");
 const ts = require("../node_modules/typescript");
 
+// nativePath is honoured only when the project resolves this checkout's plugin.
+function linkPlugin(project) {
+  const fs = require("node:fs"),
+    path = require("node:path");
+  const scope = path.join(project, "node_modules/@vizejs");
+  fs.mkdirSync(scope, { recursive: true });
+  fs.symlinkSync(
+    fs.realpathSync(path.join(__dirname, "../../npm/typescript-plugin")),
+    path.join(scope, "typescript-vue-plugin"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+}
+
 void test("one project fingerprints its native closure once per epoch and disposes exact watches", (context) => {
   const fs = require("node:fs"),
     os = require("node:os"),
@@ -10,6 +23,7 @@ void test("one project fingerprints its native closure once per epoch and dispos
   const { installVueVirtualModules } = require("../../npm/typescript-plugin/virtual-modules.cjs");
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-project-closure-"));
   const nativeRoot = path.join(root, "native");
+  linkPlugin(root);
   fs.mkdirSync(nativeRoot);
   fs.writeFileSync(
     path.join(nativeRoot, "package.json"),

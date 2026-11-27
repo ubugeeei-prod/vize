@@ -3,15 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
-import { getCompileOptionsForRequest } from "./state.ts";
 import { evictCompiledModule, ownersOfDependency, ownersOfFile } from "./compiled-module-cache.ts";
-import { compileFile } from "../compiler.ts";
 import {
   detectHmrUpdateType,
   hasCustomBlockChanges,
   hasHmrChanges,
   hasStyleChanges,
   type HmrUpdateType,
+  VIZE_RERENDER_EVENT,
 } from "../hmr.ts";
 import { collectCustomBlockModules } from "./custom-block-hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
@@ -26,6 +25,7 @@ import {
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
+import { compileHotUpdatedSfc } from "./hot-update-compiles.ts";
 import { typeProjectDependencyRoots } from "./type-project-watches.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
@@ -156,10 +156,18 @@ export async function handleHotUpdateHook(
   let source: Promise<string> | undefined;
   const readSource = () => (source ??= read());
   const affected = new Set<ModuleNode>();
+  const rerenderIds: string[] = [];
   let useDefaultHandling = false;
   try {
     for (const vueFile of vueFiles) {
-      const modules = await handleVueFileHotUpdate(state, ctx, vueFile, readSource, options);
+      const modules = await handleVueFileHotUpdate(
+        state,
+        ctx,
+        vueFile,
+        readSource,
+        options,
+        rerenderIds,
+      );
       if (modules === undefined) useDefaultHandling = true;
       else for (const module of modules) affected.add(module);
     }
@@ -167,6 +175,11 @@ export async function handleHotUpdateHook(
     state.logger.error(`Re-compilation failed for ${file}:`, error);
     options.onRecompileError?.(error);
     return;
+  }
+  // Sent before Vite's update, so the re-executed module knows this save is
+  // the one its template-only update type was computed for.
+  if (rerenderIds.length > 0) {
+    server.ws.send({ type: "custom", event: VIZE_RERENDER_EVENT, data: { ids: rerenderIds } });
   }
   if (affected.size > 0) return [...affected];
   return useDefaultHandling ? undefined : [];
@@ -178,6 +191,7 @@ async function handleVueFileHotUpdate(
   file: string,
   readSource: () => Promise<string>,
   options: HotUpdateHookOptions,
+  rerenderIds: string[],
 ): Promise<ModuleNode[] | void> {
   const { server } = ctx;
   const initialModules = options.requireAcceptingClientModule
@@ -199,13 +213,15 @@ async function handleVueFileHotUpdate(
     return [];
   }
   const source = await readSource();
-  const prevCompiled = state.cache.get(file);
+  let prevCompiled = state.cache.get(file);
 
   if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, file, source);
-  compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
+  // The other SFCs this wave of hot updates changed compile in the same batch.
+  const { compiled: newCompiled, repeated } = await compileHotUpdatedSfc(state, file, source);
+  // A file reported twice in one wave: the first report carries the update.
+  if (repeated) prevCompiled = newCompiled;
   state.ssrCache.delete(file);
 
-  const newCompiled = state.cache.get(file)!;
   try {
     const stat = fs.statSync(file);
     state.precompileMetadata.set(file, {
@@ -276,6 +292,7 @@ async function handleVueFileHotUpdate(
 
   if (modules.size > 0) {
     state.pendingHmrUpdateTypes.set(file, updateType);
+    if (updateType === "template-only") rerenderIds.push(newCompiled.scopeId);
     invalidateModules(server, modules);
     const affected = new Set(modules);
     // A save that changes the template (or script) together with a style

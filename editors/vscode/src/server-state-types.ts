@@ -24,7 +24,13 @@ export type ReleaseServerTarget = {
   archiveName: string;
   targetName: string;
 };
-export type VizeStatus = "disabled" | "starting" | "ready" | "missing-server" | "failed";
+export type VizeStatus =
+  | "disabled"
+  | "untrusted"
+  | "starting"
+  | "ready"
+  | "missing-server"
+  | "failed";
 export type VizeStatusAction =
   | "recommended"
   | "lintOnly"

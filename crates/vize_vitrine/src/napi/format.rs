@@ -7,10 +7,10 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_glyph::{
-    Allocator, ArrowParens, AttributeSortOrder, FormatOptions, FormatPreset, GlyphFormatter,
-    ObjectWrap, QuoteProps, TrailingComma, VueVersion, resolve_sort_imports,
-};
+use vize_glyph::{Allocator, FormatOptions, GlyphFormatter, VueVersion, resolve_sort_imports};
+
+mod overrides;
+pub(super) use overrides::apply_overrides;
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
 #[napi(string_enum = "lowercase")]
@@ -73,6 +73,9 @@ pub struct FormatOptionsNapi {
     pub normalize_directive_shorthands: Option<bool>,
     /// Order SFC blocks canonically; false preserves their authored order.
     pub sort_blocks: Option<bool>,
+    /// Write one blank line between SFC blocks, or preserve the authored spacing.
+    #[napi(ts_type = "'blank-line' | 'preserve'")]
+    pub block_spacing: Option<String>,
     /// Re-quote CSS, SCSS and Less strings with the singleQuote preference.
     pub normalize_css_quotes: Option<bool>,
     /// Normalize one-line static style attributes.
@@ -121,163 +124,6 @@ pub(super) fn sort_imports_override(
     resolve_sort_imports(Some(&setting))
         .map(Some)
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))
-}
-
-/// Apply an options object on top of `options`: a preset first, then every
-/// option it names, as command-line flags apply over a project config.
-pub(super) fn apply_overrides(options: &mut FormatOptions, opts: FormatOptionsNapi) -> Result<()> {
-    if let Some(preset) = opts.preset.as_deref() {
-        options.apply_preset(match preset {
-            "vize" => FormatPreset::Vize,
-            "prettier" => FormatPreset::Prettier,
-            "compact" => FormatPreset::Compact,
-            "documentation" => FormatPreset::Documentation,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown formatter preset; expected 'vize', 'prettier', 'compact', or 'documentation'",
-                ));
-            }
-        });
-    }
-
-    if let Some(value) = opts.print_width {
-        options.print_width = value;
-    }
-    if let Some(value) = opts.tab_width {
-        options.tab_width = value;
-    }
-    if let Some(value) = opts.use_tabs {
-        options.use_tabs = value;
-    }
-    if let Some(value) = opts.semi {
-        options.semi = value;
-    }
-    if let Some(value) = opts.single_quote {
-        options.single_quote = value;
-    }
-    if let Some(value) = opts.jsx_single_quote {
-        options.jsx_single_quote = value;
-    }
-    if let Some(value) = opts.quote_props.as_deref() {
-        options.quote_props = match value {
-            "as-needed" => QuoteProps::AsNeeded,
-            "consistent" => QuoteProps::Consistent,
-            "preserve" => QuoteProps::Preserve,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
-                ));
-            }
-        };
-    }
-    if let Some(value) = opts.object_wrap.as_deref() {
-        options.object_wrap = match value {
-            "preserve" => ObjectWrap::Preserve,
-            "collapse" => ObjectWrap::Collapse,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown objectWrap; expected 'preserve' or 'collapse'",
-                ));
-            }
-        };
-    }
-    if let Some(value) = opts.trailing_comma.as_deref() {
-        options.trailing_comma = match value {
-            "all" => TrailingComma::All,
-            "es5" => TrailingComma::Es5,
-            "none" => TrailingComma::None,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown trailingComma; expected 'all', 'es5', or 'none'",
-                ));
-            }
-        };
-    }
-    if let Some(value) = opts.arrow_parens.as_deref() {
-        options.arrow_parens = match value {
-            "always" => ArrowParens::Always,
-            "avoid" => ArrowParens::Avoid,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown arrowParens; expected 'always' or 'avoid'",
-                ));
-            }
-        };
-    }
-    if let Some(value) = opts.bracket_spacing {
-        options.bracket_spacing = value;
-    }
-    if let Some(value) = opts.bracket_same_line {
-        options.bracket_same_line = value;
-    }
-    if let Some(value) = opts.end_of_line {
-        options.end_of_line = match value {
-            EndOfLineNapi::Lf => vize_glyph::EndOfLine::Lf,
-            EndOfLineNapi::Crlf => vize_glyph::EndOfLine::Crlf,
-            EndOfLineNapi::Cr => vize_glyph::EndOfLine::Cr,
-            EndOfLineNapi::Auto => vize_glyph::EndOfLine::Auto,
-        };
-    }
-    if let Some(value) = opts.sort_attributes {
-        options.sort_attributes = value;
-    }
-    if let Some(value) = opts.attribute_sort_order.as_deref() {
-        options.attribute_sort_order = match value {
-            "alphabetical" => AttributeSortOrder::Alphabetical,
-            "as-written" => AttributeSortOrder::AsWritten,
-            _ => {
-                return Err(Error::new(
-                    Status::InvalidArg,
-                    "Unknown attributeSortOrder; expected 'alphabetical' or 'as-written'",
-                ));
-            }
-        };
-    }
-    if let Some(groups) = opts.attribute_groups {
-        options.attribute_groups = Some(
-            groups
-                .into_iter()
-                .map(|group| group.into_iter().map(Into::into).collect())
-                .collect(),
-        );
-    }
-    if let Some(value) = opts.single_attribute_per_line {
-        options.single_attribute_per_line = value;
-    }
-    if let Some(value) = opts.vue_indent_script_and_style {
-        options.vue_indent_script_and_style = value;
-    }
-    if let Some(value) = opts.max_attributes_per_line {
-        options.max_attributes_per_line = Some(value);
-    }
-    if let Some(value) = opts.normalize_directive_shorthands {
-        options.normalize_directive_shorthands = value;
-    }
-    if let Some(value) = opts.sort_blocks {
-        options.sort_blocks = value;
-    }
-    if let Some(value) = opts.normalize_css_quotes {
-        options.normalize_css_quotes = value;
-    }
-    if let Some(value) = opts.normalize_inline_styles {
-        options.normalize_inline_styles = value;
-    }
-    if let Some(value) = opts.normalize_v_for_parens {
-        options.normalize_v_for_parens = value;
-    }
-    if let Some(value) = opts.self_close_void_elements {
-        options.self_close_void_elements = value;
-    }
-    if let Some(value) = opts.reindent_preprocessor_styles {
-        options.reindent_preprocessor_styles = value;
-    }
-
-    Ok(())
 }
 
 /// Format a Vue SFC source string.

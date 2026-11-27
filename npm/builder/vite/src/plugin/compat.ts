@@ -19,6 +19,7 @@ import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import { oxContentModuleToSfc } from "./markdown.ts";
+import { findSfcJsxScript, lowerSfcJsx } from "./sfc-jsx.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
 type VueCompatTemplateCompilerOptions = {
@@ -206,6 +207,11 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
             extractCss,
             filePath: id,
           });
+          const jsxScript = findSfcJsxScript(source);
+          if (jsxScript) {
+            const emitted = { code: transformed, map: null };
+            transformed = lowerSfcJsx(state, id, jsxScript, emitted, { ssr: isSsr }).code;
+          }
           const defines = transformOptions?.ssr ? state.serverViteDefine : state.clientViteDefine;
           if (Object.keys(defines).length > 0) {
             transformed = applyDefineReplacements(transformed, defines);

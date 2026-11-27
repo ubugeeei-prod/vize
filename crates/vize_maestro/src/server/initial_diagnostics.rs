@@ -88,6 +88,7 @@ impl InitialDiagnosticsScheduler {
         let native_wake = sender.clone();
         let sync_spawned = thread::Builder::new()
             .name("vize-sync-diagnostics".into())
+            .stack_size(crate::SERVER_THREAD_STACK_BYTES)
             .spawn(move || {
                 run_sync_worker(&sync_worker, sync_receiver, &sync_pending, native_wake)
             });
@@ -102,6 +103,7 @@ impl InitialDiagnosticsScheduler {
         }
         let spawned = thread::Builder::new()
             .name("vize-initial-diagnostics".into())
+            .stack_size(crate::SERVER_THREAD_STACK_BYTES)
             .spawn(move || run_worker(&worker, receiver, &worker_pending));
 
         match spawned {

@@ -6,13 +6,14 @@ use crate::template::attributes::{
 };
 use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
+use vize_l0::string_builder::TextBuf;
 
 impl TemplateFormatter<'_> {
     /// Emit attributes from the existing parsed, normalized and sorted list.
     #[inline]
     pub(super) fn write_opening_attributes(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         tag_name: &str,
         sorted_attrs: &[ParsedAttribute],
         depth: usize,
@@ -24,7 +25,7 @@ impl TemplateFormatter<'_> {
     #[inline]
     pub(super) fn write_opening_attributes_with_prefix(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         tag_name: &str,
         sorted_attrs: &[ParsedAttribute],
         depth: usize,
@@ -72,14 +73,14 @@ impl TemplateFormatter<'_> {
                     },
                 );
                 if !self.options.bracket_same_line {
-                    output.extend_from_slice(self.newline);
+                    output.push_str(self.newline);
                     self.write_indent(output, depth);
                     closing_bracket_on_own_line = true;
                 }
             } else {
                 for attr in &rendered {
-                    output.push(b' ');
-                    output.extend_from_slice(attr.as_bytes());
+                    output.push(' ');
+                    output.push_str(attr);
                 }
             }
         }
@@ -88,15 +89,11 @@ impl TemplateFormatter<'_> {
 
     fn continued_attributes_overflow(
         &self,
-        output: &[u8],
+        output: &str,
         rendered: &[String],
         compact_suffix_width: usize,
     ) -> bool {
-        let line = output
-            .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
-            .next()
-            .unwrap_or_default();
-        let line = core::str::from_utf8(line).unwrap_or_default();
+        let line = super::current_line(output);
         let indent_width = self.options.tab_width as usize;
         let column = line.split('\t').map(str::width).sum::<usize>()
             + line.bytes().filter(|byte| *byte == b'\t').count() * indent_width

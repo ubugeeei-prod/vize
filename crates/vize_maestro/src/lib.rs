@@ -109,9 +109,32 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-/// Start the stdio LSP server on the current thread.
-pub fn serve_blocking() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    runtime::block_on(serve())
+/// Stack reserved for the thread that runs request handlers. Handlers parse
+/// and walk authored sources whose nesting the user does not bound; the
+/// reservation is address space, and only the pages a request touches are
+/// committed.
+pub(crate) const SERVER_THREAD_STACK_BYTES: usize = 64 * 1024 * 1024;
+
+type ServeResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
+
+/// Run `serve` to completion on a thread with [`SERVER_THREAD_STACK_BYTES`].
+fn block_on_server_thread(
+    name: &str,
+    serve: impl FnOnce() -> ServeResult + Send + 'static,
+) -> ServeResult {
+    let handle = std::thread::Builder::new()
+        .name(name.into())
+        .stack_size(SERVER_THREAD_STACK_BYTES)
+        .spawn(serve)?;
+    match handle.join() {
+        Ok(result) => result,
+        Err(panic) => std::panic::resume_unwind(panic),
+    }
+}
+
+/// Start the stdio LSP server and block until it stops.
+pub fn serve_blocking() -> ServeResult {
+    block_on_server_thread("vize-lsp", || runtime::block_on(serve()))
 }
 
 /// Start the LSP server on a TCP socket.
@@ -144,9 +167,9 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     Ok(())
 }
 
-/// Start the TCP LSP server on the current thread.
-pub fn serve_tcp_blocking(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    runtime::block_on(serve_tcp(port))
+/// Start the TCP LSP server and block until it stops.
+pub fn serve_tcp_blocking(port: u16) -> ServeResult {
+    block_on_server_thread("vize-lsp", move || runtime::block_on(serve_tcp(port)))
 }
 
 async fn serve_transport<I, O>(read: I, write: O)

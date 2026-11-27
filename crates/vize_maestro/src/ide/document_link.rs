@@ -203,13 +203,21 @@ impl DocumentLinkService {
         // Clean up the path
         let clean_path = path.trim_matches(|c| c == '"' || c == '\'');
 
-        let resolved = if let Some(stripped) = clean_path.strip_prefix('/') {
-            // Absolute path from project root - try to find it
-            // For now, treat as relative to current file's directory
-            parent.join(stripped)
-        } else {
-            parent.join(clean_path)
-        };
+        // Absolute path from project root - try to find it
+        // For now, treat as relative to current file's directory
+        let relative = clean_path.strip_prefix('/').unwrap_or(clean_path);
+        // Only a relative path stays under the file's directory when joined:
+        // a root, drive or network-share spelling would replace it, and the
+        // probes below would then reach for that other location.
+        if Path::new(relative).components().any(|component| {
+            matches!(
+                component,
+                std::path::Component::Prefix(_) | std::path::Component::RootDir
+            )
+        }) {
+            return None;
+        }
+        let resolved = parent.join(relative);
 
         // Try common extensions if file doesn't exist
         let candidates = [
@@ -305,6 +313,37 @@ mod tests {
             assert_eq!(
                 DocumentLinkService::encode_target_path(encoded).as_str(),
                 expected
+            );
+        }
+    }
+
+    #[test]
+    fn a_link_target_stays_under_the_documents_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let document = dir.path().join("App.vue");
+        let sibling = dir.path().join("setup.ts");
+        fs::write(&sibling, "").unwrap();
+
+        // One leading slash is read as "from here"; the file is found.
+        for spelling in ["./setup.ts", "setup", "/setup.ts"] {
+            let target = DocumentLinkService::resolve_path(spelling, Some(&document)).unwrap();
+            assert_eq!(
+                target.to_file_path().unwrap(),
+                sibling.canonicalize().unwrap(),
+                "{spelling}"
+            );
+        }
+        // A second root would replace the document's directory when joined.
+        assert_eq!(
+            DocumentLinkService::resolve_path("//other/setup.ts", Some(&document)),
+            None
+        );
+        #[cfg(windows)]
+        for spelling in [r"\\server\share\x.ts", "//server/share/x.ts", r"C:\x.ts"] {
+            assert_eq!(
+                DocumentLinkService::resolve_path(spelling, Some(&document)),
+                None,
+                "{spelling}"
             );
         }
     }

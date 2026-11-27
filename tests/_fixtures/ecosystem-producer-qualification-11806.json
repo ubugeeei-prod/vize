@@ -129,12 +129,29 @@
           "src/UiLibraries.vue": "9fcddf727997e44d7a782b616cb4b39c6630b6824e300ad3c4e35fd1f06b6b02"
         }
       }
+    },
+    {
+      "qualificationRun": "local qualification on the PR head (tests/tooling/ecosystem-producer-qualification.test.ts); CI run 45970028694 reported the same baseline GraphAnd3D move",
+      "source": "adf4d26d8a37fba461da9d7c9b3b5b2563ab65ab",
+      "supersededBy": "#13802 / authored kebab listener key of generic library exports",
+      "unchanged": "diagnostics, inputSha256, exit statuses, the restored packet and every generated hash except the GraphAnd3D entries, which move only because the generic VueFlow export's `@node-click` inference also reads `onNode-click`",
+      "virtualTsSha256Delta": {
+        "baseline": {
+          "src/GraphAnd3D.vue": "0cf6645028af7caf9d3a260451aea7a45774fcdb4e2cd2dac007ee8fc18db9aa"
+        },
+        "negative": {
+          "src/GraphAnd3D.vue": "74f07d17bcfeb9f0cb5cc2fc126b2151ac4f8864a76c4fcbf3379bae31577501"
+        },
+        "positive": {
+          "src/GraphAnd3D.vue": "e7acedea6ebda3a7b3bf0a4ba66a58f5620768cd3e7e867db3d75cf3e905011e"
+        }
+      }
     }
   ],
   "virtualTsSha256": {
     "baseline": {
       "src/ComposablesAndRouting.vue": "e1fb8fd4f08c97b400ef02e2545a67230f1ab05df5bcc5fce918659dfaaff9f5",
-      "src/GraphAnd3D.vue": "0cf6645028af7caf9d3a260451aea7a45774fcdb4e2cd2dac007ee8fc18db9aa",
+      "src/GraphAnd3D.vue": "b3e4c3b0defb89f423dbe354c0b4ae30350ffd72733d87abf938237a6e298421",
       "src/MediaAndDataViz.vue": "9a66a799ef9482fd8c5685c118bba789f408a9945b4f2a70fe7c834ff69862b6",
       "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
       "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",
@@ -145,7 +162,7 @@
     },
     "negative": {
       "src/ComposablesAndRouting.vue": "7ef8d90b67c3b6f72546b82dc07a1396ab09177a903079ecb2984c4aae0c7663",
-      "src/GraphAnd3D.vue": "74f07d17bcfeb9f0cb5cc2fc126b2151ac4f8864a76c4fcbf3379bae31577501",
+      "src/GraphAnd3D.vue": "a8d3f191de21efc52b5a58447a7e434bae19f51c5217202b3faf4761daf07cf7",
       "src/MediaAndDataViz.vue": "5f290a4ba2b0f01b70d07c13e0bd16c8587a2c01755b0f19142a012f03f08ebb",
       "src/NaiveUiOptionsApi.vue": "940c7e33574854a15933bd290fde0050e7e3737bb0ccfe71d9acf3b113c7d339",
       "src/PrimeVueOptionsApi.vue": "0507e260f62782e5c3a8e9eecb1482ba718b563c65eb14f4f4c85c1186355c14",
@@ -156,7 +173,7 @@
     },
     "positive": {
       "src/ComposablesAndRouting.vue": "e1fb8fd4f08c97b400ef02e2545a67230f1ab05df5bcc5fce918659dfaaff9f5",
-      "src/GraphAnd3D.vue": "e7acedea6ebda3a7b3bf0a4ba66a58f5620768cd3e7e867db3d75cf3e905011e",
+      "src/GraphAnd3D.vue": "e677d96da49bb522a37361cc88e05c9bd727804a8ad1d4f5ea4c6a33570afafc",
       "src/MediaAndDataViz.vue": "9a66a799ef9482fd8c5685c118bba789f408a9945b4f2a70fe7c834ff69862b6",
       "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
       "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",

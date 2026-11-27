@@ -28,6 +28,8 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Push the tag and drop the candidate ref"
+    // The candidate ref is a name; the tag must land on the commit this run stamped.
+    env { RELEASE_SHA = "${{ needs.version.outputs.sha }}" }
     run = #". "${{ env.VIZE_CI_FILES }}/push-the-tag-and-drop-the-candidate-ref.sh""#
   }
   new Dynamic {

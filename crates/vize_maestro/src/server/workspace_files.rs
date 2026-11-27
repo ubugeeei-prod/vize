@@ -20,7 +20,7 @@ mod watched;
 #[cfg(feature = "native")]
 use dependents::{
     affected_vue_source_paths, forget_corsa_vue_files, include_open_typecheck_documents,
-    invalidate_corsa_disk_state, versioned_open_typecheck_dependents,
+    invalidate_corsa_disk_state, open_vue_documents, versioned_open_typecheck_dependents,
 };
 #[cfg(all(test, feature = "native"))]
 use watched::{
@@ -253,5 +253,7 @@ async fn publish_versioned_dependents(
     }
 }
 
+#[cfg(all(test, feature = "native", unix))]
+mod nuxt_template_names_tests;
 #[cfg(all(test, feature = "native"))]
 mod tests;

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 13788,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "kebab-emit-payloads",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/lib/table.d.ts", "source": "table.d.ts.txt" },
+        { "file": "src/lib/plain.d.ts", "source": "plain.d.ts.txt" },
+        { "file": "src/Local.vue", "source": "Local.vue.txt" },
+        { "file": "src/App.vue", "source": "App.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 54,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'RowEvent<Row>' is not assignable to parameter of type 'never'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 57,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'Row' is not assignable to parameter of type 'never'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 48,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'Row' is not assignable to parameter of type 'never'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 55,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'RowEvent<string>' is not assignable to parameter of type 'never'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 16,
+          "column": 54,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'RowEvent<Row>' is not assignable to parameter of type 'never'."
+        }
+      ]
+    }
+  ]
+}

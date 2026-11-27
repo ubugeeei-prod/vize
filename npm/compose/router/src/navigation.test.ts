@@ -152,3 +152,96 @@ void test("history traversal restores supplied scroll and focus snapshots", asyn
   assert.equal(result.status, "success");
   assert.deepEqual(effects, ["scroll:[object Object]", "focus:search"]);
 });
+
+function recordingRouter() {
+  const written: string[] = [];
+  const router = createRouter(routes, {
+    history: {
+      push: (url) => {
+        written.push(`push:${url}`);
+      },
+      replace: (url) => {
+        written.push(`replace:${url}`);
+      },
+    },
+  });
+  return { router, written };
+}
+
+void test("a string location on another origin does not match and writes no history", async () => {
+  for (const location of [
+    "//other.example/users/1",
+    "\\\\other.example/users/1",
+    "/\t/other.example/users/1",
+    "/\\other.example/users/1",
+    "https://other.example/users/1",
+    "javascript:/users/1",
+    "/users/1/../..//other.example/users/1",
+  ]) {
+    const { router, written } = recordingRouter();
+    const result = await router.navigate(location);
+    assert.equal(result.status, "error", location);
+    assert.equal(router.state().current, undefined, location);
+    assert.deepEqual(written, [], location);
+  }
+
+  const { router, written } = recordingRouter();
+  router.beforeEach(() => "//other.example/users/1");
+  const redirected = await router.navigate("/users/1");
+  assert.deepEqual(
+    redirected.status === "error" ? redirected.error : undefined,
+    new Error("Redirect does not match a route: //other.example/users/1"),
+  );
+  assert.deepEqual(written, []);
+});
+
+void test("history receives the normalised path, query and hash of a location", async () => {
+  const { router, written } = recordingRouter();
+  for (const location of [
+    "/users/1?tab=a&tab=b#top",
+    "users/2",
+    "/users/skipped/../3",
+    new URL("https://app.example/users/4?from=url#end"),
+  ]) {
+    assert.equal((await router.navigate(location)).status, "success", String(location));
+  }
+  assert.equal((await router.navigate("/users/5", { history: "replace" })).status, "success");
+  assert.deepEqual(written, [
+    "push:/users/1?tab=a&tab=b#top",
+    "push:/users/2",
+    "push:/users/3",
+    "push:/users/4?from=url#end",
+    "replace:/users/5",
+  ]);
+});
+
+void test("a location that cannot be parsed or decoded is reported, not thrown", async () => {
+  for (const location of ["/users/%E0%A4%A", "//[", "http://["]) {
+    const { router, written } = recordingRouter();
+    const result = await router.navigate(location);
+    assert.equal(result.status, "error", location);
+    assert.deepEqual(
+      result.status === "error" ? result.error : undefined,
+      new Error(`No route matches ${location}`),
+    );
+    assert.equal(router.state().status, "error", location);
+    assert.deepEqual(written, [], location);
+
+    assert.equal(createRouter(routes, { initial: location }).state().current, undefined, location);
+  }
+});
+
+void test("a named location whose params cannot form a path is reported, not thrown", async () => {
+  const invalid = '[VIZE_ROUTER_INVALID_PARAM] Route param id cannot contain a "." or ".." segment';
+  for (const [id, message] of [
+    ["", "[VIZE_ROUTER_MISSING_PARAM] Missing route param id"],
+    [".", invalid],
+    ["..", invalid],
+  ] as const) {
+    const { router, written } = recordingRouter();
+    const result = await router.navigate({ name: "user", params: { id } });
+    assert.deepEqual(result, { status: "error", error: new Error(message) });
+    assert.deepEqual(router.state().error, new Error(message));
+    assert.deepEqual(written, []);
+  }
+});

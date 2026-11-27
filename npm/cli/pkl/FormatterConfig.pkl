@@ -81,6 +81,9 @@ class FormatterConfig {
   /// Sort SFC blocks in canonical order (default: true).
   sortBlocks: Boolean? = null
 
+  /// Write one blank line between SFC blocks, or preserve the authored spacing (default: "blank-line").
+  blockSpacing: ("blank-line"|"preserve")? = null
+
   /// Re-quote CSS, SCSS and Less strings with the singleQuote preference (default: false).
   normalizeCssQuotes: Boolean? = null
 

@@ -26,7 +26,7 @@
 //! ```
 
 use super::component_options::{component_definitions, property_key_name};
-use super::return_in_computed_property::body_returns_value;
+use super::return_in_computed_property::{body_returns_value, declared_type};
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, ObjectPropertyKind, Program};
@@ -84,13 +84,16 @@ impl ScriptRule for RequireRenderReturn {
 fn render_returns(value: &Expression<'_>) -> Option<bool> {
     match value.get_inner_expression() {
         Expression::ArrowFunctionExpression(arrow) if arrow.expression => Some(true),
-        Expression::ArrowFunctionExpression(arrow) => {
-            Some(body_returns_value(&arrow.body.statements))
-        }
-        Expression::FunctionExpression(function) => function
-            .body
-            .as_ref()
-            .map(|body| body_returns_value(&body.statements)),
+        Expression::ArrowFunctionExpression(arrow) => Some(body_returns_value(
+            &arrow.body.statements,
+            declared_type(arrow.return_type.as_deref()),
+        )),
+        Expression::FunctionExpression(function) => function.body.as_ref().map(|body| {
+            body_returns_value(
+                &body.statements,
+                declared_type(function.return_type.as_deref()),
+            )
+        }),
         _ => None,
     }
 }

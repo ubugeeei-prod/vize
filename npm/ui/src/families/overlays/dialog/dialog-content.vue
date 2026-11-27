@@ -92,7 +92,6 @@ defineSlots<{
 }>();
 
 const context = dialogContext.use();
-const host = useTemplateRef<HTMLDivElement>("host");
 const element = useTemplateRef<HTMLDivElement>("element");
 const beforeGuard = useTemplateRef<HTMLSpanElement>("beforeGuard");
 const afterGuard = useTemplateRef<HTMLSpanElement>("afterGuard");
@@ -236,7 +235,6 @@ defineExpose(exposed);
 
 <template>
   <div
-    ref="host"
     data-vize-ui="dialog-content-host"
     part="content-host"
     :hidden="context.open.value || context.exiting.value ? undefined : true"

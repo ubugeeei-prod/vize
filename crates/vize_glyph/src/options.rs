@@ -3,9 +3,11 @@
 //! These options are designed to be compatible with Prettier and oxfmt.
 
 mod line_ending;
+mod oxc;
 
+pub(crate) use oxc::javascript_line_width;
 use serde::{Deserialize, Serialize};
-pub use vize_l0::config::ObjectWrap;
+pub use vize_l0::config::{BlockSpacing, ObjectWrap};
 use vize_l0::{String, ToCompactString};
 
 /// Formatting options for Vue SFC
@@ -111,6 +113,11 @@ pub struct FormatOptions {
     #[serde(default = "default_true")]
     pub sort_blocks: bool,
 
+    /// Line breaks between top-level SFC blocks (default: BlankLine).
+    /// `Preserve` keeps an authored blank line, at most one, and adds none.
+    #[serde(default, skip_serializing_if = "blank_line_block_spacing")]
+    pub block_spacing: BlockSpacing,
+
     /// Re-quote strings in CSS, SCSS and Less `<style>` blocks with the
     /// `singleQuote` preference, as Prettier does (default: false keeps
     /// authored quotes)
@@ -181,6 +188,7 @@ impl Default for FormatOptions {
             attribute_groups: None,
             normalize_directive_shorthands: true,
             sort_blocks: true,
+            block_spacing: BlockSpacing::BlankLine,
             normalize_css_quotes: false,
             normalize_inline_styles: false,
             normalize_v_for_parens: false,
@@ -254,19 +262,8 @@ fn preserve_object_wrap(value: &ObjectWrap) -> bool {
     *value == ObjectWrap::Preserve
 }
 
-/// Preserve the formatter's existing fallback for widths outside its domain.
-/// Narrowing first would reinterpret a large configured width modulo 65536.
-pub(crate) fn javascript_line_width(width: u32) -> oxc_formatter_core::LineWidth {
-    use oxc_formatter_core::LineWidth;
-
-    // Apply the provider's existing domain before narrowing the integer.
-    let min: u16 = LineWidth::MIN;
-    let max: u16 = LineWidth::MAX;
-    if !(u32::from(min)..=u32::from(max)).contains(&width) {
-        return LineWidth::default();
-    }
-    // Both provider bounds are u16, so the admitted width narrows losslessly.
-    LineWidth::try_from(width as u16).unwrap_or_default()
+fn blank_line_block_spacing(value: &BlockSpacing) -> bool {
+    *value == BlockSpacing::BlankLine
 }
 
 fn default_print_width() -> u32 {
@@ -351,75 +348,6 @@ impl FormatOptions {
         Self::from_preset(FormatPreset::Prettier)
     }
 
-    /// Convert to `oxc_formatter::JsFormatOptions`
-    pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
-        self.to_oxc_format_options_with_line_width(javascript_line_width(self.print_width))
-    }
-
-    pub(crate) fn to_oxc_format_options_with_line_width(
-        &self,
-        line_width: oxc_formatter_core::LineWidth,
-    ) -> oxc_formatter::JsFormatOptions {
-        // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
-        // live in oxc_formatter_core and are not re-exported by oxc_formatter.
-        use oxc_formatter::{
-            ArrowParentheses, BracketSameLine, BracketSpacing, Expand, QuoteProperties, QuoteStyle,
-            Semicolons, TrailingCommas,
-        };
-        use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding};
-
-        oxc_formatter::JsFormatOptions {
-            indent_style: if self.use_tabs {
-                IndentStyle::Tab
-            } else {
-                IndentStyle::Space
-            },
-            indent_width: IndentWidth::try_from(self.tab_width).unwrap_or_default(),
-            line_width,
-            line_ending: match self.end_of_line {
-                EndOfLine::Lf | EndOfLine::Auto => LineEnding::Lf,
-                EndOfLine::Crlf => LineEnding::Crlf,
-                EndOfLine::Cr => LineEnding::Cr,
-            },
-            quote_style: if self.single_quote {
-                QuoteStyle::Single
-            } else {
-                QuoteStyle::Double
-            },
-            jsx_quote_style: if self.jsx_single_quote {
-                QuoteStyle::Single
-            } else {
-                QuoteStyle::Double
-            },
-            quote_properties: match self.quote_props {
-                QuoteProps::AsNeeded => QuoteProperties::AsNeeded,
-                QuoteProps::Consistent => QuoteProperties::Consistent,
-                QuoteProps::Preserve => QuoteProperties::Preserve,
-            },
-            expand: match self.object_wrap {
-                ObjectWrap::Preserve => Expand::Auto,
-                ObjectWrap::Collapse => Expand::Never,
-            },
-            semicolons: if self.semi {
-                Semicolons::Always
-            } else {
-                Semicolons::AsNeeded
-            },
-            trailing_commas: match self.trailing_comma {
-                TrailingComma::None => TrailingCommas::None,
-                TrailingComma::Es5 => TrailingCommas::Es5,
-                TrailingComma::All => TrailingCommas::All,
-            },
-            bracket_spacing: BracketSpacing::from(self.bracket_spacing),
-            bracket_same_line: BracketSameLine::from(self.bracket_same_line),
-            arrow_parentheses: match self.arrow_parens {
-                ArrowParens::Always => ArrowParentheses::Always,
-                ArrowParens::Avoid => ArrowParentheses::AsNeeded,
-            },
-            ..Default::default()
-        }
-    }
-
     /// Get the indent string based on options
     #[inline]
     pub fn indent_string(&self) -> String {
@@ -442,6 +370,22 @@ impl FormatOptions {
                     .get(..usize::from(width))
                     .unwrap_or(b"  "),
                 _ => b"  ", // Retain the legacy fallback outside shared valid widths.
+            }
+        }
+    }
+
+    /// Get the indent as a static string, the same text as [`Self::indent_bytes`].
+    #[inline]
+    pub fn indent_str(&self) -> &'static str {
+        if self.use_tabs {
+            "\t"
+        } else {
+            match self.tab_width {
+                2 => "  ",
+                width @ 0..=24 => "                        "
+                    .get(..usize::from(width))
+                    .unwrap_or("  "),
+                _ => "  ", // Retain the legacy fallback outside shared valid widths.
             }
         }
     }

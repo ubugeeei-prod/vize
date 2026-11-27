@@ -24,6 +24,12 @@ const match = router.match("/users/42/settings?from=ssr");
 router.resolve("user", { id: "42" });
 ```
 
+A string location is an in-app reference. `match`, `navigate`, and the activation URL given to
+`hydrateRouteState` report no match when it resolves to another origin (`//host/path`, an absolute
+URL) or cannot be parsed or decoded; pass a `URL` object for an absolute URL such as a request URL.
+History adapters receive the normalised path, query, and hash, never the caller's raw string.
+`resolve` rejects a param that is empty or a `.`/`..` segment, so a built path names its own route.
+
 Route components are declared as `.vue` specifiers. JavaScript render-function component sources are
 not part of this package surface.
 

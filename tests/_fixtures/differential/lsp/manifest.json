@@ -2082,6 +2082,58 @@
       }
     },
     {
+      "id": "lsp/regression/document-link-directory-containment",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "document-link-directory-containment",
+        "files": [
+          {
+            "path": "Links.vue.txt",
+            "sha256": "39169f664686125a2bc8128a3d3da8065f181920a2a6aad158a4e52013aac88f"
+          },
+          {
+            "path": "card.html.txt",
+            "sha256": "314a0ea942da79824c381677ef6246f767b413fa3e92fc0eb9280bada6a32944"
+          },
+          {
+            "path": "reset.css.txt",
+            "sha256": "d84907d26eab21e7448c557bf7cde56e206794c6b218f86d8b717745892d4c16"
+          },
+          {
+            "path": "theme.css.txt",
+            "sha256": "6c8e440e99c6ca4beba68a6e40e41bb58586d84cd5623c79422ac7970dff1328"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-link-directory-containment/case.json",
+        "sha256": "54d445f7915415aeb1f77c11414e43c116a5a98def6dec675f31694655152183"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
       "targets": [
@@ -2829,6 +2881,55 @@
       "case": {
         "path": "generic-attribute-rename-11515/case.json",
         "sha256": "2d971436db5420200e053a8bede6bd524d6ad85454a79d53b25c6ca334cf7d70"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/generic-constraint-references",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "generic-constraint-references",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f9139a555a4942e42b69f77aafd872b1aac40a6e5aeaf49e31137dacaa050c85"
+          },
+          {
+            "path": "types.ts.txt",
+            "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1721d65c6892ea382c89d7d6a9f0d124a4a7e8fc98cd963d5a071308fc98c0da"
+          }
+        ]
+      },
+      "case": {
+        "path": "generic-constraint-references/case.json",
+        "sha256": "1e8cb1867da8798ca628c0345b07593eac9ab0609598e19864999ab9111935bf"
       },
       "requestCount": 2,
       "initializationOptions": {
@@ -3680,6 +3781,63 @@
       "initializationOptions": {
         "editor": true,
         "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/nuxt-template-auto-imports",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "nuxt-template-auto-imports",
+        "files": [
+          {
+            "path": "package.json.txt",
+            "sha256": "5bbbec757633dcbc268e91dd63a59bd3c09b9626ea5cedd3b6656379ed0cb643"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "sha256": "8146761a41c6f2159a550dc6726d6dd5073431046ccc5957000a865222186f9f"
+          },
+          {
+            "path": "nuxt-package.json.txt",
+            "sha256": "4d3a8eb16927f11a5796ba8f7d7798918f3b5b5f134f0a7214a0d5448e85b704"
+          },
+          {
+            "path": "imports.d.ts.txt",
+            "sha256": "61391117cf3b111982d49e761b5dcc15cf9565b9789167924806dcb66fd033ed"
+          },
+          {
+            "path": "index.vue.txt",
+            "sha256": "27b077223fd9d040a02e2db55e34f63be602709a775b7b2fcd00259b32fa5331"
+          }
+        ]
+      },
+      "case": {
+        "path": "nuxt-template-auto-imports/case.json",
+        "sha256": "e9051ab117e7a316da6e64b0049069df8e05e361a78c27ca290fe57a12d7b12b"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
         "typecheck": false
       },
       "dialectCoverage": {
@@ -4745,6 +4903,47 @@
               "pug-template",
               "html-template",
               "stylus-style"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/template-ref-key-definition",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-ref-key-definition",
+        "files": [
+          {
+            "path": "KeyedRef.vue.txt",
+            "sha256": "ac54cbf3d284ce1d378d923b3889a59d9e638890bf5812598999e2eeaf699269"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-ref-key-definition/case.json",
+        "sha256": "3c14993427e2cff26d80e0ce4dd66d7a8c97ac7219b9706aa3517fd052f1e5ad"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
             ],
             "selector": "LSP manifest pinned authored sources"
           }

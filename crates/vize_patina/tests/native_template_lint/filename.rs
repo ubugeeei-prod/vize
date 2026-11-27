@@ -112,6 +112,37 @@ fn invalid_casing_separator_unicode_and_digit_branches_keep_whole_diagnostics() 
 }
 
 #[test]
+fn nuxt_mode_suffixes_leave_the_component_name_on_both_paths() {
+    for locale in LOCALES {
+        let linter = configured(locale, HelpLevel::Full);
+        for filename in [
+            "components/ClientBox.client.vue",
+            "components/ServerTime.server.vue",
+            "components/GlobalThing.global.vue",
+            "components/IslandCard.island.vue",
+            "components/Counter.client.global.vue",
+        ] {
+            assert_pair(&linter, SOURCE, filename, expected(filename, vec![]));
+        }
+        for (filename, stem) in [
+            ("myComponent.client.vue", "myComponent"),
+            ("Foo.global.client.vue", "Foo.global"),
+            ("Foo.bar.vue", "Foo.bar"),
+        ] {
+            assert_pair(
+                &linter,
+                SOURCE,
+                filename,
+                expected(
+                    filename,
+                    vec![warning(locale, HelpLevel::Full, stem, Severity::Warning)],
+                ),
+            );
+        }
+    }
+}
+
+#[test]
 fn actual_path_basename_and_repeated_suffix_semantics_remain_exact() {
     for locale in LOCALES {
         let linter = configured(locale, HelpLevel::Full);

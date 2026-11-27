@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_get_unchecked_u32": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_len_u32": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_select_unpredictable_usize": {
+        "prover": "alt-ergo",
+        "time": 0.005
+      },
+      "vc_skip_below": { "prover": "z3", "time": 0.016 }
+    }
+  }
+}

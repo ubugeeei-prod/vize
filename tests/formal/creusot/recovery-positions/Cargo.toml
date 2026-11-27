@@ -1,0 +1,14 @@
+[package]
+name = "vize_resident_graph_positions_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

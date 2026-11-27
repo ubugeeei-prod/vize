@@ -11,12 +11,18 @@
 //! (`myComponent`), names with underscores, and anything mixing a capital into
 //! a hyphenated name (`my-Component`).
 //!
+//! Nuxt's mode suffixes (`.client`, `.server`, `.global`, `.island`) are not
+//! part of the component name, so they are removed before the check. Other
+//! dots stay part of the name and are reported.
+//!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```text
 //! myComponent.vue      -> should be MyComponent.vue or my-component.vue
 //! my-Component.vue     -> should be MyComponent.vue or my-component.vue
+//! myComponent.client.vue
+//! page.block.vue
 //! ```
 //!
 //! ### Valid
@@ -26,6 +32,9 @@
 //! my-component.vue
 //! index.vue
 //! App.vue
+//! ClientBox.client.vue
+//! ServerTime.server.vue
+//! GlobalThing.global.vue
 //! ```
 
 use crate::context::LintContext;
@@ -45,7 +54,9 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct ComponentDefinitionNameCasing;
 
-use crate::component_name::{EXCEPTION_NAMES, is_kebab_case, is_nuxt_route_file, is_pascal_case};
+use crate::component_name::{
+    EXCEPTION_NAMES, definition_name_stem, is_kebab_case, is_nuxt_route_file, is_pascal_case,
+};
 
 impl Rule for ComponentDefinitionNameCasing {
     fn meta(&self) -> &'static RuleMeta {
@@ -71,15 +82,7 @@ impl Rule for ComponentDefinitionNameCasing {
             return;
         }
 
-        // Extract the stem name (without extension and path)
-        let stem = filename
-            .rsplit('/')
-            .next()
-            .unwrap_or(filename)
-            .rsplit('\\')
-            .next()
-            .unwrap_or(filename)
-            .trim_end_matches(".vue");
+        let stem = definition_name_stem(filename);
 
         // Skip exception names
         if EXCEPTION_NAMES.contains(&stem) {
@@ -241,6 +244,82 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>Content</div>"#, "page.block.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    // Nuxt registers `ClientBox.client.vue` as `ClientBox`; the mode suffix is
+    // not part of the name.
+    #[test]
+    fn test_valid_nuxt_mode_suffixes() {
+        let linter = create_linter();
+        for filename in [
+            "components/ClientBox.client.vue",
+            "components/ServerTime.server.vue",
+            "components/GlobalThing.global.vue",
+            "components/IslandCard.island.vue",
+            "components/Counter.client.global.vue",
+            "components/Panel.server.island.global.vue",
+            "components/account-menu.client.vue",
+            "components/card/index.client.vue",
+        ] {
+            let result = linter.lint_template(r#"<div>Content</div>"#, filename);
+            assert_eq!(result.warning_count, 0, "{filename} must be valid");
+        }
+    }
+
+    // The stripped name is still checked, and is the name the message shows.
+    #[test]
+    fn test_invalid_name_before_nuxt_mode_suffix() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "myComponent.client.vue");
+        let messages: Vec<&str> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(
+            messages,
+            ["Component file name 'myComponent' should be PascalCase or kebab-case"]
+        );
+    }
+
+    // Only Nuxt's mode suffixes are removed, and only in Nuxt's order: a mode
+    // after `.global`, a doubled mode, or any other dotted part stays reported.
+    #[test]
+    fn test_invalid_other_dotted_suffixes() {
+        let linter = create_linter();
+        for filename in [
+            "Foo.bar.vue",
+            "Foo.Client.vue",
+            "Foo.global.client.vue",
+            "Foo.client.client.vue",
+            "Foo.client.bar.vue",
+        ] {
+            let result = linter.lint_template(r#"<div>Content</div>"#, filename);
+            assert_eq!(result.warning_count, 1, "{filename} must stay reported");
+        }
+    }
+
+    #[test]
+    fn pinned_nuxt_mode_suffix_filenames() {
+        let linter = create_linter();
+        let source = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-definition-nuxt-mode-suffixes/Component.vue.txt"
+        );
+        let cases = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-definition-nuxt-mode-suffixes/filenames.txt"
+        );
+        let mut checked = 0;
+        for line in cases.lines() {
+            let (expected, filename) = line.split_once(' ').unwrap();
+            let result = linter.lint_sfc(source, filename);
+            assert_eq!(
+                result.warning_count,
+                expected.parse::<usize>().unwrap(),
+                "{filename}"
+            );
+            checked += 1;
+        }
+        assert_eq!(checked, 11);
     }
 
     #[test]

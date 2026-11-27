@@ -5,14 +5,14 @@ import { gunzipSync } from "node:zlib";
 
 import type { LintSnapshotAlignment } from "./lint-snapshot-alignment.ts";
 
-type Packet = Record<string, any> & { file: string; messages: Record<string, any>[] };
-type Support = {
+export type Packet = Record<string, any> & { file: string; messages: Record<string, any>[] };
+export type Support = {
   canonical: (value: unknown) => string;
   hash: (value: string | Buffer) => string;
   verify: (previousRaw: string, currentRaw: string, review: LintSnapshotAlignment) => void;
 };
 
-const withoutKeys = (value: Record<string, any>, keys: string[]) =>
+export const withoutKeys = (value: Record<string, any>, keys: string[]) =>
   Object.fromEntries(Object.entries(value).filter(([key]) => !keys.includes(key)));
 
 function verifyRefreshPolicy(
@@ -92,15 +92,24 @@ function verifyRefreshPolicy(
   assert.deepEqual(actual, expected[project]);
 }
 
-export function admitAppE2eRefresh(
+export interface RefreshLink {
+  directory: string;
+  predecessorCommit: string;
+  snapshotCommit: string;
+  entries: number;
+  policy: (project: string, previousRaw: string, currentRaw: string) => void;
+}
+
+// Appends one reviewed archive to the end of every chain it names. The
+// checked-in bytes are compared by the last link only (`assertCheckedInTails`),
+// because an older link's current snapshot is a later link's predecessor.
+export function admitRefreshArchive(
   root: string,
   alignments: Map<string, LintSnapshotAlignment>,
   support: Support,
+  link: RefreshLink,
 ) {
-  const directory = path.join(
-    root,
-    "tests/_fixtures/_projects/lint-review/2026-11-06-app-e2e-refresh",
-  );
+  const directory = path.join(root, "tests/_fixtures/_projects/lint-review", link.directory);
   const inventory = JSON.parse(fs.readFileSync(path.join(directory, "inventory.json"), "utf8"));
   assert.deepEqual(
     inventory.map((entry: { path: string }) => entry.path),
@@ -111,9 +120,9 @@ export function admitAppE2eRefresh(
   assert.equal(support.hash(bytes), inventory[0].sha256);
   const archive = JSON.parse(gunzipSync(bytes).toString());
   assert.equal(archive.schema, "vize-lint-snapshot-successor-v2");
-  assert.equal(archive.predecessorCommit, "698cc668042616b43dfb7027f741a5a99fb38adc");
-  assert.equal(archive.snapshotCommit, "9dc1c1f81b43b1b585d65068aa27800c1247f29f");
-  assert.equal(archive.entries.length, 7);
+  assert.equal(archive.predecessorCommit, link.predecessorCommit);
+  assert.equal(archive.snapshotCommit, link.snapshotCommit);
+  assert.equal(archive.entries.length, link.entries);
   for (const entry of archive.entries) {
     const rootReview = alignments.get(entry.path);
     assert.ok(rootReview);
@@ -121,17 +130,44 @@ export function admitAppE2eRefresh(
     while (tail.successor) tail = tail.successor.review;
     assert.equal(support.hash(entry.previousRaw), tail.currentSha256);
     assert.equal(support.hash(entry.currentRaw), entry.alignment.currentSha256);
-    assert.equal(
-      support.hash(fs.readFileSync(path.join(root, entry.path), "utf8")),
-      entry.alignment.currentSha256,
-    );
     assert.equal(entry.alignment.previousSha256, tail.currentSha256);
     support.verify(entry.previousRaw, entry.currentRaw, entry.alignment);
-    verifyRefreshPolicy(entry.project, entry.previousRaw, entry.currentRaw, support.canonical);
+    link.policy(entry.project, entry.previousRaw, entry.currentRaw);
     tail.successor = {
       previousRaw: entry.previousRaw,
       fixturePin: entry.fixturePin,
       review: entry.alignment,
     };
   }
+}
+
+export function assertCheckedInTails(
+  root: string,
+  alignments: Map<string, LintSnapshotAlignment>,
+  support: Support,
+) {
+  for (const [snapshot, rootReview] of alignments) {
+    let tail = rootReview;
+    while (tail.successor) tail = tail.successor.review;
+    assert.equal(
+      support.hash(fs.readFileSync(path.join(root, snapshot), "utf8")),
+      tail.currentSha256,
+      `${snapshot} matches the end of its reviewed chain`,
+    );
+  }
+}
+
+export function admitAppE2eRefresh(
+  root: string,
+  alignments: Map<string, LintSnapshotAlignment>,
+  support: Support,
+) {
+  admitRefreshArchive(root, alignments, support, {
+    directory: "2026-11-06-app-e2e-refresh",
+    predecessorCommit: "698cc668042616b43dfb7027f741a5a99fb38adc",
+    snapshotCommit: "9dc1c1f81b43b1b585d65068aa27800c1247f29f",
+    entries: 7,
+    policy: (project, previousRaw, currentRaw) =>
+      verifyRefreshPolicy(project, previousRaw, currentRaw, support.canonical),
+  });
 }
