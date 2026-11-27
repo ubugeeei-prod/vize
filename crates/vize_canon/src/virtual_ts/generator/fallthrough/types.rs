@@ -66,7 +66,7 @@ pub(crate) fn fallthrough_component_root_starts(
         .iter()
         .filter_map(|target| match target {
             FallthroughRootTarget::Component(root) => Some(root.start),
-            FallthroughRootTarget::Native(_) => None,
+            FallthroughRootTarget::Native(_) | FallthroughRootTarget::Builtin => None,
         })
         .collect()
 }
@@ -140,6 +140,9 @@ fn targets_type_ref(
             FallthroughRootTarget::Native(root) => {
                 (root, native_target_surface(root.tag.as_str(), public_types))
             }
+            // What Vue renders for the dynamic component or a built-in is not
+            // known from the tag, exactly as for an unresolved component root.
+            FallthroughRootTarget::Builtin => return open_attrs(),
             FallthroughRootTarget::Component(root) => {
                 // A component root forwards what the rendered component
                 // accepts: its public props and the listener props of its
