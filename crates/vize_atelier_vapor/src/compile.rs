@@ -17,7 +17,10 @@ use crate::l3::{self, VaporL3BridgeOptions, VaporL3BridgeStatus};
 use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
-    lane::transform_with_frozen_elements,
+    lane::{
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+        transform_with_frozen_elements,
+    },
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::{Parser, parse_with_options_custom_elements_and_template_syntax},
 };

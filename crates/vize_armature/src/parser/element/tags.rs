@@ -56,14 +56,8 @@ impl<'a> Parser<'a> {
             element.is_self_closing = current.is_self_closing;
             element.props = current.props;
 
-            let v_pre_ordinal = element
-                .props
-                .iter()
-                .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"));
-
             // Determine element type
-            element.tag_type =
-                self.determine_element_type(&element, inherited_v_pre || v_pre_ordinal.is_some());
+            element.tag_type = self.determine_element_type(&element);
 
             if self.should_ignore_start_tag(&element) {
                 self.report_tree_construction_recovery(
@@ -72,6 +66,11 @@ impl<'a> Parser<'a> {
                 );
                 return;
             }
+
+            let v_pre_ordinal = element
+                .props
+                .iter()
+                .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"));
             if !self.finalize_directive_heads(&mut element, v_pre_ordinal) {
                 return;
             }
@@ -140,7 +139,9 @@ impl<'a> Parser<'a> {
             }
 
             let frozen = has_v_pre || inherited_v_pre;
-            self.record_frozen_element(element.loc.span, frozen);
+            if frozen {
+                self.freeze_element(&mut element);
+            }
 
             let html_non_void_self_closing =
                 current.is_self_closing && self.is_invalid_html_self_closing(&element, frozen);

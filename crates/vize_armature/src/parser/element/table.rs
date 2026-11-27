@@ -160,7 +160,7 @@ impl<'a> Parser<'a> {
     fn push_implicit_element(&mut self, tag: &'a str, offset: usize) {
         let loc = self.create_loc(offset, offset);
         let mut element = ElementNode::new(self.allocator, tag, loc);
-        element.tag_type = self.determine_element_type(&element, self.in_v_pre);
+        element.tag_type = self.determine_element_type(&element);
         self.push_stack_entry(ParserStackEntry {
             element,
             in_pre: self.in_pre,

@@ -4,7 +4,7 @@ use vize_atelier_core::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
     },
-    lane::transform_with_frozen_elements,
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::TemplateSyntaxMode,
     parser::Parser,
     walk_probe::WalkCounts,
@@ -142,17 +142,29 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        transform_with_frozen_elements(
-            allocator,
-            source,
-            &mut root,
-            transform_opts,
-            script_tables,
-            custom_elements,
-            template_syntax_quirks,
-            hoisted_scope_id,
-            v_pre_elements,
-        )
+        if v_pre_elements.is_empty() {
+            transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+                allocator,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+            )
+        } else {
+            super::transform_v_pre_template(
+                allocator,
+                source,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+                v_pre_elements,
+            )
+        }
     );
     let template_walks = template_walk_before.map(|before| WalkCounts::snapshot().since(before));
 

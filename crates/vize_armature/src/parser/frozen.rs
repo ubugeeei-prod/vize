@@ -20,6 +20,12 @@ impl<'a> FrozenElements<'a> {
         Self { source, spans }
     }
 
+    /// Whether the parse froze no element: the template has no `v-pre`.
+    #[doc(hidden)]
+    pub fn is_empty(&self) -> bool {
+        self.spans.is_empty()
+    }
+
     /// Join only the original root and caller's exact borrowed source buffers.
     #[doc(hidden)]
     pub fn spans_for(&self, root_source: &str, caller_source: &str) -> Option<&'a [Span]> {
@@ -59,14 +65,22 @@ impl<'a> Parser<'a> {
         (root, errors, frozen)
     }
 
-    pub(in crate::parser) fn record_frozen_element(&mut self, span: Span, frozen: bool) {
-        if frozen
-            && let Some(spans) = self
-                .frozen_elements
-                .as_mut()
-                .or(self.v_pre_elements.as_mut())
+    /// An element that carries `v-pre` or sits in a `v-pre` subtree. Under
+    /// the compiler lanes its tag stays the plain element Vue keeps it as (a
+    /// component or `<slot>` spelling is not resolved), and an opted-in parse
+    /// records its span.
+    #[cold]
+    #[inline(never)]
+    pub(in crate::parser) fn freeze_element(&mut self, element: &mut vize_relief::ElementNode<'a>) {
+        if self.literal_v_pre_tags() {
+            element.tag_type = vize_relief::ElementType::Element;
+        }
+        if let Some(spans) = self
+            .frozen_elements
+            .as_mut()
+            .or(self.v_pre_elements.as_mut())
         {
-            spans.push(span);
+            spans.push(element.loc.span);
         }
     }
 

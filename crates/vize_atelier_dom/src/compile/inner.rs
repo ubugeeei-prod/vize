@@ -4,7 +4,7 @@ use vize_atelier_core::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
     },
-    lane::transform_with_frozen_elements,
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
     parser::Parser,
     walk_probe::WalkCounts,
@@ -17,6 +17,36 @@ use super::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
 use crate::options::DomCompilerOptions;
 
 mod capture;
+
+/// The transform for a template with `v-pre` elements: their spans keep each
+/// one a plain element, as Vue resolves no component inside a `v-pre`
+/// subtree. A template without `v-pre` keeps the ordinary transform call.
+#[cold]
+#[inline(never)]
+#[expect(clippy::too_many_arguments, reason = "the transform lane's own inputs")]
+fn transform_v_pre_template<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &mut RootNode<'a>,
+    options: vize_atelier_core::options::TransformOptions,
+    script_tables: Option<&'a vize_atelier_core::lane::ScriptTables>,
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    hoisted_scope_id: Option<String>,
+    v_pre_elements: vize_atelier_core::parser::FrozenElements<'a>,
+) -> Vec<CompilerError> {
+    vize_atelier_core::lane::transform_with_frozen_elements(
+        allocator,
+        source,
+        root,
+        options,
+        script_tables,
+        custom_elements,
+        template_syntax_quirks,
+        hoisted_scope_id,
+        v_pre_elements,
+    )
+}
 pub(super) use capture::compile_template_inner_with_sections_captured;
 
 pub(super) fn compile_template_inner<'a>(
@@ -161,17 +191,29 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        transform_with_frozen_elements(
-            allocator,
-            source,
-            &mut root,
-            transform_opts,
-            script_tables,
-            custom_elements,
-            template_syntax_quirks,
-            hoisted_scope_id,
-            v_pre_elements,
-        )
+        if v_pre_elements.is_empty() {
+            transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+                allocator,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+            )
+        } else {
+            transform_v_pre_template(
+                allocator,
+                source,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+                v_pre_elements,
+            )
+        }
     );
     let template_walks = template_walk_before.map(|before| WalkCounts::snapshot().since(before));
 

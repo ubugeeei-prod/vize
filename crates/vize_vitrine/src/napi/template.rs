@@ -27,7 +27,10 @@ use crate::{
 };
 use vize_atelier_core::{
     codegen::generate_with_experimental_options,
-    lane::transform_with_frozen_elements,
+    lane::{
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+        transform_with_frozen_elements,
+    },
     options::{
         CodegenExperimentalOptions, CodegenMode, CodegenOptions, ParserOptions, TransformOptions,
     },
@@ -68,7 +71,6 @@ fn compile_scoped(
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
-    // The spans of `v-pre` elements keep them plain through the transform.
     let (mut root, errors, v_pre_elements) =
         Parser::with_options_custom_elements_and_template_syntax(
             &allocator,
@@ -102,17 +104,30 @@ fn compile_scoped(
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
-    transform_with_frozen_elements(
-        &allocator,
-        &template,
-        &mut root,
-        transform_opts,
-        None,
-        custom_elements,
-        template_syntax.is_quirks(),
-        None,
-        v_pre_elements,
-    );
+    if v_pre_elements.is_empty() {
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            &allocator,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+        );
+    } else {
+        // The spans of `v-pre` elements keep each one a plain element.
+        transform_with_frozen_elements(
+            &allocator,
+            &template,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+            v_pre_elements,
+        );
+    }
 
     // Codegen
     let codegen_opts = CodegenOptions {

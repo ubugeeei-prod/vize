@@ -25,22 +25,23 @@ impl<'a> Parser<'a> {
     /// compiler keeps it as: for the compiler lanes (which configure
     /// `is_native_tag`) and the frozen-element custody parse. Other callers
     /// keep classifying such a tag as authored.
-    fn literal_v_pre_tags(&self) -> bool {
+    pub(in crate::parser) fn literal_v_pre_tags(&self) -> bool {
         self.frozen_elements.is_some() || self.options.is_native_tag.is_some()
     }
 
-    /// Determine element type (element, component, slot, template).
-    ///
-    /// `in_v_pre` is true for an element that carries `v-pre` or sits inside
-    /// a `v-pre` subtree. Vue compiles nothing there, so every tag stays a
-    /// plain element: a PascalCase tag is not resolved as a component.
+    /// Determine element type (element, component, slot, template)
     pub(in crate::parser) fn determine_element_type(
         &self,
         element: &ElementNode<'a>,
-        in_v_pre: bool,
     ) -> ElementType {
         let tag = element.tag;
-        if in_v_pre && self.literal_v_pre_tags() {
+        if self.frozen_elements.is_some()
+            && (self.in_v_pre
+                || element
+                    .props
+                    .iter()
+                    .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre")))
+        {
             return ElementType::Element;
         }
 

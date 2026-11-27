@@ -6,6 +6,7 @@ use super::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, VaporL3BridgeOptions,
     VaporL3BridgeStatus, VaporSourceSpans, cstr, l3, native,
     parse_with_options_custom_elements_and_template_syntax, parser_options,
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     transform_with_frozen_elements, vapor_lower,
 };
 
@@ -302,17 +303,27 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         directive_contracts: experimental_options.directive_contracts.clone(),
         ..Default::default()
     };
-    let transform_errors = transform_with_frozen_elements(
-        allocator,
-        source,
-        &mut root,
-        transform_opts,
-        None,
-        custom_elements,
-        template_syntax.is_quirks(),
-        None,
-        v_pre_elements,
-    );
+    let transform_errors = if v_pre_elements.is_empty() {
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            allocator,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+        )
+    } else {
+        transform_v_pre_template(
+            allocator,
+            source,
+            &mut root,
+            transform_opts,
+            custom_elements,
+            template_syntax.is_quirks(),
+            v_pre_elements,
+        )
+    };
     let fatal: Vec<_> = transform_errors
         .iter()
         .filter(|error| !error.is_recoverable())
@@ -384,4 +395,31 @@ fn generate(
         error_messages,
         warning_messages: Vec::new(),
     }
+}
+
+/// The transform for a template with `v-pre` elements: their spans keep each
+/// one a plain element, as Vue resolves no component inside a `v-pre`
+/// subtree. A template without `v-pre` keeps the ordinary transform call.
+#[cold]
+#[inline(never)]
+fn transform_v_pre_template<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &mut vize_atelier_core::RootNode<'a>,
+    options: TransformOptions,
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    v_pre_elements: vize_atelier_core::parser::FrozenElements<'a>,
+) -> std::vec::Vec<CompilerError> {
+    transform_with_frozen_elements(
+        allocator,
+        source,
+        root,
+        options,
+        None,
+        custom_elements,
+        template_syntax_quirks,
+        None,
+        v_pre_elements,
+    )
 }
