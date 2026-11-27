@@ -233,10 +233,11 @@ function computeRole(element: HTMLElement): string | null {
   if (tag === "table") return "table";
   if (tag === "tr") return "row";
   if (tag === "td") {
-    const ownerRole = element.closest("table")?.getAttribute("role");
+    const ownerRole = element.closest("table")?.getAttribute("role")?.trim().split(/\s+/)[0];
     return ownerRole === "grid" || ownerRole === "treegrid" ? "gridcell" : "cell";
   }
-  if (tag === "form") return landmarkRoleOf(element);
+  if (tag === "form")
+    return landmarkRoleOf(element) ?? (element.getAttribute("title")?.trim() ? "form" : null);
   if (element instanceof HTMLInputElement) {
     if (element.type === "checkbox") return "checkbox";
     if (element.type === "radio") return "radio";
@@ -272,6 +273,9 @@ function computeAccessibleName(element: HTMLElement): string {
     const label = forLabel ?? element.closest("label");
     if (label !== null) return collapseWhitespace(label.textContent ?? "");
   }
+  if (element instanceof HTMLTableElement && element.caption !== null)
+    return collapseWhitespace(element.caption.textContent ?? "");
+  if (element.localName === "form") return collapseWhitespace(element.getAttribute("title") ?? "");
   return collapseWhitespace(element.textContent ?? "");
 }
 

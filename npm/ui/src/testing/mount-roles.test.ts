@@ -60,3 +60,55 @@ test("unnamed forms do not become landmarks and valid labelledby names do", () =
     handle.unmount();
   }
 });
+
+test("table captions name tables while ARIA labels take precedence", () => {
+  const handle = mountInteraction({
+    render: () =>
+      h("section", [
+        h("table", [h("caption", "Patch"), h("tbody", [h("tr", [h("td", "Changed")])])]),
+        h("table", { "aria-label": "Explicit" }, [h("caption", "Other")]),
+        h("span", { id: "table-label" }, "Referenced"),
+        h("table", { "aria-labelledby": "table-label", "aria-label": "Ignored" }, [
+          h("caption", "Also ignored"),
+        ]),
+      ]),
+  });
+  try {
+    for (const name of ["Patch", "Explicit", "Referenced"])
+      assert.equal(handle.getByRole("table", { name }).tagName, "TABLE");
+  } finally {
+    handle.unmount();
+  }
+});
+
+for (const role of ["grid", "treegrid", "grid table", " grid "]) {
+  test(`cell classification parses the owner role ${JSON.stringify(role)}`, () => {
+    const handle = mountInteraction({
+      render: () => h("table", { role }, [h("tbody", [h("tr", [h("td", "Value")])])]),
+    });
+    try {
+      assert.equal(handle.getByRole("gridcell", { name: "Value" }).tagName, "TD");
+      assert.equal(handle.queryByRole("cell"), null);
+    } finally {
+      handle.unmount();
+    }
+  });
+}
+
+test("form titles supply fallback names and ARIA names remain authoritative", () => {
+  const handle = mountInteraction({
+    render: () =>
+      h("section", [
+        h("form", { title: "Composer" }, "Ordinary contents"),
+        h("form", { title: "Ignored", "aria-label": "Explicit" }),
+        h("span", { id: "form-title-label" }, "Referenced"),
+        h("form", { title: "Also ignored", "aria-labelledby": "form-title-label" }),
+      ]),
+  });
+  try {
+    for (const name of ["Composer", "Explicit", "Referenced"])
+      assert.equal(handle.getByRole("form", { name }).tagName, "FORM");
+  } finally {
+    handle.unmount();
+  }
+});

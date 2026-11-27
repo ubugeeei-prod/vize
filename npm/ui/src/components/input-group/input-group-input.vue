@@ -29,6 +29,8 @@ function onInput(event: Event): void {
 </script>
 
 <template>
+  <!-- The consumer labels this native root through fallthrough attrs or an external label. -->
+  <!-- eslint-disable-next-line a11y/form-control-has-label -->
   <input
     data-vize-ui="input-group-input"
     :type

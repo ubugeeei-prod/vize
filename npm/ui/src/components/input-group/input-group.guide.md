@@ -21,10 +21,13 @@ const site = ref("vize.dev");
 <template>
   <InputGroup label="Website">
     <InputGroupAddon>https://</InputGroupAddon>
-    <InputGroupInput v-model="site" type="url" />
+    <InputGroupInput v-model="site" type="url" aria-label="Website URL" />
     <InputGroupButton @press="copy">Copy</InputGroupButton>
   </InputGroup>
 </template>
 ```
 
 Parts stay headless. Affix them with CSS on `[data-vize-ui="input-group"]`.
+
+Give each field its own accessible name with `aria-label`, `aria-labelledby`,
+or an external `<label for>` and matching `id`. The group label names the group.
