@@ -11,8 +11,8 @@
 pub(super) mod casing;
 
 use oxc_ast::ast::{
-    Argument, CallExpression, ExportDefaultDeclaration, ExportDefaultDeclarationKind, Expression,
-    NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    Argument, CallExpression, ExportDefaultDeclaration, Expression, NewExpression,
+    ObjectExpression, ObjectPropertyKind, PropertyKey,
 };
 use oxc_ast_visit::{
     Visit,
@@ -141,7 +141,10 @@ impl<S: DefinitionSink> Scanner<'_, S> {
 impl<'a, S: DefinitionSink> Visit<'a> for Scanner<'_, S> {
     fn visit_export_default_declaration(&mut self, it: &ExportDefaultDeclaration<'a>) {
         if !self.setup
-            && let ExportDefaultDeclarationKind::ObjectExpression(object) = &it.declaration
+            && let Some(Expression::ObjectExpression(object)) = it
+                .declaration
+                .as_expression()
+                .map(Expression::get_inner_expression)
         {
             self.count_object(object);
         }

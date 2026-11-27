@@ -6,6 +6,12 @@ use crate::rules::vue::{ComponentDefinitionNameCasing, ComponentDefinitionNameCa
 use vize_l0::config::ComponentDefinitionNameCasingStyle;
 
 pub(super) fn apply(mut linter: Linter, style: ComponentDefinitionNameCasingStyle) -> Linter {
+    if !linter
+        .registry
+        .has_rule("vue/component-definition-name-casing")
+    {
+        return linter;
+    }
     let casing = match style {
         ComponentDefinitionNameCasingStyle::PascalCase => {
             ComponentDefinitionNameCasingOption::PascalCase
@@ -74,6 +80,10 @@ mod tests {
         let linter = Linter::with_preset(LintPreset::Incremental)
             .with_enabled_rules(Some(vec![String::from("vue/html-quotes")]))
             .with_config_rule_options(&options);
+        assert!(messages(linter).is_empty());
+        let linter = Linter::with_registry(crate::rule::RuleRegistry::new())
+            .with_config_rule_options(&options);
+        assert!(!linter.registry.has_rule(RULE));
         assert!(messages(linter).is_empty());
     }
 }

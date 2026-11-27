@@ -231,6 +231,32 @@ fn the_prefilter_admits_every_checked_shape() {
 }
 
 #[test]
+fn unicode_whitespace_does_not_hide_component_names() {
+    for whitespace in ['\u{00a0}', '\u{feff}', '\u{2028}', '\u{2029}'] {
+        for script in [
+            format!("export default {{ name{whitespace}: 'bad_name' }}"),
+            format!("app.{whitespace}component('bad_name', {{}})"),
+        ] {
+            let source = format!("<script>{script}</script>");
+            assert_eq!(pascal(&source), ["'bad_name'"], "{script}");
+        }
+    }
+}
+
+#[test]
+fn wrapped_typescript_default_objects_keep_definition_names() {
+    for expression in [
+        "{ name: 'bad_name' } as ComponentOptions",
+        "{ name: 'bad_name' } satisfies ComponentOptions",
+        "({ name: 'bad_name' })",
+        "({ name: 'bad_name' } as ComponentOptions)!",
+    ] {
+        let source = format!("<script lang=\"ts\">export default {expression}</script>");
+        assert_eq!(pascal(&source), ["'bad_name'"], "{expression}");
+    }
+}
+
+#[test]
 fn is_in_the_presets_that_ran_the_old_file_name_check() {
     for registry in [
         RuleRegistry::with_happy_path(),

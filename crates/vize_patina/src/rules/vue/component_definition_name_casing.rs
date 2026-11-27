@@ -218,6 +218,9 @@ fn is_name_key_end(source: &[u8], mut at: usize) -> bool {
     loop {
         match source.get(at) {
             Some(byte) if byte.is_ascii_whitespace() => at += 1,
+            // A non-ASCII boundary may be JavaScript whitespace. The AST
+            // remains authoritative, so conservatively admit it.
+            Some(byte) if !byte.is_ascii() => return true,
             Some(b':') => return true,
             // A comment before the colon; let the parse decide.
             Some(b'/') => return matches!(source.get(at + 1), Some(b'*' | b'/')),
@@ -237,6 +240,7 @@ fn is_member_name(source: &[u8], at: usize) -> bool {
         Some(b'.') => true,
         // A block comment before it; let the parse decide.
         Some(b'/') => rest.next() == Some(&b'*'),
+        Some(byte) if !byte.is_ascii() => true,
         _ => false,
     }
 }
