@@ -30,6 +30,7 @@ import {
 } from "../../support/ci/generated-header.ts";
 import { listPklProducts, type PklProduct } from "../../support/ci/pkl-products.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
+import { compiledTarget, listUshPrograms, syncUshPrograms } from "../../support/ci/ush-programs.ts";
 import { protectedWorkflows, workflowNameViolations } from "../../support/ci/workflow-names.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../../ci/commands/workflow-catalog.ts";
 
@@ -124,6 +125,11 @@ function verifyInventory(products: Product[]): void {
   if (targets.size !== products.length) throw new Error("Multiple Pkl modules own the same output");
   for (const file of targets) {
     if (!ownedTarget(file)) throw new Error(`Pkl cannot own independently managed file: ${file}`);
+  }
+  const ushBuilds = listUshPrograms(root).map(compiledTarget);
+  for (const build of ushBuilds) {
+    if (targets.has(build)) throw new Error(`Both Pkl and an ush program own ${build}`);
+    targets.add(build);
   }
   const paths = execFileSync(
     "git",
@@ -299,6 +305,9 @@ async function main(): Promise<void> {
     writeFileSync(catalog, contents);
   }
   console.log(`${products.length} Pkl outputs checked, ${changes.length} updated.`);
+
+  const ush = syncUshPrograms(root, check);
+  console.log(`${ush.programs.length} ush programs checked, ${ush.updated.length} updated.`);
 }
 
 await main();

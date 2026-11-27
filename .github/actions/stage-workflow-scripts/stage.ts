@@ -39,16 +39,25 @@ const [owner] = programs;
 
 // Later source checkouts can replace every file under GITHUB_WORKSPACE. The staged copy
 // keeps the repository layout, so relative references between programs still resolve.
+// Subdirectories come along: an ush program runs from its build in compiled/.
+function copyTree(source: string, target: string): void {
+  mkdirSync(target, { recursive: true });
+  for (const entry of readdirSync(source, { withFileTypes: true })) {
+    const from = path.join(source, entry.name);
+    const to = path.join(target, entry.name);
+    if (entry.isDirectory()) {
+      copyTree(from, to);
+    } else {
+      assert.ok(entry.isFile(), "workflow script must be a regular file: " + entry.name);
+      copyFileSync(from, to);
+    }
+  }
+}
 const directory = mkdtempSync(path.join(realpathSync(RUNNER_TEMP), "vize-workflow-scripts-"));
 for (const relative of [owner!, "tools/ci/lib/scripts"]) {
   const source = path.join(checkout, relative);
   assert.ok(lstatSync(source).isDirectory(), "expected workflow script directory");
-  const target = path.join(directory, relative);
-  mkdirSync(target, { recursive: true });
-  for (const file of readdirSync(source, { withFileTypes: true })) {
-    assert.ok(file.isFile(), "workflow script must be a regular file: " + file.name);
-    copyFileSync(path.join(source, file.name), path.join(target, file.name));
-  }
+  copyTree(source, path.join(directory, relative));
 }
 appendFileSync(GITHUB_ENV, "VIZE_CI_FILES=" + path.join(directory, owner!) + "\n");
 rmSync(checkout, { recursive: true });

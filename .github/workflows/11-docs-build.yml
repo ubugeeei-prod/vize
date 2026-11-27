@@ -74,18 +74,18 @@ jobs:
         run: node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
 
       - name: Install Japanese rendering fonts
-        run: . "${{ env.VIZE_CI_FILES }}/install-japanese-rendering-fonts.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-japanese-rendering-fonts.sh"
 
       - name: Check preview resource readiness
-        run: . "${{ env.VIZE_CI_FILES }}/check-preview-resource-readiness.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-preview-resource-readiness.sh"
 
       - name: Build docs
         # The page manifest records this exact source SHA; do not replay an
         # earlier script result when only other source files changed.
-        run: . "${{ env.VIZE_CI_FILES }}/build-docs.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-docs.sh"
 
       - name: Verify rendered navigation and Japanese reading paths
-        run: . "${{ env.VIZE_CI_FILES }}/verify-rendered-navigation-and-japanese-reading-paths.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-rendered-navigation-and-japanese-reading-paths.sh"
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}

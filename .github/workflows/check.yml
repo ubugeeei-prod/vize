@@ -135,6 +135,8 @@ jobs:
           }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Install ush
+        uses: ./.github/actions/setup-ush
       - name: Check Pkl repository configuration
         run: node tools/commands/generate/repository-config.ts --check
       - name: Check JS/TS

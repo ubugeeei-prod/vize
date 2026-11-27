@@ -217,9 +217,22 @@ test("every action and workflow step invokes a named program", () => {
 });
 
 test("every named automation program is available in the same checkout as its caller", () => {
+  // The programs in a scripts directory, the builds of its ush programs included.
+  function programFiles(directory: string): string[] {
+    if (!fs.existsSync(directory)) return [];
+    return fs
+      .readdirSync(directory, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => path.join(entry.parentPath, entry.name));
+  }
   function check(directory: string, source: string) {
     for (const name of automationProgramReferences(source)) {
-      assert.match(name, /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/)?[\w.-]+$/u, name);
+      // A shared program, a program of its own, or the build of an ush program.
+      assert.match(
+        name,
+        /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/|compiled\/)?[\w.-]+$/u,
+        name,
+      );
       const program = path.join(directory, name);
       assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
     }
@@ -232,18 +245,16 @@ test("every named automation program is available in the same checkout as its ca
       ? moved
       : path.join(root, ".github/scripts/workflows", stem);
     check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
-    if (fs.existsSync(directory))
-      for (const program of fs.readdirSync(directory))
-        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+    for (const program of programFiles(directory))
+      check(directory, fs.readFileSync(program, "utf8"));
   }
   const actions = path.join(root, ".github/actions");
   for (const entry of fs.readdirSync(actions, { recursive: true, withFileTypes: true })) {
     if (entry.name !== "action.yml") continue;
     const directory = path.join(entry.parentPath, "scripts");
     check(directory, fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8"));
-    if (fs.existsSync(directory))
-      for (const program of fs.readdirSync(directory))
-        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+    for (const program of programFiles(directory))
+      check(directory, fs.readFileSync(program, "utf8"));
   }
 });
 
