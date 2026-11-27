@@ -2,10 +2,9 @@
 
 use std::path::PathBuf;
 
+use vize_carton::nuxt::auto_imports;
 use vize_l0::String;
 use vize_patina::Linter;
-
-use crate::commands::project_nuxt::auto_imports;
 
 const NO_UNDEFINED_REFS: &str = "vue/no-undefined-refs";
 
@@ -67,11 +66,8 @@ impl<'a> NuxtTemplateGlobals<'a> {
                 auto_imports::template_globals(directory)
                     .inspect_err(|declarations| {
                         eprintln!(
-                            "[vize] Skipping {NO_UNDEFINED_REFS} in {}: Nuxt has not generated {} \
-                             yet, so auto-imported names cannot be told from undefined ones. Run \
-                             `nuxi prepare` to generate it.",
-                            directory.display(),
-                            declarations.display()
+                            "[vize] {}",
+                            auto_imports::missing_declarations_notice(directory, declarations)
                         );
                     })
                     .ok()

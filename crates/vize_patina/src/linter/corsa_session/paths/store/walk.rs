@@ -1,17 +1,38 @@
 use super::{Path, PathBuf, String, Value};
+use vize_l0::FxHashSet;
+
+/// A directory and how many pattern segments were still to match there.
+type Walked = FxHashSet<(PathBuf, usize)>;
+
+fn globstars<'p>(segments: impl Iterator<Item = &'p str>) -> usize {
+    segments.filter(|segment| *segment == "**").count()
+}
 
 pub(super) fn walk_glob(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>) {
+    // With two or more `**`, one directory is reached with the same remaining
+    // pattern along many routes; walking each such pair once keeps the walk
+    // proportional to the tree instead of to the number of routes.
+    let mut walked = (globstars(parts.iter().copied()) > 1).then(Walked::default);
+    walk_glob_from(dir, parts, out, &mut walked);
+}
+
+fn walk_glob_from(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>, walked: &mut Option<Walked>) {
     let Some((head, rest)) = parts.split_first() else {
         return;
     };
     if *head == "**" {
-        walk_glob(dir, rest, out);
+        if let Some(walked) = walked
+            && !walked.insert((dir.to_path_buf(), parts.len()))
+        {
+            return;
+        }
+        walk_glob_from(dir, rest, out, walked);
         let Ok(entries) = std::fs::read_dir(dir) else {
             return;
         };
         for entry in entries.flatten() {
             if is_walkable_dir(&entry) {
-                walk_glob(&entry.path(), parts, out);
+                walk_glob_from(&entry.path(), parts, out, walked);
             }
         }
         return;
@@ -35,7 +56,7 @@ pub(super) fn walk_glob(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>) {
             continue;
         }
         if is_walkable_dir(&entry) {
-            walk_glob(&path, rest, out);
+            walk_glob_from(&path, rest, out, walked);
         }
     }
 }
@@ -157,27 +178,43 @@ fn segment_match_bytes(pattern: &[u8], name: &[u8]) -> bool {
     pattern_index == pattern.len()
 }
 
+/// Remaining pattern and name lengths that are known not to match.
+type Unmatched = FxHashSet<(usize, usize)>;
+
 pub(super) fn glob_match(pattern: &str, relative: &str) -> bool {
-    glob_match_parts(pattern.trim_start_matches("./"), relative)
+    let pattern = pattern.trim_start_matches("./");
+    // With two or more `**`, the same pair of remainders is retried along
+    // many splits of the name; remembering the failed pairs tries each once.
+    let mut unmatched = (globstars(pattern.split('/')) > 1).then(Unmatched::default);
+    glob_match_parts(pattern, relative, &mut unmatched)
 }
 
-fn glob_match_parts(pattern: &str, name: &str) -> bool {
+fn glob_match_parts(pattern: &str, name: &str, unmatched: &mut Option<Unmatched>) -> bool {
     let Some((head, pattern_rest)) = next_segment(pattern) else {
         return next_segment(name).is_none();
     };
     if head == "**" {
-        if glob_match_parts(pattern_rest, name) {
+        let remainders = (pattern.len(), name.len());
+        if unmatched
+            .as_ref()
+            .is_some_and(|unmatched| unmatched.contains(&remainders))
+        {
+            return false;
+        }
+        if glob_match_parts(pattern_rest, name, unmatched) {
             return true;
         }
-        let Some((_, name_rest)) = next_segment(name) else {
-            return false;
-        };
-        return glob_match_parts(pattern, name_rest);
+        let matched = next_segment(name)
+            .is_some_and(|(_, name_rest)| glob_match_parts(pattern, name_rest, unmatched));
+        if !matched && let Some(unmatched) = unmatched {
+            unmatched.insert(remainders);
+        }
+        return matched;
     }
     let Some((name_head, name_rest)) = next_segment(name) else {
         return false;
     };
-    segment_match(head, name_head) && glob_match_parts(pattern_rest, name_rest)
+    segment_match(head, name_head) && glob_match_parts(pattern_rest, name_rest, unmatched)
 }
 
 /// Next non-empty `/` segment. `a//b` matches `a/b`, and `**` may match empty.
@@ -331,136 +368,4 @@ fn strip_trailing_commas(content: &str) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{String, glob_match, push_program_prefix, slash_path};
-    use std::ffi::OsStr;
-    use std::path::{Path, Prefix};
-
-    fn reference_glob_match(pattern: &str, relative: &str) -> bool {
-        let pattern = pattern.trim_start_matches("./");
-        let pattern_parts: Vec<&str> = pattern.split('/').filter(|part| !part.is_empty()).collect();
-        let name_parts: Vec<&str> = relative
-            .split('/')
-            .filter(|part| !part.is_empty())
-            .collect();
-        reference_glob_parts(&pattern_parts, &name_parts)
-    }
-
-    fn reference_glob_parts(pattern: &[&str], name: &[&str]) -> bool {
-        let Some((head, pattern_rest)) = pattern.split_first() else {
-            return name.is_empty();
-        };
-        if *head == "**" {
-            if reference_glob_parts(pattern_rest, name) {
-                return true;
-            }
-            return match name.split_first() {
-                Some((_, name_rest)) => reference_glob_parts(pattern, name_rest),
-                None => false,
-            };
-        }
-        let Some((name_head, name_rest)) = name.split_first() else {
-            return false;
-        };
-        super::segment_match(head, name_head) && reference_glob_parts(pattern_rest, name_rest)
-    }
-
-    #[test]
-    fn glob_match_agrees_with_the_allocating_segment_lists() {
-        let patterns = [
-            "node_modules",
-            "src/**/*.ts",
-            "**/*.d.ts",
-            "tests/**",
-            "./src/**",
-            "*",
-            "a/**/b",
-            "**",
-            "src/*",
-            "*.d.ts",
-            "a//b",
-            "././src/**/*.ts",
-        ];
-        let names = [
-            "node_modules",
-            "src/node_modules/pkg/index.ts",
-            "src/a.ts",
-            "src/a.d.ts",
-            "src/nested/env.d.ts",
-            "a/x/y/b",
-            "a/b",
-            "a//b",
-            "src/file.ts",
-            "src/dir/file.ts",
-            "tests/a.ts",
-            "other.ts",
-            "",
-            "src",
-            "src/a/b",
-        ];
-        for pattern in patterns {
-            for name in names {
-                assert_eq!(
-                    glob_match(pattern, name),
-                    reference_glob_match(pattern, name),
-                    "{pattern} vs {name}"
-                );
-            }
-        }
-    }
-
-    fn rendered(kind: Prefix<'_>, raw: &str) -> String {
-        let mut rendered = String::new("");
-        push_program_prefix(&mut rendered, kind, OsStr::new(raw));
-        rendered
-    }
-
-    #[test]
-    fn verbatim_windows_prefixes_render_as_their_plain_program_roots() {
-        // #13077: `\\?\C:` became `//?/C:` in Corsa, a different root from
-        // the `C:/...` spelling the SFC import graph uses.
-        assert_eq!(rendered(Prefix::VerbatimDisk(b'C'), "\\\\?\\C:"), "C:");
-        assert_eq!(rendered(Prefix::Disk(b'd'), "d:"), "d:");
-        assert_eq!(
-            rendered(
-                Prefix::VerbatimUNC(OsStr::new("server"), OsStr::new("share")),
-                "\\\\?\\UNC\\server\\share"
-            ),
-            "//server/share"
-        );
-        assert_eq!(
-            rendered(
-                Prefix::UNC(OsStr::new("server"), OsStr::new("share")),
-                "\\\\server\\share"
-            ),
-            "//server/share"
-        );
-        assert_eq!(
-            rendered(Prefix::DeviceNS(OsStr::new("pipe")), "\\\\.\\pipe"),
-            "\\\\.\\pipe"
-        );
-    }
-
-    #[test]
-    fn slash_paths_never_carry_a_verbatim_prefix() {
-        if cfg!(windows) {
-            assert_eq!(
-                slash_path(Path::new("\\\\?\\C:\\work\\app\\src\\env.d.ts")),
-                "C:/work/app/src/env.d.ts"
-            );
-            assert_eq!(
-                slash_path(Path::new("\\\\?\\UNC\\server\\share\\app\\env.d.ts")),
-                "//server/share/app/env.d.ts"
-            );
-            assert_eq!(
-                slash_path(Path::new("C:\\work\\app\\src\\env.d.ts")),
-                "C:/work/app/src/env.d.ts"
-            );
-        } else {
-            assert_eq!(
-                slash_path(Path::new("/work/app/src/env.d.ts")),
-                "/work/app/src/env.d.ts"
-            );
-        }
-    }
-}
+mod tests;

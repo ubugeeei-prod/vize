@@ -52,6 +52,10 @@ pub mod corsa_resolver;
 )]
 pub mod lsp;
 
+/// Static Nuxt project facts the CLI and the language server share.
+#[cfg(not(target_arch = "wasm32"))]
+pub mod nuxt;
+
 pub mod path;
 
 pub mod timing_observer;

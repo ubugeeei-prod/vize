@@ -63770,6 +63770,61 @@
       }
     },
     {
+      "id": "typechecker/library-generic-kebab-emits/kebab-emit-payloads",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::library_generic_kebab_emits::kebab_listeners_of_packaged_generic_components_read_the_hyphenated_prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "library-generic-kebab-emits/tsconfig.json.txt",
+          "sha256": "a4fdcbdc5bf4f4b94f97041df67c33ec2ce139a1790e22587adfd0bbb4c9e30f"
+        },
+        {
+          "file": "src/lib/table.d.ts",
+          "path": "library-generic-kebab-emits/table.d.ts.txt",
+          "sha256": "aac86d8c2d5fbd4094e8564ba4448632307d3378e7924d8c4a686110df53f2f6"
+        },
+        {
+          "file": "src/lib/plain.d.ts",
+          "path": "library-generic-kebab-emits/plain.d.ts.txt",
+          "sha256": "53ba348720999a406d1d5e9f74a2aae85b5ed41fd7d564500883c335f1096585"
+        },
+        {
+          "file": "src/Local.vue",
+          "path": "library-generic-kebab-emits/Local.vue.txt",
+          "sha256": "a2e6de67c767d5eb61fb149f17263f1043b3ed94fa46d65ee023a02a49173f43"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "library-generic-kebab-emits/App.vue.txt",
+          "sha256": "085bfd028a60840a4e2e3c93eabfec80bc925a061fa3d9e6b6867f2caa14c5b8"
+        },
+        {
+          "file": "cases.json",
+          "path": "library-generic-kebab-emits/cases.json",
+          "sha256": "6b048e63f9af2baca1c31d35b1787fa553bc13ac50196a0d866a122dce531752"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::library_generic_kebab_emits::kebab_listeners_of_packaged_generic_components_read_the_hyphenated_prop; an authored kebab listener of a vue-tsc generic library export reads the hyphenated EmitsToProps key of its __ctx.props, so the payload is the declared event object instead of any; a camel emit, a non-generic packaged component and a local generic SFC keep their payloads. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/listener-shadow-guard-11749",
       "state": "active",
       "targets": [
@@ -69769,6 +69824,51 @@
               "ts"
             ],
             "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source native check and independent vue-tsc; not a new semantic program or native mapper authority"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/runtime-owner-outside-include/package-runtime",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "check_outside_include_runtime_cli::check_with_outside_include_discovers_the_package_runtime + check_outside_include_runtime_cli::check_with_outside_include_anchors_a_relative_corsa_path_at_the_package",
+      "inputs": [
+        {
+          "path": "runtime-owner-outside-include/tsconfig.json.txt",
+          "role": "package-project-config-including-outside-sources",
+          "sha256": "5dcc19e942b9005d929a7a8ddbf910c66b0e73494864de960336dc64386bf706"
+        },
+        {
+          "path": "runtime-owner-outside-include/App.vue.txt",
+          "role": "package-sfc",
+          "sha256": "ac41e998fe952ee23d54f55658595ac3556775e402596a0f5231516fadc70e1a"
+        },
+        {
+          "path": "runtime-owner-outside-include/shared-a.ts.txt",
+          "role": "outside-package-source",
+          "sha256": "82b40360d811a664d6203f13b541ad87b6cee6a0b9d5313537476eb01640ffa8"
+        },
+        {
+          "path": "runtime-owner-outside-include/runtime.observed.json",
+          "role": "complete-current-observation",
+          "sha256": "8b1459748773fc7e246a8cc0ca513e0f39d67a4de61c100376ae71cd52b3c2ac"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "native runtime selection observed from a source-built `vize check` whose tsconfig includes ../shared: discovery and a relative --corsa-path start at the package that owns the tsconfig, not the widened materialized project root. Input-only registration: runtime selection has no batch or native diagnostic adapter, so there is no parity claim."
           }
         ]
       }

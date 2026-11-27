@@ -5,9 +5,11 @@
 //! for a declaration continued over several lines. Lines that start inside a
 //! block comment or a string stay as written. Blank lines collapse to one and
 //! are dropped after `{` and before `}`. Anything unbalanced keeps the whole
-//! block as written.
+//! block as written, and so does nesting past the depth the style formatter
+//! supports: every line is indented once per level.
 
 use vize_l0::String;
+use vize_l1::css::nesting::MAX_CSS_NESTING_DEPTH;
 
 /// What one line contributes, scanned outside comments and strings.
 #[derive(Clone, Copy, Default)]
@@ -141,6 +143,9 @@ fn scan(lines: &[&str]) -> Option<Vec<Line>> {
                         saw_code = true;
                     }
                     b'{' | b'(' => {
+                        if depth == MAX_CSS_NESTING_DEPTH {
+                            return None;
+                        }
                         depth += 1;
                         saw_code = true;
                         line.last = Some(byte);
@@ -198,7 +203,7 @@ fn statement_terminators(lines: &[Line]) -> Vec<Option<u8>> {
 
 #[cfg(test)]
 mod tests {
-    use super::reindent;
+    use super::{MAX_CSS_NESTING_DEPTH, reindent};
 
     #[track_caller]
     fn check(source: &str, expected: &str) {
@@ -243,5 +248,32 @@ mod tests {
     fn keeps_unbalanced_blocks() {
         assert_eq!(reindent(".a {\n\tcolor: red;", "  ", "\n"), None);
         assert_eq!(reindent(".a { content: 'b\n}", "  ", "\n"), None);
+    }
+
+    /// `depth` blocks, each opened and closed on a line of its own.
+    fn nested_blocks(depth: usize) -> std::string::String {
+        ".a {\n".repeat(depth) + &"}\n".repeat(depth)
+    }
+
+    #[test]
+    fn indents_blocks_nested_to_the_supported_depth() {
+        let mut lines = Vec::new();
+        for depth in 0..MAX_CSS_NESTING_DEPTH {
+            lines.push("  ".repeat(depth) + ".a {");
+        }
+        for depth in (0..MAX_CSS_NESTING_DEPTH).rev() {
+            lines.push("  ".repeat(depth) + "}");
+        }
+        check(&nested_blocks(MAX_CSS_NESTING_DEPTH), &lines.join("\n"));
+    }
+
+    #[test]
+    fn keeps_blocks_nested_past_the_supported_depth() {
+        for depth in [MAX_CSS_NESTING_DEPTH + 1, 30_000] {
+            assert_eq!(reindent(&nested_blocks(depth), "  ", "\n"), None);
+        }
+        let parentheses =
+            "$a: (\n".repeat(MAX_CSS_NESTING_DEPTH + 1) + &")\n".repeat(MAX_CSS_NESTING_DEPTH + 1);
+        assert_eq!(reindent(&parentheses, "  ", "\n"), None);
     }
 }

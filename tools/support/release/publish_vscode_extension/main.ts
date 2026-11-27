@@ -22,13 +22,16 @@ function configuredVsceDlxBin(): string {
   return nonEmptyEnv("VSCE_DLX_BIN") ?? nonEmptyEnv("VP_BIN") ?? "vp";
 }
 
+/** The exact vsce that packages the VSIX: `@vscode/vsce` in editors/vscode/package.json. */
+export const vscePackage = "@vscode/vsce@3.9.1";
+
 export function vsceDlxArgs(
   dlxBin: string,
   command: string,
   extraArgs: readonly string[],
 ): string[] {
   if (dlxBin === "npx") {
-    return ["-y", "-p", "@vscode/vsce@^3.3.2", "vsce", command, ...extraArgs];
+    return ["-y", "-p", vscePackage, "vsce", command, ...extraArgs];
   }
   const args: string[] = [];
   if (dlxBin === "corepack") args.push("pnpm");
@@ -38,7 +41,7 @@ export function vsceDlxArgs(
   } else {
     args.push("-p");
   }
-  args.push("@vscode/vsce@^3.3.2", "vsce", command, ...extraArgs);
+  args.push(vscePackage, "vsce", command, ...extraArgs);
   return args;
 }
 

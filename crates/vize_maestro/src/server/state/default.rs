@@ -112,6 +112,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             global_component_references: global_components::GlobalComponentReferences::new(),
             #[cfg(feature = "native")]
+            nuxt_template_globals: Default::default(),
+            #[cfg(feature = "native")]
             batch_checker: OnceLock::new(),
             #[cfg(feature = "native")]
             batch_cache: BatchTypeCheckCache::new(),

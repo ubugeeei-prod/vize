@@ -6,7 +6,7 @@
 use crate::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
-use super::helpers::{escape_js_string, to_valid_asset_identifier};
+use super::helpers::{escape_js_string, js_string_contents, to_valid_asset_identifier};
 use vize_l0::{String, camelize, capitalize, js_string::push_js_string_literal};
 
 /// Check if a root-level text node is ignorable whitespace.
@@ -197,7 +197,7 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
             ctx.use_helper(RuntimeHelper::ResolveDirective);
             ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
             ctx.push("(\"");
-            ctx.push(directive);
+            ctx.push(&js_string_contents(directive));
             ctx.push("\")");
         }
         ctx.newline();
