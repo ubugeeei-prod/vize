@@ -11,7 +11,7 @@
 
 import assert from "node:assert/strict";
 
-import { analyzeModuleOutput, type ModuleOutputInfo } from "./utils/module-output.ts";
+import { analyzeModuleOutput, type ModuleOutputInfo } from "../test/oxc-module-output.ts";
 
 /** Emitted module shapes, named for the emitter path that produces them. */
 const SHAPES: Record<string, string> = {

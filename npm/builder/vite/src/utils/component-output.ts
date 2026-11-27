@@ -1,6 +1,6 @@
 import { bindDefaultExport } from "../../../shared/native-shape.ts";
 import type { CompiledModule } from "../types.ts";
-import { analyzeModuleOutput } from "./module-output.ts";
+import { unparsedModuleOutput } from "./module-output.ts";
 import { MappedModule, parseSourceMap } from "./source-map.ts";
 
 /** What the assembled module exports, for the decorations appended to it. */
@@ -30,10 +30,9 @@ export function assembleComponentOutput(
 ): AssembledComponent {
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
 
-  // The native compiler already parsed this module and reports its shape, so
-  // the oxc parse here is redundant. It reports none only for output it could
-  // not parse, which pays the parse here.
-  const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(emitted.code);
+  // The native compiler already parsed this module and reports its shape. It
+  // reports none only for output it could not parse, which is not parsed here.
+  const moduleInfo = compiled.moduleShape ?? unparsedModuleOutput(emitted.code);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
   const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;

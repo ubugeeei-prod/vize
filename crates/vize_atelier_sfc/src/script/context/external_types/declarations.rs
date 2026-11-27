@@ -28,6 +28,7 @@ use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::super::ScriptCompileContext;
+use super::bindings::{Bound, Export};
 use super::modules::{ModuleGraph, ModuleId};
 use super::work::{Step, count};
 
@@ -38,6 +39,9 @@ pub(crate) struct Declarations {
     names: FxHashMap<String, Declaration>,
     /// The imports of the walked modules, in merge order.
     pub(super) imports: Vec<(String, String)>,
+    /// The declaration each requested export of the walk's entry module
+    /// names, by export name: `None` where the summaries do not show it.
+    exports: Box<[(String, Option<Declaration>)]>,
     /// Whether a body spells an identifier with an escape, which the scan of
     /// identifiers cannot read. A component then merges every declaration.
     escaped: bool,
@@ -52,7 +56,11 @@ struct Declaration {
 }
 
 impl Declarations {
-    pub(super) fn of(graph: &ModuleGraph, modules: &[ModuleId]) -> Self {
+    pub(super) fn of(
+        graph: &ModuleGraph,
+        modules: &[ModuleId],
+        exports: &[(String, Option<Export>)],
+    ) -> Self {
         let mut declarations = Self::default();
         for summary in modules.iter().filter_map(|id| graph.summary(*id)) {
             // A module's interfaces merge before its type aliases.
@@ -63,19 +71,49 @@ impl Declarations {
                     continue;
                 }
                 declarations.escaped |= has_escape(body);
-                let references = identifiers(body).map(String::from).collect();
-                declarations.names.insert(
-                    name.clone(),
-                    Declaration {
-                        interface,
-                        body: body.clone(),
-                        references,
-                    },
-                );
+                declarations
+                    .names
+                    .insert(name.clone(), Declaration::new(interface, body));
             }
             declarations.imports.extend(summary.imports.iter().cloned());
         }
+        declarations.exports = exports
+            .iter()
+            .map(|(name, export)| {
+                let declaration = export.and_then(|export| {
+                    let (_, body) = export.declaration(graph)?;
+                    declarations.escaped |= has_escape(body);
+                    Some(Declaration::new(export.interface, body))
+                });
+                (name.clone(), declaration)
+            })
+            .collect();
         declarations
+    }
+
+    /// The position of the export named `name` among the requested ones,
+    /// when the summaries show its declaration.
+    pub(super) fn export(&self, name: &str) -> Option<usize> {
+        self.exports
+            .iter()
+            .position(|(exported, declaration)| exported == name && declaration.is_some())
+    }
+}
+
+impl Bound {
+    /// The declaration the import binds.
+    fn declaration(&self) -> Option<&Declaration> {
+        self.walk.exports.get(self.export)?.1.as_ref()
+    }
+}
+
+impl Declaration {
+    fn new(interface: bool, body: &String) -> Self {
+        Self {
+            interface,
+            body: body.clone(),
+            references: identifiers(body).map(String::from).collect(),
+        }
     }
 }
 
@@ -89,10 +127,21 @@ impl ScriptCompileContext {
         }
     }
 
-    /// Merge, of the declarations of `walks`, the ones a component whose
-    /// source is `texts` can look up, as merging them all in order would.
+    /// Merge each declaration of `bound` under the name its import binds.
+    pub(super) fn merge_bindings(&mut self, bound: &[Bound]) {
+        for bound in bound {
+            if let Some(declaration) = bound.declaration() {
+                self.merge_declaration(&bound.local, declaration);
+            }
+        }
+    }
+
+    /// Merge the declarations of `bound`, then, of the declarations of
+    /// `walks`, the ones a component whose source is `texts` can look up, as
+    /// merging them all in order would.
     pub(crate) fn merge_referenced_declarations(
         &mut self,
+        bound: &[Bound],
         walks: &[Arc<Declarations>],
         texts: &[&str],
     ) {
@@ -112,19 +161,40 @@ impl ScriptCompileContext {
             || walks.iter().any(|declarations| declarations.escaped)
             || texts.iter().any(|text| has_escape(text))
         {
+            self.merge_bindings(bound);
             self.merge_declarations(walks);
             return;
         }
-        self.merge_by_reference(walks, texts);
+        self.merge_by_reference(bound, walks, texts);
     }
 
-    /// Merge the declarations of `walks` that `texts` name, then the ones
-    /// the merged bodies name, until no merged body names another.
-    pub(super) fn merge_by_reference(&mut self, walks: &[Arc<Declarations>], texts: &[&str]) {
+    /// Merge the declarations of `bound`, then the declarations of `walks`
+    /// that `texts` or the bound bodies name, then the ones the merged bodies
+    /// name, until no merged body names another.
+    pub(super) fn merge_by_reference<'a>(
+        &mut self,
+        bound: &'a [Bound],
+        walks: &'a [Arc<Declarations>],
+        texts: &[&'a str],
+    ) {
         let mut seen = FxHashSet::default();
         let mut wanted: Vec<&str> = Vec::new();
         for text in texts {
             wanted.extend(identifiers(text).filter(|name| seen.insert(*name)));
+        }
+        for bound in bound {
+            let Some(declaration) = bound.declaration() else {
+                continue;
+            };
+            if self.merge_declaration(&bound.local, declaration) {
+                wanted.extend(
+                    declaration
+                        .references
+                        .iter()
+                        .map(String::as_str)
+                        .filter(|name| seen.insert(*name)),
+                );
+            }
         }
         while let Some(name) = wanted.pop() {
             // The first walk that declares a name decides it, as in the
@@ -151,16 +221,26 @@ impl ScriptCompileContext {
     /// either map. A name declared in this SFC is that binding: an imported
     /// `interface Props` must not shadow a local `type Props`.
     fn merge_declaration(&mut self, name: &str, declaration: &Declaration) -> bool {
+        let merged = self.merge_body(name, declaration.interface, &declaration.body);
+        if merged {
+            count(Step::Declaration, 1);
+        }
+        merged
+    }
+
+    /// [`Self::merge_declaration`] of an interface or type alias `body`,
+    /// uncounted: a walk that merges every module counts each module's
+    /// declarations as it merges them, this one among them.
+    pub(super) fn merge_body(&mut self, name: &str, interface: bool, body: &String) -> bool {
         if self.interfaces.contains_key(name) || self.type_aliases.contains_key(name) {
             return false;
         }
-        count(Step::Declaration, 1);
-        let map = if declaration.interface {
+        let map = if interface {
             &mut self.interfaces
         } else {
             &mut self.type_aliases
         };
-        map.insert(name.into(), declaration.body.clone());
+        map.insert(name.into(), body.clone());
         true
     }
 }

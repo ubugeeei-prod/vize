@@ -22,7 +22,7 @@ mod transform;
 #[cfg(test)]
 mod tests;
 
-pub use css::{CssAliasRule, resolve_css_imports, scope_css_for_pipeline};
+pub use css::{CssAliasRule, resolve_css_imports, resolve_css_imports_in, scope_css_for_pipeline};
 pub use css_vars::{transform_css_vars_for_pipeline, transform_css_vars_for_pipeline_with_context};
 pub use hmr::{HmrHashes, detect_hmr_update_type, generate_hmr_code, has_hmr_changes};
 pub use middleware::{

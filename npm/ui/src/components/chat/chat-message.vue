@@ -10,7 +10,7 @@ defineSlots<{
 </script>
 
 <template>
-  <article role="article" data-vize-ui="chat-message" :aria-label="author" :data-author="author">
+  <article data-vize-ui="chat-message" :aria-label="author" :data-author="author">
     <slot />
   </article>
 </template>

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const input = useTemplateRef('input')
+const width: number = input.value
+const unknownKey = useTemplateRef('missing')
+input.value?.
+</script>
+
+<template>
+  <input ref="input" />
+</template>

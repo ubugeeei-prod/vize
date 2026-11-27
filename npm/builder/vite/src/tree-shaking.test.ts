@@ -8,6 +8,7 @@ import { build, type Plugin, type RollupOutput } from "vite";
 
 import { generateOutput } from "./utils/index.ts";
 import { vize } from "./index.ts";
+import { withModuleShape } from "../test/oxc-module-output.ts";
 
 void test("unused template-only SFC and scoped CSS leave a production bundle", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pure-sfc-"));
@@ -44,7 +45,7 @@ void test("unused template-only SFC and scoped CSS leave a production bundle", a
         if (id.includes("?")) return null;
         return {
           code: generateOutput(
-            {
+            withModuleShape({
               code: `export function render() { return "${name.toLowerCase()}-child" }\n`,
               scopeId: name.toLowerCase(),
               hasScoped: true,
@@ -57,7 +58,7 @@ void test("unused template-only SFC and scoped CSS leave a production bundle", a
                   index: 0,
                 },
               ],
-            },
+            }),
             { isProduction: true, isDev: false, extractCss: true, filePath: id },
           ),
           moduleSideEffects: false,

@@ -2,6 +2,7 @@ use super::js_tooling_refresh;
 use super::*;
 mod eslint_vue_scorecard_successor;
 mod node_forge_security_successor;
+mod parser_free_builders_successor;
 mod picomatch_security_successor;
 mod runtime_security_successor;
 mod vite_resolver_importer_successor;

@@ -223,6 +223,51 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "kebab-runtime-prop-name-camelized",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-kebab-name.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "kebab-runtime-prop-name-value-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-kebab-name-wrong-value.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ someMessage: number; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{ someMessage: number; }' is not assignable to type '{ readonly someMessage: string; }'.\nTypes of property 'someMessage' are incompatible.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
     }
   ]
 }

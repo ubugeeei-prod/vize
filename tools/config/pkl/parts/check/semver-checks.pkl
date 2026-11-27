@@ -3,7 +3,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 name = "cargo-semver-checks (${{ matrix.crate }})"
 // Check published APIs before tag promotion and when resuming an exact release tag.
 `if` = "${{ github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')) }}"
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 25
 permissions { contents = "read" }
 // Keep this list in sync with crates published by tools/support/release/publish_crates.

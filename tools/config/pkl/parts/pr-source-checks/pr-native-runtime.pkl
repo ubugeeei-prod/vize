@@ -6,7 +6,7 @@ strategy {
   `fail-fast` = false
   matrix = "${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}"
 }
-`runs-on` = "${{ matrix.lane != 'none' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`runs-on` = "${{ matrix.lane != 'none' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 15
 env {
 
