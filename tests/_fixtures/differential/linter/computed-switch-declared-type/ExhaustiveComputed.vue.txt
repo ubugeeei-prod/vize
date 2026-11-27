@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+type Status = 'ready' | 'pending' | 'failed'
+const status = ref<Status>('ready')
+const label = computed<string>(() => {
+  switch (status.value) {
+    case 'ready':
+      return 'OK'
+    case 'pending':
+      return '...'
+    case 'failed':
+      return 'NG'
+  }
+})
+</script>
+<template><span>{{ label }}</span></template>

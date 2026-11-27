@@ -12,6 +12,9 @@ pub(super) struct Printer<'a> {
     pub(super) bracket_spacing: bool,
 }
 
+// Each function that walks into a member's value recurses once per nesting
+// level. Those steps go through `ensure_sufficient_stack`, as the parser's
+// does, so the nesting limit decides the depth and not the thread's stack.
 impl Printer<'_> {
     fn write_indent(&self, output: &mut String, depth: usize) {
         for _ in 0..depth {
@@ -66,12 +69,10 @@ impl Printer<'_> {
                             out.push_str(member.key.as_str());
                             out.push_str(": ");
                             let comma = usize::from(index + 1 < members.len());
-                            p.write_value(
-                                out,
-                                &member.value,
-                                depth + 1,
-                                comma + p.trailing_width(&member.trailing),
-                            );
+                            let suffix_width = comma + p.trailing_width(&member.trailing);
+                            vize_l0::ensure_sufficient_stack(|| {
+                                p.write_value(out, &member.value, depth + 1, suffix_width);
+                            });
                             if comma != 0 {
                                 out.push(',');
                             }
@@ -113,12 +114,10 @@ impl Printer<'_> {
                                 out.push_str(p.newline);
                                 p.write_indent(out, depth + 1);
                             }
-                            p.write_value(
-                                out,
-                                &element.value,
-                                depth + 1,
-                                comma + p.trailing_width(&element.trailing),
-                            );
+                            let suffix_width = comma + p.trailing_width(&element.trailing);
+                            vize_l0::ensure_sufficient_stack(|| {
+                                p.write_value(out, &element.value, depth + 1, suffix_width);
+                            });
                             if comma != 0 {
                                 out.push(',');
                             }
@@ -165,7 +164,7 @@ impl Printer<'_> {
                     width += usize::from(index > 0) * 2
                         + member.key.as_str().width()
                         + 2
-                        + self.flat_width(&member.value)?;
+                        + vize_l0::ensure_sufficient_stack(|| self.flat_width(&member.value))?;
                 }
                 Some(width)
             }
@@ -181,7 +180,8 @@ impl Printer<'_> {
                     {
                         return None;
                     }
-                    width += usize::from(index > 0) * 2 + self.flat_width(&element.value)?;
+                    width += usize::from(index > 0) * 2
+                        + vize_l0::ensure_sufficient_stack(|| self.flat_width(&element.value))?;
                 }
                 Some(width)
             }
@@ -202,7 +202,7 @@ impl Printer<'_> {
                     }
                     output.push_str(&member.key);
                     output.push_str(": ");
-                    self.write_flat(output, &member.value);
+                    vize_l0::ensure_sufficient_stack(|| self.write_flat(output, &member.value));
                 }
                 if self.bracket_spacing && !members.is_empty() {
                     output.push(' ');
@@ -215,7 +215,7 @@ impl Printer<'_> {
                     if index > 0 {
                         output.push_str(", ");
                     }
-                    self.write_flat(output, &element.value);
+                    vize_l0::ensure_sufficient_stack(|| self.write_flat(output, &element.value));
                 }
                 output.push(']');
             }

@@ -53,6 +53,17 @@ pub enum ObjectWrap {
     Collapse,
 }
 
+/// The line breaks between top-level SFC blocks.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BlockSpacing {
+    /// Separate every pair of blocks with exactly one blank line.
+    #[default]
+    BlankLine,
+    /// Keep an authored blank line (at most one) and add none, as Prettier does.
+    Preserve,
+}
+
 /// Attribute ordering strategy.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -155,6 +166,7 @@ impl FormatterPreset {
                 "normalizeVForParens": false,
                 "selfCloseVoidElements": false,
                 "reindentPreprocessorStyles": false,
+                "blockSpacing": "blank-line",
             }),
             Self::Prettier => serde_json::json!({
                 "printWidth": 80,
@@ -167,6 +179,7 @@ impl FormatterPreset {
                 "normalizeVForParens": true,
                 "selfCloseVoidElements": true,
                 "reindentPreprocessorStyles": true,
+                "blockSpacing": "preserve",
             }),
             Self::Compact => serde_json::json!({
                 "printWidth": 120,
@@ -179,6 +192,7 @@ impl FormatterPreset {
                 "normalizeVForParens": false,
                 "selfCloseVoidElements": false,
                 "reindentPreprocessorStyles": false,
+                "blockSpacing": "blank-line",
             }),
             Self::Documentation => serde_json::json!({
                 "printWidth": 80,
@@ -192,6 +206,7 @@ impl FormatterPreset {
                 "normalizeVForParens": false,
                 "selfCloseVoidElements": false,
                 "reindentPreprocessorStyles": false,
+                "blockSpacing": "blank-line",
             }),
         }
     }
@@ -227,6 +242,7 @@ struct RawFormatterKeys {
     ignore_patterns: Vec<String>,
     preset: Option<FormatterPreset>,
     object_wrap: Option<ObjectWrap>,
+    block_spacing: Option<BlockSpacing>,
     normalize_css_quotes: Option<bool>,
     normalize_inline_styles: Option<bool>,
     normalize_v_for_parens: Option<bool>,

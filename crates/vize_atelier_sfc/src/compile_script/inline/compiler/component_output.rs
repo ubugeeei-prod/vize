@@ -96,9 +96,7 @@ pub(super) fn emit_component_definition(
     } else {
         output.push_str("export default {\n");
     }
-    output.push_str("  __name: '");
-    output.push_str(component_name);
-    output.push_str("',\n");
+    crate::compile_script::component_name::push_component_name_option(output, component_name);
     if !css_modules.is_empty() {
         output.push_str("  __cssModules: ");
         output.push_str(&css_modules_object_literal(css_modules, "  "));

@@ -10,6 +10,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_formatter::{QuoteStyle, format_program};
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
+use vize_l0::expression_guard::expression_is_safe_to_parse;
 use vize_l0::{String, ToCompactString};
 
 #[inline]
@@ -144,6 +145,9 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
 }
 
 /// Format an expression from a TSRX region, where nested JSX is valid syntax.
+///
+/// The text is a span of the TSRX module the caller has already parsed, so it
+/// does not pass the template-expression guard, which does not read JSX.
 pub(crate) fn format_tsx_expression(expr: &str, options: &FormatOptions) -> Option<String> {
     format_expression_with_layout(
         expr,
@@ -151,7 +155,10 @@ pub(crate) fn format_tsx_expression(expr: &str, options: &FormatOptions) -> Opti
         None,
         None,
         None,
-        SourceType::tsx().with_module(true),
+        ExpressionSource {
+            source_type: SourceType::tsx().with_module(true),
+            guarded: false,
+        },
     )
     .map(|formatted| formatted.code)
 }
@@ -180,7 +187,7 @@ pub(crate) fn format_js_expression_in_attribute_with_layout(
         Some(QuoteStyle::Single),
         Some(attribute_depth),
         Some((attribute_name, attribute_value, trimmed_attribute_value)),
-        SourceType::ts().with_module(true),
+        TEMPLATE_EXPRESSION,
     )
 }
 
@@ -189,15 +196,25 @@ pub(crate) fn format_js_expression_with_quote_style(
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
 ) -> Option<FormattedExpression> {
-    format_expression_with_layout(
-        expr,
-        options,
-        quote_style,
-        None,
-        None,
-        SourceType::ts().with_module(true),
-    )
+    format_expression_with_layout(expr, options, quote_style, None, None, TEMPLATE_EXPRESSION)
 }
+
+/// Where expression text comes from, which decides its source type and
+/// whether it must pass the nesting guard first.
+#[derive(Clone, Copy)]
+struct ExpressionSource {
+    source_type: SourceType,
+    /// Expression text authored in a Vue template first meets the recursive
+    /// parser here, so it passes the guard every compiler parse site shares.
+    /// Refused text is answered like text that does not parse: `None`, and
+    /// the caller keeps what was authored.
+    guarded: bool,
+}
+
+const TEMPLATE_EXPRESSION: ExpressionSource = ExpressionSource {
+    source_type: SourceType::ts().with_module(true),
+    guarded: true,
+};
 
 fn format_expression_with_layout(
     expr: &str,
@@ -205,7 +222,7 @@ fn format_expression_with_layout(
     quote_style: Option<QuoteStyle>,
     attribute_depth: Option<usize>,
     attribute_layout: Option<(&str, &str, &str)>,
-    source_type: SourceType,
+    source: ExpressionSource,
 ) -> Option<FormattedExpression> {
     let trimmed = trim_expression(expr);
     if trimmed.is_empty() {
@@ -214,6 +231,11 @@ fn format_expression_with_layout(
             retained_bare_sequence: false,
             owns_attribute_lines: false,
         });
+    }
+    // The guard admits empty text, so checking it after the empty answer
+    // keeps every verdict and trims the text once.
+    if source.guarded && !expression_is_safe_to_parse(trimmed) {
+        return None;
     }
 
     EXPR_SCRATCH.with(|cell| {
@@ -228,7 +250,7 @@ fn format_expression_with_layout(
         wrapped.truncate("void (".len());
         wrapped.push_str(trimmed);
         wrapped.push(')');
-        let parsed = super::parse_for_print(oxc_allocator, wrapped.as_str(), source_type);
+        let parsed = super::parse_for_print(oxc_allocator, wrapped.as_str(), source.source_type);
 
         if !parsed.diagnostics.is_empty() {
             return None;

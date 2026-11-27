@@ -5,6 +5,8 @@
 mod block_indent;
 mod blocks;
 mod custom_block;
+#[cfg(test)]
+mod nesting_tests;
 mod opening_tag;
 mod raw_mask;
 mod root_content;
@@ -15,7 +17,7 @@ mod template_indent;
 
 use crate::VueVersion;
 use crate::error::FormatError;
-use crate::options::FormatOptions;
+use crate::options::{BlockSpacing, FormatOptions};
 use blocks::{BlockAttrs, BlockKind, BlockLocation, SfcBlock};
 use vize_l0::string_builder::TextBuf;
 use vize_l0::{Allocator, FxHashMap, String};
@@ -120,22 +122,40 @@ impl<'a> GlyphFormatter<'a> {
         } else {
             root_content::split_prologue(original_prologue)
         };
+        // `BlankLine` writes one blank line between root nodes. `Preserve`
+        // reads each separator from the source, as Prettier does: an authored
+        // blank line (any run of them) becomes one, and none adds none.
+        let preserve_spacing = self.options.block_spacing == BlockSpacing::Preserve;
+        let prologue_blank = !preserve_spacing
+            || first_attachment.is_some()
+            || root_content::has_blank_line(trailing_whitespace(original_prologue));
         let mut leading_content = FxHashMap::default();
+        let mut blank_before = FxHashMap::default();
         if let Some(content) = first_attachment {
             leading_content.insert(first_tag_start, (content, true));
         }
         let mut previous_end = first_tag_start;
-        for loc in blocks.iter().map(|block| &block.loc) {
-            if let Some(content) = source
-                .get(previous_end..loc.tag_start)
-                .map(|gap| (gap.trim(), root_content::is_attached_comment(gap)))
-                .filter(|(content, _)| !content.is_empty())
-            {
-                leading_content.insert(loc.tag_start, content);
+        for (index, loc) in blocks.iter().map(|block| &block.loc).enumerate() {
+            let gap = source.get(previous_end..loc.tag_start).unwrap_or_default();
+            let content = gap.trim();
+            if !content.is_empty() {
+                let attached = if preserve_spacing {
+                    !root_content::has_blank_line(trailing_whitespace(gap))
+                } else {
+                    root_content::is_attached_comment(gap)
+                };
+                leading_content.insert(loc.tag_start, (content, attached));
+            }
+            if preserve_spacing && index > 0 {
+                let blank = root_content::has_blank_line(leading_whitespace(gap));
+                blank_before.insert(loc.tag_start, blank);
             }
             previous_end = loc.tag_end;
         }
-        let trailing_content = source.get(previous_end..).unwrap_or_default().trim();
+        let trailing_gap = source.get(previous_end..).unwrap_or_default();
+        let trailing_content = trailing_gap.trim();
+        let trailing_blank =
+            !preserve_spacing || root_content::has_blank_line(leading_whitespace(trailing_gap));
 
         // Sorting is stable: style and custom blocks keep their authored order
         // within their group. CSS cascade order is semantic.
@@ -162,7 +182,9 @@ impl<'a> GlyphFormatter<'a> {
             output.push_str(prologue);
             if !blocks.is_empty() {
                 output.push_str(newline);
-                output.push_str(newline);
+                if prologue_blank {
+                    output.push_str(newline);
+                }
             }
         }
 
@@ -170,7 +192,15 @@ impl<'a> GlyphFormatter<'a> {
         for (i, (_, block)) in blocks.iter().enumerate() {
             if i > 0 {
                 output.push_str(newline);
-                output.push_str(newline);
+                // A block that sorting moved off the source start has no
+                // authored separator and takes the blank line.
+                if blank_before
+                    .get(&block.loc.tag_start)
+                    .copied()
+                    .unwrap_or(true)
+                {
+                    output.push_str(newline);
+                }
             }
             if let Some((content, attached)) = leading_content.get(&block.loc.tag_start) {
                 output.push_str(content);
@@ -211,7 +241,9 @@ impl<'a> GlyphFormatter<'a> {
 
         if !trailing_content.is_empty() && !blocks.is_empty() {
             output.push_str(newline);
-            output.push_str(newline);
+            if trailing_blank {
+                output.push_str(newline);
+            }
             output.push_str(trailing_content);
         }
 
@@ -240,6 +272,17 @@ impl<'a> GlyphFormatter<'a> {
         let changed = code.as_str() != source;
         Ok(FormatResult { code, changed })
     }
+}
+
+#[inline]
+fn leading_whitespace(gap: &str) -> &str {
+    gap.get(..gap.len() - gap.trim_start().len())
+        .unwrap_or_default()
+}
+
+#[inline]
+fn trailing_whitespace(gap: &str) -> &str {
+    gap.get(gap.trim_end().len()..).unwrap_or_default()
 }
 
 /// Estimate output size for pre-allocation

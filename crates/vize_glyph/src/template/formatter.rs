@@ -6,6 +6,7 @@
 
 use crate::{error::FormatError, options::FormatOptions};
 use memchr::memchr3;
+use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 use vize_l0::string_builder::TextBuf;
 
@@ -20,6 +21,7 @@ mod child_width;
 mod closing_width;
 mod inline_breaks;
 mod interpolation;
+pub(crate) mod nesting;
 mod opening_attributes;
 mod preserved_text;
 mod suppression;
@@ -218,6 +220,17 @@ impl<'a> TemplateFormatter<'a> {
                             !is_void && !whitespace_significant,
                         )
                     };
+                    // An empty element's `></tag>` shares the start-tag line.
+                    let empty_close = if is_self_closing || is_void {
+                        None
+                    } else {
+                        self.empty_element_close(input, end_pos, &tag_name, whitespace_significant)
+                    };
+                    let compact_suffix_width = match empty_close {
+                        Some(_) => 4 + tag_name.width(),
+                        None if is_self_closing => 3,
+                        None => 1,
+                    };
                     self.open_chunk(&mut output, depth, join);
                     output.push('<');
                     output.push_str(&tag_name);
@@ -229,7 +242,7 @@ impl<'a> TemplateFormatter<'a> {
                             &sorted_attrs,
                             depth,
                             join.is_continuation() && !joiner.locks_current_line(),
-                            if is_self_closing { 3 } else { 1 },
+                            compact_suffix_width,
                         );
                     if !closing_bracket_on_own_line
                         && hugged_inline_suffix.is_some_and(|suffix| {
@@ -247,11 +260,7 @@ impl<'a> TemplateFormatter<'a> {
                         } else {
                             output.push_str(" />");
                         }
-                    } else if !is_void
-                        && !whitespace_significant
-                        && let Some(closing_end_pos) =
-                            self.parse_immediate_empty_closing_tag(input, end_pos, &tag_name)
-                    {
+                    } else if !whitespace_significant && let Some(closing_end_pos) = empty_close {
                         output.push('>');
                         output.push_str("</");
                         output.push_str(&tag_name);
@@ -276,6 +285,7 @@ impl<'a> TemplateFormatter<'a> {
                     } else {
                         output.push('>');
                         if !is_void {
+                            nesting::open_element(depth)?;
                             depth += 1;
                             joiner.opened_element(pos, end_pos, tag_name.len());
                         }

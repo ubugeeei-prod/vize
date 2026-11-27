@@ -135,9 +135,7 @@ pub fn compile_script_setup(
     } else {
         output.push_str("const __sfc__ = /*@__PURE__*/_defineComponent({\n");
     }
-    output.push_str("  __name: '");
-    output.push_str(component_name);
-    output.push_str("',\n");
+    crate::compile_script::component_name::push_component_name_option(&mut output, component_name);
 
     // Props definition - handle both regular defineProps and destructure
     emit_props_definition(

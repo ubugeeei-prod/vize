@@ -1,0 +1,21 @@
+<script setup lang="ts">
+const a = 1;
+const b = 2;
+</script>
+
+<template>
+  <div :title="((((((((((((((((((((((((((((((((a+b))))))))))))))))))))))))))))))))">{{
+    ((((((((((((((((((((((((((((((((a+b))))))))))))))))))))))))))))))))
+  }}</div>
+  <p :title="a + b">{{ a + b }}</p>
+</template>
+
+<style scoped>
+.a{width:calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(1px))))))))))))))))))))))))))))))))}
+</style>
+
+<style scoped>
+.b {
+  width: calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(1px)))))))))))))))))))))))))))))));
+}
+</style>

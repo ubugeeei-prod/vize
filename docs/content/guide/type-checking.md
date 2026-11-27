@@ -220,6 +220,23 @@ Set `vue.typeChecker.enabled: false` to leave type checking to your current tool
 section works with the plain Vite plugin; see the
 [configuration reference](./configuration-reference.md) for every key.
 
+### Bare attributes on native elements
+
+A bound value on a native element is checked against that element's attribute type, so
+`<img :alt="1">` is TS2322. A bare attribute such as `<img src="/a.png" alt>` is not reported.
+Vue renders it as `alt=""`, and in HTML a bare attribute means the attribute is present with
+an empty value. That is valid for every attribute, and `alt=""` is the standard markup for a
+decorative image.
+
+Neither TypeScript value describes it correctly:
+
+- vue-tsc types it as `true` and reports `Type 'boolean' is not assignable to type 'string'` on
+  `<img alt>`, which is correct markup.
+- Typing it as `""` would reject `<input disabled>` and `<input checked>`, because Vue's
+  boolean attribute types (`Booleanish`) don't include `""`.
+
+To pass a computed value, bind it, for example `:alt="label"`. The bound value is checked.
+
 ## Global types and auto-imports
 
 For Vue Router's experimental resolver and parsed route parameters, see

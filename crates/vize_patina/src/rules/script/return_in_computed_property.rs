@@ -12,13 +12,19 @@
 //! flagged. A `return` inside a nested function is that function's own and does
 //! not count toward the getter's return.
 //!
+//! A `switch` without `default` is a path out of the switch unless the getter
+//! declares its return type (`computed<T>(...)` or an annotated getter) and
+//! that type excludes `undefined`: TypeScript then proves exhaustiveness from
+//! the discriminant's type, which this syntactic rule cannot see.
+//!
 //! Port of [`vue/return-in-computed-property`](https://eslint.vuejs.org/rules/return-in-computed-property.html).
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, ArrowFunctionExpression, CallExpression, Expression, Function, ObjectExpression,
-    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind, Statement,
+    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind, Statement, TSType,
+    TSTypeAnnotation,
 };
 use oxc_ast_visit::{
     Visit,
@@ -75,7 +81,11 @@ impl<'a> Visit<'a> for ComputedVisitor<'_> {
             && let Some(expression) = it.arguments.first().and_then(Argument::as_expression)
             && let Some(getter) = getter_from_value(expression)
         {
-            check_getter(getter, self.offset, self.result);
+            let declared = it
+                .type_arguments
+                .as_ref()
+                .and_then(|arguments| arguments.params.first());
+            check_getter(getter, declared, self.offset, self.result);
         }
         walk_call_expression(self, it);
     }
@@ -93,7 +103,7 @@ impl<'a> Visit<'a> for ComputedVisitor<'_> {
                     && !entry.computed
                     && let Some(getter) = getter_from_value(&entry.value)
                 {
-                    check_getter(getter, self.offset, self.result);
+                    check_getter(getter, None, self.offset, self.result);
                 }
             }
         }
@@ -144,20 +154,27 @@ fn accessor_get<'a>(object: &'a ObjectExpression<'a>) -> Option<Getter<'a>> {
 }
 
 /// Report the getter unless its block body has a value-returning `return`.
-fn check_getter(getter: Getter<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let (span, statements): (Span, _) = match getter {
+/// `declared` is the `computed<T>` type argument, when there is one.
+fn check_getter(
+    getter: Getter<'_>,
+    declared: Option<&TSType<'_>>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    let (span, statements, return_type): (Span, _, _) = match getter {
         // No body (e.g. a TS overload signature): nothing to analyze.
         Getter::Function(function) => match function.body.as_ref() {
-            Some(body) => (function.span, &body.statements),
+            Some(body) => (function.span, &body.statements, &function.return_type),
             None => return,
         },
         // An expression-bodied arrow (`() => expr`) implicitly returns its
         // expression; only block bodies can be missing a return.
         Getter::Arrow(arrow) if arrow.expression => return,
-        Getter::Arrow(arrow) => (arrow.span, &arrow.body.statements),
+        Getter::Arrow(arrow) => (arrow.span, &arrow.body.statements, &arrow.return_type),
     };
+    let declared = declared.or_else(|| declared_type(return_type.as_deref()));
 
-    if body_returns_value(statements) {
+    if body_returns_value(statements, declared) {
         return;
     }
 
@@ -179,8 +196,35 @@ fn check_getter(getter: Getter<'_>, offset: usize, result: &mut ScriptLintResult
 }
 
 /// Every reachable normal completion must yield the getter's value.
-pub(super) fn body_returns_value(statements: &[Statement<'_>]) -> bool {
-    flow::returns_value(statements)
+/// `declared` is the function's declared return type, when it has one.
+pub(super) fn body_returns_value(
+    statements: &[Statement<'_>],
+    declared: Option<&TSType<'_>>,
+) -> bool {
+    flow::returns_value(statements, declared.is_some_and(excludes_undefined))
+}
+
+/// The type a return type annotation declares.
+pub(super) fn declared_type<'b, 'a>(
+    annotation: Option<&'b TSTypeAnnotation<'a>>,
+) -> Option<&'b TSType<'a>> {
+    annotation.map(|annotation| &annotation.type_annotation)
+}
+
+/// Whether TypeScript rejects an implicit `undefined` completion for a
+/// function declaring this return type. `undefined`, `void`, `any` and
+/// `unknown` accept one; a named type is taken as written, since its members
+/// are not visible here.
+fn excludes_undefined(declared: &TSType<'_>) -> bool {
+    match declared {
+        TSType::TSUndefinedKeyword(_)
+        | TSType::TSVoidKeyword(_)
+        | TSType::TSAnyKeyword(_)
+        | TSType::TSUnknownKeyword(_) => false,
+        TSType::TSUnionType(union) => union.types.iter().all(excludes_undefined),
+        TSType::TSParenthesizedType(inner) => excludes_undefined(&inner.type_annotation),
+        _ => true,
+    }
 }
 
 /// Strip parentheses and TS-only wrappers so the underlying node is seen.

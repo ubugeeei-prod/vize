@@ -4,8 +4,8 @@ use super::{DidChangeWatchedFilesParams, MaestroServer};
 #[cfg(feature = "native")]
 use super::{
     FileChangeType, FileEvent, ServerState, Url, affected_vue_source_paths, forget_corsa_vue_files,
-    include_open_typecheck_documents, invalidate_corsa_disk_state, publish_versioned_dependents,
-    versioned_open_typecheck_dependents,
+    include_open_typecheck_documents, invalidate_corsa_disk_state, open_vue_documents,
+    publish_versioned_dependents, versioned_open_typecheck_dependents,
 };
 
 pub(super) async fn did_change_watched_files(
@@ -23,6 +23,14 @@ pub(super) async fn did_change_watched_files(
     if params.changes.is_empty() {
         return;
     }
+    // Nuxt rewriting its declarations changes what every open template may
+    // name, with no import edge from a document to that file. Every project
+    // context shares the names, so forget them before anything republishes,
+    // whichever context or configuration reload the event is routed to.
+    #[cfg(feature = "native")]
+    let nuxt_names_moved = server
+        .state
+        .invalidate_nuxt_template_names(params.changes.iter().map(|change| &change.uri));
     #[cfg(feature = "native")]
     let reconfigured = server
         .state
@@ -74,6 +82,10 @@ pub(super) async fn did_change_watched_files(
         project
             .publish_configuration_diagnostics_if_version(&uri, version)
             .await;
+    }
+    #[cfg(feature = "native")]
+    if nuxt_names_moved {
+        publish_versioned_dependents(server, open_vue_documents(&server.state)).await;
     }
 }
 

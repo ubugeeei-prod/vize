@@ -104,7 +104,7 @@ fn generate_with_import(import: &str, script: &str) -> String {
 
 #[test]
 fn owned_untyped_calls_infer_template_refs_inside_local_functions_too() {
-    let script = "const a = useTemplateRef('a')\nfunction f() { useTemplateRef('inner') }\nconst g = () => useTemplateRef('arrow')\nuseTemplateRef(name)\nuseTemplateRef<HTMLElement>('typed')\n";
+    let script = "const a = useTemplateRef('a')\nfunction f() { useTemplateRef('inner') }\nconst g = () => useTemplateRef('arrow')\nuseTemplateRef(name)\nuseTemplateRef<HTMLElement>('typed')\nf()\ng()\n";
     let plan = usage_with_global(script, true);
     assert!(plan.needs_registry());
     let keys: Vec<_> = plan
@@ -123,6 +123,46 @@ fn owned_untyped_calls_infer_template_refs_inside_local_functions_too() {
         usage_with_global("function nested() { return useTemplateRef('box') }", true)
             .needs_registry()
     );
+}
+
+fn checked_keys(script: &str) -> Vec<String> {
+    usage_with_global(script, true)
+        .calls
+        .iter()
+        .filter_map(|call| call.literal.as_ref())
+        .map(|(_, key)| key.clone())
+        .collect()
+}
+
+/// A missing key is an error only where this instance runs the call: setup,
+/// its callbacks, the default export's `setup`, and the local functions setup
+/// reaches. Elsewhere the call is still inferred but its key is not checked.
+#[test]
+fn key_checks_follow_the_functions_this_instance_runs() {
+    let script = "function useModal() { return useTemplateRef('modal') }\n\
+        const useInner = () => useTemplateRef('inner')\n\
+        function useOuter() { return useInner() }\n\
+        function Comp() { return useTemplateRef('comp') }\n\
+        function nested() { return useTemplateRef('nested') }\n\
+        const api = { open() { return useTemplateRef('method') } }\n\
+        onMounted(() => useTemplateRef('hook'))\n\
+        const open = useModal()\n\
+        useOuter()\n\
+        void nested;\n";
+    assert_eq!(checked_keys(script), ["modal", "inner", "hook"]);
+    let plan = usage_with_global(script, true);
+    assert_eq!(
+        plan.calls.len(),
+        6,
+        "every owned call keeps its inferred signature"
+    );
+    for script in [
+        "export default { setup() { return { el: useTemplateRef('el') } } }",
+        "export default defineComponent({ setup: () => ({ el: useTemplateRef('el') }) })",
+    ] {
+        assert_eq!(checked_keys(script), ["el"], "{script}");
+    }
+    assert!(checked_keys("const options = { setup() { return useTemplateRef('el') } }").is_empty());
 }
 
 #[test]
