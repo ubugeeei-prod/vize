@@ -1,0 +1,34 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+assertion_line: 123
+expression: first_bytes
+---
+Case {
+    id: "h11-options-api-runtime-boolean-prop-13392",
+    history: "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+    source: "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  props: {\n    title: String,\n    open: Boolean,\n  },\n})\n</script>\n\n<template>\n  <span :data-open=\"open\">{{ title }}</span>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

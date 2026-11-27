@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "f58476e8c38793edc442364bd1de75b93abf51fddb3b70252c9962a5cd2322d3"
+        "sha256": "43a586457e905854799cb1e23de5668aec2bd4bd73d09d640d40e793d597f780"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "d16586b14afa485be65a3c93066a8d858cb15026659f88dcb806cde55a904186"
+    "sha256": "998a04851fc0270ee15d45f10d45e397eb1529e2621a3bea92ffcabbcebaf751"
   },
   "cases": [
     {
@@ -4585,6 +4585,28 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/h11-options-api-runtime-boolean-prop-13392",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
             ],
             "selector": "current-api pinned authored sources"
           }

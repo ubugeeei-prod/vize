@@ -1,4 +1,10 @@
 {
+  "current-api/h11-options-api-runtime-boolean-prop-13392": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
   "current-api/h1-array-index-key-computed-record-variant-name-6611": {
     "api": "--native-current-api",
     "entry": "sfc",

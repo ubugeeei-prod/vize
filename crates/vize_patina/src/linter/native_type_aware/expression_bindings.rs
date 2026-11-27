@@ -174,7 +174,12 @@ fn bind_template_expressions_with_source(
         text.replace_range(start..end, &new_stmt);
     }
     document.content = text;
-    mapped::bind_checked_expressions(document, authored_source, &mut index);
+    mapped::bind_checked_expressions(
+        document,
+        authored_source,
+        &mut index,
+        props_object.as_deref(),
+    );
 }
 
 fn mapped_expression_ranges(
