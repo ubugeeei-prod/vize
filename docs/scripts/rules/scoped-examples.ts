@@ -21,9 +21,24 @@ export const scopedOverrides: Record<string, RuleExample> = {
     "crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs",
   ),
   "vue/component-definition-name-casing": pair(
-    vue("<template><p>Content</p></template>"),
-    vue("<template><p>Content</p></template>"),
+    vue(
+      '<script setup lang="ts">\ndefineOptions({ name: "my_component" });\n</script>\n<template><p>Content</p></template>',
+    ),
+    vue(
+      '<script setup lang="ts">\ndefineOptions({ name: "MyComponent" });\n</script>\n<template><p>Content</p></template>',
+    ),
     "crates/vize_patina/src/rules/vue/component_definition_name_casing.rs",
+    {
+      ruleOptions: "PascalCase",
+      note: "Checks the static name of a component definition: the name option, defineOptions({ name }) and the first argument of app.component(). The file name is vue/component-file-name-casing.",
+      noteJa:
+        "コンポーネント定義の静的な名前を検査します。name オプション、defineOptions({ name })、app.component() の第 1 引数が対象です。ファイル名は vue/component-file-name-casing が検査します。",
+    },
+  ),
+  "vue/component-file-name-casing": pair(
+    vue("<template><p>Content</p></template>"),
+    vue("<template><p>Content</p></template>"),
+    "crates/vize_patina/src/rules/vue/component_file_name_casing.rs",
     {
       badFilename: "myComponent.vue",
       goodFilename: "MyComponent.vue",

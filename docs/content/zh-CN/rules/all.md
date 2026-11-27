@@ -5,7 +5,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 
 # 全部 lint 规则
 
-## Vue 规则 (170)
+## Vue 规则 (171)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | 要求模板表达式中的标识符使用 camelCase。 | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | 支持 `<template>` 中的诊断控制注释。 | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 | `happy-path` |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | 要求组件文件名使用 PascalCase 或 kebab-case。 | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | 要求模板中的组件名称使用指定的大小写风格。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | 对静态属性访问优先使用点号。 | — |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | 将 style 块限制为允许的属性模式。 | — |  |

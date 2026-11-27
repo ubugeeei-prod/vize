@@ -10,11 +10,14 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
 
   assert.equal(ruleMap.upstream.version, "10.12.0");
   assert.equal(ruleMap.upstream.ruleCount, 256);
-  assert.deepEqual(ruleMap.summary, { mapped: 200, unimplemented: 54, intentionalDivergence: 2 });
+  assert.deepEqual(ruleMap.summary, { mapped: 201, unimplemented: 54, intentionalDivergence: 1 });
+  // The rule checks definition names as upstream does; the file-name check is
+  // vue/component-file-name-casing, which has no upstream counterpart.
   assert.deepEqual(ruleMap.entries["vue/component-definition-name-casing"], {
-    status: "intentional-divergence",
-    reason:
-      "Patina's rule checks SFC file-name casing; eslint-plugin-vue checks the component definition name, so their findings are not comparable.",
+    status: "mapped",
+    patinaRule: "vue/component-definition-name-casing",
+    patinaSeverity: "warning",
+    patinaPresets: ["ecosystem", "general-recommended", "nuxt", "opinionated"],
   });
   assert.deepEqual(ruleMap.entries["vue/no-unused-properties"], {
     status: "intentional-divergence",

@@ -23,9 +23,9 @@ fn same_buffer_foreign_sealed_setup_cannot_report_and_pending_result_stays_empty
     assert_eq!(
         context.warn_setup_with_help(
             &foreign.setup().unwrap(),
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", "foreign")],
-            "vue/component-definition-name-casing.help"
+            "vue/component-file-name-casing.help"
         ),
         Err(NativeSfcLintRefusal::SourceMismatch)
     );
@@ -157,9 +157,9 @@ fn same_original_setup_reports_only_its_physical_point_and_full_configured_metad
     context
         .warn_setup_with_help(
             &original.setup().unwrap(),
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", "actual")],
-            "vue/component-definition-name-casing.help",
+            "vue/component-file-name-casing.help",
         )
         .unwrap();
     assert_eq!(

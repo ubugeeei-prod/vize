@@ -1,8 +1,6 @@
 use super::support::*;
 use vize_l0::Allocator;
-use vize_patina::{
-    HelpLevel, Rule, RuleCategory, Severity, rules::vue::ComponentDefinitionNameCasing,
-};
+use vize_patina::{HelpLevel, Rule, RuleCategory, Severity, rules::vue::ComponentFileNameCasing};
 
 #[test]
 fn all_eight_original_filename_inputs_have_complete_native_public_results() {
@@ -33,7 +31,7 @@ fn all_eight_original_filename_inputs_have_complete_native_public_results() {
 
 #[test]
 fn actual_registered_metadata_and_callback_capability_are_preserved() {
-    let rule = ComponentDefinitionNameCasing;
+    let rule = ComponentFileNameCasing;
     let meta = rule.meta();
     assert_eq!(meta.name, RULE);
     assert!(matches!(meta.category, RuleCategory::StronglyRecommended));

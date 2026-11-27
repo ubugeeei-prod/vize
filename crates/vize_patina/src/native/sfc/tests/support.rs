@@ -89,9 +89,9 @@ impl NativeSfcSetupRule for Audit {
         }));
         context.warn_setup_with_help(
             setup,
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", self.marker)],
-            "vue/component-definition-name-casing.help",
+            "vue/component-file-name-casing.help",
         )?;
         if self.fail {
             return Err(NativeSfcLintRefusal::UnsupportedEnvelope {

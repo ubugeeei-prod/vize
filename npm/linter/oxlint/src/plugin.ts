@@ -173,6 +173,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return [htmlSelfClosingSchema()];
     case "vue/html-quotes":
       return [{ enum: ["double", "single"] }, objectSchema({ avoidEscape: { type: "boolean" } })];
+    case "vue/component-definition-name-casing":
+      return [{ enum: ["PascalCase", "kebab-case"] }];
     case "vue/mustache-interpolation-spacing":
       return [{ enum: ["always", "never"] }];
     case "vue/v-on-event-hyphenation":

@@ -1,14 +1,36 @@
-//! Upstream `pascalCase` / `kebabCase` used when `shouldMatchCase` is false.
-//! The file stem is not rewritten.
+//! eslint-plugin-vue's casing helpers: the `pascalCase` / `kebabCase`
+//! converters `vue/match-component-file-name` compares with when
+//! `shouldMatchCase` is false (the file stem is not rewritten), and the
+//! `isPascalCase` / `isKebabCase` checkers.
 
 use vize_l0::String;
 
-pub(super) fn names_match(name: &str, stem: &str) -> bool {
+pub(in crate::rules::vue) fn names_match(name: &str, stem: &str) -> bool {
     pascal_case(name) == stem || kebab_case(name) == stem
 }
 
-fn pascal_case(value: &str) -> String {
-    let camel = if is_pascal_case(value) {
+/// Upstream `isPascalCase`: no symbol, separator or whitespace, and no
+/// lowercase ASCII first letter. The empty name passes, as upstream.
+pub(in crate::rules::vue) fn is_pascal(value: &str) -> bool {
+    !value.starts_with(|ch: char| ch.is_ascii_lowercase())
+        && value
+            .chars()
+            .all(|ch| !is_casing_symbol(ch) && ch != '-' && ch != '_' && !ch.is_whitespace())
+}
+
+/// Upstream `isKebabCase`: no uppercase ASCII letter, symbol, underscore,
+/// whitespace, leading hyphen or doubled hyphen. The empty name passes.
+pub(in crate::rules::vue) fn is_kebab(value: &str) -> bool {
+    !value.starts_with('-')
+        && !value.contains("--")
+        && value.chars().all(|ch| {
+            !ch.is_ascii_uppercase() && !is_casing_symbol(ch) && ch != '_' && !ch.is_whitespace()
+        })
+}
+
+pub(in crate::rules::vue) fn pascal_case(value: &str) -> String {
+    // The empty name takes either branch to "".
+    let camel = if is_pascal(value) {
         let mut chars = value.chars();
         match chars.next() {
             Some(first) => first.to_lowercase().collect::<String>() + chars.as_str(),
@@ -22,16 +44,6 @@ fn pascal_case(value: &str) -> String {
         Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
         None => String::default(),
     }
-}
-
-fn is_pascal_case(value: &str) -> bool {
-    let Some(first) = value.chars().next() else {
-        return false;
-    };
-    !first.is_ascii_lowercase()
-        && value
-            .chars()
-            .all(|ch| !is_casing_symbol(ch) && ch != '-' && ch != '_' && !ch.is_whitespace())
 }
 
 fn camel_from_separators(value: &str) -> String {
@@ -49,7 +61,7 @@ fn camel_from_separators(value: &str) -> String {
     out
 }
 
-fn kebab_case(value: &str) -> String {
+pub(in crate::rules::vue) fn kebab_case(value: &str) -> String {
     let dashed: Vec<char> = value.replace('_', "-").chars().collect();
     let mut out = String::with_capacity(dashed.len() + 4);
     for (index, ch) in dashed.iter().copied().enumerate() {

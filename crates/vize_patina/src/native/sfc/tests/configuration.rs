@@ -68,7 +68,7 @@ fn disabled_precedence_and_unknown_requested_names_are_not_clean_rule_omission()
 #[test]
 fn enabled_other_rule_families_refuse_without_native_callback_execution() {
     for name in [
-        "vue/component-definition-name-casing",
+        "vue/component-file-name-casing",
         "a11y/img-alt",
         "css/no-important",
         "musea/require-title",
