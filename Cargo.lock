@@ -5111,6 +5111,7 @@ dependencies = [
  "oxc_syntax",
  "parking_lot",
  "ropey",
+ "rustix",
  "serde",
  "serde_json",
  "sha2",
