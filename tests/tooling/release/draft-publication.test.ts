@@ -18,10 +18,12 @@ const release = { id: 42, tag_name: configuration.tag, draft: true };
 function github(responses: Array<{ status?: number; body?: unknown }>) {
   const requests: Array<{ url: string; method: string; body: unknown }> = [];
   const fetcher: typeof fetch = async (input, options) => {
+    const body = options?.body;
+    assert.ok(body == null || typeof body === "string", "release requests use JSON strings");
     requests.push({
-      url: String(input),
+      url: typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
       method: options?.method ?? "GET",
-      body: options?.body ? JSON.parse(String(options.body)) : null,
+      body: body ? JSON.parse(body) : null,
     });
     const next = responses.shift();
     assert.ok(next, "unexpected GitHub request");
