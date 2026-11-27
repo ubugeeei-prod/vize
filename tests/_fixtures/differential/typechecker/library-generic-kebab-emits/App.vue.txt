@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import Table from "./lib/table";
+import { Plain } from "./lib/plain";
+import Local from "./Local.vue";
+
+interface Row { id: number; name: string }
+const rows: Row[] = [{ id: 1, name: "a" }];
+function show(x: never) { void x; }
+</script>
+
+<template>
+  <Table :items="rows" @row-clicked="(event) => show(event)" />
+  <Table :items="rows" @row-clicked="({ item }) => show(item)" />
+  <Table :items="rows" @select="(item) => show(item)" />
+  <Plain :items="['a']" @row-clicked="(event) => show(event)" />
+  <Local :items="rows" @row-clicked="(event) => show(event)" />
+</template>

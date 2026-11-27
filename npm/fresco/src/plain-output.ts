@@ -43,16 +43,22 @@ function treeToString(node: FrescoNode, options: { skipStatic?: boolean } = {}):
   return joinOutput(childOutput, separator);
 }
 
+/** Drops one trailing newline, so joined outputs do not gain blank lines. */
 export function normalizeOutput(output: string): string {
   return output.endsWith("\n") ? output.slice(0, -1) : output;
 }
 
+/** Adds a later render below the earlier text; an empty render leaves it unchanged. */
 export function appendOutput(previous: string, next: string): string {
   const normalized = normalizeOutput(next);
   if (!normalized) return previous;
   return previous ? `${previous}\n${normalized}` : normalized;
 }
 
+/**
+ * Text of the `<Static>` items not printed yet. `renderedStaticItems` records,
+ * per `<Static>` node, how many items earlier renders already printed.
+ */
 export function captureStaticOutput(
   node: FrescoNode,
   renderedStaticItems: Map<number, number>,

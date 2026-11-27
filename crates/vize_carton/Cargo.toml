@@ -21,6 +21,7 @@ tempfile.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
 oxc_parser.workspace = true
 oxc_span.workspace = true
 which = { workspace = true }

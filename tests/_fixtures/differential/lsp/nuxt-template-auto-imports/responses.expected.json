@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 5,
+      "character": 10
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**formatCount**\n\n_Template expression_\n\nExpression evaluated against the component template scope."
+      },
+      "range": {
+        "start": {
+          "line": 5,
+          "character": 8
+        },
+        "end": {
+          "line": 5,
+          "character": 19
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 5,
+      "character": 33
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**formatCuont**\n\n_Template expression_\n\nExpression evaluated against the component template scope.\n\n---\n\n### Warning: vue/no-undefined-refs\n\nVariable 'formatCuont' is not defined\n\n**Help:** Define in <script setup> or ensure it's imported\n\n[View rule documentation](https://eslint.vuejs.org/rules/no-undefined-refs.html)\n\n"
+      },
+      "range": {
+        "start": {
+          "line": 5,
+          "character": 33
+        },
+        "end": {
+          "line": 5,
+          "character": 44
+        }
+      }
+    }
+  }
+]
