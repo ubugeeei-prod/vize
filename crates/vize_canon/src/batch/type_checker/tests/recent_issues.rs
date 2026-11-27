@@ -57,6 +57,7 @@ mod lib_type_shadowing_audit;
 mod lib_type_shadowing_props;
 mod lib_type_shadowing_setup_helpers;
 mod lib_type_shadowing_template_helpers;
+mod library_generic_kebab_emits;
 mod library_generic_props_fallback;
 mod listener_attribute_parity;
 mod listener_contract;
