@@ -99,11 +99,12 @@ fn report(ctx: &mut LintContext<'_>) {
             return;
         };
 
-        // Collect all statically defined IDs
+        // Collect all statically defined IDs, including a component's `for`
+        // prop, which the component may render as its control's `id`.
         let defined_ids: FxHashSet<String> = analysis
             .element_ids
             .iter()
-            .filter(|info| info.kind == ElementIdKind::Id && info.is_static)
+            .filter(|info| info.kind.may_define() && info.is_static)
             .map(|info| info.value.to_compact_string())
             .collect();
 
@@ -111,7 +112,7 @@ fn report(ctx: &mut LintContext<'_>) {
         let ref_checks: Vec<IdRefCheck> = analysis
             .element_ids
             .iter()
-            .filter(|info| !info.kind.is_definition() && info.is_static)
+            .filter(|info| info.kind.is_reference() && info.is_static)
             .map(|info| {
                 let is_multi_id = matches!(info.kind, ElementIdKind::AriaReference);
                 let ids = if is_multi_id {
@@ -203,6 +204,35 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_component_for_may_define_the_id() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<label for="name">Name</label><MyInput for="name" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+        let result = linter.lint_template(
+            r#"<label for="name">Name</label><MyInput :for="'name'" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+        let result = linter.lint_template(r#"<MyInput for="unrendered" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+        let result = linter.lint_template(
+            r#"<label for="name">Name</label><MyInput id="name" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+        let result = linter.lint_template(
+            r#"<label for="name">Name</label><input for="name" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2);
+        let result = linter.lint_template(r#"<MyInput aria-describedby="missing" />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

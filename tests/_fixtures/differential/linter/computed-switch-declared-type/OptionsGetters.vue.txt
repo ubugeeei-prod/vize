@@ -1,0 +1,45 @@
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+type Status = 'ready' | 'pending' | 'failed'
+
+export default defineComponent({
+  props: {
+    status: { type: String as PropType<Status>, required: true },
+  },
+  computed: {
+    label(): string {
+      switch (this.status) {
+        case 'ready':
+          return 'OK'
+        case 'pending':
+          return '...'
+        case 'failed':
+          return 'NG'
+      }
+    },
+    tone: {
+      get(): string {
+        switch (this.status) {
+          case 'ready':
+            return 'positive'
+          case 'pending':
+          case 'failed':
+            return 'negative'
+        }
+      },
+      set(_value: string) {},
+    },
+    // Reported: the method declares no return type.
+    short() {
+      switch (this.status) {
+        case 'ready':
+          return 'R'
+        case 'pending':
+          return 'P'
+      }
+    },
+  },
+})
+</script>
+<template><span>{{ label }}{{ tone }}{{ short }}</span></template>

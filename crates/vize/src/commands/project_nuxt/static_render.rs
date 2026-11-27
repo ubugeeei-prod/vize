@@ -8,9 +8,8 @@ use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind};
 use super::{ConfigObject, Lookup, optional_path, static_key};
 
 pub(super) fn admitted<'a>(config: &ConfigObject<'a>) -> bool {
-    config.root
-        && config.closed_program
-        && properties(config.object, |key, value| {
+    config.closed_root().is_some_and(|object| {
+        properties(object, |key, value| {
             let (bit, valid) = match key {
                 "ssr" => (1, matches!(value, Expression::BooleanLiteral(_))),
                 "srcDir" => (2, literal_path(value)),
@@ -35,6 +34,7 @@ pub(super) fn admitted<'a>(config: &ConfigObject<'a>) -> bool {
             };
             valid.then_some(bit)
         })
+    })
 }
 
 fn properties<'a>(

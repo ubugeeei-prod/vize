@@ -7,11 +7,23 @@ mod comments;
 use crate::error::FormatError;
 use vize_l0::{String, cstr};
 
+/// How deep arrays and objects may nest.
+///
+/// The parser, the printer and the value tree's destructor each recurse once
+/// per level, and the printer indents every line once per level, so this one
+/// limit bounds all of them. Configuration files nest a handful of levels.
+pub(super) const MAX_NESTING_DEPTH: usize = 512;
+
+/// Reported for a document nested past [`MAX_NESTING_DEPTH`].
+pub(super) const NESTING_DEPTH_ERROR: &str = "nesting exceeds the supported depth of 512";
+
 pub(super) struct Parser<'a> {
     source: &'a str,
     offset: usize,
     iter: std::iter::Peekable<std::str::Chars<'a>>,
     jsonc: bool,
+    /// Arrays and objects open around the value being parsed.
+    depth: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -21,6 +33,7 @@ impl<'a> Parser<'a> {
             offset: 0,
             iter: source.chars().peekable(),
             jsonc,
+            depth: 0,
         }
     }
 
@@ -72,8 +85,25 @@ impl<'a> Parser<'a> {
     pub(super) fn parse_value(&mut self) -> Result<Node, FormatError> {
         self.skip_whitespace();
         match self.peek() {
-            Some('{') => self.parse_object(),
-            Some('[') => self.parse_array(),
+            Some(open @ ('{' | '[')) => {
+                // Nesting past the limit is a format error, reported before
+                // the level is entered.
+                if self.depth == MAX_NESTING_DEPTH {
+                    return Err(json_error(NESTING_DEPTH_ERROR));
+                }
+                self.depth += 1;
+                // One recursion step per level: keep stack headroom so the
+                // limit, not the thread's stack, decides how deep this goes.
+                let node = vize_l0::ensure_sufficient_stack(|| {
+                    if open == '{' {
+                        self.parse_object()
+                    } else {
+                        self.parse_array()
+                    }
+                });
+                self.depth -= 1;
+                node
+            }
             Some('"') => Ok(Node::Scalar(self.parse_string()?)),
             Some('t') => Ok(Node::Scalar(self.parse_keyword("true")?)),
             Some('f') => Ok(Node::Scalar(self.parse_keyword("false")?)),

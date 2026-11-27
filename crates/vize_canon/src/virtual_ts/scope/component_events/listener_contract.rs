@@ -60,6 +60,24 @@ pub(super) fn keys(event_name: &str) -> Keys {
     }
 }
 
+/// The listener arguments a vue-tsc library export's bound-props call carries
+/// in `__ctx.props`. Those props come from Vue's `EmitsToProps`, which keeps an
+/// authored hyphen (`onRow-clicked`), so an authored kebab event reads that key
+/// when the camelized listener is absent. The camelized check is first and
+/// non-distributive, as for every other listener source.
+pub(super) fn library_listener_args(emit_props: &str, prop_key: &str, raw_key: &str) -> String {
+    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+    let props = cstr!(
+        "(typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}})"
+    );
+    let missing = if raw_key == "never" {
+        String::from("unknown[]")
+    } else {
+        cstr!("{props} extends {{ {raw_key}?: (...args: infer __A) => any }} ? __A : unknown[]")
+    };
+    cstr!("{props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : {missing}")
+}
+
 /// The contract covers Vue 3 listeners of a closed template whose shared SDK
 /// is hoisted and whose `Extract`/`NonNullable` are the lib's (the same
 /// condition the shared `$ListenerArgs` relation needs). Explicit
@@ -119,6 +137,7 @@ pub(super) fn emit(
             component_type_name: contract.component_type_name,
             safe_event_name: contract.safe_event_name,
             prop_key: contract.prop_key,
+            raw_prop_key: contract.raw_listener_key,
             library: contract.library,
             template_binding_access: contract.template_binding_access,
             template_ast: contract.template_ast,

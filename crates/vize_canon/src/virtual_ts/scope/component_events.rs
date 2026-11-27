@@ -350,6 +350,7 @@ pub(super) fn generate_component_event_types(
             component_type_name: &component_type_name,
             safe_event_name: &safe_event_name,
             prop_key: &prop_key,
+            raw_prop_key: &raw_listener_key,
             library: &library,
             template_binding_access,
             template_ast,

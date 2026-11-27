@@ -138,6 +138,13 @@ Options:
 
           [possible values: true, false]
 
+      --block-spacing <BLOCK_SPACING>
+          Write one blank line between SFC blocks, or preserve the authored spacing
+
+          Possible values:
+          - blank-line: Separate every pair of blocks with one blank line
+          - preserve:   Keep an authored blank line, at most one, and add none
+
       --self-close-void-elements[=<SELF_CLOSE_VOID_ELEMENTS>]
           Close HTML void elements such as `<img>` with `/>`
 

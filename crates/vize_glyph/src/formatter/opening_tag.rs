@@ -1,4 +1,5 @@
 use super::BlockLocation;
+use vize_l0::string_builder::TextBuf;
 
 pub(super) struct RawOpeningTag<'a> {
     text: &'a str,
@@ -26,8 +27,8 @@ pub(super) fn content_after_opening_tag<'a>(
     source.get(start..loc.end).unwrap_or(fallback)
 }
 
-pub(super) fn write_raw(output: &mut Vec<u8>, opening_tag: &RawOpeningTag<'_>) {
-    output.extend_from_slice(opening_tag.text.as_bytes());
+pub(super) fn write_raw(output: &mut TextBuf, opening_tag: &RawOpeningTag<'_>) {
+    output.push_str(opening_tag.text);
 }
 
 fn templated_opening_tag_end(source: &str, loc: &BlockLocation) -> Option<usize> {

@@ -108,6 +108,28 @@ impl TemplateFormatter<'_> {
         }
     }
 
+    /// Return the end of the closing tag when an element prints as `></tag>`.
+    ///
+    /// Ordinary elements collapse a whitespace-only child; raw-text elements
+    /// copy their content verbatim, so only a truly empty one qualifies.
+    #[inline]
+    pub(super) fn empty_element_close(
+        &self,
+        text: &str,
+        start: usize,
+        tag_name: &str,
+        whitespace_significant: bool,
+    ) -> Option<usize> {
+        if !whitespace_significant {
+            return self.parse_immediate_empty_closing_tag(text, start, tag_name);
+        }
+        if text.as_bytes().get(start..start + 2) != Some(b"</".as_slice()) {
+            return None;
+        }
+        let (closing_tag_name, end_pos) = parse_closing_tag(text, start)?;
+        (closing_tag_name.as_str() == tag_name).then_some(end_pos)
+    }
+
     /// Parse a single attribute: name, optional `="value"`.
     fn parse_single_attribute(
         &self,

@@ -40,9 +40,13 @@ pub(crate) fn set_prop_call(
     } else {
         EmitDocument::plain("undefined")
     };
-    // The key maps to the authored `v-bind` argument it copies.
+    // The key maps to the authored `v-bind` argument it copies. It is written
+    // between quotes, so it is spelled as string contents.
     let key_loc = set_prop.prop.key.loc.span;
-    let named = ctx.spanned_at(key, (key_loc.start < key_loc.end).then_some(key_loc.start));
+    let named = ctx.spanned_at(
+        &escape_js_string_literal(key),
+        (key_loc.start < key_loc.end).then_some(key_loc.start),
+    );
     let call = |callee: &str, key: Option<&EmitDocument>, suffix: &str| {
         let mut line = EmitDocument::plain(callee);
         line.push_str("(");
@@ -102,7 +106,11 @@ pub(crate) fn set_prop_call(
         }
         (
             "on",
-            call("_on", Some(&EmitDocument::plain(&event)), &suffix),
+            call(
+                "_on",
+                Some(&EmitDocument::plain(&escape_js_string_literal(&event))),
+                &suffix,
+            ),
         )
     } else if is_svg {
         // SVG properties are always attributes (Vue's `getRuntimeHelper`).

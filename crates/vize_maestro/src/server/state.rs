@@ -46,6 +46,8 @@ mod native_hover;
 #[cfg(feature = "native")]
 mod native_navigation_answers;
 #[cfg(feature = "native")]
+mod nuxt_template_globals;
+#[cfg(feature = "native")]
 pub(crate) mod workspace_preparation;
 #[cfg(feature = "native")]
 mod workspace_project_files;
@@ -100,6 +102,8 @@ pub(crate) use project_contexts::current::InitialConfigurationContinuation;
 
 #[cfg(feature = "native")]
 pub use batch_cache::BatchTypeCheckCache;
+#[cfg(feature = "native")]
+pub(crate) use nuxt_template_globals::NuxtTemplateNames;
 
 /// Server state containing all runtime data.
 pub struct ServerState {
@@ -265,6 +269,10 @@ pub struct ServerState {
     /// Cached project declarations that augment Vue's global components.
     #[cfg(feature = "native")]
     global_component_references: global_components::GlobalComponentReferences,
+    /// Names each Nuxt project auto-imports into its templates, shared with
+    /// every project context so one watched event refreshes them all.
+    #[cfg(feature = "native")]
+    nuxt_template_globals: Arc<nuxt_template_globals::NuxtTemplateGlobals>,
     /// Batch type checker (lazy initialized, sync)
     #[cfg(feature = "native")]
     batch_checker: OnceLock<Arc<RwLock<BatchTypeChecker>>>,

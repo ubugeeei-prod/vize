@@ -1,0 +1,6 @@
+{
+  "argv": ["lint", "--no-config", "--preset", "all", "--format", "json", "ProductCard.vue"],
+  "files": [{ "runtimePath": "ProductCard.vue", "source": "ProductCard.vue.txt" }],
+  "stdout": "lint-packet.expected.json",
+  "exitStatus": 0
+}

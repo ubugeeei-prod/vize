@@ -23,6 +23,24 @@ impl From<FmtObjectWrap> for vize_glyph::ObjectWrap {
     }
 }
 
+/// Line breaks between top-level SFC blocks selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(in crate::commands) enum FmtBlockSpacing {
+    /// Separate every pair of blocks with one blank line
+    BlankLine,
+    /// Keep an authored blank line, at most one, and add none
+    Preserve,
+}
+
+impl From<FmtBlockSpacing> for vize_glyph::BlockSpacing {
+    fn from(value: FmtBlockSpacing) -> Self {
+        match value {
+            FmtBlockSpacing::BlankLine => Self::BlankLine,
+            FmtBlockSpacing::Preserve => Self::Preserve,
+        }
+    }
+}
+
 /// Named formatter defaults selectable from the CLI.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum FmtPreset {
@@ -163,6 +181,9 @@ pub(super) fn build_format_options(
     }
     if let Some(v) = args.sort_blocks {
         opts.sort_blocks = v;
+    }
+    if let Some(v) = args.block_spacing {
+        opts.block_spacing = v.into();
     }
     if let Some(v) = args.self_close_void_elements {
         opts.self_close_void_elements = v;

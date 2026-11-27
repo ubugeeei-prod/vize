@@ -46,9 +46,8 @@ pub(in crate::targets::dom::artifact) fn emit_resolves(
         cx.buf.push(asset_identifier("component", name).as_str());
         cx.buf.push(" = ");
         cx.buf.push(Buf::resolve_component_alias());
-        cx.buf.push("(\"");
-        cx.buf.push(name);
-        cx.buf.push("\"");
+        cx.buf.push("(");
+        cx.buf.push_string_literal(name);
         if cx
             .component_name
             .is_some_and(|own| is_self_reference(name, own))

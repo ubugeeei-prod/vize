@@ -73,9 +73,9 @@ pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
             None => {
                 cx.buf.use_resolve_directive();
                 cx.buf.push(Buf::resolve_directive_alias());
-                cx.buf.push("(\"");
-                cx.buf.push(name);
-                cx.buf.push("\")");
+                cx.buf.push("(");
+                cx.buf.push_string_literal(name);
+                cx.buf.push(")");
             }
         }
         cx.buf.newline();

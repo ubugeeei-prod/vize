@@ -255,9 +255,13 @@ const missing = r('absent'); void missing;`),
       oracle.map((diagnostic) => diagnostic.code).sort((a, b) => a - b),
       [2339, 2339, 2339, 2540],
     );
+    // Setup now calls `nested`, so its key runs against this template: Vize
+    // reports the key the template never registers, which vue-tsc leaves
+    // unchecked inside functions.
+    const unregisteredNestedKey = { file: "App.vue", line: 6, column: 30, code: 2339 };
     assert.deepEqual(
       (await check(directory)).map(diagnosticIdentity).sort(compareIdentity),
-      oracle,
+      [...oracle, unregisteredNestedKey].sort(compareIdentity),
     );
     fs.writeFileSync(path.join(directory, "App.vue"), app());
     await compare(directory, []);

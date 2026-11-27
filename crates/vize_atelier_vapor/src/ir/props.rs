@@ -20,6 +20,10 @@ pub enum PropValueKind {
     /// An opaque runtime slots object carried outside the authored slot IR.
     /// Codegen consumes this marker instead of emitting it as a component prop.
     ForwardedSlots,
+    /// A getter the compiler wrote itself: the value's content is the whole
+    /// prop source and is emitted as it is. Authored values never carry this
+    /// kind, whatever their text.
+    RawGetter,
 }
 
 /// IR prop

@@ -128,6 +128,7 @@ export default defineConfig({}).withVue({
 | `--max-attributes-per-line`        | 指定した数を超えると、属性を折り返します。                         |
 | `--normalize-directive-shorthands` | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。    |
 | `--sort-blocks`                    | SFC ブロックの標準順序を切り替えます。                             |
+| `--block-spacing`                  | SFC ブロック間を `blank-line` か `preserve` から選びます。         |
 | `--normalize-css-quotes`           | CSS・SCSS・Less の文字列の引用符を指定した形式に合わせます。       |
 | `--normalize-inline-styles`        | 静的な `style` 宣言を一行に整えます。                              |
 | `--normalize-v-for-parens`         | 複数の `v-for` エイリアスを括弧で囲みます。                        |
@@ -174,6 +175,7 @@ export default defineConfig({}).withVue({
 | `attributeGroups`              | なし             | Vue スタイルガイドの順序の代わりに使う属性グループです。たとえば `[["id"], ["v-*"], ["*"]]` です。                                                  |
 | `normalizeDirectiveShorthands` | `true`           | `v-bind:`、`v-on:`、`v-slot:` を `:`、`@`、`#` に置き換えます。                                                                                     |
 | `sortBlocks`                   | `true`           | ブロックを script、script setup、template、style、カスタムブロックの順に並べます。                                                                  |
+| `blockSpacing`                 | `"blank-line"`   | SFC ブロックの間に空行を 1 行入れます。`"preserve"` は Prettier と同じく、書かれた空行を最大 1 行まで残し、空行を足しません。                       |
 | `normalizeCssQuotes`           | `false`          | CSS、SCSS、Less の文字列の引用符を `singleQuote` の設定に合わせます。                                                                               |
 | `normalizeInlineStyles`        | `false`          | 1 行の静的な `style` 属性を `color: red; top: 0` の形で書きます。                                                                                   |
 | `normalizeVForParens`          | `false`          | `v-for` の別名が複数あるときは `(item, i) in items` のように括弧で囲みます。                                                                        |
@@ -289,6 +291,13 @@ Node の `formatSfc` は、設定と同じ文字列の二重配列 `attributeGro
 ルートブロックの記述順を保ち、`true` は script、script setup、template、style、
 カスタムブロックの順に並べます。
 
+SFC ブロック間の空行も同じように扱います。`--block-spacing <blank-line|preserve>`
+は、型付きの Node・設定オプション `blockSpacing` に対応します。既定値の
+`"blank-line"` は、ブロックの間に空行をちょうど 1 行入れます。`"preserve"` は Prettier と同じくソースに従い、連続した空行は 1 行に
+まとめ、隣接して書かれたブロックは隣接したまま残します。`prettier` プリセットは
+`"preserve"` を選び、ほかのプリセットは `"blank-line"` のままです。`sortBlocks`
+でファイル先頭から移動したブロックには元の区切りがないため、空行を 1 行入れます。
+
 ## コンパクトなアプリケーションコード
 
 アプリケーションのテンプレートを密に保ちつつ、ブロックや属性を書いた順序を変えたくない場合は `compact` プリセットを使います。
@@ -340,6 +349,7 @@ export default defineConfig({}).withVue({
 - `v-for` の別名が複数あるときは、`v-for="(item, i) in items"` のように括弧で囲みます。
 - 空要素を `<img src="a.png" />` のように閉じます。
 - SCSS と Less のブロックを入れ子の深さでインデントし直し、空行を整えます。
+- SFC ブロック間の空行を書いたとおりに残します（`blockSpacing: "preserve"`）。空行を足さず、残すのは最大 1 行です。
 
 コマンドラインでは、`vize fmt --preset prettier` で同じプリセットを指定できます。オプションは、設定ファイルのプリセット、設定ファイルのその他のオプション、`--preset`、その他のフラグの順に適用されます。
 

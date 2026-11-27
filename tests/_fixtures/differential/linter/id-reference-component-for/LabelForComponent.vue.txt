@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import MyInput from './MyInput.vue'
+</script>
+<template>
+  <label for="name">Name</label>
+  <MyInput for="name" />
+</template>

@@ -1,0 +1,20 @@
+<template>
+  <p>{{ note }}</p>
+</template>
+<script setup lang="ts">
+const note = "";
+</script>
+
+<style scoped>
+p {
+  color: red;
+}
+</style>
+
+<!-- How the note reads. -->
+<docs>
+A note.
+</docs>
+<docs>
+Another note.
+</docs>

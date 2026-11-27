@@ -6,6 +6,9 @@ use tower_lsp::lsp_types::{
 };
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
+#[cfg(feature = "native")]
+mod nuxt_globals;
+
 pub(in crate::ide) fn linter_for_uri(
     state: &crate::server::ServerState,
     uri: &Url,
@@ -18,6 +21,11 @@ pub(in crate::ide) fn linter_for_uri(
     let preset = linter_config.preset.as_deref();
     let preset = preset.and_then(LintPreset::parse).unwrap_or_default();
     let lint_options = linter_options::resolve_patina_options(uri, &linter_config, &rule_options);
+    let nuxt_installed = linter_options::package_is_installed(uri, "nuxt");
+    // The full set is needed again only to switch the rule off for a Nuxt
+    // project whose declarations are missing.
+    #[cfg(feature = "native")]
+    let nuxt_disabled_rules = nuxt_installed.then(|| lint_options.disabled_rules.clone());
     let mut linter = if ecosystem_enabled && linter_config.preset.is_none() {
         vize_patina::Linter::with_ecosystem()
     } else {
@@ -36,8 +44,18 @@ pub(in crate::ide) fn linter_for_uri(
         linter,
         &rule_options,
         linter_options::package_is_installed(uri, "vue-router"),
-        linter_options::package_is_installed(uri, "nuxt"),
+        nuxt_installed,
     );
+    #[cfg(feature = "native")]
+    if let Some(disabled) = nuxt_disabled_rules {
+        linter = nuxt_globals::apply(
+            state,
+            uri,
+            linter,
+            rule_options.undefined_ref_globals(),
+            disabled,
+        );
+    }
 
     #[cfg(not(target_arch = "wasm32"))]
     let linter = if linter_config.strict_reactivity_enabled() {

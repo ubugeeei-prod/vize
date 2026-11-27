@@ -9,6 +9,7 @@ use crate::template::{
     attributes::ParsedAttribute,
     helpers::{find_bytes, is_void_element_str},
 };
+use vize_l0::string_builder::TextBuf;
 
 impl TemplateFormatter<'_> {
     /// Emit a whitespace-significant element verbatim, returning the source
@@ -20,32 +21,33 @@ impl TemplateFormatter<'_> {
     /// change rendered output. (#963)
     pub(super) fn copy_whitespace_significant_element(
         &self,
-        source: &[u8],
+        input: &str,
         end_pos: usize,
         tag_name: &str,
         len: usize,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
     ) -> usize {
-        output.push(b'>');
+        let source = input.as_bytes();
+        output.push('>');
         let Some(close_start) = find_matching_close_tag(source, end_pos, tag_name) else {
             // Unclosed — copy the rest and stop.
-            output.extend_from_slice(source.get(end_pos..).unwrap_or_default());
+            output.push_str(input.get(end_pos..).unwrap_or_default());
             return len;
         };
-        output.extend_from_slice(source.get(end_pos..close_start).unwrap_or_default());
+        output.push_str(input.get(end_pos..close_start).unwrap_or_default());
         // If the closing tag is incomplete (no `>`, e.g. an unterminated LSP
         // buffer like `<pre>body</pre\n`), preserve the remaining source
         // verbatim instead of fabricating a `>` and dropping the tail.
         let Some(close_offset) =
             memchr::memchr(b'>', source.get(close_start..).unwrap_or_default())
         else {
-            output.extend_from_slice(source.get(close_start..).unwrap_or_default());
+            output.push_str(input.get(close_start..).unwrap_or_default());
             return len;
         };
-        output.extend_from_slice(b"</");
-        output.extend_from_slice(tag_name.as_bytes());
-        output.push(b'>');
-        output.extend_from_slice(self.newline);
+        output.push_str("</");
+        output.push_str(tag_name);
+        output.push('>');
+        output.push_str(self.newline);
         // The closing tag may carry whitespace before `>` (the Prettier
         // `</pre\n  >` trick that keeps the trailing newline out of `<pre>`
         // content), so scan to the actual `>` rather than assuming a bare

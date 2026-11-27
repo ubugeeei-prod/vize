@@ -230,8 +230,16 @@ pub(super) fn prepare_program(
     }
 
     let gen_start = Instant::now();
-    let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+    // The project root widens to cover sources the tsconfig includes from
+    // outside its package; the native runtime is still that package's own.
+    let runtime_root = input
+        .tsconfig_path
+        .as_deref()
+        .and_then(std::path::Path::parent)
+        .filter(|root| !root.as_os_str().is_empty());
+    let mut checker = BatchTypeChecker::with_runtime_root(
         input.project_root,
+        runtime_root,
         BatchTypeCheckerOptions {
             tsconfig_path: checker_tsconfig.path().map(PathBuf::from),
             virtual_ts_options,
