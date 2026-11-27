@@ -19,6 +19,7 @@ Every row is proven by the named test in `navigation-rail.test.ts` or
 | NR6 | controlled / disabled / unknown | click              | controlled values win; disabled buttons are native-disabled, disabled links drop `href` with `aria-disabled`; unknown values never emit     | `controlled values win, and disabled or unknown items do not activate`   |
 | NR7 | no provider                     | setup              | items and the toggle throw `VIZE_UI_CONTEXT_MISSING: NavigationRail`                                                                        | `items and the toggle require a NavigationRail provider`                 |
 | NR8 | SSR / hydration                 | isolated requests  | byte-identical markup, toggle wired to the server-rendered rail id, and hydration without diagnostics                                       | `renders byte-identical rail markup and hydrates without mismatches`     |
+| NR9 | item `href`                     | render             | script-capable hrefs and hrefs with control characters are dropped; surrounding whitespace is trimmed                                       | `hrefs a browser would read as a script URL are never rendered`          |
 
 Pair with `SafeArea` (`edges: ["left"]` or `["right"]`) to clear display cutouts. The subpath
 ships no CSS.

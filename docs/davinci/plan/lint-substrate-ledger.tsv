@@ -302,7 +302,7 @@ vue/no-unsandboxed-iframe	L1 syntax	markup-l2	legacy-rule	atelier_jsx,relief	-	v
 vue/no-unsupported-features	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/unsupported_features.rs
 vue/no-unused-components	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_components.rs
 vue/no-unused-properties	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_properties.rs
-vue/no-unused-refs	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/no_unused_refs.rs
+vue/no-unused-refs	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	atelier_sfc,relief	-	opinionated/vue/no_unused_refs.rs
 vue/no-unused-script-vars	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/script_unused/no_unused_script_vars.rs
 vue/no-unused-setup-bindings	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	atelier_sfc,croquis,relief	-	facts/unused_setup_bindings.rs
 vue/no-unused-vars	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_vars.rs

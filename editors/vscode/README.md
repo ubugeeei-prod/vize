@@ -43,9 +43,11 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 
 - VS Code 1.75+
 - A Vize language server. An explicit `vize.serverPath` takes priority. Otherwise, trusted workspaces
-  use their installed `vize` package, resolved from the nearest `package.json`, including hoisted and
-  pnpm installations. The extension checks its version and LSP initialization contract before use;
-  a different release number from the extension does not replace the project's engine.
+  use their installed `vize` package, resolved from the nearest `package.json` inside the workspace
+  folders, including pnpm installations and installations hoisted to a workspace folder's root.
+  Directories above the opened folders are not searched. The extension checks its version and LSP
+  initialization contract before use; a different release number from the extension does not replace
+  the project's engine.
 
 - Type checking and semantic editor features require a native TypeScript compiler installed by
   the project or explicitly selected with `typeChecker.corsaPath` / `CORSA_PATH`. The extension
@@ -55,15 +57,20 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
   external executable explicitly.
 
 `vize.server.preferWorkspace` defaults to `true`; set it to `false` to use the extension's usual
-bundled, development, cached GitHub release, cargo, and `PATH` resolution. The matching GitHub
-release is downloaded when needed. Missing, broken, or incompatible workspace installations fall
-back to that resolution. **Vize: Show Status** displays the selected source, version, path, and any
-workspace fallback reason.
+bundled, development, cached GitHub release, cargo, and `PATH` resolution. Only absolute `PATH`
+entries are searched. The matching GitHub release is downloaded when needed. Missing, broken, or
+incompatible workspace installations fall back to that resolution. **Vize: Show Status** displays
+the selected source, version, path, and any workspace fallback reason.
 
-Restricted Mode skips workspace executables. A single language client serves all workspace folders;
-if folders resolve distinct Vize installations, use separate windows or select an explicit
-`vize.serverPath`. Such a conflict falls back instead of silently using one project's engine for
-another. Run **Vize: Restart Language Server** after changing the installed Vize package.
+The language server does not start in Restricted Mode, because it evaluates the project's Vite
+config and runs the project's TypeScript runtime. Syntax highlighting stays available, the status
+bar item shows that Vize is waiting for workspace trust, and the server starts once the workspace is
+trusted. A workspace-level `vize.serverPath` is ignored until then.
+
+A single language client serves all workspace folders; if folders resolve distinct Vize
+installations, use separate windows or select an explicit `vize.serverPath`. Such a conflict falls
+back instead of silently using one project's engine for another. Run **Vize: Restart Language
+Server** after changing the installed Vize package.
 
 ## Configuration
 

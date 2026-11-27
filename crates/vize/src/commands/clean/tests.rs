@@ -309,3 +309,76 @@ fn force_clean_removes_unrecognized_node_modules_entries() {
     });
     assert!(!unknown_node_modules_artifact.exists());
 }
+
+/// An artifact root that is a symbolic link names somebody else's directory.
+#[cfg(unix)]
+#[test]
+fn clean_never_deletes_through_a_linked_artifact_root() {
+    for force in [false, true] {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("project");
+        let outside = dir.path().join("outside");
+        let outside_modules = dir.path().join("outside-modules");
+        std::fs::create_dir_all(&root).unwrap();
+        for kept in ["patina/session", "reports", "snapshots", "tokens", "custom"] {
+            std::fs::create_dir_all(outside.join(kept)).unwrap();
+        }
+        std::fs::write(outside.join("custom/keep.txt"), "keep").unwrap();
+        std::fs::create_dir_all(outside_modules.join(".vize/patina")).unwrap();
+        std::fs::write(outside_modules.join(".vize/lsp.log"), "keep").unwrap();
+        std::os::unix::fs::symlink(&outside, root.join(".vize")).unwrap();
+        std::os::unix::fs::symlink(&outside_modules, root.join("node_modules")).unwrap();
+
+        run(CleanArgs {
+            root: root.clone(),
+            scope: CleanScope::All,
+            force,
+            dry_run: false,
+            quiet: true,
+        });
+
+        for kept in [
+            "patina/session",
+            "reports",
+            "snapshots",
+            "tokens",
+            "custom/keep.txt",
+        ] {
+            assert!(outside.join(kept).exists(), "force={force}: {kept}");
+        }
+        assert!(
+            outside_modules.join(".vize/patina").exists(),
+            "force={force}"
+        );
+        assert!(
+            outside_modules.join(".vize/lsp.log").exists(),
+            "force={force}"
+        );
+        assert!(root.join(".vize").is_symlink(), "force={force}");
+        assert!(root.join("node_modules").is_symlink(), "force={force}");
+    }
+}
+
+/// A link directly inside a real artifact root is removed as a link.
+#[cfg(unix)]
+#[test]
+fn clean_unlinks_a_linked_artifact_without_following_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("project");
+    let outside = dir.path().join("outside");
+    std::fs::create_dir_all(root.join(".vize")).unwrap();
+    std::fs::create_dir_all(&outside).unwrap();
+    std::fs::write(outside.join("keep.txt"), "keep").unwrap();
+    std::os::unix::fs::symlink(&outside, root.join(".vize/reports")).unwrap();
+
+    run(CleanArgs {
+        root: root.clone(),
+        scope: CleanScope::Project,
+        force: true,
+        dry_run: false,
+        quiet: true,
+    });
+
+    assert!(!root.join(".vize/reports").is_symlink());
+    assert!(outside.join("keep.txt").exists());
+}

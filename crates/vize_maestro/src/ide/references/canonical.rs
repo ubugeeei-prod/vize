@@ -231,7 +231,7 @@ pub(super) async fn references(
         Some(None) => return Some(Vec::new()),
         None => {
             let position =
-                corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+                corsa_support::canonical_symbol_position(&document, &ctx.content, ctx.offset)?;
             let Some(position) = corsa_support::local_binding_reference_position(
                 ctx,
                 &document,

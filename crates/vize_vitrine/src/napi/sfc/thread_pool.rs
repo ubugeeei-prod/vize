@@ -88,8 +88,11 @@ impl BatchThreadPool {
         }
 
         let reservation = batch_thread_admission().reserve(threads)?;
+        // Each worker compiles one authored file whose nesting the author does
+        // not bound; the reservation is address space until a file needs it.
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(threads as usize)
+            .stack_size(64 * 1024 * 1024)
             .build()
             .map_err(|error| {
                 Error::new(

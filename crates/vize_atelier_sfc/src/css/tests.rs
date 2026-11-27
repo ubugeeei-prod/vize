@@ -6,7 +6,7 @@ mod string_bodies;
 
 #[cfg(feature = "native")]
 use std::{fs, path::PathBuf};
-use vize_carton::{Allocator, ToCompactString, Vec as ArenaVec};
+use vize_carton::{Allocator, StringBuilder, ToCompactString};
 
 #[cfg(feature = "native")]
 use super::CssTargets;
@@ -19,13 +19,6 @@ use super::transform::{
 use super::{CssCompileOptions, bundle_css, compile_css};
 #[cfg(feature = "native")]
 use super::{parse_css_ast, print_css_ast};
-
-fn test_utf8(bytes: &[u8]) -> &str {
-    match std::str::from_utf8(bytes) {
-        Ok(value) => value,
-        Err(error) => panic!("CSS helper emitted invalid UTF-8: {error}"),
-    }
-}
 
 fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> vize_carton::String {
     let vars = vars
@@ -277,9 +270,9 @@ fn test_v_bind_extraction_requires_left_boundary() {
 #[test]
 fn test_scope_deep() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    transform_deep(&mut out, ":deep(.child)", 0, b"[data-v-123]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    transform_deep(&mut out, ":deep(.child)", 0, "[data-v-123]");
+    let result = out.as_str();
     assert_eq!(result, "[data-v-123] .child");
 }
 
@@ -321,54 +314,54 @@ fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
 #[test]
 fn test_scope_global() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
+    let mut out = StringBuilder::new_in(&bump);
     transform_global(&mut out, ".wrap :global(.msg) .tail", 6);
-    let result = test_utf8(&out);
+    let result = out.as_str();
     assert_eq!(result, ".msg");
 }
 
 #[test]
 fn test_scope_slotted() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    transform_slotted(&mut out, ":slotted(.child)", 0, b"[data-v-123]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    transform_slotted(&mut out, ":slotted(.child)", 0, "[data-v-123]");
+    let result = out.as_str();
     assert_eq!(result, ".child[data-v-123-s]");
 }
 
 #[test]
 fn test_scope_slotted_with_pseudo() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    transform_slotted(&mut out, ":slotted(.child):hover", 0, b"[data-v-abc]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    transform_slotted(&mut out, ":slotted(.child):hover", 0, "[data-v-abc]");
+    let result = out.as_str();
     assert_eq!(result, ".child[data-v-abc-s]:hover");
 }
 
 #[test]
 fn test_scope_slotted_complex() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    transform_slotted(&mut out, ":slotted(div.foo)", 0, b"[data-v-12345678]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    transform_slotted(&mut out, ":slotted(div.foo)", 0, "[data-v-12345678]");
+    let result = out.as_str();
     assert_eq!(result, "div.foo[data-v-12345678-s]");
 }
 
 #[test]
 fn test_scope_with_pseudo_element() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    add_scope_to_element(&mut out, ".foo::before", b"[data-v-123]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    add_scope_to_element(&mut out, ".foo::before", "[data-v-123]");
+    let result = out.as_str();
     assert_eq!(result, ".foo[data-v-123]::before");
 }
 
 #[test]
 fn test_scope_with_pseudo_class() {
     let bump = Allocator::new();
-    let mut out = ArenaVec::new_in(&&bump);
-    add_scope_to_element(&mut out, ".foo:hover", b"[data-v-123]");
-    let result = test_utf8(&out);
+    let mut out = StringBuilder::new_in(&bump);
+    add_scope_to_element(&mut out, ".foo:hover", "[data-v-123]");
+    let result = out.as_str();
     assert_eq!(result, ".foo[data-v-123]:hover");
 }
 

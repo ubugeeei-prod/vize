@@ -230,7 +230,10 @@ impl<'a> SsrCodegenContext<'a> {
                                 entries.push(self.bound_prop_entry(&key, arg, dir, &value));
                             }
                             Some(arg) => {
-                                let key = self.dynamic_arg_to_string(arg);
+                                let mut key = self.dynamic_arg_to_string(arg);
+                                if dir.modifiers.iter().any(|m| m.content == "camel") {
+                                    key = self.camelized_dynamic_key(&key);
+                                }
                                 entries.push(component_prop_entry(&key, &value, true));
                             }
                         }

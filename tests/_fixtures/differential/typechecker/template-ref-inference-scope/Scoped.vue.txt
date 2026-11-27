@@ -1,0 +1,30 @@
+<script setup lang="ts">
+import * as Vue from "vue"
+import { onMounted, ref, useTemplateRef } from "vue"
+
+const tag = ref<"section" | "aside">("section")
+const viaNamespace = Vue.useTemplateRef("panel")
+const dynamicTarget = useTemplateRef("dynamic")
+const staticTarget = useTemplateRef("fixed")
+
+function useFocusTrap() {
+  const dialog = useTemplateRef("dialog")
+  return () => dialog.value?.showModal()
+}
+
+const open = useFocusTrap()
+onMounted(() => {
+  const panel: HTMLDivElement | null = viaNamespace.value
+  const area: HTMLElement | null = dynamicTarget.value
+  const fixed: HTMLDivElement | null = staticTarget.value
+  console.log(panel, area, fixed)
+  open()
+})
+</script>
+
+<template>
+  <div ref="panel" />
+  <component :is="tag" ref="dynamic" />
+  <component is="div" ref="fixed" />
+  <dialog ref="dialog" />
+</template>

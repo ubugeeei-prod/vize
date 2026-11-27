@@ -1,0 +1,2 @@
+src/SearchBox.vue
+  error:7:16 [TS2551] Property 'selct' does not exist on type 'HTMLInputElement'. Did you mean 'select'?

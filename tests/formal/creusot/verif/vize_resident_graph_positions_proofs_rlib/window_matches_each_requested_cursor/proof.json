@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_matching_positions": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_window_matches_each_requested_cursor": {
+        "prover": "alt-ergo",
+        "time": 0.015
+      }
+    }
+  }
+}

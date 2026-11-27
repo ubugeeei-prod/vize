@@ -15,6 +15,12 @@
         { "file": "components/main.vue", "line": 74, "column": 11, "code": 2345 },
         { "file": "defineModel/main.vue", "line": 25, "column": 11, "code": 2345 }
       ]
+    },
+    {
+      "id": "template-ref-key-in-local-function",
+      "issue": 13740,
+      "reason": "The line is `useTemplateRef('templateRef')` inside `function Comp()`, a local function of `<script setup>`, and no element or component of the SFC carries `ref=\"templateRef\"`. vue-tsc infers a template ref type only for a top-level setup call, so this call keeps Vue's `unknown` signature and a misspelled key in a local composable or an `onMounted` callback goes unreported. Vize infers the call from the SFC's registered refs wherever it sits in the setup scope, so the unregistered key is reported as TS2339 on `$TemplateRefs`, the same diagnostic a top-level call with that key gets. The upstream project asserts the `unknown` fallback; the key is reported because the SFC never registers it.",
+      "vizeOnly": [{ "file": "templateRef/main.vue", "line": 9, "column": 29, "code": 2339 }]
     }
   ]
 }

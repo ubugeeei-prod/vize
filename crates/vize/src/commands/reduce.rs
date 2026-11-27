@@ -131,23 +131,24 @@ fn flag_checks(args: &ReduceArgs, scratch: &Path) -> Result<Vec<Check>, String> 
     Ok(checks)
 }
 
-/// Where a script check writes candidates: beside nothing the user owns,
-/// keeping the input's file name so the script sees a `.vue`.
-fn scratch_file(input: &Path) -> PathBuf {
+/// Where a script check writes candidates: a fresh directory only this run
+/// can enter, keeping the input's file name so the script sees a `.vue`.
+fn scratch_file(input: &Path) -> std::io::Result<(tempfile::TempDir, PathBuf)> {
     let name = input.file_name().map_or_else(
         || std::ffi::OsString::from("candidate.vue"),
         std::ffi::OsStr::to_os_string,
     );
-    let dir = std::env::temp_dir().join(cstr!("vize-reduce-{}", std::process::id()).as_str());
-    let _ = std::fs::create_dir_all(&dir);
-    dir.join(name)
+    let dir = tempfile::Builder::new().prefix("vize-reduce-").tempdir()?;
+    let file = dir.path().join(name);
+    Ok((dir, file))
 }
 
 pub fn run(args: ReduceArgs) {
     let path = args.input.as_path();
     let text = std::fs::read_to_string(path)
         .unwrap_or_else(|error| fail(2, &cstr!("cannot read {}: {error}", path.display())));
-    let scratch = scratch_file(path);
+    let (scratch_dir, scratch) = scratch_file(path)
+        .unwrap_or_else(|error| fail(2, &cstr!("cannot create a scratch directory: {error}")));
     let mut checks = flag_checks(&args, &scratch).unwrap_or_else(|message| fail(2, &message));
     let repro = path.to_string_lossy().ends_with(".folio");
     let (artifact, repro_folio) = if repro {
@@ -189,7 +190,7 @@ pub fn run(args: ReduceArgs) {
     let outcome = reduce(artifact.as_str(), args.max_runs, &mut |candidate| {
         oracle::interesting(&checks, candidate)
     });
-    let _ = std::fs::remove_dir_all(scratch.parent().unwrap_or(&scratch));
+    drop(scratch_dir);
     let reduction = match outcome {
         Ok(reduction) => reduction,
         Err(ReduceError::NotInteresting) => fail(

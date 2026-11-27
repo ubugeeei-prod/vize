@@ -23,6 +23,8 @@ mod deep_props_dispatch_tests;
 #[cfg(test)]
 mod dupe_keys_dispatch_tests;
 #[cfg(test)]
+mod jsx_dispatch_tests;
+#[cfg(test)]
 mod runtime_props_dispatch_tests;
 #[cfg(test)]
 mod setup_emits_dispatch_tests;
@@ -317,13 +319,16 @@ pub(crate) fn append_builtin_script_rules_for_source(
     }
 
     let allocator = Allocator::default();
+    // A `.jsx` / `.tsx` module needs the JSX dialect: parsed without it, its
+    // first element is a syntax error and every AST rule loses the file.
+    let jsx_file = is_jsx_filename(result.filename.as_str());
     let parsed = matching
         .iter()
         .any(|entry| resolved_rule(linter, entry).uses_ast())
         .then(|| {
             profile!(
                 "patina.script_rule.parse",
-                Parser::new(&allocator, source, script_source_type()).parse()
+                Parser::new(&allocator, source, script_source_type().with_jsx(jsx_file)).parse()
             )
         });
 
@@ -338,7 +343,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             offset,
             parsed.as_ref(),
             SfcScriptContext {
-                is_jsx_file: is_jsx_filename(result.filename.as_str()),
+                is_jsx_file: jsx_file,
                 typescript: is_typescript_filename(result.filename.as_str()),
                 typescript_jsx: result.filename.ends_with(".tsx"),
                 ..SfcScriptContext::default()

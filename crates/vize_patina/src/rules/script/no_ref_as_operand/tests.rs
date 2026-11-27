@@ -366,3 +366,26 @@ fn real_app_loop_shadow_does_not_hide_a_true_ref_operand() {
         (start, start + 5)
     );
 }
+
+// --- Template refs ---
+
+#[test]
+fn a_template_ref_handle_is_a_ref_operand() {
+    let source =
+        "import { useTemplateRef } from 'vue'\nconst el = useTemplateRef('el')\nif (el) {}";
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(NoRefAsOperand));
+    assert_eq!(linter.lint(source, 0).error_count, 1);
+}
+
+#[test]
+fn a_non_null_assertion_is_still_the_ref_object() {
+    assert_eq!(
+        lint("const count = ref(0)\nconst next = count! + 1").error_count,
+        1
+    );
+    assert_eq!(
+        lint("const count = ref(0)\nif ((count!)!) {}").error_count,
+        1
+    );
+}

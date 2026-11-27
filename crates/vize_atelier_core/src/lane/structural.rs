@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::traverse::traverse_children;
-use super::{ExitFns, ParentNode, TransformContext};
+use super::{ExitFns, TransformContext};
 
 mod branch_key;
 mod v_for;
@@ -137,11 +137,15 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
     key_index.map(|i| el.props.remove(i))
 }
 
-/// Transform v-if directive
+/// Transform the v-if directive on `node`.
+///
+/// With `before`, the siblings that precede `node`, the branch joins the
+/// `v-if` among them instead of starting a new one.
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent<'a>>,
-    is_root: bool,
+    before: Option<&mut [TemplateChildNode<'a>]>,
+    node: &mut TemplateChildNode<'a>,
 ) -> Option<ExitFns<'a>> {
     let directive_loc = exp
         .map(|exp| exp.loc.clone())
@@ -152,7 +156,8 @@ pub fn transform_v_if<'a>(
         StructuralDirectiveKind::If,
         exp,
         &directive_loc,
-        is_root,
+        before,
+        node,
     )
 }
 
@@ -194,7 +199,10 @@ pub(crate) fn transform_v_if_with_directive<'a>(
     directive_kind: StructuralDirectiveKind,
     exp: Option<&SimpleExpressionContent<'a>>,
     directive_loc: &SourceLocation,
-    is_root: bool,
+    // `None` for a `v-if`; for a `v-else-if` or `v-else`, the siblings before
+    // `node`, where the `v-if` it joins lives.
+    before: Option<&mut [TemplateChildNode<'a>]>,
+    node: &mut TemplateChildNode<'a>,
 ) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
 
@@ -207,10 +215,9 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         return None;
     }
 
-    if is_root {
+    let Some(before) = before else {
         // Take the current element from parent
-        let taken = ctx.take_current_node();
-        let taken_node = taken?;
+        let taken_node = ctx.take_node(node);
 
         // Get element info before moving
         let (element_loc, is_template_if) = match &taken_node {
@@ -247,7 +254,7 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         };
 
         // Replace placeholder with IfNode
-        ctx.replace_node(TemplateChildNode::If(Box::new_in(if_node, &allocator)));
+        *node = TemplateChildNode::If(Box::new_in(if_node, &allocator));
 
         // Add helpers
         ctx.helper(RuntimeHelper::OpenBlock);
@@ -255,94 +262,82 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         ctx.helper(RuntimeHelper::Fragment);
         ctx.helper(RuntimeHelper::CreateComment);
 
-        None
-    } else {
-        // Find previous v-if node and add branch to it
-        let child_index = ctx.child_index;
+        return None;
+    };
 
-        // First, find the if node index
-        let siblings = ctx.parent.as_ref().and_then(|parent| parent.children_mut());
-        let found_if_idx = siblings.and_then(|children| {
-            // Look backwards for v-if node
-            for (j, child) in children.iter().enumerate().take(child_index).rev() {
-                match child {
-                    TemplateChildNode::If(_) => return Some(j),
-                    TemplateChildNode::Comment(_) => continue,
-                    TemplateChildNode::Text(t) if t.content.trim().is_empty() => continue,
-                    _ => break,
-                }
+    // Find previous v-if node and add branch to it
+    if let Some(if_idx) = preceding_if(before) {
+        // Take current element
+        let taken_node = ctx.take_node(node);
+
+        let (element_loc, is_template_if) = match &taken_node {
+            TemplateChildNode::Element(el) => {
+                (el.loc.clone(), el.tag_type == ElementType::Template)
             }
-            None
-        });
+            _ => return None,
+        };
 
-        if let Some(if_idx) = found_if_idx {
-            // Take current element
-            let taken = ctx.take_current_node();
-            let taken_node = taken?;
+        // Create condition for else-if, None for else
+        let condition = exp.map(|e| condition_expression(ctx, e));
 
-            let (element_loc, is_template_if) = match &taken_node {
-                TemplateChildNode::Element(el) => {
-                    (el.loc.clone(), el.tag_type == ElementType::Template)
-                }
-                _ => return None,
-            };
+        let (taken_node, mut user_key) = branch_key::take_user_key(taken_node);
 
-            // Create condition for else-if, None for else
-            let condition = exp.map(|e| condition_expression(ctx, e));
+        // The new branch is raw until all earlier processed keys were compared.
+        if let Some(new_key) = &user_key
+            && let Some(TemplateChildNode::If(if_node)) = before.get(if_idx)
+        {
+            let count = branch_key::collision_count(ctx, if_node, new_key);
+            branch_key::report_collisions(ctx, new_key, count);
+        }
+        branch_key::process_user_key(ctx, &taken_node, &mut user_key);
 
-            let (taken_node, mut user_key) = branch_key::take_user_key(taken_node);
+        let mut branch_children = Vec::new_in(&allocator);
+        branch_children.push(taken_node);
 
-            // The new branch is raw until all earlier processed keys were compared.
-            if let Some(new_key) = &user_key
-                && let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
-                && let Some(TemplateChildNode::If(if_node)) = children.get(if_idx)
-            {
-                let count = branch_key::collision_count(ctx, if_node, new_key);
-                branch_key::report_collisions(ctx, new_key, count);
+        let branch = IfBranchNode {
+            condition,
+            children: branch_children,
+            user_key,
+            is_template_if,
+            loc: element_loc,
+        };
+
+        // Add branch to if node and traverse its children
+        // Save the child index before traversing (traverse_children moves it)
+        let saved_child_index = ctx.child_index;
+
+        if let Some(TemplateChildNode::If(if_node)) = before.get_mut(if_idx) {
+            if_node.branches.push(branch);
+            // Traverse the newly added branch to process components in it
+            if let Some(branch) = if_node.branches.last_mut() {
+                traverse_children(ctx, &mut branch.children);
             }
-            branch_key::process_user_key(ctx, &taken_node, &mut user_key);
-
-            let mut branch_children = Vec::new_in(&allocator);
-            branch_children.push(taken_node);
-
-            let branch = IfBranchNode {
-                condition,
-                children: branch_children,
-                user_key,
-                is_template_if,
-                loc: element_loc,
-            };
-
-            // Add branch to if node and traverse its children
-            // Save context state before traversing (traverse_children modifies parent)
-            let saved_parent = ctx.parent;
-            let saved_grandparent = ctx.grandparent;
-            let saved_child_index = ctx.child_index;
-
-            if let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
-                && let Some(TemplateChildNode::If(if_node)) = children.get_mut(if_idx)
-            {
-                if_node.branches.push(branch);
-                // Traverse the newly added branch to process components in it
-                if let Some(branch) = if_node.branches.last_mut() {
-                    let branch_ptr = branch as *mut IfBranchNode<'a>;
-                    traverse_children(ctx, ParentNode::IfBranch(branch_ptr));
-                }
-            }
-
-            // Restore context state before removing node
-            ctx.parent = saved_parent;
-            ctx.grandparent = saved_grandparent;
-            ctx.child_index = saved_child_index;
-            // Defer removing the placeholder and skipped branch whitespace.
-            ctx.remove_node();
-            ctx.node_removed_from = Some(if_idx + 1);
-        } else {
-            ctx.on_error(ErrorCode::VElseNoAdjacentIf, Some(directive_loc.clone()));
         }
 
-        None
+        // Restore the child index before removing node
+        ctx.child_index = saved_child_index;
+        // Defer removing the placeholder and skipped branch whitespace.
+        ctx.remove_node();
+        ctx.node_removed_from = Some(if_idx + 1);
+    } else {
+        ctx.on_error(ErrorCode::VElseNoAdjacentIf, Some(directive_loc.clone()));
     }
+
+    None
+}
+
+/// The index of the `v-if` a `v-else-if` or `v-else` after `before` joins:
+/// the last `IfNode` in `before`, past only comments and blank text.
+fn preceding_if(before: &[TemplateChildNode<'_>]) -> Option<usize> {
+    for (j, child) in before.iter().enumerate().rev() {
+        match child {
+            TemplateChildNode::If(_) => return Some(j),
+            TemplateChildNode::Comment(_) => continue,
+            TemplateChildNode::Text(t) if t.content.trim().is_empty() => continue,
+            _ => break,
+        }
+    }
+    None
 }
 
 #[cfg(test)]

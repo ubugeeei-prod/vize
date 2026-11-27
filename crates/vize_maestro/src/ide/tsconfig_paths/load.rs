@@ -1,13 +1,30 @@
 use super::{InheritedPaths, Path, PathBuf};
 
+/// Configs one `extends` resolution may read. Real chains are a few files
+/// long; a config can name the same parent many times at every level, and
+/// without a bound each level would multiply the reads of the one below.
+const MAX_CONFIG_LOADS: usize = 256;
+
 pub(super) fn inherited_paths(
     config_path: &Path,
     stack: &mut Vec<PathBuf>,
+) -> Option<InheritedPaths> {
+    inherited_paths_within(config_path, stack, &mut 0)
+}
+
+fn inherited_paths_within(
+    config_path: &Path,
+    stack: &mut Vec<PathBuf>,
+    loads: &mut usize,
 ) -> Option<InheritedPaths> {
     let normalized = normalize_path_lexically(config_path);
     if stack.iter().any(|seen| seen == &normalized) {
         return None;
     }
+    if *loads >= MAX_CONFIG_LOADS {
+        return None;
+    }
+    *loads += 1;
     let value = read_jsonc(config_path)?;
     stack.push(normalized);
     let mut inherited = InheritedPaths {
@@ -21,7 +38,7 @@ pub(super) fn inherited_paths(
             let Some(resolved) = resolve_extended_tsconfig_path(config_path, spec) else {
                 continue;
             };
-            let Some(parent) = inherited_paths(&resolved, stack) else {
+            let Some(parent) = inherited_paths_within(&resolved, stack, loads) else {
                 continue;
             };
             if parent.paths_dir.is_some() {
@@ -283,4 +300,63 @@ pub(super) fn strip_jsonc_sugar(source: &str) -> std::string::String {
         }
     }
     out
+}
+
+#[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "fixtures use format!")]
+mod tests {
+    use super::{MAX_CONFIG_LOADS, inherited_paths_within};
+    use std::fs;
+
+    #[test]
+    fn a_plain_chain_reads_each_config_once() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        fs::write(root.join("a.json"), r#"{ "extends": "./b.json" }"#).unwrap();
+        fs::write(root.join("b.json"), r#"{ "extends": ["./c.json"] }"#).unwrap();
+        fs::write(
+            root.join("c.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+        )
+        .unwrap();
+
+        let mut loads = 0;
+        let inherited =
+            inherited_paths_within(&root.join("a.json"), &mut Vec::new(), &mut loads).unwrap();
+        assert_eq!(loads, 3);
+        assert_eq!(
+            inherited.entries,
+            vec![("@/*".to_string(), "./src/*".to_string())]
+        );
+    }
+
+    /// Forty levels that each name their parent twice would otherwise read
+    /// the last config 2^40 times.
+    #[test]
+    fn repeated_parents_stop_at_the_load_budget() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        for level in 0..40 {
+            let parent = level + 1;
+            fs::write(
+                root.join(format!("t{level}.json")),
+                format!(r#"{{ "extends": ["./t{parent}.json", "./t{parent}.json"] }}"#),
+            )
+            .unwrap();
+        }
+        fs::write(
+            root.join("t40.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+        )
+        .unwrap();
+
+        let mut loads = 0;
+        let inherited =
+            inherited_paths_within(&root.join("t0.json"), &mut Vec::new(), &mut loads).unwrap();
+        assert_eq!(loads, MAX_CONFIG_LOADS);
+        assert_eq!(
+            inherited.entries,
+            vec![("@/*".to_string(), "./src/*".to_string())]
+        );
+    }
 }

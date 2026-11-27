@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue"
+
+const inputEl = useTemplateRef("field")
+const field = 1
+
+function go() {
+  inputEl.value?.focus()
+}
+</script>
+
+<template>
+  <input ref="field" @focus="go" />
+  <span>{{ field }} {{ inputEl }}</span>
+</template>

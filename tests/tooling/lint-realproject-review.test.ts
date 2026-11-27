@@ -10,6 +10,7 @@ import {
   loadLintSnapshotAlignments,
   verifyLintSnapshotAlignment,
 } from "../_helpers/lint-snapshot-alignment.ts";
+import { verifyModeSuffixPolicy } from "../_helpers/lint-snapshot-nuxt-mode-suffix-refresh.ts";
 import { reviewLocalizedRequireScopedStyle } from "./support/lint-output-policy-review.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -83,6 +84,56 @@ test("the App E2E refresh extends every review chain without rebasing historical
     alignments.get("tests/snapshots/lint/__snapshots__/misskey-lint.snap")?.currentSha256,
     "f3b1001b1198613da2088667619b13f5f32d1f7c858046ad702a1f6c3eaf88a1",
   );
+});
+
+test("the Nuxt mode-suffix link admits only removed casing findings on suffixed files", () => {
+  const reviewed = (project: string) => {
+    let link = alignments.get(`tests/snapshots/lint/__snapshots__/${project}-lint.snap`)!;
+    while (link.successor?.review.successor) link = link.successor.review;
+    const current = fs.readFileSync(path.join(root, link.successor!.review.path), "utf8");
+    return { before: link.successor!.previousRaw, after: JSON.parse(current) };
+  };
+  const policy = (project: string, before: string, after: unknown) =>
+    verifyModeSuffixPolicy(project, before, JSON.stringify(after), canonical);
+  const elk = reviewed("elk");
+  const npmx = reviewed("npmx.dev");
+  policy("elk", elk.before, elk.after);
+  policy("npmx.dev", npmx.before, npmx.after);
+  const tampered = (
+    { before, after }: { before: string; after: any[] },
+    edit: (packets: any[]) => void,
+  ) => {
+    const packets = structuredClone(after);
+    edit(packets);
+    return [before, packets] as const;
+  };
+  const otherFinding = (packets: any[]) => {
+    const packet = packets.find((entry) => entry.messages.length > 0);
+    packet.messages.pop();
+    packet.warningCount--;
+  };
+  const dottedName = (packets: any[]) => {
+    const packet = packets.find((entry) => entry.file.endsWith(".takumi.vue"));
+    packet.messages = packet.messages.filter(
+      (message: { ruleId: string }) => message.ruleId !== "vue/component-definition-name-casing",
+    );
+    packet.warningCount--;
+  };
+  const added = (packets: any[]) => {
+    packets[0].messages.push(structuredClone(packets.find((p) => p.messages.length).messages[0]));
+    packets[0].warningCount++;
+  };
+  for (const [project, review, edit] of [
+    ["elk", elk, otherFinding],
+    ["npmx.dev", npmx, dottedName],
+    ["elk", elk, added],
+    ["elk", elk, (packets: any[]) => packets[0].warningCount++],
+    ["elk", elk, (packets: any[]) => packets[0].errorCount++],
+  ] as const) {
+    const [before, after] = tampered(review, edit);
+    assert.throws(() => policy(project, before, after));
+  }
+  assert.throws(() => policy("elk", elk.before, JSON.parse(elk.before)));
 });
 
 test("successor admission rejects unreviewed changes on either side of the historical chain", () => {

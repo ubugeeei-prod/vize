@@ -1,9 +1,10 @@
 use super::{block_indent, opening_tag, write_attr, write_authored_attrs, write_remaining_attrs};
 use crate::{error::FormatError, options::FormatOptions, script};
+use vize_l0::string_builder::TextBuf;
 use vize_l0::{Allocator, ToCompactString};
 
 pub(super) fn write_script_block(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     allocator: &Allocator,
@@ -37,7 +38,7 @@ pub(super) fn write_script_block(
     if let Some(opening_tag) = &opening_tag {
         opening_tag::write_raw(output, opening_tag);
     } else {
-        output.extend_from_slice(b"<script");
+        output.push_str("<script");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
             if block.has_attr("setup") {
                 write_attr(output, "setup", None);
@@ -47,30 +48,30 @@ pub(super) fn write_script_block(
             }
             write_remaining_attrs(output, &block.attrs, &["setup", "lang"]);
         }
-        output.push(b'>');
+        output.push('>');
     }
     // An empty block (for example one that only carries `src`) stays empty on
     // one line, as Prettier prints it.
     if trimmed.is_empty() {
-        output.extend_from_slice(b"</script>");
+        output.push_str("</script>");
         return Ok(());
     }
-    output.extend_from_slice(options.newline_bytes());
+    output.push_str(options.newline_string());
 
     if options.vue_indent_script_and_style {
         block_indent::write_indented_block(
             output,
             &formatted_content,
-            options.indent_bytes(),
-            options.newline_bytes(),
+            options.indent_str(),
+            options.newline_string(),
         );
     } else {
-        output.extend_from_slice(formatted_content.as_bytes());
+        output.push_str(&formatted_content);
         if !formatted_content.ends_with(options.newline_string()) {
-            output.extend_from_slice(options.newline_bytes());
+            output.push_str(options.newline_string());
         }
     }
 
-    output.extend_from_slice(b"</script>");
+    output.push_str("</script>");
     Ok(())
 }

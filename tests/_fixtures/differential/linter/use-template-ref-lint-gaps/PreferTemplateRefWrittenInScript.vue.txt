@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
+const el = ref<HTMLElement | null>(null)
+onMounted(() => {
+  el.value ??= document.querySelector<HTMLElement>('#fallback')
+})
+function reset(): void {
+  el.value = null
+}
+</script>
+
+<template>
+  <div ref="el" @click="reset">x</div>
+</template>

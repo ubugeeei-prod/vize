@@ -1,0 +1,18 @@
+<script lang="ts">
+import { defineComponent, onMounted, useTemplateRef } from 'vue'
+
+export default defineComponent({
+  async setup() {
+    await Promise.resolve()
+    const el = useTemplateRef<HTMLDivElement>('el')
+    onMounted(() => {
+      console.log(el.value)
+    })
+    return {}
+  },
+})
+</script>
+
+<template>
+  <div ref="el">x</div>
+</template>

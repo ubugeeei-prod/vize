@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { onMounted, useTemplateRef } from 'vue'
+
+function useFocus(key: string): void {
+  const target = useTemplateRef<HTMLInputElement>(key)
+  onMounted(() => {
+    target.value?.focus()
+  })
+}
+useFocus('field')
+</script>
+
+<template>
+  <input ref="field">
+</template>

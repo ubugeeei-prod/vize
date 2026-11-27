@@ -79,6 +79,13 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
+        // A static attribute value (`ref="box"`) names no script symbol, even
+        // when a same-spelled binding exists.
+        if ctx.is_in_template()
+            && crate::ide::corsa_support::in_static_attribute_value(&ctx.content, ctx.offset)
+        {
+            return None;
+        }
         if let Some(locations) = Self::setup_local_references(ctx, include_declaration) {
             return Some(locations);
         }

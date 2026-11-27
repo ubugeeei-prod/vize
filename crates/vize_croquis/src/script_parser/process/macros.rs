@@ -1,6 +1,4 @@
-use oxc_ast::ast::{
-    Argument, BindingPattern, Expression, ObjectPattern, PropertyKey, VariableDeclarationKind,
-};
+use oxc_ast::ast::{Argument, BindingPattern, Expression, PropertyKey, VariableDeclarationKind};
 use oxc_span::GetSpan;
 
 use crate::macros::{DEFINE_PROPS, MacroKind, PropsDestructuredBindings, WITH_DEFAULTS};
@@ -15,7 +13,7 @@ use super::super::extract::{
     detect_setup_context_violation, extract_argument_source, extract_call_expression,
     extract_inject_expected_type_from_init as inject_type, extract_provide_key,
     get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
-    record_static_runtime_object_literal,
+    record_static_runtime_object_literal, record_template_ref_handle,
 };
 use super::super::walk::{walk_call_arguments, walk_expression_with_closure_name};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
@@ -27,10 +25,12 @@ use super::bindings::{
 mod define_model_destructure;
 mod injection;
 mod object_origins;
+mod pattern_keys;
 mod props_object;
 
 use injection::{extract_inject_call_from_torefs, is_inject_call};
 use object_origins::record_object_pattern_property_origins;
+use pattern_keys::collect_object_pattern_keys;
 
 pub(in crate::script_parser) fn process_variable_declarator(
     result: &mut ScriptParseResult,
@@ -45,6 +45,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             let name = id.name.as_str();
             let at = id.span.start;
             let mut keeps_reactivity_alias = false;
+            record_template_ref_handle(result, name, declarator.init.as_ref());
             let call_extracted = if let Some(call) =
                 declarator.init.as_ref().and_then(extract_call_expression)
             {
@@ -631,28 +632,4 @@ pub(in crate::script_parser) fn process_variable_declarator(
             add_binding_pattern_names(&mut result.bindings, &assign.left, binding_type);
         }
     }
-}
-
-fn collect_object_pattern_keys(obj: &ObjectPattern<'_>) -> Vec<CompactString> {
-    let mut keys = Vec::new();
-
-    for prop in obj.properties.iter() {
-        let key_name = match &prop.key {
-            PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
-            PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
-            _ => None,
-        };
-
-        if let Some(key_name) = key_name {
-            keys.push(CompactString::new(key_name));
-        } else if let Some(name) = get_binding_pattern_name(&prop.value) {
-            keys.push(CompactString::new(&name));
-        }
-    }
-
-    if obj.rest.is_some() {
-        keys.push(CompactString::new("(rest)"));
-    }
-
-    keys
 }

@@ -149,6 +149,61 @@ void test("malformed, mismatched, repeated, non-JSON and executable states are r
   }
 });
 
+void test("prop names shared in a URL are identifiers or kebab-case names", () => {
+  const empty = { version: 1, values: {}, customProps: [], deletedPaletteProps: [] };
+  const shared = (palette: unknown) =>
+    readPropsPermalink(encodedState({ version: 1, artPath, palette, slots: {} }), artPath);
+  for (const name of [
+    ".innerHTML",
+    ".outerHTML",
+    ".srcdoc",
+    "^srcdoc",
+    "^onclick",
+    ".label",
+    "^label",
+    "dotted.name",
+    "spaced name",
+    ":bound",
+    "@event",
+    "1st",
+    "-leading",
+  ]) {
+    for (const palette of [
+      { ...empty, values: { [name]: "shared" } },
+      { ...empty, customProps: [{ name, control: "text", default_value: "shared" }] },
+      { ...empty, deletedPaletteProps: [name] },
+    ]) {
+      assert.deepEqual(
+        shared(palette),
+        {
+          state: null,
+          error: "Prop names shared in a URL must be identifiers or kebab-case names.",
+        },
+        JSON.stringify(palette),
+      );
+    }
+  }
+  const palette = {
+    ...empty,
+    values: JSON.parse(
+      '{"label":"a","data-state":"b","aria-label":"c","_private":"d","$scope":"e","camelCase":"f","ラベル":"g","__proto__":"h"}',
+    ),
+    customProps: [{ name: "data-state", control: "text", default_value: "authored" }],
+    deletedPaletteProps: ["camelCase"],
+  };
+  assert.deepEqual(shared(palette), { state: { palette, slots: {} }, error: null });
+  assert.throws(
+    () =>
+      createPropsPermalink("https://example.test/", artPath, {
+        palette: { ...state.palette, values: { ".innerHTML": "edited" } },
+        slots: {},
+      }),
+    {
+      message: "Prop names shared in a URL must be identifiers or kebab-case names.",
+    },
+  );
+});
+
 void test("permalink parsing and encoding enforce payload, depth and node budgets", () => {
   const long = { ...state, slots: { default: "あ".repeat(MAX_PROPS_PERMALINK_LENGTH) } };
   assert.throws(() => createPropsPermalink("https://example.test/", artPath, long), /too large/);

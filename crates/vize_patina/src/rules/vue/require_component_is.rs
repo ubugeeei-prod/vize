@@ -1,9 +1,15 @@
 //! vue/require-component-is
 //!
-//! Require `v-bind:is` attribute on `<component>` elements.
+//! Require an `is` target on `<component>` elements.
 //!
 //! The `<component>` element is a dynamic component that requires an `is` or
 //! `:is` attribute to determine which component to render.
+//!
+//! A static `is` is a valid target: Vue compiles `<component is="MyComponent">`
+//! to `resolveDynamicComponent("MyComponent")`, which resolves the registered
+//! component by name. eslint-plugin-vue reports it and asks for `v-bind:is`;
+//! this rule does not, because the static form renders the named component.
+//! An empty static `is` names no component and is still reported.
 //!
 //! ## Examples
 //!
@@ -11,12 +17,14 @@
 //! ```vue
 //! <component />
 //! <component></component>
+//! <component is="" />
 //! ```
 //!
 //! ### Valid
 //! ```vue
 //! <component :is="currentComponent" />
 //! <component :is="'MyComponent'" />
+//! <component is="MyComponent" />
 //! ```
 
 use crate::context::LintContext;
@@ -45,6 +53,15 @@ impl RequireComponentIs {
                 found = true;
             }
         });
+        if !found {
+            element.walk_attributes(&mut |attribute| {
+                // A blank value resolves to no component, so it is not a target.
+                found |= attribute.name() == "is"
+                    && attribute
+                        .value()
+                        .is_some_and(|value| !value.trim().is_empty());
+            });
+        }
         found
     }
 
@@ -106,11 +123,54 @@ mod tests {
         assert_eq!(result.error_count, 0);
     }
 
+    // Vue resolves a static `is` as a registered component name.
     #[test]
-    fn test_invalid_with_static_is() {
+    fn test_valid_with_static_is() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<component is="MyComponent" />"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        for source in [
+            r#"<component is="MyComponent" />"#,
+            r#"<component is="GlobalBadge" text="by-string" />"#,
+            r#"<component is="my-widget"></component>"#,
+            r#"<component is="vue:div" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 0, "{source} must be valid");
+        }
+    }
+
+    // A blank or missing value names no component, and the name is
+    // case-sensitive in templates.
+    #[test]
+    fn test_invalid_with_blank_or_misnamed_static_is() {
+        let linter = create_linter();
+        for source in [
+            r#"<component is="" />"#,
+            r#"<component is="  " />"#,
+            r#"<component is />"#,
+            r#"<component IS="MyComponent" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 1, "{source} must stay reported");
+        }
+    }
+
+    #[test]
+    fn pinned_static_is_sfc() {
+        let linter = create_linter();
+        let source = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/require-component-static-is/StaticIs.vue.txt"
+        );
+        let result = linter.lint_sfc(source, "StaticIs.vue");
+        let reported: Vec<&str> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| {
+                source
+                    .get(diagnostic.start as usize..diagnostic.end as usize)
+                    .unwrap()
+            })
+            .collect();
+        assert_eq!(reported, [r#"<component is="" />"#, "<component />"]);
     }
 
     #[test]

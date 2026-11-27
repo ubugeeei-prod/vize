@@ -200,6 +200,8 @@ impl Drop for EditorStorage {
 
 #[cfg(test)]
 mod retained_tests;
+mod storage_root;
+use storage_root::sessions_base;
 
 impl Default for EditorMirrorSession {
     fn default() -> Self {
@@ -216,13 +218,6 @@ pub(crate) fn fallback_editor_session() -> &'static EditorMirrorSession {
     SESSION.with(|session| *session)
 }
 
-fn sessions_base() -> std::path::PathBuf {
-    vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
-        .join("vize-canon")
-        .join("editor")
-        .join("sessions")
-}
-
 /// True for a file in any editor session's private mirror tree. Those files
 /// are generated checker inputs, never a location an editor client can open.
 pub fn is_editor_mirror_path(path: &Path) -> bool {
@@ -232,8 +227,7 @@ pub fn is_editor_mirror_path(path: &Path) -> bool {
 }
 
 fn create_storage() -> std::io::Result<EditorStorage> {
-    let base = sessions_base();
-    std::fs::create_dir_all(&base)?;
+    let base = storage_root::create_sessions_base()?;
     // Held until the new session holds its own lifetime lock.
     let gc = GcLock::acquire(&base)?;
     gc.reap_abandoned_sessions();
@@ -256,12 +250,15 @@ fn create_storage() -> std::io::Result<EditorStorage> {
 }
 
 fn open_lock(path: &Path) -> std::io::Result<File> {
-    OpenOptions::new()
-        .create(true)
-        .read(true)
-        .truncate(false)
-        .write(true)
-        .open(path)
+    let mut options = OpenOptions::new();
+    options.create(true).read(true).truncate(false).write(true);
+    // A lock is a file of this storage, never a link out of it.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600).custom_flags(libc::O_NOFOLLOW);
+    }
+    options.open(path)
 }
 
 // A stale directory entry must never recreate a lock during owner cleanup.

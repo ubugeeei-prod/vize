@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  let _temp0\n  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _resolveDirective(\"val\")), \"textarea\")}>${_ssrInterpolate((\"value\" in _temp0) ? _temp0.value : \"fallback\")}</textarea></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  const _directive_val = _resolveDirective(\"val\")\n  let _temp0\n  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _directive_val), \"textarea\")}>${_ssrInterpolate((\"value\" in _temp0) ? _temp0.value : \"fallback\")}</textarea></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
             css: None,
             map: None,
             errors: [],

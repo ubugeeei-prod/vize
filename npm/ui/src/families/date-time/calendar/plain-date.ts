@@ -334,6 +334,8 @@ export function toUtcDate(date: PlainDate): Date {
 }
 
 const zonedDateFormatters = new Map<string, Intl.DateTimeFormat>();
+// Callers choose the zone id and its spelling, so the cache has to stay bounded.
+const maximumCachedZonedDateFormatters = 64;
 
 /**
  * Calendar date of an instant in an IANA time zone.
@@ -360,6 +362,10 @@ export function fromEpochMilliseconds(
       });
     } catch {
       return null;
+    }
+    if (zonedDateFormatters.size >= maximumCachedZonedDateFormatters) {
+      const oldest = zonedDateFormatters.keys().next();
+      if (oldest.done !== true) zonedDateFormatters.delete(oldest.value);
     }
     zonedDateFormatters.set(timeZone, formatter);
   }
