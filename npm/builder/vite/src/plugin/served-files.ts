@@ -41,3 +41,16 @@ export function createServedFileCheck(viteApi: ViteFileAccessApi) {
 }
 
 export const isServedFileAllowed = createServedFileCheck(vite);
+
+/**
+ * The directories a served stylesheet may read files from: Vite's strict
+ * `server.fs.allow` list. `undefined` for a build, the server's SSR graph, or
+ * a server without strict file rules, which read what the stylesheet names.
+ */
+export function servedStylesheetRoots(
+  state: Pick<VizePluginState, "server">,
+  ssr: boolean,
+): readonly string[] | undefined {
+  const fsOptions = ssr ? undefined : state.server?.config?.server?.fs;
+  return fsOptions?.strict ? fsOptions.allow : undefined;
+}
