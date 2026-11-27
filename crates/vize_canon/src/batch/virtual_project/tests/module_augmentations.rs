@@ -156,3 +156,70 @@ fn global_component_stubs_load_mirrored_script_modules() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+/// An auto-imported type is re-exported from inside a global augmentation.
+/// A project module must be the mirror, the module a file importing the type
+/// directly gets; an unmirrored path, a package path and a bare specifier keep
+/// their own spelling.
+#[test]
+fn type_reexport_stubs_load_mirrored_script_modules() {
+    let case_dir = unique_case_dir("type-reexport-mirrors");
+    let _ = fs::remove_dir_all(&case_dir);
+    let composables = case_dir.join("app/composables");
+    fs::create_dir_all(&composables).unwrap();
+    let states = composables.join("states.ts");
+    fs::write(
+        &states,
+        "export type ColorName = 'pink' | 'blue';\nexport type Box<T> = { value: T };\n",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    let root = project.project_root().to_string_lossy().into_owned();
+    let mut options = VirtualTsOptions::default();
+    options.auto_import_stubs.push(
+        format!(
+            "{MODULE_AUGMENTATION_STUB_PREFIX}declare global {{\n  \
+             export type {{ ColorName, Box as Crate }} from '{root}/app/composables/states'\n  \
+             import('{root}/app/composables/states')\n  \
+             export type {{ Missing }} from \"{root}/app/composables/missing\"\n  \
+             import(\"{root}/app/composables/missing\")\n  \
+             export type {{ PageMeta }} from '{root}/node_modules/nuxt/dist/pages'\n  \
+             import('{root}/node_modules/nuxt/dist/pages')\n  \
+             export type {{ Ref }} from 'vue'\n  \
+             import('vue')\n\
+             }}\n"
+        )
+        .into(),
+    );
+    project.set_virtual_ts_options(options);
+    project.register_path(&states).unwrap();
+    project.materialize().unwrap();
+
+    let augmentations =
+        fs::read_to_string(project.virtual_root().join(MODULE_AUGMENTATION_STUBS_FILE)).unwrap();
+    assert_eq!(
+        augmentations,
+        format!(
+            "// @ts-nocheck\n\
+             // External module augmentations for resolved framework packages.\n\
+             export {{}};\n\
+             declare global {{\n  \
+             export type {{ ColorName, Box as Crate }} from './app/composables/states'\n  \
+             import('./app/composables/states')\n  \
+             export type {{ Missing }} from \"{root}/app/composables/missing\"\n  \
+             import(\"{root}/app/composables/missing\")\n  \
+             export type {{ PageMeta }} from '{root}/node_modules/nuxt/dist/pages'\n  \
+             import('{root}/node_modules/nuxt/dist/pages')\n  \
+             export type {{ Ref }} from 'vue'\n  \
+             import('vue')\n\
+             }}\n\n"
+        )
+    );
+    assert_eq!(
+        fs::read_to_string(project.virtual_root().join("app/composables/states.ts")).unwrap(),
+        "export type ColorName = 'pink' | 'blue';\nexport type Box<T> = { value: T };\n"
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}

@@ -16,6 +16,7 @@ mod plugins;
 mod source_scan;
 mod stubs;
 mod tsconfig_aliases;
+mod type_auto_imports;
 mod virtual_modules;
 
 #[cfg(test)]
@@ -32,10 +33,10 @@ mod strict_globals_tests;
 mod tests;
 
 use fallback::{collect_fallback_stubs, collect_module_fallback_stubs};
-use generated::{collect_generated_stubs, collect_generated_template_globals};
+use generated::{GeneratedImports, collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
-use source_scan::{collect_source_auto_import_stubs, collect_source_type_auto_import_stubs};
+use source_scan::collect_source_auto_import_stubs;
 use stubs::{declared_name, is_template_component_binding};
 use tsconfig_aliases::collect_explicit_virtual_module_aliases;
 use virtual_modules::{collect_fallback_module_stubs, collect_fallback_path_aliases};
@@ -123,7 +124,10 @@ pub(in crate::commands::check) fn detect(
             super::tsconfig_inputs::collect_declaration_reference_graph(&roots)
         })
     });
-    let has_generated_imports = collect_generated_stubs(
+    let GeneratedImports {
+        found_manifest: has_generated_imports,
+        types: mut type_auto_imports,
+    } = collect_generated_stubs(
         cwd,
         &generated_dir,
         &generated_files,
@@ -142,12 +146,22 @@ pub(in crate::commands::check) fn detect(
         eprintln!("{message}");
     }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
-    collect_fallback_stubs(&mut collected, &mut seen_names, has_generated_imports);
+    collect_fallback_stubs(
+        &mut collected,
+        &mut seen_names,
+        &mut type_auto_imports,
+        has_generated_imports,
+    );
     if !has_generated_imports {
         collect_module_fallback_stubs(cwd, &mut collected, &mut seen_names);
-        collect_source_auto_import_stubs(cwd, &mut collected, &mut seen_names);
-        collect_source_type_auto_import_stubs(cwd, &mut collected);
+        collect_source_auto_import_stubs(
+            cwd,
+            &mut collected,
+            &mut seen_names,
+            &mut type_auto_imports,
+        );
     }
+    collected.extend(type_auto_imports.render_stub());
     let explicit_aliases = collect_explicit_virtual_module_aliases(tsconfig_path);
     collect_fallback_module_stubs(cwd, &mut collected, &explicit_aliases);
     let path_aliases = collect_fallback_path_aliases(cwd, &generated_dir);

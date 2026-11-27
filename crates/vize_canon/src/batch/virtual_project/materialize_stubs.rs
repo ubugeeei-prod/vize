@@ -66,7 +66,10 @@ impl VirtualProject {
             if !is_module_augmentation_stub(stub) {
                 continue;
             }
-            content.push_str(stub.trim_start_matches(MODULE_AUGMENTATION_STUB_PREFIX));
+            self.push_mirrored_stub(
+                &mut content,
+                stub.trim_start_matches(MODULE_AUGMENTATION_STUB_PREFIX),
+            );
             content.push('\n');
         }
 
@@ -151,24 +154,17 @@ impl VirtualProject {
 }
 
 impl VirtualProject {
-    /// A global component typed by an authored script module (Nuxt's
-    /// `components.d.ts` can name a barrel such as `form/index.ts`) must load
-    /// its mirror. The original keeps unrewritten `.vue` imports, so loading it
-    /// reports TS2307 that vue-tsc never sees.
+    /// A stub that names an authored script module must load its mirror.
+    ///
+    /// A global component typed by a barrel (Nuxt's `components.d.ts` can name
+    /// `form/index.ts`) would otherwise load the original, which keeps
+    /// unrewritten `.vue` imports and reports TS2307 that vue-tsc never sees.
+    /// An auto-imported type re-exported `from` its module would otherwise be a
+    /// different module instance than the one a file imports directly.
     fn push_mirrored_stub(&self, content: &mut CompactString, stub: &str) {
         let mut copied = 0;
         let mut cursor = 0;
-        while let Some(found) = stub.get(cursor..).and_then(|rest| rest.find("import(")) {
-            let open = cursor + found + "import(".len();
-            cursor = open;
-            let Some(quote) = stub.get(open..open + 1).filter(|q| *q == "'" || *q == "\"") else {
-                continue;
-            };
-            let start = open + 1;
-            let Some(length) = stub.get(start..).and_then(|rest| rest.find(quote)) else {
-                break;
-            };
-            let end = start + length;
+        while let Some((start, end)) = next_module_specifier(stub, cursor) {
             cursor = end;
             let Some(mirror) = stub
                 .get(start..end)
@@ -209,6 +205,30 @@ impl VirtualProject {
             rendered.push_str(&relative.to_string_lossy().replace('\\', "/"));
             rendered
         })
+    }
+}
+
+/// The byte range of the next quoted module specifier at or after `from`:
+/// the operand of `import(…)` or of a `from` clause.
+fn next_module_specifier(stub: &str, from: usize) -> Option<(usize, usize)> {
+    let mut cursor = from;
+    loop {
+        let rest = stub.get(cursor..)?;
+        let open = ["import(", " from "]
+            .into_iter()
+            .filter_map(|lead| Some(rest.find(lead)? + lead.len()))
+            .min()?
+            + cursor;
+        cursor = open;
+        let Some(quote) = stub
+            .get(open..open + 1)
+            .filter(|quote| *quote == "'" || *quote == "\"")
+        else {
+            continue;
+        };
+        let start = open + 1;
+        let length = stub.get(start..)?.find(quote)?;
+        return Some((start, start + length));
     }
 }
 

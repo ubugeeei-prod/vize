@@ -44,6 +44,13 @@ function runVizeCheck(patterns: string[]): VizeCheckJson {
   return JSON.parse(stdout) as VizeCheckJson;
 }
 
+// vue-tsc 3.3.14 reports the same three rows for `pages/broken-types.vue`.
+const BROKEN_TYPES = [
+  "error:5:7 [TS2322] Type '\"green\"' is not assignable to type 'ColorName'.",
+  "error:6:28 [TS2322] Type 'string' is not assignable to type 'number'.",
+  "error:8:7 [TS2322] Type 'Ref<number, number>' is not assignable to type 'Ref<string, string>'.\nType 'number' is not assignable to type 'string'.",
+];
+
 function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
   return result.files.find((entry) => entry.file === file)?.diagnostics ?? [];
 }
@@ -72,6 +79,24 @@ describe(`${app.name} check (Nuxt auto-import parity)`, () => {
       diagnostics.some((d) => /\[TS2345\]/.test(d) && /not assignable to parameter/.test(d)),
       `expected a TS2345 in ${JSON.stringify(diagnostics)}`,
     );
+  });
+
+  // Auto-imported types reach the program as re-exports inside a global
+  // augmentation of `.nuxt/imports.d.ts`. A user type, a generic user type and
+  // Vue's `Ref` with both of its type parameters must all be the real types.
+  it("no false positives on auto-imported types", () => {
+    const result = runVizeCheck(["pages/types.vue"]);
+    assert.deepEqual(diagnosticsFor(result, "pages/types.vue"), []);
+    assert.equal(result.errorCount, 0, JSON.stringify(result.files, null, 2));
+  });
+
+  // Real errors are caught: a value that does not fit the auto-imported type is
+  // TS2322 against that type. An unresolved name would be TS2304 instead, and a
+  // type that collapsed to `any` would report nothing.
+  it("catches wrong values for auto-imported types (TS2322)", () => {
+    const result = runVizeCheck(["pages/broken-types.vue"]);
+    assert.deepEqual(diagnosticsFor(result, "pages/broken-types.vue"), BROKEN_TYPES);
+    assert.equal(result.errorCount, 3, JSON.stringify(result.files, null, 2));
   });
 });
 

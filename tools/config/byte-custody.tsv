@@ -6,7 +6,6 @@ path	digests	class	owners
 crates/vize/src/commands/check/imports/test_modules/tests.rs	sha256:22fea079d9cccfed91d6d0e51101ee5ad515155b56185f6f1c35e095cabc8cfb	record-only	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/imports_aliases.rs	sha256:56913b7e329b98466a4b39c1c46de5023ef82db91a70c5ee31065ccb0f515239	enforced	tools/benchmarks/scripts/canon-alias-collector.mjs
 crates/vize/src/commands/check/nuxt/generated_dir.rs	sha256:abd8560de8a6e90dfabe21379d1a9832ee1f3bf508e60bff1361ccbfecd6821d	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
-crates/vize/src/commands/check/nuxt/source_scan.rs	sha256:40d6b5eb02436cf8b2c1492458117d2bd7ee884e2c257f2bc9966555338b1afe	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs	sha256:087abeb4cd9b98dd57f211277eb6e8cf0311f2007a583ab91274acf2b283e79b	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/nuxt/virtual_modules.rs	sha256:736566277789ada9d2ff2132bec23c6f560a8ce78d8833ecf435cb66894e0a06	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/path_cache.rs	sha256:b67a0ec7e3111aeb956a29e08a2cadde977b8e88a77563a88bdfd43003df3bd6	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
