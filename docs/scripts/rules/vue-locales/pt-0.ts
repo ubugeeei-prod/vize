@@ -17,6 +17,11 @@ export const portugueseVue0: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/component-definition-name-casing": [
       "Exigir PascalCase ou kebab-case nos nomes de definição de componentes",
+      "O nome my_component declarado com defineOptions separa as palavras com sublinhado, em vez de usar PascalCase.",
+      "O nome declarado MyComponent usa PascalCase, o padrão.",
+    ],
+    "vue/component-file-name-casing": [
+      "Exigir PascalCase ou kebab-case nos nomes de arquivo de componentes",
       "O nome de arquivo myComponent.vue mistura uma inicial minúscula com uma letra maiúscula interna, em vez de usar PascalCase ou kebab-case.",
       "Renomear o arquivo para MyComponent.vue aplica PascalCase; o conteúdo do template permanece igual.",
     ],

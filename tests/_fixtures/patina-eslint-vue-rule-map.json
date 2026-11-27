@@ -102,8 +102,15 @@
       "status": "unimplemented"
     },
     "vue/component-definition-name-casing": {
-      "reason": "Patina's rule checks SFC file-name casing; eslint-plugin-vue checks the component definition name, so their findings are not comparable.",
-      "status": "intentional-divergence"
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/component-definition-name-casing",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/component-name-in-template-casing": {
       "patinaPresets": [
@@ -2168,8 +2175,8 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "intentionalDivergence": 2,
-    "mapped": 200,
+    "intentionalDivergence": 1,
+    "mapped": 201,
     "unimplemented": 54
   },
   "upstream": {

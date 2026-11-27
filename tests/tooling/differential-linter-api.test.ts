@@ -100,7 +100,7 @@ void test("component filename history retains the eight original input and optio
     "crates/vize_patina/tests/fixtures/component-name-history/cases.json",
   );
   const bytes = fs.readFileSync(file);
-  assert.equal(sha256(bytes), "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c");
+  assert.equal(sha256(bytes), "fbfd90d83575d667de540ff6340be9f3d5a329ad40bbc5d4c971e709b19de9ac");
   const cases = JSON.parse(bytes.toString());
   assert.equal(new Set(cases.map((fixture: any) => fixture.id)).size, 8);
   assert.deepEqual(
@@ -117,17 +117,17 @@ void test("component filename history retains the eight original input and optio
     ],
   );
   const observedBodyHashes: Record<string, string> = {
-    "valid-kebab-case": "3283559e4d5c2d5c022bed44ead4f93cf4138421b22829f7c63167361b3f1ccf",
+    "valid-kebab-case": "851858b2f2cff8191db54118e95b2bd46f551d69a6cad5b599ed96e22ba08b05",
     "valid-kebab-case-with-path":
-      "c6f12bd67d7b4e0f0e75637802ea4e0444aec492a6e813e38eb27218dc8bfddd",
+      "4f0390c8d67848d45361f82f873f7d84d3c23943a78bac2b8c5a5a1a7d45bbcc",
     "valid-kebab-case-with-digits":
-      "685419a7826ffd982be3ca03de68913a7ad9c0df2f27666cc4aab4cd6e5b5d34",
+      "32ed0c8796adb453e14fb7a5e79483c9065a8ae8d367784ac891326606fa0ba0",
     "invalid-mixed-kebab-and-pascal":
-      "7dc0ecc870c81b37807c028b73083adf50433450ff40122e3bca10ec7506ad55",
-    "invalid-leading-hyphen": "21a220ae471f33829769dcca60f9662cc5b03eb2f29023c0b239d36d2f2823db",
-    "invalid-trailing-hyphen": "d1eb61ea98dc3e399f46c12d40d2d3c3cabd934e99b13887294459533b0a87d4",
-    "invalid-doubled-hyphen": "679ea214d2bd1d18ff4dba396774c5dc85c76bc2e7cb15a8c72bbbbdbcd331e8",
-    "invalid-dotted-name": "85568c1544da88c54c4106c3f4c0d2d96b3b71d3a1f0a7bed419aecb667aa28d",
+      "0898081b4f68ad94258d71e75617e0ddd3413e96bf1911df4a551affc3c343e8",
+    "invalid-leading-hyphen": "40cb92c3b5acd6b99051cae6838cc1aaf07705587ad38af2f104115d4226012c",
+    "invalid-trailing-hyphen": "ac5597a02352ac4ba878ac6212458bcf92dbc43a395c510ea5d3a4a545203971",
+    "invalid-doubled-hyphen": "5a6979c8fa4aaf1b23706882bf85055809fdbf16e5b694a3f668e1ad42306f03",
+    "invalid-dotted-name": "d1c44191a765719f2db3e224b2ce7e8ec85e536f6744e36d0ccd85043d7cb46c",
   };
   const registered = loadLinterManifest(manifestPath, repoRoot).cases;
   for (const fixture of cases) {
@@ -141,7 +141,7 @@ void test("component filename history retains the eight original input and optio
     assert.equal(fixture.history, "eaafa5a1f67883277407fcf1c5f3f2b2101ef2ed");
     assert.equal(fixture.source, "<div>Content</div>");
     assert.equal(fixture.entry, "template");
-    assert.equal(fixture.rule, "vue/component-definition-name-casing");
+    assert.equal(fixture.rule, "vue/component-file-name-casing");
     assert.equal(fixture.vue_version, null);
     assert.equal(fixture.vapor, null);
     assert.equal(fixture.fixes, 0);

@@ -108,6 +108,45 @@ that slot's parameters exist. The option only changes modifier policy and does
 not enable a disabled rule. An explicit `allowModifiers: false` in a matching
 entry restores the default policy even when the root config allows modifiers.
 
+## `vue/component-definition-name-casing`
+
+The option is eslint-plugin-vue's: `"PascalCase"` (the default) or `"kebab-case"`. It
+applies to the static `name` of `export default {}`, `defineComponent({})` and the other
+component definitions, to `defineOptions({ name })`, and to the first argument of
+`app.component(name, component)`. The file name is checked by
+`vue/component-file-name-casing`, which takes no option.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/component-definition-name-casing": "warn" },
+    ruleOptions: { "vue/component-definition-name-casing": "kebab-case" },
+  },
+});
+```
+
+Bad with this config:
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
+```
+
+Good with this config:
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "my-component" });
+</script>
+```
+
+A computed name is not checked. The rule does not rewrite the name, because renaming a
+component changes how `<KeepAlive include>` and recursive self-references find it; the help
+names the converted spelling. Options configure the rule without enabling it.
+
 ## `vue/component-name-in-template-casing`
 
 Use this option when a project wants component tags in templates to be consistently PascalCase or

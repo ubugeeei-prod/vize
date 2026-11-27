@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { createApp } from "vue";
+import HelperChild from "./HelperChild.vue";
+const app = createApp({});
+app.component("helper_child", HelperChild);
+</script>
+<template><div /></template>

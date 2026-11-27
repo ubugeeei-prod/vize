@@ -15,8 +15,8 @@ use vize_patina::{
 };
 use vize_relief::{ElementNode, PropNode, RootNode};
 
-pub const MESSAGE: &str = "vue/component-definition-name-casing.message";
-pub const HELP: &str = "vue/component-definition-name-casing.help";
+pub const MESSAGE: &str = "vue/component-file-name-casing.message";
+pub const HELP: &str = "vue/component-file-name-casing.help";
 pub const LOCALES: [Locale; 3] = [Locale::En, Locale::Ja, Locale::Zh];
 pub static FIRST: RuleMeta = RuleMeta {
     name: "test/native-element-first",

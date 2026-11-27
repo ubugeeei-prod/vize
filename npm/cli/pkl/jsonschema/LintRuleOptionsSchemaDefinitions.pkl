@@ -101,6 +101,11 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["type/strict-boolean-expressions"] = strictBooleanExpressionsOptionsDef
     ["script/no-restricted-globals"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedGlobalsOptions" }
     ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
+    ["vue/component-definition-name-casing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "PascalCase"; "kebab-case" }
+      default = "PascalCase"
+    }
     ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
     ["script/custom-event-name-casing"] = ConfigArtifactDefinitions.customEventNameCasingOptionsDef
     ["vue/prop-name-casing"] = new JsonSchema {

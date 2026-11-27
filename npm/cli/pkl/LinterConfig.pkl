@@ -23,6 +23,7 @@ typealias LintPreset =
     | "ecosystem"
     | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
+typealias ComponentDefinitionNameCasingStyle = "PascalCase" | "kebab-case"
 typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
 typealias PropNameCasingStyle = "camelCase" | "snake_case"
 typealias SlotNameCasingStyle = "camelCase" | "kebab-case" | "singleword"
@@ -266,6 +267,7 @@ class LintRuleOptions {
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+  `vue/component-definition-name-casing`: ComponentDefinitionNameCasingStyle? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null

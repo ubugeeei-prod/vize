@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "f58476e8c38793edc442364bd1de75b93abf51fddb3b70252c9962a5cd2322d3"
+        "sha256": "c374a45c6fdb65db60245544af5dcc52c8fa909f42e0837f1a9c4808fd65d0f5"
       }
     },
     {
@@ -48,13 +48,13 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/component-name-history/cases.json",
-        "sha256": "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c"
+        "sha256": "fbfd90d83575d667de540ff6340be9f3d5a329ad40bbc5d4c971e709b19de9ac"
       }
     }
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "d16586b14afa485be65a3c93066a8d858cb15026659f88dcb806cde55a904186"
+    "sha256": "baee458bb26eca73d9ca30dbbc45d62e43de631a702ad9c67631215cd6d696b1"
   },
   "cases": [
     {
@@ -576,6 +576,59 @@
             "dialects": [
               "vue3-sfc",
               "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/component-definition-name-casing-sources",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "component-definition-name-casing-sources",
+        "files": [
+          {
+            "path": "DefinitionCasing.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "4bef075d326d20a68b9783fa2a46c97ceae29d11d9b9d53f63faf06acde1c3a8"
+          },
+          {
+            "path": "DefinitionCasingApp.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "6e059afe3d1fb3d587997463c61efb2bc963724370624a5b05d066d0793bafa5"
+          },
+          {
+            "path": "DefinitionCasingSetup.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "98b2cd1105567066a58acd93f74145f8d732868118d8bc3305b10d2e73284cc3"
+          },
+          {
+            "path": "HelperChild.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335"
+          },
+          {
+            "path": "lint.config.mjs.txt",
+            "role": "issue-authored-config",
+            "sha256": "389b38835bb53f1cae6fce9ee283fda4489242793d67f604f2452e58c12c4392"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -20903,17 +20956,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "1d1e9bc6f74e32090105f166730576c166035cc1afe51f7a9159ff3534fe4f79"
+            "sha256": "5e991389e397533ef930f3885677bd24c8610353a95224fde18de8bf6610822b"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "78a67566c048dd63f025878478164ac407aeea28e414636f6344340d58995593"
+            "sha256": "481d5ae3c1fa8f76c698ba28bdf6b75df4ba614ac62ac3f5496a56f1b4ff97f9"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "70a52a8c92843ddebc7a6ad6d232d9644a7382d358307e5bea1fa8ab21b16578"
+            "sha256": "c46b88f0437f5bf550da2a6a9e9ac462581a105b0c51b01047c6b9179af1dd0a"
           }
         ]
       },

@@ -242,6 +242,31 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "'<button>' の type は既定で \"submit\" となり、囲っているフォームを送信します。明示的に type=\"button\"、\"submit\"、\"reset\" のいずれかを指定してください。",
         "'<button>' 的 type 默认为 \"submit\"，会提交其所在的表单。请显式设置 type=\"button\"、\"submit\" 或 \"reset\"。",
     ),
+    // vue/component-definition-name-casing
+    (
+        "vue/component-definition-name-casing.description",
+        "Enforce PascalCase or kebab-case for component definition names",
+        "コンポーネント定義名に PascalCase または kebab-case を強制する",
+        "强制组件定义名称使用 PascalCase 或 kebab-case",
+    ),
+    (
+        "vue/component-definition-name-casing.message",
+        "Component name '{name}' is not {casing}",
+        "コンポーネント名 '{name}' は {casing} ではありません",
+        "组件名称 '{name}' 不是 {casing}",
+    ),
+    (
+        "vue/component-definition-name-casing.help",
+        "Rename the component to '{suggestion}'.",
+        "コンポーネント名を '{suggestion}' に変更してください。",
+        "请将组件名称改为 '{suggestion}'。",
+    ),
+    (
+        "vue/component-definition-name-casing.help_unconvertible",
+        "Rename the component to a {casing} name.",
+        "コンポーネント名を {casing} の名前に変更してください。",
+        "请将组件名称改为 {casing} 形式的名称。",
+    ),
     // vue/slot-name-casing
     (
         "vue/slot-name-casing.description",

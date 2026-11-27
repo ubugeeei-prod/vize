@@ -268,6 +268,17 @@ it("projects mustache interpolation spacing into the typed option map", () => {
   assert.equal(getRuleOptions("vue/mustache-interpolation-spacing", ["sometimes"]), undefined);
 });
 
+it("projects the component definition name casing into the typed option map", () => {
+  for (const casing of ["PascalCase", "kebab-case"]) {
+    assert.deepEqual(getRuleOptions("vue/component-definition-name-casing", [casing]), {
+      ruleOptions: { "vue/component-definition-name-casing": casing },
+    });
+  }
+  for (const options of [["camelCase"], [{ casing: "kebab-case" }], ["kebab-case", {}]]) {
+    assert.equal(getRuleOptions("vue/component-definition-name-casing", options), undefined);
+  }
+});
+
 it("projects real-project allowance options into the typed option map", () => {
   const authored = {
     "vue/warn-custom-directive": { ignore: ["hover-tooltip"] },
