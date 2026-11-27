@@ -51,15 +51,15 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
     // binding straight from the closure, through `_unref` when the script
     // may have rebound it.
     let inline = cx.scope.inline();
-    // A prop is read off the props object (`__props` inline, `$props`
-    // otherwise), through `_unref` as Vue does.
-    let is_prop = binding.kind == BindingKind::Props;
-    let needs_unref = is_prop
-        || (inline
-            && matches!(
-                binding.kind,
-                BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
-            ));
+    if binding.kind == BindingKind::Props {
+        push_prop_tag(cx, &binding, inline);
+        return true;
+    }
+    let needs_unref = inline
+        && matches!(
+            binding.kind,
+            BindingKind::SetupLet | BindingKind::SetupMaybeRef | BindingKind::SetupRef
+        );
     if needs_unref {
         cx.buf.use_helper(Helper::Unref);
         cx.buf.push(Helper::Unref.alias());
@@ -68,12 +68,7 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
     // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
     // Expression identifiers stay `$setup.msg`. A dotted tag keeps the
     // suffix outside the brackets (`$setup["Ns"].Item`).
-    if is_prop {
-        cx.buf.push(if inline { "__props[\"" } else { "$props[\"" });
-        cx.buf
-            .push(super::super::js::escape_js_string(binding.name.as_str()).as_str());
-        cx.buf.push("\"]");
-    } else if inline {
+    if inline {
         cx.buf.push(binding.name.as_str());
     } else {
         cx.buf.push("$setup[\"");
@@ -89,6 +84,25 @@ pub(in crate::targets::dom::artifact) fn push_tag(cx: &mut EmitCx<'_>, component
         cx.buf.push(suffix);
     }
     true
+}
+
+/// A prop used as a tag reads the props object (`__props` inline, `$props`
+/// otherwise) through `_unref`, as Vue does. Out of line: an ordinary tag
+/// never takes this path.
+#[cold]
+#[inline(never)]
+fn push_prop_tag(cx: &mut EmitCx<'_>, binding: &ComponentBinding<'_>, inline: bool) {
+    cx.buf.use_helper(Helper::Unref);
+    cx.buf.push(Helper::Unref.alias());
+    cx.buf
+        .push(if inline { "(__props[\"" } else { "($props[\"" });
+    cx.buf
+        .push(super::super::js::escape_js_string(binding.name.as_str()).as_str());
+    cx.buf.push("\"])");
+    if let Some(suffix) = binding.suffix {
+        cx.buf.push(".");
+        cx.buf.push(suffix);
+    }
 }
 
 fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {

@@ -35,15 +35,16 @@ impl CodegenContext {
             return false;
         };
 
-        // A prop is read off the props object (`__props` in the inlined
-        // render function, `$props` otherwise), through `_unref` as Vue does.
-        let is_prop = binding.binding_type == BindingType::Props;
-        let needs_unref = is_prop
-            || (self.options.inline
-                && matches!(
-                    binding.binding_type,
-                    BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
-                ));
+        if binding.binding_type == BindingType::Props {
+            self.push_prop_component_tag(binding);
+            return true;
+        }
+
+        let needs_unref = self.options.inline
+            && matches!(
+                binding.binding_type,
+                BindingType::SetupLet | BindingType::SetupMaybeRef | BindingType::SetupRef
+            );
         if needs_unref {
             self.use_helper(RuntimeHelper::Unref);
             self.push(self.helper(RuntimeHelper::Unref));
@@ -51,16 +52,7 @@ impl CodegenContext {
         }
         // Non-inline setup components are bracket reads (`$setup["MyButton"]`).
         // Expression identifiers stay `$setup.msg`.
-        if is_prop {
-            self.push(if self.options.inline {
-                "__props[\""
-            } else {
-                "$props[\""
-            });
-            let escaped = super::helpers::escape_js_string(binding.name.as_str());
-            self.push(escaped.as_str());
-            self.push("\"]");
-        } else if self.options.inline {
+        if self.options.inline {
             self.push(binding.name.as_str());
         } else {
             self.push("$setup[\"");
@@ -76,6 +68,28 @@ impl CodegenContext {
             self.push(suffix.as_str());
         }
         true
+    }
+
+    /// A prop used as a tag reads the props object (`__props` in the inlined
+    /// render function, `$props` otherwise) through `_unref`, as Vue does.
+    /// Out of line: an ordinary tag never takes this path.
+    #[cold]
+    #[inline(never)]
+    fn push_prop_component_tag(&mut self, binding: ComponentBinding) {
+        self.use_helper(RuntimeHelper::Unref);
+        self.push(self.helper(RuntimeHelper::Unref));
+        self.push(if self.options.inline {
+            "(__props[\""
+        } else {
+            "($props[\""
+        });
+        let escaped = super::helpers::escape_js_string(binding.name.as_str());
+        self.push(escaped.as_str());
+        self.push("\"])");
+        if let Some(suffix) = binding.suffix {
+            self.push(".");
+            self.push(suffix.as_str());
+        }
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
