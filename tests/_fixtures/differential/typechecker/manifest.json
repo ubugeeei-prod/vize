@@ -69722,6 +69722,51 @@
       }
     },
     {
+      "id": "typechecker/runtime-owner-outside-include/package-runtime",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "check_outside_include_runtime_cli::check_with_outside_include_discovers_the_package_runtime + check_outside_include_runtime_cli::check_with_outside_include_anchors_a_relative_corsa_path_at_the_package",
+      "inputs": [
+        {
+          "path": "runtime-owner-outside-include/tsconfig.json.txt",
+          "role": "package-project-config-including-outside-sources",
+          "sha256": "5dcc19e942b9005d929a7a8ddbf910c66b0e73494864de960336dc64386bf706"
+        },
+        {
+          "path": "runtime-owner-outside-include/App.vue.txt",
+          "role": "package-sfc",
+          "sha256": "ac41e998fe952ee23d54f55658595ac3556775e402596a0f5231516fadc70e1a"
+        },
+        {
+          "path": "runtime-owner-outside-include/shared-a.ts.txt",
+          "role": "outside-package-source",
+          "sha256": "82b40360d811a664d6203f13b541ad87b6cee6a0b9d5313537476eb01640ffa8"
+        },
+        {
+          "path": "runtime-owner-outside-include/runtime.observed.json",
+          "role": "complete-current-observation",
+          "sha256": "8b1459748773fc7e246a8cc0ca513e0f39d67a4de61c100376ae71cd52b3c2ac"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "native runtime selection observed from a source-built `vize check` whose tsconfig includes ../shared: discovery and a relative --corsa-path start at the package that owns the tsconfig, not the widened materialized project root. Input-only registration: runtime selection has no batch or native diagnostic adapter, so there is no parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/runtime-proptype-call-result-11734/object-proptype-retains-editor",
       "state": "active",
       "targets": [
