@@ -274,6 +274,7 @@ export const cacheInputs = {
     "Cargo.lock",
     "crates/**",
     "davinci/**",
+    "npm/builder/swc/**",
     "tests/**",
     "tools/**",
   ],
