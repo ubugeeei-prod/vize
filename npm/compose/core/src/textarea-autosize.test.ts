@@ -137,6 +137,37 @@ for (const styleProp of ["height", "min-height"] as const) {
   });
 }
 
+void test("adds borders on border-box and subtracts padding on content-box", () => {
+  for (const [boxSizing, expected] of [
+    ["border-box", 82],
+    ["content-box", 60],
+  ] as const) {
+    const document = new FakeDocument();
+    const element = document.createElement();
+    Object.defineProperty(document, "defaultView", {
+      value: {
+        getComputedStyle: () => ({
+          boxSizing,
+          paddingTop: "8px",
+          paddingBottom: "8px",
+          borderTopWidth: "3px",
+          borderBottomWidth: "3px",
+        }),
+      },
+    });
+    Object.defineProperty(element, "scrollHeight", {
+      get: () => (element.styles.get("height") === "auto" ? 76 : 999),
+    });
+    const scope = effectScope();
+    try {
+      scope.run(() => useTextareaAutosize(asElement(element), { host: () => null }));
+      assert.equal(element.styles.get("height"), `${expected}px`);
+    } finally {
+      scope.stop();
+    }
+  }
+});
+
 void test("SSR renders the declared textarea rows and escaped draft without measuring", async () => {
   resetObservers();
   const heights: number[] = [];
