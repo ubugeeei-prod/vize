@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/typecheck",
-  "version": "0.474.0",
+  "version": "0.807.0",
   "description": "Vize type checker for Vue, JSX and TSX",
   "keywords": [
     "typecheck",
