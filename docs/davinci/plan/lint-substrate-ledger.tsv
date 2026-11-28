@@ -52,7 +52,7 @@ ecosystem/vue-router-prefer-named-push	L1 script	script-oxc	legacy-engine	-	-	sc
 ecosystem/vue-test-utils-no-html-snapshot	L1 script	script-oxc	legacy-engine	-	-	script/vue_test_utils_no_html_snapshot.rs
 html/deprecated-attr	L1 syntax	markup-l2	legacy-rule	relief	-	html/deprecated_attr.rs
 html/deprecated-element	L1 syntax	markup-l2	legacy-rule	relief	-	html/deprecated_element.rs
-html/id-duplication	L1 syntax	relief-visitor	legacy-rule	relief	-	html/id_duplication.rs
+html/id-duplication	L1 syntax	markup-l2	legacy-rule	relief	-	html/id_duplication.rs
 html/no-consecutive-br	L1 syntax	markup-l2	legacy-rule	relief	-	html/no_consecutive_br.rs
 html/no-dupe-style-properties	L1 syntax	markup-l2	legacy-rule	relief	-	opinionated/html/no_dupe_style_properties.rs
 html/no-duplicate-class	L1 syntax	markup-l2	legacy-rule	relief	-	opinionated/html/no_duplicate_class.rs

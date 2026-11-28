@@ -26,6 +26,10 @@ pub struct MarkupBranch {
 }
 
 impl MarkupBranch {
+    pub(super) const fn lint_choice(self) -> (u32, usize) {
+        (self.scope.start, self.index)
+    }
+
     /// Whether elements on these two paths can render together: no scope
     /// picks a different alternative for each.
     pub fn can_coexist(left: &[Self], right: &[Self]) -> bool {

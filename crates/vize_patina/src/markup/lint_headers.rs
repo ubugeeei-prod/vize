@@ -145,7 +145,7 @@ fn is_v_pre(name: &str) -> bool {
         })
 }
 
-fn attribute_range(source: &str, attribute: &Attribute<'_>) -> ByteRange {
+pub(super) fn attribute_range(source: &str, attribute: &Attribute<'_>) -> ByteRange {
     let start = offset_in(source, attribute.name.text);
     let end = attribute.value.as_ref().map_or_else(
         || start + attribute.name.text.len() as u32,

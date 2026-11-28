@@ -114,6 +114,14 @@ pub(crate) struct DecodedSource<'a> {
 }
 
 impl<'a> DecodedSource<'a> {
+    pub(crate) fn from_text_token(source: &'a str, token: &'a Token<'a>) -> Option<Self> {
+        Some(Self::decoded(
+            token.text,
+            source_offset(source, token.text)?,
+            EntityContext::Text,
+        ))
+    }
+
     pub(crate) fn interpolation(source: &'a str, token: &'a Token<'a>) -> Option<Self> {
         let raw = token.text;
         let trimmed = raw.trim();
