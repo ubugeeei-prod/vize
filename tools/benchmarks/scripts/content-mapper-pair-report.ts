@@ -110,17 +110,20 @@ export function summarizeCell(input: {
 }): Cell {
   const shas = new Set<string>();
   const perBuild = new Map<string, Set<string>>();
-  for (const id of input.builds) {
+  const references = input.references ?? [];
+  for (const id of [...input.builds, ...references]) {
     const own = new Set<string>();
     for (const sample of input.bursts.get(id) ?? []) own.add(`burst:${sample.outputSha}`);
     for (const sample of input.serials.get(id) ?? []) own.add(`serial:${sample.outputSha}`);
     perBuild.set(id, own);
-    for (const sha of own) shas.add(sha);
+    if (input.builds.includes(id)) {
+      for (const sha of own) shas.add(sha);
+    }
   }
-  // Each build must answer every run identically; builds may differ only when allowed.
+  // Every provider must be stable. References may differ from the compared
+  // builds, whose cross-build byte equality is separately required.
   const unstable = [...perBuild].find(([, own]) => own.size !== 2);
   const outputsIdentical = shas.size === 2;
-  const references = input.references ?? [];
   const errored = [...input.builds, ...references].find((id) =>
     [...(input.bursts.get(id) ?? []), ...(input.serials.get(id) ?? [])].some(
       (sample) => (sample.errors ?? 0) > 0,

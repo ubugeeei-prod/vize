@@ -240,3 +240,51 @@ test("a reference mapper error refuses its entire comparison cell", () => {
   assert.equal(refused.failure, "vue returned JSON-RPC errors");
   assert.deepEqual(refused.builds, []);
 });
+
+test("unstable reference replies refuse all timing while stable distinct reference output is valid", () => {
+  for (const allowOutputChange of [false, true]) {
+    for (const mode of ["stable", "burst", "serial"] as const) {
+      const result = summarizeCell({
+        label: "linux-ext4",
+        sfcs: 2,
+        serialFiles: 2,
+        replicates: 1,
+        builds: ["base", "head"],
+        references: ["vue"],
+        bursts: new Map([
+          ["base", [burst(200), burst(220)]],
+          ["head", [burst(100), burst(110)]],
+          [
+            "vue",
+            [burst(300, "reference"), burst(330, mode === "burst" ? "changed" : "reference")],
+          ],
+        ]),
+        serials: new Map([
+          ["base", [serial(), serial()]],
+          ["head", [serial(), serial()]],
+          [
+            "vue",
+            [
+              serial("reference-serial"),
+              serial(mode === "serial" ? "changed" : "reference-serial"),
+            ],
+          ],
+        ]),
+        allowOutputChange,
+      });
+      assert.equal(result.outputsIdentical, true, "base and head still match exactly");
+      if (mode === "stable") {
+        assert.equal(result.failure, undefined);
+        assert.deepEqual(
+          result.builds.map((build) => build.id),
+          ["base", "head", "vue"],
+        );
+      } else {
+        assert.equal(result.failure, "vue answered runs differently");
+        assert.deepEqual(result.builds, []);
+        assert.doesNotMatch(JSON.stringify(result), /burstWallMs|serialP50Ms/);
+        assert.doesNotMatch(markdown("x", [result]), /\| (?:base|head|vue) \|/);
+      }
+    }
+  }
+});
