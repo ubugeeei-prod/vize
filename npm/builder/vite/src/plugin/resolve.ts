@@ -829,7 +829,9 @@ export async function resolveIdHook(
   const isSsrRequest =
     !!options?.ssr ||
     (importerRequest?.isVizeSsrVirtual ?? false) ||
-    (importer ? isPluginVisibleSsrVirtualId(importer, importerRequest ?? undefined) : false);
+    (importer
+      ? isPluginVisibleSsrVirtualId(importer, isBuild ? undefined : (importerRequest ?? undefined))
+      : false);
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 

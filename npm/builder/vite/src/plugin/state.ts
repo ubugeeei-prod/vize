@@ -50,7 +50,7 @@ export interface VizePluginState {
   ssrPrecompileMetadata?: Map<string, PrecompileFileMetadata>;
   pendingHmrUpdateTypes: Map<string, HmrUpdateType>;
   viteResolveCache?: Map<string, Promise<{ id: string; external?: boolean } | null>>;
-  /** One classification for adjacent imports from the same module. */
+  /** One classification for adjacent dev imports from the same module. */
   viteImporterRequest?: { id: string; request: ReturnType<typeof classifyVitePluginRequest> };
   isProduction: boolean;
   /**

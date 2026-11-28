@@ -23,6 +23,12 @@ const { classifyImporterRequest } = await import("./importer-request.ts");
 const { isPluginVisibleSsrVirtualId } = await import("../virtual.ts");
 const { makeState } = await import("../test/precompile-cache-project.ts");
 
+function makeDevState(root: string) {
+  const state = makeState(root);
+  state.server = {} as never;
+  return state;
+}
+
 const importers = [
   "/app/main.ts",
   "/app/Foo.vue",
@@ -51,7 +57,7 @@ const importers = [
 ];
 
 test("interleaved importer facts equal the native classifier in independent states", () => {
-  const states = [makeState("/app/first"), makeState("/app/second")];
+  const states = [makeDevState("/app/first"), makeDevState("/app/second")];
   const sequence = [...importers, ...importers.toReversed(), ...importers];
   for (const [index, importer] of sequence.entries()) {
     const state = states[index % states.length];
@@ -65,8 +71,8 @@ test("interleaved importer facts equal the native classifier in independent stat
 });
 
 test("only the last exact importer is retained, with no sharing between states", () => {
-  const first = makeState("/app/first");
-  const second = makeState("/app/second");
+  const first = makeDevState("/app/first");
+  const second = makeDevState("/app/second");
   const client = "/app/Foo.vue?vue&vize";
   const ssr = "/app/Foo.vue?vue&vize-ssr";
   const before = classifications;
@@ -118,7 +124,7 @@ test("only the last exact importer is retained, with no sharing between states",
 });
 
 test("SSR queries retain their uncached meaning without mutating or reclassifying supplied facts", () => {
-  const state = makeState("/app");
+  const state = makeDevState("/app");
   for (const importer of importers) {
     const expectedSsr = isPluginVisibleSsrVirtualId(importer);
     const request = classifyImporterRequest(state, importer);
@@ -137,4 +143,53 @@ test("SSR queries retain their uncached meaning without mutating or reclassifyin
     assert.deepEqual(request, snapshot, importer);
     assert.deepEqual(request, classifyNative(importer), importer);
   }
+});
+
+test("builds classify every request afresh and retain the native SSR predicate path", () => {
+  const state = makeState("/app");
+  const initial = classifications;
+  assert.equal(classifyImporterRequest(state, undefined), null);
+  assert.equal(classifyImporterRequest(state, ""), null);
+  assert.equal(classifications, initial);
+
+  for (const importer of importers) {
+    const expected = classifyNative(importer);
+    const before = classifications;
+    const first = classifyImporterRequest(state, importer);
+    const second = classifyImporterRequest(state, importer);
+    assert.deepEqual(first, expected, importer);
+    assert.deepEqual(second, expected, importer);
+    assert.notEqual(first, second, "an adjacent build request still allocates native facts");
+    assert.equal(classifications, before + 2, importer);
+    assert.equal(Object.hasOwn(state, "viteImporterRequest"), false, importer);
+
+    const expectedSsr = isPluginVisibleSsrVirtualId(importer, expected);
+    assert.equal(isPluginVisibleSsrVirtualId(importer), expectedSsr, importer);
+    assert.equal(isPluginVisibleSsrVirtualId(importer), expectedSsr, importer);
+    assert.equal(classifications, before + 4, "each unsupplied SSR predicate calls native");
+    assert.equal(Object.hasOwn(state, "viteImporterRequest"), false, importer);
+  }
+});
+
+test("a build neither reuses nor mutates a slot retained from an earlier dev state", () => {
+  const state = makeDevState("/app");
+  const importer = "/app/Foo.vue?vue&vize-ssr";
+  const seeded = classifyImporterRequest(state, importer);
+  assert.ok(seeded);
+  const slot = state.viteImporterRequest;
+  assert.ok(slot);
+  const snapshot = structuredClone(slot);
+  Object.freeze(seeded);
+  Object.freeze(slot);
+  state.server = null;
+  const before = classifications;
+
+  for (const request of [importer, importer, "/app/Bar.vue?macro=true"]) {
+    const fresh = classifyImporterRequest(state, request);
+    assert.notEqual(fresh, seeded, request);
+    assert.deepEqual(fresh, classifyNative(request), request);
+    assert.equal(state.viteImporterRequest, slot, request);
+    assert.deepEqual(slot, snapshot, request);
+  }
+  assert.equal(classifications, before + 3, "a seeded slot never short-circuits a build");
 });
