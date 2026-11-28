@@ -1,0 +1,27 @@
+{
+  "layout": {
+    "tsconfig.json": "tsconfig.json.txt",
+    "src/main.ts": "main.ts.txt",
+    "src/App.vue": "App.vue.txt",
+    "src/Misuse.vue": "Misuse.vue.txt",
+    "node_modules/dayjs/package.json": "dayjs-package.json.txt",
+    "node_modules/dayjs/index.d.ts": "dayjs-index.d.ts.txt",
+    "node_modules/dayjs/plugin/relativeTime.d.ts": "dayjs-relativeTime.d.ts.txt"
+  },
+  "invocation": "vize check src/App.vue src/Misuse.vue --no-config --tsconfig tsconfig.json --format json",
+  "oracle": {
+    "tool": "vue-tsc 3.3.14 (typescript 6.0.3) -p tsconfig.json --noEmit",
+    "diagnostics": [
+      "src/Misuse.vue(4,39): error TS2345: Argument of type '\"yes\"' is not assignable to parameter of type 'boolean | undefined'."
+    ]
+  },
+  "observed": {
+    "main 9be6799ade": [
+      "src/App.vue error:6:65 [TS2339] Property 'fromNow' does not exist on type 'Dayjs'.",
+      "src/Misuse.vue error:4:31 [TS2339] Property 'fromNow' does not exist on type 'Dayjs'."
+    ],
+    "fixed": [
+      "src/Misuse.vue error:4:39 [TS2345] Argument of type '\"yes\"' is not assignable to parameter of type 'boolean | undefined'."
+    ]
+  }
+}

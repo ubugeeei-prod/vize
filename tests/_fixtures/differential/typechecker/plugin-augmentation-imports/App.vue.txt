@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import dayjs from "dayjs";
+
+defineProps<{ modified: string }>();
+
+const humanTime = (modified: string): string => dayjs(modified).fromNow();
+</script>
+
+<template>
+  <time>{{ humanTime(modified) }}</time>
+</template>

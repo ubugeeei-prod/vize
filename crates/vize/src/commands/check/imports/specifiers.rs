@@ -3,9 +3,9 @@
 use vize_l0::{String, ToCompactString};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(super) struct ModuleSpecifierOccurrence {
-    pub(super) specifier: String,
-    pub(super) mode: vize_canon::PackageResolutionMode,
+pub(in crate::commands::check) struct ModuleSpecifierOccurrence {
+    pub(in crate::commands::check) specifier: String,
+    pub(in crate::commands::check) mode: vize_canon::PackageResolutionMode,
 }
 
 /// Collect module specifiers of `source`'s import/export/dynamic-imports.
@@ -15,7 +15,9 @@ pub(super) struct ModuleSpecifierOccurrence {
 /// benchmark. Over-matching (e.g. an import-like fragment inside a string) is
 /// harmless because each specifier is resolved against the filesystem and only
 /// real source files are registered.
-pub(super) fn extract_module_specifier_occurrences(source: &str) -> Vec<ModuleSpecifierOccurrence> {
+pub(in crate::commands::check) fn extract_module_specifier_occurrences(
+    source: &str,
+) -> Vec<ModuleSpecifierOccurrence> {
     let bytes = source.as_bytes();
     let len = bytes.len();
     let mut specifiers = Vec::new();

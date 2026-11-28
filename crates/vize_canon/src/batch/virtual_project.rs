@@ -220,6 +220,15 @@ pub struct OriginalPosition {
     pub block_type: Option<SfcBlockType>,
 }
 
+/// Answers whether `specifier`, imported by the source at the given path,
+/// loads a declaration that augments a module or the global scope. Under
+/// `tsc -p` that augmentation reaches every file, so a CLI shard plan keeps
+/// the importing source in every shard.
+pub type ModuleAugmentationProbe = Box<ModuleAugmentationCheck>;
+
+/// The question a [`ModuleAugmentationProbe`] answers.
+pub type ModuleAugmentationCheck = dyn Fn(&std::path::Path, &str) -> bool + Send + Sync;
+
 /// Virtual project for Corsa-backed type checking.
 pub struct VirtualProject {
     /// Project root directory.
@@ -424,6 +433,10 @@ pub struct VirtualProject {
     /// Templates that leave `checkUnknownProps` off; any one of them declares
     /// vue-tsc's props fallback for the whole program (#11628).
     props_fallback_files: FxHashSet<PathBuf>,
+
+    /// Whether a source's bare import loads a declaration that augments a
+    /// module (see [`ModuleAugmentationProbe`]).
+    module_augmentation_probe: Option<ModuleAugmentationProbe>,
 
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,

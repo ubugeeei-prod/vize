@@ -263,6 +263,11 @@ pub(super) fn prepare_program(
     if settings.jsx_typecheck {
         checker.enable_jsx_typecheck();
     }
+    let augmentation_imports =
+        crate::commands::check::tsconfig_inputs::AugmentationImports::default();
+    checker.set_module_augmentation_probe(Box::new(move |importer, specifier| {
+        augmentation_imports.specifier_loads_augmentation(importer, specifier)
+    }));
     checker.set_template_syntax(settings.template_syntax);
     checker.set_experimental_in_tag_comments(settings.experimental_in_tag_comments);
     checker.set_experimental_patterned_template(settings.experimental_patterned_template);

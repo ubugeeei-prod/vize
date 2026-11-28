@@ -1,0 +1,1 @@
+{ "name": "dayjs", "version": "1.11.20", "types": "index.d.ts" }

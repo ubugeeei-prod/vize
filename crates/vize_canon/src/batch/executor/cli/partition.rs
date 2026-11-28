@@ -85,6 +85,21 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
     if servers <= 1 || project.has_typed_router_imports() {
         return no_sharding;
     }
+    // An entry that registers a package plugin (`import relativeTime from
+    // 'dayjs/plugin/relativeTime'`) loads its module augmentation for every
+    // file under `tsc -p`, like a source that declares one itself.
+    if let Some(loads_augmentation) = project.module_augmentation_probe() {
+        partitioned.retain(|&file| {
+            let registers = is_typescript_module(&file.original_path)
+                && import_specifiers(&file.content)
+                    .into_iter()
+                    .any(|specifier| loads_augmentation(&file.original_path, specifier));
+            if registers {
+                shared.push(file.virtual_path.as_path());
+            }
+            !registers
+        });
+    }
 
     // Union files that load each other or the same unresolved modules. The
     // graph is a cost model, not a correctness requirement — ownership
@@ -312,6 +327,12 @@ fn import_specifiers(content: &str) -> Vec<&str> {
         }));
     }
     specifiers
+}
+
+fn is_typescript_module(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension, "ts" | "mts" | "cts" | "tsx"))
 }
 
 fn normalize_join(base: &Path, specifier: &str) -> PathBuf {

@@ -110,6 +110,15 @@ mod tests {
             let diagnostic = format!("error:1:1 [TS{code}] Cannot find module './x'.");
             assert_eq!(status("src/App.vue", &diagnostic), "findings");
         }
+        // Mealie's pinned source imports a module it does not ship; plain tsc
+        // and vue-tsc report the same authored error.
+        assert_eq!(
+            status(
+                "frontend/app/composables/recipes/use-recipe-tools.ts",
+                "error:3:28 [TS2307] Cannot find module '~/types/vuetify' or its corresponding type declarations."
+            ),
+            "findings"
+        );
         let mixed = json!({"files": [
             {"file": "tsconfig.json", "diagnostics": ["error:1:1 [TS5102] Option 'baseUrl' has been removed."]},
             {"file": "src/App.vue", "diagnostics": ["error:1:1 [TS2307] Cannot find module './x'."]}

@@ -1,0 +1,15 @@
+export = dayjs;
+
+declare function dayjs(date?: dayjs.ConfigType): dayjs.Dayjs;
+
+declare namespace dayjs {
+  type ConfigType = string | number | Date | Dayjs | null | undefined;
+
+  class Dayjs {
+    format(template?: string): string;
+  }
+
+  type PluginFunc<T = unknown> = (option: T, c: typeof Dayjs, d: typeof dayjs) => void;
+
+  function extend<T = unknown>(plugin: PluginFunc<T>, option?: T): Dayjs;
+}
