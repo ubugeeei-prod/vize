@@ -93,3 +93,21 @@ jobs:
         run: cargo +nightly miri setup
       - name: Test shared script parses with Miri
         run: cargo +nightly miri test -p vize_croquis --lib -- script_parser::shared::tests
+  fresco-signal-actions:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: nightly
+          components: miri,rust-src
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: miri-fresco
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: target/miri
+      - name: Setup Miri
+        run: cargo +nightly miri setup
+      - name: Test saved signal actions with Miri
+        run: cargo +nightly miri test -p vize_fresco --lib -- previous_actions::tests

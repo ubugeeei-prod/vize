@@ -6,7 +6,6 @@
 //! `errno` crate's safe accessors, which signal-hook-registry already links.
 
 use std::{
-    cell::UnsafeCell,
     io,
     mem::{self, MaybeUninit},
     ptr,
@@ -15,6 +14,9 @@ use std::{
         atomic::{AtomicBool, Ordering, compiler_fence},
     },
 };
+
+mod previous_actions;
+use previous_actions::{PreviousAction, PreviousActions};
 
 use super::{
     TerminalSignalHookError, TerminalSignalHookInstallation, TerminalSignalRollbackFailure,
@@ -60,9 +62,7 @@ fn install_actions() -> Result<TerminalSignalHookInstallation, TerminalSignalHoo
         previous.push(inspect_action(signal)?);
     }
 
-    for (index, action) in previous.iter().enumerate() {
-        PREVIOUS_ACTIONS.write(index, action);
-    }
+    PREVIOUS_ACTIONS.publish(&previous);
     // The kernel cannot invoke our handler until a later `sigaction` call.
     // Prevent compiler motion across that publication boundary.
     compiler_fence(Ordering::Release);
@@ -211,7 +211,7 @@ pub(super) unsafe extern "C" fn terminal_signal_handler(
         // signal at that index). The caller is the kernel, so `information`
         // and `context` are the pointers it passed for this delivery, and
         // dispatch hands them on unchanged.
-        unsafe { chain_previous_action(signal, information, context, &previous) };
+        unsafe { chain_previous_action(signal, information, context, previous) };
     }
 }
 
@@ -219,35 +219,30 @@ unsafe fn chain_previous_action(
     signal: libc::c_int,
     information: *mut libc::siginfo_t,
     context: *mut libc::c_void,
-    previous: &libc::sigaction,
+    previous: PreviousAction,
 ) {
-    let handler = previous.sa_sigaction;
-    if handler == libc::SIG_IGN {
-        return;
-    }
-    if handler == libc::SIG_DFL {
-        // Reinstate the default disposition, then re-raise. The signal becomes
-        // pending when the current action masks itself and takes effect
-        // immediately otherwise. `sigaction`, `raise` and `abort` are POSIX
-        // async-signal-safe, and `std::process::abort` is libc's `abort`.
-        // SAFETY: POSIX `raise` takes the signal number by value and
-        // dereferences no pointer.
-        if replace_action(signal, previous).is_err() || unsafe { libc::raise(signal) } != 0 {
-            // Termination is guaranteed if the exact default disposition could
-            // not be restored.
-            std::process::abort();
+    let (handler, siginfo) = match previous {
+        PreviousAction::Ignore => return,
+        PreviousAction::Default(previous) => {
+            // Reinstate the default disposition, then re-raise. The signal becomes
+            // pending when the current action masks itself and takes effect
+            // immediately otherwise. `sigaction`, `raise` and `abort` are POSIX
+            // async-signal-safe, and `std::process::abort` is libc's `abort`.
+            // SAFETY: POSIX `raise` takes the signal number by value and
+            // dereferences no pointer.
+            if replace_action(signal, &previous).is_err() || unsafe { libc::raise(signal) } != 0 {
+                // Termination is guaranteed if the exact default disposition could
+                // not be restored.
+                std::process::abort();
+            }
+            return;
         }
-        return;
-    }
+        PreviousAction::Simple(handler) => (handler, false),
+        PreviousAction::Siginfo(handler) => (handler, true),
+    };
 
     let handler = handler as *mut ();
-    #[expect(
-        unused_assignments,
-        reason = "the dead initializer infers sa_flags' platform integer type"
-    )]
-    let mut siginfo = previous.sa_flags;
-    siginfo = libc::SA_SIGINFO as _;
-    if previous.sa_flags & siginfo == 0 {
+    if !siginfo {
         // SAFETY: POSIX: without `SA_SIGINFO` the handler word is a
         // `void (*)(int)` handler, and it is neither `SIG_DFL` nor `SIG_IGN`
         // here, so it is a function with the one-argument C ABI.
@@ -276,42 +271,3 @@ const fn signal_index(signal: libc::c_int) -> Option<usize> {
         None
     }
 }
-
-/// The action each supervised signal had before Fresco wrapped it, indexed by
-/// `signal_index`. A slot is `None` until installation stores it.
-struct PreviousActions(UnsafeCell<[Option<libc::sigaction>; SUPERVISED_SIGNALS.len()]>);
-
-impl PreviousActions {
-    const fn new() -> Self {
-        Self(UnsafeCell::new([None; SUPERVISED_SIGNALS.len()]))
-    }
-
-    /// Store a slot. Only `install_actions` calls this, while it holds
-    /// `SIGNAL_HOOK_INSTALLATION` and before any `sigaction` call installs the
-    /// wrapper that reads the slot.
-    fn write(&self, index: usize, action: &libc::sigaction) {
-        // SAFETY: writes are serialized by `SIGNAL_HOOK_INSTALLATION`, and the
-        // kernel cannot run the reading handler until a later `sigaction`
-        // installs it (the `compiler_fence` in `install_actions` keeps the
-        // write before that call), so no read overlaps this write.
-        if let Some(slot) = unsafe { (*self.0.get()).get_mut(index) } {
-            *slot = Some(*action);
-        }
-    }
-
-    /// Copy a slot out. Only the signal handler calls this.
-    fn read(&self, index: usize) -> Option<libc::sigaction> {
-        // SAFETY: the handler for a slot runs only after `install_actions`
-        // stored every slot and installed the wrapper, and a slot is written
-        // again only by a later installation attempt, which happens only after
-        // an earlier attempt failed and rolled every wrapper back. A shared
-        // borrow therefore never overlaps a write. Unwritten slots read as
-        // `None`.
-        unsafe { (*self.0.get()).get(index).copied().flatten() }
-    }
-}
-
-// SAFETY: access to the `UnsafeCell` follows the protocol documented on
-// `PreviousActions::write` and `PreviousActions::read`; `sigaction` is plain
-// `Send` data.
-unsafe impl Sync for PreviousActions {}
