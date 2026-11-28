@@ -244,6 +244,35 @@ void test("snapshots origin policy and route metadata without mutating caller-ow
   assert.equal(origins[0], "example://other");
 });
 
+void test("route identifiers remain globally unique across application environments", () => {
+  assert.throws(
+    () =>
+      createMarquetteLinkResolver(
+        {
+          ...marquette,
+          routes: [
+            ...marquette.routes,
+            { id: "user", path: "/browser-user", environment: "browser", rendering: "client" },
+          ],
+        } as const,
+        { environment: "device", origins: ["example://app"] },
+      ),
+    /unique within the application/,
+  );
+});
+
+void test("large untrusted catch-all paths resolve without overflowing argument limits", () => {
+  const path = Array.from({ length: 150_000 }, () => "x").join("/");
+  const result = resolver.resolve(`example://app/guides/${path}`);
+  assert.equal(result.matched, true);
+  if (result.matched && result.target.route === "guide") {
+    assert.equal(result.target.parameters.path, path);
+    assert.equal(result.target.path, `/guides/${path}`);
+  } else {
+    assert.fail("the catch-all route must remain selected");
+  }
+});
+
 function assertLinkTypes(): void {
   const result = resolver.resolve("example://app/users/one");
   if (result.matched) {

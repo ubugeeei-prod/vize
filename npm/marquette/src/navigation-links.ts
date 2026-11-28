@@ -103,12 +103,13 @@ export function createMarquetteLinkResolver<
   }
   if (policy.origins.length === 0) throw new TypeError("Link origins must not be empty.");
   const origins = new Set(policy.origins.map(compileOrigin));
-  const routes = (marquette.routes ?? [])
+  const declaredRoutes = marquette.routes ?? [];
+  if (new Set(declaredRoutes.map(({ id }) => id)).size !== declaredRoutes.length) {
+    throw new TypeError("Link route identifiers must be unique within the application.");
+  }
+  const routes = declaredRoutes
     .filter(({ environment }) => environment === policy.environment)
     .map(compileRoute);
-  if (new Set(routes.map(({ route }) => route.id)).size !== routes.length) {
-    throw new TypeError("Link route identifiers must be unique within the environment.");
-  }
   routes.sort((left, right) => comparePriority(right.priority, left.priority));
 
   return {
@@ -251,7 +252,7 @@ function matchRoute(route: CompiledRoute, input: readonly string[]): RouteMatch 
       // separator would change meaning when passed back to the navigator.
       if (!remaining[0] || remaining.some((value) => value.includes("/"))) return undefined;
       parameters.push([segment.name, remaining.join("/")]);
-      encoded.push(...remaining.map(encodeURIComponent));
+      encoded.push(remaining.map(encodeURIComponent).join("/"));
       return { route, path: `/${encoded.join("/")}`, parameters: Object.fromEntries(parameters) };
     }
   }
