@@ -2,6 +2,7 @@ pub(in crate::linter::native_type_aware) mod assertion;
 mod empty_tuple_runtime;
 mod macro_positions;
 mod no_base_to_string_record_index;
+mod no_unnecessary_type_arguments_declared;
 mod no_unnecessary_type_assertion_readonly;
 mod opt_in;
 mod options_api;

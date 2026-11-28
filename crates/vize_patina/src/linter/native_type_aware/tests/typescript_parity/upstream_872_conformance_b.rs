@@ -82,7 +82,7 @@ fn listed_conformance_cases_match_the_immutable_upstream_oracle() {
         .filter_map(|case| case.blocked.as_ref())
         .map(|blocked| blocked.issue)
         .collect::<Vec<_>>();
-    assert_eq!(blocked, [13002]);
+    assert_eq!(blocked, Vec::<u32>::new());
 
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
     std::fs::create_dir_all(&workspace).expect("test workspace");
