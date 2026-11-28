@@ -1,0 +1,33 @@
+<script>
+import MyComp from './MyComp.vue'
+import VBound from './VBound.vue'
+import Parenthesized from './Parenthesized.vue'
+import KebabCase from './KebabCase.vue'
+import Static from './Static.vue'
+import Prefixed from './Prefixed.vue'
+import Directive from './Directive.vue'
+import Unused from './Unused.vue'
+
+export default {
+  components: {
+    MyComp,
+    VBound,
+    Parenthesized,
+    KebabCase,
+    Static,
+    Prefixed,
+    Directive,
+    Unused,
+  },
+}
+</script>
+
+<template>
+  <component :is="'MyComp'" />
+  <component v-bind:is="'VBound'" />
+  <component :is="('Parenthesized')" />
+  <component :is="'kebab-case'" />
+  <component is="Static" />
+  <div is="vue:Prefixed" />
+  <div v-is="'Directive'" />
+</template>

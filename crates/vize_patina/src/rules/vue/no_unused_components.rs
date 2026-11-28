@@ -27,6 +27,7 @@
 //! ```
 
 mod dynamic_is;
+mod literal_is;
 mod script_setup_refs;
 #[cfg(test)]
 mod tests;
@@ -267,7 +268,7 @@ impl Rule for NoUnusedComponents {
             .map_or(0, |(script, _)| script.content.len() as u32 + 1);
 
         // Collect template-unused components first (to avoid borrow conflicts)
-        let (template_unused_components, import_statement_ranges): (
+        let (mut template_unused_components, import_statement_ranges): (
             Vec<ComponentCandidate>,
             Vec<(u32, u32)>,
         ) = {
@@ -326,6 +327,7 @@ impl Rule for NoUnusedComponents {
             (template_unused_components, import_statement_ranges)
         };
 
+        literal_is::retain_unnamed_by_is(&root.children, &mut template_unused_components);
         let script_setup_candidate_names: Vec<_> = template_unused_components
             .iter()
             .filter(|component| component.is_script_setup_import)
