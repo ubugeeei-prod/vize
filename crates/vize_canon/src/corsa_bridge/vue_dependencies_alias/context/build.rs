@@ -131,7 +131,7 @@ pub(super) fn build_with_import_facts(
     );
     let virtual_ts_options = editor_declaration_options(
         &mut project,
-        revision.requested_sources,
+        &revision,
         &referenced_declarations,
         environment,
     )?;
@@ -379,20 +379,31 @@ pub(super) fn build_with_import_facts(
     })
 }
 
-/// Every project-local declaration registered in this revision, requested or
-/// referenced, is loaded through its mirror rather than its authored path.
+/// Point references at the mirrored copies of the declarations registered in
+/// this revision that need the mirror: referenced ones importing a `.vue`
+/// module, and every declaration the explicit ambient session requests.
 fn editor_declaration_options(
     project: &mut VirtualProject,
-    requested: &[(PathBuf, &str)],
+    revision: &SourceRevision<'_>,
     referenced: &[(PathBuf, vize_carton::String)],
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
 ) -> Result<crate::virtual_ts::VirtualTsOptions, CorsaBridgeError> {
     let mut options = environment.virtual_ts_options.clone();
-    if options.reference_paths.is_empty() || (referenced.is_empty() && requested.is_empty()) {
+    if options.reference_paths.is_empty() {
         return Ok(options);
     }
-    let supplied = requested
+    let ambient = ambient_session(environment);
+    let supplied = revision
+        .requested_sources
         .iter()
+        .filter(|(path, text)| {
+            ambient
+                || (options
+                    .reference_paths
+                    .iter()
+                    .any(|reference| Path::new(reference.as_str()) == path)
+                    && crate::batch::virtual_project::imports_vue_module(path, text))
+        })
         .map(|(path, text)| (path.clone(), *text))
         .chain(
             referenced
@@ -400,11 +411,30 @@ fn editor_declaration_options(
                 .map(|(path, text)| (path.clone(), text.as_str())),
         )
         .collect::<Vec<_>>();
+    if supplied.is_empty() {
+        return Ok(options);
+    }
     project
         .project_declaration_references(&mut options, &supplied)
         .map_err(bridge_error)?;
     project.set_virtual_ts_options(options.clone());
     Ok(options)
+}
+
+#[cfg(feature = "ambient-project-declarations")]
+fn ambient_session(
+    environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
+) -> bool {
+    environment
+        .editor_session
+        .ambient_declarations
+        .get()
+        .is_some()
+}
+
+#[cfg(not(feature = "ambient-project-declarations"))]
+fn ambient_session(_: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>) -> bool {
+    false
 }
 
 fn bridge_error(error: crate::CorsaError) -> CorsaBridgeError {

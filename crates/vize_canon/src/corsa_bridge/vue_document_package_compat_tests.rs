@@ -115,15 +115,10 @@ void OptionsWidget; void ClassWidget; void PageWidget
         lines_starting_with(page, "definePageMeta("),
         ["definePageMeta({ title: 'Importer scoped SEO' })"]
     );
-    // The project-local declaration is mirrored with the host and referenced there.
-    let mirrored = project
-        .session_project_root
-        .as_deref()
-        .expect("session-private project")
-        .join(".nuxt/types/page-meta.d.ts");
+    // A declaration without a `.vue` import keeps its authored reference.
     let reference = vize_carton::cstr!(
         "/// <reference path=\"{}\" />",
-        mirrored.to_string_lossy().replace('\\', "/")
+        nuxt_types.to_string_lossy().replace('\\', "/")
     );
     assert_eq!(
         lines_starting_with(page, "/// <reference path="),

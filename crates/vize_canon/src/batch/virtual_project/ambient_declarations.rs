@@ -11,11 +11,12 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashMap, FxHashSet};
 
 impl VirtualProject {
-    /// Project-local declarations the editor references by absolute path,
-    /// read from their open buffer or the disk. They are mirrored like the
-    /// host's imports, so a `GlobalComponents` entry importing a `.vue` file
-    /// resolves to its generated module as it does in the batch checker.
-    /// An unreadable reference keeps its authored path.
+    /// Project-local declarations the editor references by absolute path that
+    /// import a `.vue` module, read from their open buffer or the disk. They
+    /// are mirrored like the host's imports, so a `GlobalComponents` entry
+    /// resolves to the generated module as it does in the batch checker. Other
+    /// declarations already resolve from their authored path and keep it, as
+    /// does an unreadable reference.
     pub(crate) fn referenced_project_declarations(
         &self,
         options: &VirtualTsOptions,
@@ -49,7 +50,9 @@ impl VirtualProject {
                     None => continue,
                 },
             };
-            declarations.push((physical, text));
+            if imports_vue_module(&physical, &text) {
+                declarations.push((physical, text));
+            }
         }
         declarations
     }
@@ -111,6 +114,16 @@ impl VirtualProject {
     }
 }
 
+/// Whether a declaration names a `.vue` module in an import, export or type query.
+pub(crate) fn imports_vue_module(path: &Path, text: &str) -> bool {
+    is_declaration_file(path)
+        && text.contains(".vue")
+        && crate::batch::ModuleSpecifierFactsCache::default()
+            .collect_all_specifiers(text, oxc_span::SourceType::d_ts())
+            .iter()
+            .any(|specifier| specifier.ends_with(".vue"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,6 +148,7 @@ mod tests {
         let provider = fixture("components.d.ts.txt");
         let closed = root.join("src/components.d.ts");
         let open = root.join("src/open.d.ts");
+        let routes = root.join("typed-router.d.ts");
         let requested = root.join("src/requested.d.ts");
         let missing = root.join("src/missing.d.ts");
         let outside = external.path().join("outside.d.ts");
@@ -143,11 +157,20 @@ mod tests {
         std::fs::write(&open, "export {}\n").unwrap();
         std::fs::write(&requested, "export {}\n").unwrap();
         std::fs::write(&outside, &provider).unwrap();
+        // Route keys name `.vue` files without importing them.
+        std::fs::write(
+            &routes,
+            "declare module 'vue-router' { interface Routes { 'src/pages/index.vue': {} } }\nexport {}\n",
+        )
+        .unwrap();
         let mut options = VirtualTsOptions::default();
-        for path in [&closed, &open, &requested, &missing, &outside, &closed] {
+        for path in [
+            &closed, &open, &requested, &missing, &outside, &routes, &closed,
+        ] {
             options.reference_paths.push(path.to_str().unwrap().into());
         }
-        let overlays = FxHashMap::from_iter([(open.clone(), "declare const unsaved: 1\n")]);
+        let unsaved = "import type Open from './Open.vue'\nexport {}\n";
+        let overlays = FxHashMap::from_iter([(open.clone(), unsaved)]);
         let requested_sources = [(requested.clone(), "export {}\n")];
         let declarations =
             project.referenced_project_declarations(&options, &overlays, &requested_sources);
@@ -158,7 +181,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![
                 (closed.as_path(), provider.as_str()),
-                (open.as_path(), "declare const unsaved: 1\n"),
+                (open.as_path(), unsaved),
             ]
         );
     }

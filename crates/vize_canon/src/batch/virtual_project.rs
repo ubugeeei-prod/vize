@@ -456,3 +456,4 @@ struct SourceArtifacts {
 mod preparation_import_facts_test_snapshot;
 
 mod ambient_declarations;
+pub(crate) use ambient_declarations::imports_vue_module;
