@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "id": "lsp/regression/declared-global-component-props",
+  "provenance": {
+    "fixCommit": "3c64c12efaeb73e3c63f07d138f5d94746302658",
+    "inputOrigin": "A component declared only through a project GlobalComponents augmentation in components.d.ts, used with a prop of the wrong type.",
+    "contractOrigin": "vize check reports TS2322 on :level; the typecheck-only initial packet must carry the same diagnostic. Folding provides the completed request barrier."
+  },
+  "files": [
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "source": "components.d.ts.txt",
+      "runtimePath": "src/components.d.ts",
+      "sha256": "923df81dc62303337013a6ddb2c9234659cdd820f080cfc56237b746399647cf"
+    },
+    {
+      "source": "GlobalBadge.vue.txt",
+      "runtimePath": "src/GlobalBadge.vue",
+      "sha256": "05ad8b37f1ba5796b7a42effabe1fd67e0aa93cddf98368763fbe31c5a0bace3"
+    },
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "0638e5cd8b78608921345075779c9e400e234b6ef034c4503b700bec1db21b75"
+    }
+  ],
+  "entry": "src/App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 0,
+          "character": 24
+        },
+        "end": {
+          "line": 0,
+          "character": 29
+        }
+      },
+      "severity": 1,
+      "code": 2322,
+      "source": "vize/types",
+      "message": "Type 'string' is not assignable to type 'number'."
+    }
+  ],
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "scope": "The typecheck-only initial diagnostic packet is the regression contract: the shipped editor applies project GlobalComponents declarations as the batch checker does."
+}

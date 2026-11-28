@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "id": "lsp/regression/declared-global-slot-host",
+  "provenance": {
+    "fixCommit": "3c64c12efaeb73e3c63f07d138f5d94746302658",
+    "inputOrigin": "Byte copies of typechecker pack ambient-global-slot-host-3011 case ambient-pascal-slot-host-missing-member: a kebab-case slot host declared through GlobalComponents with a typed scoped slot.",
+    "contractOrigin": "The pack's batch contract is TS2339 at src/App.vue 2:53; the typecheck-only initial packet must carry the same diagnostic. Folding provides the completed request barrier."
+  },
+  "files": [
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "source": "components.d.ts.txt",
+      "runtimePath": "src/components.d.ts",
+      "sha256": "e5ed2b0825e8dc4ad711486c1f7cbca22c0c721f88411c6f4e50358511ae309f"
+    },
+    {
+      "source": "ElBadge.vue.txt",
+      "runtimePath": "src/components/ElBadge.vue",
+      "sha256": "cf3747f4a9f6b209adf5bfe76eee60dab8624745e312b643f654f073e8eefaab"
+    },
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "e5a3fad8256f6c881b4af3a97c37867aa133c63c9eeca0a788b2583ffa722ff4"
+    }
+  ],
+  "entry": "src/App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 52
+        },
+        "end": {
+          "line": 1,
+          "character": 59
+        }
+      },
+      "severity": 1,
+      "code": 2339,
+      "source": "vize/types",
+      "message": "Property 'missing' does not exist on type '{ label: string; }'."
+    }
+  ],
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "9a10945e061b30b62285c2637bb8b68aadf3b290d1784b32f1ace094ac0c4b64"
+  },
+  "scope": "The typecheck-only initial diagnostic packet is the regression contract: the shipped editor applies project GlobalComponents declarations as the batch checker does."
+}
