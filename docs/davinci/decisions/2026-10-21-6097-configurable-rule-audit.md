@@ -4,8 +4,9 @@ Date: 2026-10-21
 
 ## Authority
 
-- Current upstream release: [`eslint-plugin-vue` v10.11.1](https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.11.1), published 2026-09-24.
-- Release commit: [`ec9c53a6fbed637d7b0fbcd6893b0206ae32839f`](https://github.com/vuejs/eslint-plugin-vue/tree/ec9c53a6fbed637d7b0fbcd6893b0206ae32839f).
+- Current upstream release: [`eslint-plugin-vue` v10.12.0](https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.12.0), published 2026-10-26.
+- Release commit: [`f2a0cb56c4778487b6b182fe4be5817f858990e7`](https://github.com/vuejs/eslint-plugin-vue/tree/f2a0cb56c4778487b6b182fe4be5817f858990e7).
+- The first audit used v10.11.1 (`ec9c53a6fbed637d7b0fbcd6893b0206ae32839f`, published 2026-09-24).
 - The committed inventory is [`patina-eslint-vue-configurable-audit.json`](../../../tests/_fixtures/patina-eslint-vue-configurable-audit.json).
 
 The audit enumerates each unique top-level rule module at the release commit and treats a non-empty
@@ -74,5 +75,19 @@ metadata-only refresh. The only rule added since the pinned provider is
 surface audited here.
 
 The checked-in compatibility scorecard advances independently to 10.12.0. That metadata advance
-does not move the executable differential provider or rewrite this frozen 10.11.1 configurable
-surface.
+does not move the executable differential provider.
+
+## 10.12.0 refresh
+
+The audit now follows the scorecard to 10.12.0, which has 256 rules. The three rules added since
+10.11.1 are `vue/no-content-outside-block`, `vue/no-define-model-default`, and
+`vue/no-props-shadow`. None of them accepts options, so the configurable surface is still the same
+112 rules. A rule that wraps an ESLint core or Stylistic rule (`wrapCoreRule`) inherits that
+rule's schema only when ESLint loads it. Its own module declares no schema, so the census counts
+it as not configurable, as the first audit did. All four rules added since the pinned provider
+are now mapped.
+
+`vue/block-lang` now counts as a rule with typed options. Its `script`, `template`, and `style`
+entries accept upstream's `lang` and `allowNoLang`. This brings the audited surface to 42 mapped
+rules with typed options and leaves 46 mapped configurable rules without them. The status totals
+are unchanged: 88 mapped, 23 unimplemented, and 1 intentional divergence.

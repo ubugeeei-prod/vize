@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "upstream": {
     "package": "eslint-plugin-vue",
-    "version": "10.11.1",
-    "tagCommit": "ec9c53a6fbed637d7b0fbcd6893b0206ae32839f",
-    "publishedAt": "2026-09-24T01:08:57Z",
-    "source": "https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.11.1",
-    "ruleCount": 253,
+    "version": "10.12.0",
+    "tagCommit": "f2a0cb56c4778487b6b182fe4be5817f858990e7",
+    "publishedAt": "2026-10-26T13:42:40Z",
+    "source": "https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.12.0",
+    "ruleCount": 256,
     "configurableRuleCount": 112
   },
   "pinnedCompatibilityProvider": {
@@ -14,9 +14,24 @@
     "ruleCount": 252,
     "currentAdditions": [
       {
+        "rule": "vue/no-content-outside-block",
+        "configurable": false,
+        "status": "mapped"
+      },
+      {
+        "rule": "vue/no-define-model-default",
+        "configurable": false,
+        "status": "mapped"
+      },
+      {
+        "rule": "vue/no-props-shadow",
+        "configurable": false,
+        "status": "mapped"
+      },
+      {
         "rule": "vue/no-shadow-native-events",
         "configurable": false,
-        "status": "unimplemented"
+        "status": "mapped"
       }
     ]
   },
@@ -24,11 +39,12 @@
     "mapped": 88,
     "unimplemented": 23,
     "intentionalDivergence": 1,
-    "mappedWithTypedOptions": 41,
-    "mappedWithoutTypedOptions": 47
+    "mappedWithTypedOptions": 42,
+    "mappedWithoutTypedOptions": 46
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
+    ["vue/block-lang", "vue/block-lang"],
     ["vue/block-order", "vue/sfc-element-order"],
     ["vue/component-definition-name-casing", "vue/component-definition-name-casing"],
     ["vue/component-name-in-template-casing", "vue/component-name-in-template-casing"],

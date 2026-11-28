@@ -28,11 +28,11 @@ test("the current eslint-plugin-vue configurable surface stays explicit", () => 
   assert.equal(audit.schemaVersion, 1);
   assert.deepEqual(audit.upstream, {
     package: "eslint-plugin-vue",
-    version: "10.11.1",
-    tagCommit: "ec9c53a6fbed637d7b0fbcd6893b0206ae32839f",
-    publishedAt: "2026-09-24T01:08:57Z",
-    source: "https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.11.1",
-    ruleCount: 253,
+    version: "10.12.0",
+    tagCommit: "f2a0cb56c4778487b6b182fe4be5817f858990e7",
+    publishedAt: "2026-10-26T13:42:40Z",
+    source: "https://github.com/vuejs/eslint-plugin-vue/releases/tag/v10.12.0",
+    ruleCount: 256,
     configurableRuleCount: 112,
   });
   assert.ok(isStringArray(configurableRules));
@@ -64,9 +64,24 @@ test("the scorecard can advance without silently moving the frozen parity provid
     ruleCount: 252,
     currentAdditions: [
       {
+        rule: "vue/no-content-outside-block",
+        configurable: false,
+        status: "mapped",
+      },
+      {
+        rule: "vue/no-define-model-default",
+        configurable: false,
+        status: "mapped",
+      },
+      {
+        rule: "vue/no-props-shadow",
+        configurable: false,
+        status: "mapped",
+      },
+      {
         rule: "vue/no-shadow-native-events",
         configurable: false,
-        status: "unimplemented",
+        status: "mapped",
       },
     ],
   });
@@ -80,6 +95,12 @@ test("the scorecard can advance without silently moving the frozen parity provid
       audit.pinnedCompatibilityProvider.currentAdditions.length,
     audit.upstream.ruleCount,
   );
+  assert.equal(audit.upstream.version, ruleMap.upstream.version);
+  assert.equal(audit.upstream.ruleCount, ruleMap.upstream.ruleCount);
+  for (const addition of audit.pinnedCompatibilityProvider.currentAdditions) {
+    assert.equal(ruleMap.entries[addition.rule]?.status, addition.status, addition.rule);
+    assert.equal(audit.configurableRules.includes(addition.rule), addition.configurable);
+  }
 });
 
 test("new configurable mappings retain their exact presets without claiming typed options", () => {
