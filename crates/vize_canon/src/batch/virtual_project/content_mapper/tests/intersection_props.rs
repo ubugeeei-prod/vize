@@ -100,12 +100,18 @@ fn intersection_props_preserve_complete_inline_and_shared_typescript_contracts()
                 .all(|diagnostic| diagnostic["file"] == "Invalid.vue.tsx"),
             "shared={shared}: {result:#}"
         );
+        // Raw mapper modules retain both the `satisfies` source ownership
+        // witness (TS1360) and the typed value assignment (TS2322). The
+        // production batch assertion separately pins all ten authored findings.
         assert_eq!(
             diagnostics
                 .iter()
                 .map(|diagnostic| diagnostic["code"].as_u64().unwrap())
                 .collect::<Vec<_>>(),
-            [2345, 2322, 2322, 2353, 2345, 2322, 2353, 2322, 2322, 2353],
+            [
+                2345, 1360, 2322, 1360, 2322, 2353, 2345, 1360, 2322, 2353, 1360, 2322, 1360, 2322,
+                2353
+            ],
             "shared={shared}: {result:#}",
         );
     }
