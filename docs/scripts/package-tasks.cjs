@@ -133,6 +133,12 @@ exports.runPackageTask = runPackageTask;
 const tasks = {
   "dev": [
     {
+      "program": "pnpm",
+      "arguments": [
+        "check:contracts"
+      ]
+    },
+    {
       "program": "node",
       "arguments": [
         "./scripts/ensure-browser.ts"
@@ -176,6 +182,12 @@ const tasks = {
     }
   ],
   "build": [
+    {
+      "program": "pnpm",
+      "arguments": [
+        "check:contracts"
+      ]
+    },
     {
       "program": "node",
       "arguments": [
