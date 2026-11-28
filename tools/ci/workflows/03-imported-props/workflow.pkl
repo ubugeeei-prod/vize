@@ -1,0 +1,127 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Benchmark - Imported props"
+`run-name` = "Imported props ${{ github.event.pull_request.base.sha || inputs.base_sha }}...${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/03-imported-props.yml"
+      "tools/ci/workflows/03-imported-props/**"
+      "tools/benchmarks/scripts/imported-props*"
+      "crates/vize_atelier_sfc/src/script/context/external_types/**"
+      "crates/vize_vitrine/src/napi/sfc/**"
+      "crates/vize_vitrine/src/napi/sfc.rs"
+      "crates/vize/src/type_projects.rs"
+      "crates/vize/src/type_projects/dependencies.rs"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact 40-character baseline commit"
+        required = true
+        type = "string"
+      }
+      profile {
+        description = "Sample separate native invocations with perf after measurements"
+        type = "boolean"
+        ["default"] = false
+      }
+      platform {
+        description = "Native host for the exact-source comparison"
+        type = "choice"
+        options = List("linux", "windows")
+        ["default"] = "linux"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "imported-props-${{ github.ref }}-${{ inputs.base_sha }}-${{ inputs.platform }}"
+  `cancel-in-progress` = false
+}
+env {
+  CARGO_BUILD_JOBS = "12"
+  CARGO_INCREMENTAL = "0"
+  RUSTUP_TOOLCHAIN = "1.100.0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  IMPORTED_PROPS_BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+  IMPORTED_PROPS_HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  measure {
+    `runs-on` = "${{ inputs.platform == 'windows' && '\(ci.windows)' || '\(ci.linuxValidation)' }}"
+    `timeout-minutes` = 50
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.IMPORTED_PROPS_HEAD_SHA }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.IMPORTED_PROPS_BASE_SHA }}"
+          path = "baseline"
+          `persist-credentials` = false
+        }
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        `if` = "${{ runner.os == 'Linux' }}"
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "imported-props"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Prepare optional CPU sampling"
+        `if` = "${{ inputs.profile == true && runner.os == 'Linux' }}"
+        run = "bash tools/ci/workflows/03-imported-props/scripts/prepare-cpu-sampling.sh"
+      }
+      new Dynamic {
+        name = "Test the dependency union, shared walks, cycles and freshness"
+        run = "cargo test --locked -p vize_atelier_sfc --lib script::context::external_types"
+      }
+      new Dynamic {
+        name = "Test measurement controls"
+        run = "node --test tools/benchmarks/scripts/imported-props-worker.test.mjs"
+      }
+      new Dynamic {
+        name = "Test config membership against the previous normalization"
+        run = "cargo test --locked -p vize --lib type_projects::dependencies"
+      }
+      new Dynamic {
+        name = "Compare exact source images across threads and chunk sizes"
+        shell = "bash"
+        run = #"node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props""#
+      }
+      new Dynamic {
+        name = "Retain sources, input inventories, per-file output fingerprints and timings"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "imported-props-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/imported-props"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

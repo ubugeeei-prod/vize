@@ -285,3 +285,6 @@ tests/_fixtures/differential/typechecker/static-template-ref-uninitialized-runti
 
 # Frozen source copies are hashed byte for byte.
 tests/_fixtures/byte-custody/** -text
+
+# Keep the imported-props reporter inputs byte-identical on Windows.
+tools/benchmarks/fixtures/client-vue-resolution-13795/** -text

@@ -21,6 +21,7 @@
 
 mod analysis;
 mod batch;
+mod batch_boundary;
 mod batch_helpers;
 mod batch_results;
 mod batch_targets;

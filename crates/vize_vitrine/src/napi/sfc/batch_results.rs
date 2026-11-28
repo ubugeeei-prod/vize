@@ -1,5 +1,5 @@
 use super::codegen_options::sfc_codegen_options;
-use napi::{Result, Status};
+use napi::{Env, Result, Status, bindgen_prelude::Object};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::{
@@ -23,7 +23,19 @@ use super::{
 use crate::template_syntax::resolve_template_syntax;
 use crate::whitespace::resolve_whitespace;
 
-#[napi(js_name = "compileSfcBatchWithResults")]
+#[napi(
+    js_name = "compileSfcBatchWithResults",
+    ts_return_type = "BatchCompileResultWithFilesNapi"
+)]
+pub fn compile_sfc_batch_with_results_napi<'env>(
+    env: &'env Env,
+    files: Vec<BatchFileInputNapi>,
+    options: Option<BatchCompileOptionsNapi>,
+) -> Result<Object<'env>> {
+    super::batch_boundary::with_results(env, compile_sfc_batch_with_results(files, options)?)
+}
+
+/// Compile the ordered batch into owned Rust products before JavaScript conversion.
 pub fn compile_sfc_batch_with_results(
     files: Vec<BatchFileInputNapi>,
     options: Option<BatchCompileOptionsNapi>,
