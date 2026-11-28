@@ -26,8 +26,8 @@ const emit = defineEmits<{
         :data-stage="rung.id"
         @click="() => emit('select', rung.id)"
       >
-        <span class="davinci-station-ordinal">{{ rung.ordinal }}</span>
-        <span class="davinci-station-name">{{ rung.name }}</span>
+        <span class="davinci-station-name">{{ rung.ordinal }} IR</span>
+        <span class="davinci-station-ordinal">{{ rung.name }}</span>
         <span class="davinci-station-facts">{{ rung.facts.join(", ") || "no page" }}</span>
       </button>
       <span class="davinci-pounce" aria-hidden="true"></span>
@@ -39,8 +39,8 @@ const emit = defineEmits<{
       data-stage="l4"
       @click="() => emit('select', 'l4')"
     >
-      <span class="davinci-station-ordinal">L4</span>
-      <span class="davinci-station-name">Emit</span>
+      <span class="davinci-station-name">L4 IR</span>
+      <span class="davinci-station-ordinal">Emit</span>
       <span class="davinci-station-facts">Backend + SFC module</span>
     </button>
   </nav>

@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import "./dump-view-styles.vue";
-import { nextTick, useTemplateRef, watch } from "vue";
+import { computed, nextTick, useTemplateRef, watch } from "vue";
+import { irNotation } from "./irNotation";
 import type { DumpLine, PageKind } from "./dumpLines";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
+import { traceMatches } from "./sourceTrace";
+import type { Range } from "./offsets";
 
-const { lines, kind, selected, linked, marks } = defineProps<{
+const {
+  lines,
+  kind,
+  selected,
+  linked,
+  marks,
+  notation = "raw",
+  reveal,
+} = defineProps<{
   lines: DumpLine[];
   kind: PageKind;
   selected: number | null;
@@ -12,6 +23,9 @@ const { lines, kind, selected, linked, marks } = defineProps<{
   linked: number[];
   /** Per-line gutter marks (the L3 partition kind of an op line). */
   marks?: Map<number, string>;
+  notation?: "dsl" | "raw";
+  /** Explicit selection only; hover highlights never trigger scroll. */
+  reveal?: Range | null;
 }>();
 
 const emit = defineEmits<{
@@ -19,15 +33,23 @@ const emit = defineEmits<{
   select: [number | null];
 }>();
 
+const displayLines = computed(() => (notation === "dsl" ? irNotation(kind, lines) : lines));
+
 const root = useTemplateRef<HTMLDivElement>("root");
 
+const revealLine = computed(() =>
+  reveal === undefined ? linked[0] : (selected ?? traceMatches(lines, reveal, kind)[0]),
+);
 watch(
-  () => linked[0],
-  async (index) => {
+  () => [revealLine.value, notation, lines] as const,
+  async ([index]) => {
     if (index === undefined) return;
     await nextTick();
-    root.value?.querySelector(`[data-line="${index}"]`)?.scrollIntoView({ block: "nearest" });
+    root.value
+      ?.querySelector(`[data-line="${index}"]`)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   },
+  { immediate: true },
 );
 
 function spanTitle(line: DumpLine): string | undefined {
@@ -41,7 +63,7 @@ function toggle(index: number) {
 
 <template>
   <div ref="root" :class="['davinci-folio', `page-${kind}`]" aria-label="Stage page">
-    <template v-for="line in lines" :key="line.index">
+    <template v-for="(line, displayIndex) in displayLines" :key="line.index">
       <div
         v-if="line.span"
         :class="[
@@ -67,7 +89,7 @@ function toggle(index: number) {
           :title="marks?.get(line.index)"
           aria-hidden="true"
         ></span>
-        <span class="davinci-ln">{{ line.index + 1 }}</span>
+        <span class="davinci-ln">{{ displayIndex + 1 }}</span>
         <span class="davinci-code"
           ><span
             v-for="token in withTokenOffsets(line.tokens)"
@@ -87,7 +109,7 @@ function toggle(index: number) {
           :title="marks?.get(line.index)"
           aria-hidden="true"
         ></span>
-        <span class="davinci-ln">{{ line.index + 1 }}</span>
+        <span class="davinci-ln">{{ displayIndex + 1 }}</span>
         <span class="davinci-code"
           ><span
             v-for="token in withTokenOffsets(line.tokens)"

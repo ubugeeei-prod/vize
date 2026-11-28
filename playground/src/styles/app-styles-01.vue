@@ -6,7 +6,8 @@ defineOptions({ name: "AppStyles01" });
 <!-- eslint-disable-next-line vue/require-scoped-style -->
 <style>
 /* Variables — Light (default) */
-:global(:root) {
+/* Activate the shared palette for Davinci without restyling the other tabs. */
+:root:has(.dv-workbench) {
   --bg-primary: #e6e2d6;
   --bg-secondary: #ddd9cd;
   --bg-tertiary: #d4d0c4;
@@ -72,7 +73,7 @@ defineOptions({ name: "AppStyles01" });
 }
 
 /* Variables — Dark */
-:global(body[data-theme="dark"]) {
+body[data-theme="dark"]:has(.dv-workbench) {
   --bg-primary: #121212;
   --bg-secondary: #1a1a1a;
   --bg-tertiary: #242424;

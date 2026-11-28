@@ -1,3 +1,5 @@
+import { DAVINCI_MORE_EXAMPLES } from "./davinci-examples";
+
 // The Davinci tab's opening component: small enough to read from the back of
 // a room, broad enough that every rung has something to show - a static
 // subtree, bindings, an event, v-model on an element and on a component, a
@@ -63,4 +65,5 @@ export interface DavinciExample {
 export const DAVINCI_EXAMPLES: DavinciExample[] = [
   { key: "board", label: "Todo board", code: DAVINCI_PRESET },
   { key: "static", label: "Static islands", code: STATIC_ISLANDS },
+  ...DAVINCI_MORE_EXAMPLES,
 ];

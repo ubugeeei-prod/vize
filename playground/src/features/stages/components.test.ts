@@ -23,10 +23,10 @@ describe("StageRail", () => {
       "l4",
     ]);
     expect(stations.map((station) => station.text())).toEqual([
-      "L1Surface2 lines",
-      "L2Disegno2 ops, 1 pass",
-      "L3Impetono page",
-      "L4EmitBackend + SFC module",
+      "L1 IRSurface2 lines",
+      "L2 IRDisegno2 ops, 1 pass",
+      "L3 IRImpetono page",
+      "L4 IREmitBackend + SFC module",
     ]);
     expect(stations[1].attributes("aria-pressed")).toBe("true");
     expect(wrapper.findAll(".davinci-pounce")).toHaveLength(3);

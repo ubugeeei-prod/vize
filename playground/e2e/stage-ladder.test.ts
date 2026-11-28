@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { ref, shallowRef } from "vue";
 import { loadWasm, type CompilerOptions, type WasmModule } from "../src/wasm";
 import { negotiateProductCapture } from "../src/wasm/types/productCapture";
-import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
+import { DAVINCI_PRESET, DAVINCI_EXAMPLES } from "../src/shared/presets/davinci";
 import type { CodeOutputs } from "../src/features/atelier/codeOutputs";
 import type { StageLadder } from "../src/features/stages/ladder";
 import {
@@ -62,6 +62,22 @@ beforeAll(async () => {
   wasm = await loadWasm();
   dom = run("dom");
   ssr = run("ssr");
+});
+
+it.each(DAVINCI_EXAMPLES)("captures the $label example in DOM and SSR", ({ code }) => {
+  for (const [target, options] of Object.entries(TARGETS)) {
+    const result = wasm.compileSfc(code, options);
+    expect(result.errors ?? []).toEqual([]);
+    const capture = negotiateProductCapture(result.stageCapture, target as "dom" | "ssr");
+    expect(capture.ok).toBe(true);
+    if (!capture.ok) throw new Error(capture.error);
+    expect(capture.feed.outcome.kind).toBe("accepted");
+    expect(capture.feed.pages.find((page) => page.level === "l1")?.text).toBe(
+      result.descriptor.template?.content,
+    );
+    expect(capture.feed.pages.some((page) => page.level === "l2")).toBe(true);
+    if (target === "ssr") expect(capture.feed.pages.some((page) => page.level === "l3")).toBe(true);
+  }
 });
 
 function page({ ladder }: Run, key: string) {
