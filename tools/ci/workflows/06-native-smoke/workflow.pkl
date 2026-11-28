@@ -40,6 +40,11 @@ local nativeHostSteps = new Listing {
     `if` = "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'"
     run = "node --test tests/tooling/native-build-token.test.ts"
   }
+  new Dynamic {
+    name = "Test CLI materialization identities"
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'"
+    run = "cargo test --locked --profile ci -p vize_canon --lib cli_materialization_tests"
+  }
   ci.command("Build CLI", "cargo build --profile ci -p vize")
   new Dynamic {
     name = "Smoke CLI"

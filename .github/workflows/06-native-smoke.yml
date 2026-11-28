@@ -101,6 +101,9 @@ jobs:
       - name: Test native image token producer
         if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
         run: node --test tests/tooling/native-build-token.test.ts
+      - name: Test CLI materialization identities
+        if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
+        run: cargo test --locked --profile ci -p vize_canon --lib cli_materialization_tests
       - name: Build CLI
         run: cargo build --profile ci -p vize
       - name: Smoke CLI

@@ -4,6 +4,8 @@ use std::fs;
 #[cfg(unix)]
 use std::path::PathBuf;
 
+use vize_carton::ToCompactString;
+
 use crate::batch::materialize_lock::MaterializeLock;
 
 use super::VirtualProject;
@@ -84,7 +86,7 @@ fn even_another_project_with_the_same_cache_root_cannot_consume_the_proof() {
         materialized
             .build_info_path(&other, &other.generated_tsconfig_path())
             .unwrap_err()
-            .to_string(),
+            .to_compact_string(),
         "IO error: CLI materialization belongs to a different virtual project"
     );
 }
