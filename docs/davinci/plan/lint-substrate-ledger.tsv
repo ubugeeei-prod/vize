@@ -226,7 +226,7 @@ vue/match-component-file-name	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/mat
 vue/max-lines-per-block	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/max_lines_per_block.rs
 vue/max-props	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/max_props.rs
 vue/max-template-complexity	L1 syntax	sfc-descriptor	legacy-engine	-	-	facts/max_template_complexity.rs
-vue/max-template-depth	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/max_template_depth.rs
+vue/max-template-depth	L1 syntax	markup-relief	legacy-rule	relief	-	vue/configured/max_template_depth.rs
 vue/multi-word-component-names	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/multi_word_component_names.rs
 vue/mustache-interpolation-spacing	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/mustache_interpolation_spacing.rs
 vue/next-tick-style	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/compatibility_sfc/next_tick_style.rs
@@ -279,7 +279,7 @@ vue/no-restricted-class	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/config
 vue/no-restricted-component-names	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/component_names.rs
 vue/no-restricted-component-options	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/component_options.rs
 vue/no-restricted-custom-event	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_custom_event.rs
-vue/no-restricted-html-elements	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_html.rs
+vue/no-restricted-html-elements	L1 syntax	markup-relief	legacy-rule	relief	-	vue/configured/restricted_html.rs
 vue/no-restricted-props	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/restricted_props.rs
 vue/no-restricted-static-attribute	L1 syntax	markup-l2	legacy-rule	relief	-	vue/configured/restricted_static_attribute.rs
 vue/no-restricted-syntax	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/restricted.rs

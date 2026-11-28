@@ -14,6 +14,7 @@ mod directives;
 mod fallback_ports;
 mod ids;
 mod native_attributes;
+mod original_elements;
 mod unsafe_url;
 mod vapor_inline;
 

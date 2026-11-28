@@ -24,7 +24,7 @@ impl Linter {
                         prepared.arena(),
                         module.program().source_text,
                         filename,
-                        &L2Markup::from_artifact(region.artifact()),
+                        &L2Markup::from_tsrx_artifact(region.artifact()),
                         None,
                         MarkupRules::new(&rules),
                     );

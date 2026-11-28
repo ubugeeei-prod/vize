@@ -113,6 +113,19 @@ pub fn lower_source_with_lint_syntax<'a>(
     lower_with_options(bump, allocator, source, lang, LoweringOptions::default())
 }
 
+/// Retain original syntax under the existing native client-VDOM lowering
+/// contract. Each root still exposes whether the direct producer admitted it.
+pub fn lower_source_with_lint_syntax_for_vdom<'a>(
+    bump: &'a Allocator,
+    allocator: &oxc_allocator::Allocator,
+    source: &'a str,
+    lang: JsxLang,
+) -> SyntaxLowerOutput<'a> {
+    let mut options = LoweringOptions::default();
+    options.babel.vdom_lane = true;
+    lower_with_options(bump, allocator, source, lang, options)
+}
+
 fn lower_with_options<'a>(
     bump: &'a Allocator,
     allocator: &oxc_allocator::Allocator,

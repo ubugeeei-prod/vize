@@ -135,6 +135,18 @@ pub trait MarkupRule {
         MarkupLevel::L1
     }
 
+    /// Whether an active instance needs original element ranges or syntax
+    /// classifications that semantic JSX lowering may change. Source lint
+    /// entry points retain the factory packet; raw L2 views refuse this input.
+    fn requires_original_element_syntax(&self) -> bool {
+        false
+    }
+
+    /// Apply explicit rule selection before refusing an unsupported input.
+    fn needs_original_element_syntax(&self, ctx: &crate::context::LintContext<'_>) -> bool {
+        self.requires_original_element_syntax() && ctx.is_rule_enabled(self.name())
+    }
+
     /// The hooks this rule needs, read once per document before `enter_document`.
     /// Existing rules keep every hook.
     fn traversal(&self) -> MarkupTraversal {

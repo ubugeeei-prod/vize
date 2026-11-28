@@ -2,13 +2,14 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::TemplateSyntax;
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::config::RestrictedHtmlElements;
 use vize_l0::{String, cstr};
-use vize_relief::{ElementType, RootNode};
+use vize_relief::RootNode;
 
 use super::report_template;
-use super::template_walk::walk;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-restricted-html-elements",
@@ -47,30 +48,63 @@ impl Rule for NoRestrictedHtmlElements {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        self.check_document(ctx, &MarkupDocument::new(root, TemplateSyntax::Vue));
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+}
+
+impl NoRestrictedHtmlElements {
+    fn check_document(&self, ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
         if self.restrictions.is_empty() {
             return;
         }
         let mut findings = Vec::new();
-        walk(&root.children, 1, &mut |element, _depth| {
-            if element.tag_type != ElementType::Element {
+        document.walk_lint_elements(false, &mut |element| {
+            if !element.is_plain() {
                 return;
             }
             let Some((_, message)) = self
                 .restrictions
                 .iter()
-                .find(|(name, _)| name.as_str() == element.tag)
+                .find(|(name, _)| name.as_str() == element.tag())
             else {
                 return;
             };
+            let range = element.range();
             findings.push((
                 match message {
                     Some(message) => message.clone(),
-                    None => cstr!("Unexpected use of forbidden element {}.", element.tag),
+                    None => cstr!("Unexpected use of forbidden element {}.", element.tag()),
                 },
-                element.loc.span.start,
-                element.loc.span.end,
+                range.start,
+                range.end,
             ));
         });
         report_template(ctx, META.name, findings);
+    }
+}
+
+impl MarkupRule for NoRestrictedHtmlElements {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
+    }
+
+    fn requires_original_element_syntax(&self) -> bool {
+        !self.restrictions.is_empty()
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        self.check_document(ctx.lint(), document);
     }
 }

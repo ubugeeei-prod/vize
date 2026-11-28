@@ -15,6 +15,7 @@ mod batch;
 pub use batch::PreparedLint;
 mod ecosystem_hint;
 mod jsx;
+mod jsx_lowering;
 mod markup;
 mod offset;
 mod parse_diagnostics;
@@ -310,16 +311,12 @@ impl Linter {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
 
-        // Partition the active rules into three disjoint groups so each rule runs
-        // exactly once (no double-report). Both markup groups walk the L2
-        // projection; `jsx_needs_lowering` only selects which pass owns the rule.
-        //
-        //   ir       — markup-capable, no list/branch shape required.
-        //   lowered  — markup-capable and `jsx_needs_lowering` (ui.for / ui.if).
-        //   legacy   — no markup entry point, served by the lowering fallback.
+        // Keep the three existing rule partitions and parser-admission phases.
+        // Only active original-syntax rules request the immutable source factory.
         let rules = self.registry.rules();
         let mut any_ir = false;
         let mut any_lowered_markup = false;
+        let mut retain_syntax = false;
         // Each markup group runs as one shared walk per root, as in SFC.
         let mut ir_rules = Vec::new();
         let mut lowered_rules = Vec::new();
@@ -339,7 +336,9 @@ impl Linter {
                 };
                 *any = true;
                 if self.is_rule_enabled(name) {
-                    group.push(RankedMarkupRule::new(rank, markup));
+                    let ranked = RankedMarkupRule::new(rank, markup);
+                    retain_syntax |= ranked.requires_original_element_syntax();
+                    group.push(ranked);
                 }
                 false
             })
@@ -357,23 +356,22 @@ impl Linter {
         if needs_l2 || any_legacy {
             let lowered = profile!(
                 "patina.jsx.lower",
-                vize_atelier_jsx::lower_source(&allocator, &oxc_allocator, source, lang)
+                jsx_lowering::lower(&allocator, &oxc_allocator, source, lang, retain_syntax)
             );
-            let analysis = (any_ir && self.jsx_ir_needs_analysis()).then_some(&lowered.analysis);
+            let analysis = (any_ir && self.jsx_ir_needs_analysis()).then_some(lowered.analysis());
             // Lowering diagnostics are a superset of the parse. Merge them only
             // when this lane lowered before P4-7b (a list-shaped markup rule or
             // a legacy rule). An element-shaped rule now lowers only to build
             // the L2 view; its parse diagnostics stay the OXC set.
             if any_lowered_markup || any_legacy {
                 let mut lower_diags =
-                    Self::jsx_diagnostics_lint_result(filename, &lowered.diagnostics);
+                    Self::jsx_diagnostics_lint_result(filename, lowered.diagnostics());
                 Self::dedupe_against(&mut lower_diags, &result);
                 result = Self::merge_lint_results(result, lower_diags);
             }
 
-            for lowered_root in &lowered.roots {
-                let markup = lowered_root.l2.as_ref().ok();
-                let markup = markup.map(crate::markup::L2Markup::from_projected_root);
+            for lowered_root in lowered.roots() {
+                let markup = lowered_root.markup();
                 for (rules, analysis) in [(&ir_rules, analysis), (&lowered_rules, None)] {
                     if rules.is_empty() {
                         continue;

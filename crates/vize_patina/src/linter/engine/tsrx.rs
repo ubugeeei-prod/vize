@@ -36,7 +36,7 @@ impl Linter {
                 Ok(artifacts) => {
                     let rules = self.markup_rules(usize::MAX, |_, _| true);
                     for region in artifacts.regions() {
-                        let markup = L2Markup::from_artifact(region.artifact());
+                        let markup = L2Markup::from_tsrx_artifact(region.artifact());
                         let result = self.lint_markup_l2(
                             &allocator,
                             source,
