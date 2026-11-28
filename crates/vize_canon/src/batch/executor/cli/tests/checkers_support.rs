@@ -33,7 +33,7 @@ fn corsa_without_checkers_support_fails_instead_of_retrying() {
     let config_path = project.virtual_root().join("tsconfig.json");
     fs::write(&config_path, "{}\n").unwrap();
 
-    let error = run_cli_for_config(&stub, &project, &config_path, 1, &|_| true)
+    let error = run_cli_for_config(&stub, &project, &config_path, 1, &|_| true, None)
         .unwrap_err()
         .into_error();
     match error {

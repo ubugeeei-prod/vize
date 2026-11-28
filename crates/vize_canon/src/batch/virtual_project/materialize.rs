@@ -11,6 +11,7 @@ use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{
     ensure_dir, ensure_materialize_root, prune_unexpected_entries, write_if_changed,
 };
+use crate::batch::materialize_lock::MaterializeLock;
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::package_node_modules::materialize_package_node_modules;
@@ -22,6 +23,9 @@ use super::{
 
 const EDITOR_UNION_ALIAS_CONFLICT: &str =
     "Conflicting workspace package alias targets in editor union";
+
+mod cli_materialization;
+pub(crate) use cli_materialization::{CliBuildInfo, CliMaterialization};
 
 impl VirtualProject {
     /// Another union member placed one of this revision's workspace alias
@@ -77,17 +81,20 @@ impl VirtualProject {
 
     /// [`Self::materialize`] for one CLI check that runs right after it, with
     /// the program roots listed literally (see `write_literal_tsconfig_file`).
-    pub(crate) fn materialize_for_cli(&self) -> CorsaResult<()> {
+    pub(in crate::batch) fn materialize_for_cli<'a>(
+        &'a self,
+        materialize_lock: &'a MaterializeLock,
+    ) -> CorsaResult<CliMaterialization<'a>> {
         let workspace_alias_plan = self.workspace_alias_plan();
-        self.materialize_snapshot(
+        let (links, _) = self.materialize_snapshot(
             &FxHashSet::default(),
             &Default::default(),
             None,
             false,
             true,
             workspace_alias_plan,
-        )
-        .map(|_| ())
+        )?;
+        Ok(CliMaterialization::new(self, materialize_lock, links))
     }
 
     #[cfg(test)]

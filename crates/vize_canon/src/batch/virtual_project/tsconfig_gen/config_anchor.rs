@@ -39,18 +39,18 @@ impl VirtualProject {
     /// typed-router helper imports participate too: Corsa's build info keeps
     /// unchanged files' diagnostics when a newly imported module adds globals.
     pub(crate) fn cli_build_info_path(&self, config_path: &Path) -> PathBuf {
-        let relative = config_path
-            .strip_prefix(&self.virtual_root)
-            .unwrap_or(config_path)
-            .with_extension("tsbuildinfo");
-        let mut name: String = relative
-            .components()
-            .map(|component| component.as_os_str().to_string_lossy())
-            .collect::<Vec<_>>()
-            .join("__")
-            .into();
         let workspace_alias_plan = self.workspace_alias_plan();
         let links = self.desired_package_links(&workspace_alias_plan);
+        let fingerprint = self.cli_build_info_topology(links);
+        self.cli_build_info_path_with_topology(config_path, fingerprint.as_deref())
+    }
+
+    /// Hash the exact desired plan used by materialization, including links
+    /// whose best-effort installation is absent from the custody receipt.
+    pub(in crate::batch::virtual_project) fn cli_build_info_topology(
+        &self,
+        links: vize_carton::FxHashMap<PathBuf, PathBuf>,
+    ) -> Option<String> {
         let typed_router = self.has_typed_router_imports();
         if !links.is_empty() || !self.package_shadow_manifests.is_empty() || typed_router {
             let mut links = links.into_iter().collect::<Vec<_>>();
@@ -72,10 +72,32 @@ impl VirtualProject {
             if typed_router {
                 digest.update(b"typed-router-helper\0");
             }
-            let fingerprint = super::super::identity::encode_digest(digest.finalize());
-            if let Some(stem) = name.strip_suffix(".tsbuildinfo") {
-                name = vize_carton::cstr!("{stem}.{fingerprint}.tsbuildinfo");
-            }
+            return Some(super::super::identity::encode_digest(digest.finalize()));
+        }
+        None
+    }
+
+    /// Derive each governing/shard config's own filename from a topology
+    /// already observed by this materialization transaction.
+    pub(in crate::batch::virtual_project) fn cli_build_info_path_with_topology(
+        &self,
+        config_path: &Path,
+        fingerprint: Option<&str>,
+    ) -> PathBuf {
+        let relative = config_path
+            .strip_prefix(&self.virtual_root)
+            .unwrap_or(config_path)
+            .with_extension("tsbuildinfo");
+        let mut name: String = relative
+            .components()
+            .map(|component| component.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("__")
+            .into();
+        if let Some(fingerprint) = fingerprint
+            && let Some(stem) = name.strip_suffix(".tsbuildinfo")
+        {
+            name = vize_carton::cstr!("{stem}.{fingerprint}.tsbuildinfo");
         }
         self.virtual_root
             .join(CLI_BUILD_INFO_DIR)

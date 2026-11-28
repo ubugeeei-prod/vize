@@ -97,6 +97,18 @@ fn route_helper_imports_select_their_own_build_info() {
     let (root, enabled) = project(true, route, false);
     let config = enabled.generated_tsconfig_path();
     let with_helper = enabled.cli_build_info_path(&config);
+    {
+        let lock = crate::batch::materialize_lock::MaterializeLock::acquire(enabled.virtual_root())
+            .unwrap();
+        let materialized = enabled
+            .materialize_for_cli(&lock)
+            .unwrap()
+            .into_build_info();
+        assert_eq!(
+            materialized.build_info_path(&enabled, &config).unwrap(),
+            with_helper
+        );
+    }
     fs::write(
         root.path().join("tsconfig.json"),
         r#"{"vueCompilerOptions":{"plugins":[]}}"#,
@@ -109,6 +121,21 @@ fn route_helper_imports_select_their_own_build_info() {
     disabled.materialize().unwrap();
     assert!(!disabled.has_typed_router_imports());
     let without_helper = disabled.cli_build_info_path(&disabled.generated_tsconfig_path());
+    {
+        let lock =
+            crate::batch::materialize_lock::MaterializeLock::acquire(disabled.virtual_root())
+                .unwrap();
+        let materialized = disabled
+            .materialize_for_cli(&lock)
+            .unwrap()
+            .into_build_info();
+        assert_eq!(
+            materialized
+                .build_info_path(&disabled, &disabled.generated_tsconfig_path())
+                .unwrap(),
+            without_helper
+        );
+    }
     assert_eq!(with_helper.parent(), without_helper.parent());
     assert_ne!(with_helper, without_helper);
 }
