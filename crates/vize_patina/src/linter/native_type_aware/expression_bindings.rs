@@ -6,6 +6,7 @@
 use vize_l0::{String as VizeString, cstr};
 
 use super::document::TypeAwareDocument;
+use super::options_prop_shape::OptionsPropScope;
 
 mod mapped;
 #[cfg(test)]
@@ -113,19 +114,29 @@ pub(super) fn template_binding_is_unsafe(
 
 #[cfg(test)]
 pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
-    bind_template_expressions_with_source(document, None);
+    bind_template_expressions_with_source(document, None, None);
 }
 
+#[cfg(test)]
 pub(super) fn bind_template_expressions_from_source(
     document: &mut TypeAwareDocument,
     authored_source: &str,
 ) {
-    bind_template_expressions_with_source(document, Some(authored_source));
+    bind_template_expressions_with_source(document, Some(authored_source), None);
+}
+
+pub(super) fn bind_template_expressions_in_scope(
+    document: &mut TypeAwareDocument,
+    authored_source: &str,
+    scope: OptionsPropScope<'_>,
+) {
+    bind_template_expressions_with_source(document, Some(authored_source), Some(scope));
 }
 
 fn bind_template_expressions_with_source(
     document: &mut TypeAwareDocument,
     authored_source: Option<&str>,
+    scope: Option<OptionsPropScope<'_>>,
 ) {
     let mut text = document.content.clone();
     let props_object = super::options_prop_shape::options_props_object(&text).map(VizeString::from);
@@ -135,6 +146,7 @@ fn bind_template_expressions_with_source(
         document,
         &text,
         props_object.as_deref(),
+        scope,
         &mut edits,
         &mut index,
     );
@@ -174,7 +186,13 @@ fn bind_template_expressions_with_source(
         text.replace_range(start..end, &new_stmt);
     }
     document.content = text;
-    mapped::bind_checked_expressions(document, authored_source, &mut index);
+    mapped::bind_checked_expressions(
+        document,
+        authored_source,
+        &mut index,
+        props_object.as_deref(),
+        scope,
+    );
 }
 
 fn mapped_expression_ranges(
@@ -190,6 +208,7 @@ fn collect_void_wrappers(
     document: &TypeAwareDocument,
     text: &str,
     props_object: Option<&str>,
+    scope: Option<OptionsPropScope<'_>>,
     edits: &mut Vec<(usize, usize, usize, usize, VizeString)>,
     index: &mut u32,
 ) {
@@ -207,8 +226,16 @@ fn collect_void_wrappers(
             continue;
         }
         let expr = text.get(expr_start..expr_end).unwrap_or_default();
-        let new_stmt = match super::options_prop_shape::options_prop_annotation(props_object, expr)
-        {
+        let annotation = super::options_prop_shape::options_prop_annotation(props_object, expr)
+            .filter(|_| {
+                scope.is_none_or(|scope| {
+                    document
+                        .mapping
+                        .to_authored(expr_start)
+                        .is_some_and(|authored| scope.is_prop_reference(expr, authored))
+                })
+            });
+        let new_stmt = match annotation {
             Some(annotation) => cstr!("const __expr_{index}: {annotation} = ({expr})"),
             None => cstr!("const __expr_{index} = ({expr})"),
         };

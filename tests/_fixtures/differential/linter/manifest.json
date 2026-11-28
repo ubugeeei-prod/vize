@@ -6810,6 +6810,38 @@
       }
     },
     {
+      "id": "linter/current-api/h11-options-api-runtime-boolean-prop-13392",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "options-api-boolean-prop-13392",
+        "files": [
+          {
+            "path": "Component.vue.txt",
+            "sha256": "ea646b429a5c165fba1e7a8ba31728be4aa9b53957fe1d96e0af72e0bb28c9c8",
+            "role": "issue-authored-reproduction"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/h11-reactivity-loss-direct-destructure-control-1515",
       "state": "active",
       "targets": [
