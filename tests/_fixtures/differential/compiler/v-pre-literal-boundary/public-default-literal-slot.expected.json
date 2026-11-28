@@ -1,0 +1,86 @@
+[
+  {
+    "name": "own-empty",
+    "source": "<template><slot v-pre></slot></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\"))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "own-empty",
+    "source": "<template><slot v-pre></slot></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot></slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "inherited-empty",
+    "source": "<template><div v-pre><slot></slot></div></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"slot\")\n  ]))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "inherited-empty",
+    "source": "<template><div v-pre><slot></slot></div></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><slot></slot></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "original-nonempty",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\", null, \"{{ not }} an interpolation\"))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "original-nonempty",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot>{{ not }} an interpolation</slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  }
+]
