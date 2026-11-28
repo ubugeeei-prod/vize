@@ -45,7 +45,8 @@
   "metadata": {
     "vize": {
       "stability": "experimental",
-      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers",
+      "channel": "v2-preview"
     }
   }
 }

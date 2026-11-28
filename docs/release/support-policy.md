@@ -95,6 +95,26 @@ Vize publishes a single supported release line at a time:
 Once Vize reaches v1 stable, this policy will be revisited to declare whether Vize will run an LTS
 program. Until then, **Vize does not commit to an LTS release line**.
 
+## Release channels and dependency ranges
+
+Every published artifact belongs to one release channel (v1 alpha, v0, early development, v2
+preview or v3 preview), one product and one owner. The registry is
+`tools/support/release/product-channels.ts`, and the stability page renders its channel table
+from it. All channels still release under one version number, but no channel's version implies
+another channel's maturity.
+
+Dependencies between Vize npm packages follow `tools/support/release/channel-dependencies.ts`:
+
+- A hard dependency (`dependencies` or `optionalDependencies`) stays in the package's own channel
+  or points at v1 alpha, so a v1 alpha install never pulls in a v0, early or preview product.
+- A hard dependency uses `workspace:*`, which the release stamps to the exact published version.
+  Native platform binaries use the `native-binaries` catalog.
+- A peer dependency uses an open `>=` lower bound. Within one channel it may use `workspace:*`
+  instead.
+- The few edges that predate these rules are listed with a reason in the same file. A new edge
+  that breaks the rules fails `tests/tooling/product-channels.test.ts`, and so does an exception
+  that no longer matches a manifest.
+
 ## Security backports
 
 Security advisories are handled through `SECURITY.md`. Once a fix lands on the current minor, the

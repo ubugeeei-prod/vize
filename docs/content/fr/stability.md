@@ -70,6 +70,38 @@ peut être la même version ou plus récente. Avant que la version 1 ne soit sta
 le changement est mentionné dans les notes de sortie lorsqu’il change. Les packagers en aval devraient lire
 `rust-version` à partir de la `Cargo.toml` d’une caisse plutôt que de les déduire à partir du fichier de la chaîne d’outils.
 
+## Canaux de publication
+
+Chaque paquet, crate, extension et asset de publication appartient à exactement un canal de
+publication, un produit et un responsable. Le canal indique la ligne de produit avec laquelle
+l’artefact est livré ; les paliers de support ci-dessous indiquent la maturité de son API actuelle.
+Tous les canaux sont encore publiés ensemble sous un seul numéro de version : partager une version
+ne signifie pas partager une maturité. Les paquets npm enregistrent leur canal dans
+`metadata.vize.channel`. Le tableau est généré depuis `tools/support/release/product-channels.ts`.
+
+<!-- product-channels:start -->
+
+| Canal | Produit | Responsable | Artefacts |
+| --- | --- | --- | --- |
+| v1 alpha | Compilateur (VDOM et Vapor) | `compiler/vize_atelier` | npm: `vize`, `@vizejs/native`, `@vizejs/native-darwin-arm64`, `@vizejs/native-darwin-x64`, `@vizejs/native-linux-arm64-gnu`, `@vizejs/native-linux-arm64-musl`, `@vizejs/native-linux-x64-gnu`, `@vizejs/native-linux-x64-musl`, `@vizejs/native-win32-arm64-msvc`, `@vizejs/native-win32-x64-msvc`, `@vizejs/wasm`, `@vizejs/compile`; crates.io: `vize_carton`, `vize_relief`, `vize_armature`, `vize_croquis`, `vize_atelier_core`, `vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`, `vize_atelier_sfc`; JSR: `@vizejs/vize`; GitHub Releases: `vize-<target>.tar.gz`, `vize-<target>.zip` |
+| v1 alpha | Intégration Vite | `integrations/@vizejs/vite-plugin` | npm: `@vizejs/vite-plugin`, `@vizejs/unplugin`; JSR: `@vizejs/vite-plugin`, `@vizejs/unplugin` |
+| v1 alpha | Intégration Nuxt | `integrations/@vizejs/nuxt` | npm: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`; JSR: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config` |
+| v1 alpha | Linter natif | `linter/vize_patina` | npm: `oxlint-plugin-vize`, `@vizejs/lint`; crates.io: `vize_patina`; JSR: `@vizejs/oxlint-plugin-vize` |
+| v1 alpha | Vérificateur de types et Content Mapper | `typechecker/vize_canon` | npm: `@vizejs/typecheck`, `@vizejs/content-mapper`; crates.io: `vize_canon` |
+| v1 alpha | LSP et extensions d’éditeur | `lsp/vize_maestro` | npm: `@vizejs/lsp`, `@vizejs/typescript-vue-plugin`; VS Code Marketplace: `vize`; Open VSX: `vize`; GitHub Releases: `vize.vsix`, `vize-<platform>.vsix`, `zed-vize-extension.tar.gz`, `nvim-vize-extension.tar.gz`, `vim-vize-extension.tar.gz`, `helix-vize-extension.tar.gz`, `emacs-vize-extension.tar.gz` |
+| v1 alpha | SDK de plugins | `plugins/@vizejs/plugin-sdk` | npm: `@vizejs/plugin-sdk`; JSR: `@vizejs/plugin-sdk` |
+| v0 | Formateur Glyph | `formatter/vize_glyph` | npm: `@vizejs/fmt` |
+| v0 | Musea | `musea/vize_musea` | npm: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; crates.io: `vize_musea`; JSR: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; VS Code Marketplace: `vize-art` |
+| Développement précoce | UI | `ui/@vizejs/ui` | npm: `@vizejs/ui`; JSR: `@vizejs/ui` |
+| Développement précoce | Fresco | `fresco/vize_fresco` | npm: `@vizejs/fresco`, `@vizejs/fresco-native`, `@vizejs/create-fresco`, `@vizejs/tui`; crates.io: `vize_fresco`; JSR: `@vizejs/fresco` |
+| Développement précoce | Fondations d’application | `framework/vize_marquette` | npm: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router`, `@vizejs/state`, `@vizejs/devtools`; crates.io: `vize_marquette`; JSR: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router` |
+| Développement précoce | Doctor et analyse de projet | `doctor/vize_doctor` | npm: `@vizejs/doctor`, `@vizejs/curator`; crates.io: `vize_doctor`, `vize_croquis_cf` |
+| Aperçu v2 | Dialectes JSX et TSRX | `compiler/vize_atelier_jsx` | npm: `@vizejs/compile-jsx`, `@vizejs/compile-tsrx`; crates.io: `vize_atelier_jsx` |
+| Aperçu v2 | Adaptateurs de builders, ESLint, Prettier et Volar | `integrations/adapters` | npm: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin`, `@vizejs/turbopack-plugin`, `@vizejs/parcel-transformer`, `@vizejs/parcel-transformer-native`, `eslint-plugin-vize`, `prettier-plugin-vize`, `@vizejs/volar-plugin`; JSR: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin` |
+| Aperçu v3 | Niveaux Davinci | `davinci/levels` | crates.io: `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3`, `vize_l4` |
+
+<!-- product-channels:end -->
+
 ## Paliers de support des paquets
 
 | Paliers                    | Paquets                                                                                                       | Contrat                                                                                                                                  |

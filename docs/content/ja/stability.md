@@ -68,6 +68,38 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 安定版 v1 より前は MSRV を引き上げる場合があり、その際はリリースノートで案内します。
 パッケージを配布する場合は、ツールチェーンの指定から推測せず、クレートの `Cargo.toml` にある `rust-version` を確認してください。
 
+## リリースチャンネル
+
+公開しているパッケージ、クレート、拡張機能、リリースアセットは、それぞれちょうど 1 つのリリースチャンネル、
+プロダクト、オーナーに属します。チャンネルは成果物がどのプロダクトラインとして出荷されるかを示し、
+下のサポート区分は現在の API の成熟度を示します。すべてのチャンネルは今も 1 つのバージョン番号で
+一緒にリリースされるため、バージョンが同じでも成熟度が同じとは限りません。npm パッケージは
+`metadata.vize.channel` にチャンネルを記録します。この表は `tools/support/release/product-channels.ts`
+から生成されます。
+
+<!-- product-channels:start -->
+
+| チャンネル | プロダクト | オーナー | 成果物 |
+| --- | --- | --- | --- |
+| v1 アルファ | コンパイラ（VDOM と Vapor） | `compiler/vize_atelier` | npm: `vize`, `@vizejs/native`, `@vizejs/native-darwin-arm64`, `@vizejs/native-darwin-x64`, `@vizejs/native-linux-arm64-gnu`, `@vizejs/native-linux-arm64-musl`, `@vizejs/native-linux-x64-gnu`, `@vizejs/native-linux-x64-musl`, `@vizejs/native-win32-arm64-msvc`, `@vizejs/native-win32-x64-msvc`, `@vizejs/wasm`, `@vizejs/compile`; crates.io: `vize_carton`, `vize_relief`, `vize_armature`, `vize_croquis`, `vize_atelier_core`, `vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`, `vize_atelier_sfc`; JSR: `@vizejs/vize`; GitHub Releases: `vize-<target>.tar.gz`, `vize-<target>.zip` |
+| v1 アルファ | Vite 統合 | `integrations/@vizejs/vite-plugin` | npm: `@vizejs/vite-plugin`, `@vizejs/unplugin`; JSR: `@vizejs/vite-plugin`, `@vizejs/unplugin` |
+| v1 アルファ | Nuxt 統合 | `integrations/@vizejs/nuxt` | npm: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`; JSR: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config` |
+| v1 アルファ | ネイティブリンター | `linter/vize_patina` | npm: `oxlint-plugin-vize`, `@vizejs/lint`; crates.io: `vize_patina`; JSR: `@vizejs/oxlint-plugin-vize` |
+| v1 アルファ | 型チェッカーと Content Mapper | `typechecker/vize_canon` | npm: `@vizejs/typecheck`, `@vizejs/content-mapper`; crates.io: `vize_canon` |
+| v1 アルファ | LSP とエディタ拡張 | `lsp/vize_maestro` | npm: `@vizejs/lsp`, `@vizejs/typescript-vue-plugin`; VS Code Marketplace: `vize`; Open VSX: `vize`; GitHub Releases: `vize.vsix`, `vize-<platform>.vsix`, `zed-vize-extension.tar.gz`, `nvim-vize-extension.tar.gz`, `vim-vize-extension.tar.gz`, `helix-vize-extension.tar.gz`, `emacs-vize-extension.tar.gz` |
+| v1 アルファ | プラグイン SDK | `plugins/@vizejs/plugin-sdk` | npm: `@vizejs/plugin-sdk`; JSR: `@vizejs/plugin-sdk` |
+| v0 | Glyph フォーマッタ | `formatter/vize_glyph` | npm: `@vizejs/fmt` |
+| v0 | Musea | `musea/vize_musea` | npm: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; crates.io: `vize_musea`; JSR: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; VS Code Marketplace: `vize-art` |
+| 開発初期 | UI | `ui/@vizejs/ui` | npm: `@vizejs/ui`; JSR: `@vizejs/ui` |
+| 開発初期 | Fresco | `fresco/vize_fresco` | npm: `@vizejs/fresco`, `@vizejs/fresco-native`, `@vizejs/create-fresco`, `@vizejs/tui`; crates.io: `vize_fresco`; JSR: `@vizejs/fresco` |
+| 開発初期 | アプリケーション基盤 | `framework/vize_marquette` | npm: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router`, `@vizejs/state`, `@vizejs/devtools`; crates.io: `vize_marquette`; JSR: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router` |
+| 開発初期 | Doctor とプロジェクト解析 | `doctor/vize_doctor` | npm: `@vizejs/doctor`, `@vizejs/curator`; crates.io: `vize_doctor`, `vize_croquis_cf` |
+| v2 プレビュー | JSX と TSRX の方言 | `compiler/vize_atelier_jsx` | npm: `@vizejs/compile-jsx`, `@vizejs/compile-tsrx`; crates.io: `vize_atelier_jsx` |
+| v2 プレビュー | ビルダー・ESLint・Prettier・Volar アダプタ | `integrations/adapters` | npm: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin`, `@vizejs/turbopack-plugin`, `@vizejs/parcel-transformer`, `@vizejs/parcel-transformer-native`, `eslint-plugin-vize`, `prettier-plugin-vize`, `@vizejs/volar-plugin`; JSR: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin` |
+| v3 プレビュー | Davinci レベル | `davinci/levels` | crates.io: `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3`, `vize_l4` |
+
+<!-- product-channels:end -->
+
 ## パッケージのサポート区分
 
 | 区分                           | パッケージ                                                                                                                                                                                         | 方針                                                                                                                      |

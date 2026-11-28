@@ -70,6 +70,35 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 该动作在发布说明中会被提及。下游打包器应读
 `rust-version`是从箱子的 `Cargo.toml` 中判断，而不是从工具链文件推断。
 
+## 发布渠道
+
+每个已发布的包、crate、扩展和发布资产都恰好属于一个发布渠道、一个产品和一个负责人。渠道说明产物随哪条产品线发布；
+下面的支持层级说明其当前 API 的成熟度。所有渠道目前仍以同一个版本号一起发布，因此版本相同并不代表成熟度相同。
+npm 包在 `metadata.vize.channel` 中记录其渠道。该表由 `tools/support/release/product-channels.ts` 生成。
+
+<!-- product-channels:start -->
+
+| 渠道 | 产品 | 负责人 | 产物 |
+| --- | --- | --- | --- |
+| v1 alpha | 编译器（VDOM 与 Vapor） | `compiler/vize_atelier` | npm: `vize`, `@vizejs/native`, `@vizejs/native-darwin-arm64`, `@vizejs/native-darwin-x64`, `@vizejs/native-linux-arm64-gnu`, `@vizejs/native-linux-arm64-musl`, `@vizejs/native-linux-x64-gnu`, `@vizejs/native-linux-x64-musl`, `@vizejs/native-win32-arm64-msvc`, `@vizejs/native-win32-x64-msvc`, `@vizejs/wasm`, `@vizejs/compile`; crates.io: `vize_carton`, `vize_relief`, `vize_armature`, `vize_croquis`, `vize_atelier_core`, `vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`, `vize_atelier_sfc`; JSR: `@vizejs/vize`; GitHub Releases: `vize-<target>.tar.gz`, `vize-<target>.zip` |
+| v1 alpha | Vite 集成 | `integrations/@vizejs/vite-plugin` | npm: `@vizejs/vite-plugin`, `@vizejs/unplugin`; JSR: `@vizejs/vite-plugin`, `@vizejs/unplugin` |
+| v1 alpha | Nuxt 集成 | `integrations/@vizejs/nuxt` | npm: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`; JSR: `@vizejs/nuxt`, `@vizejs/nuxt-lint-config` |
+| v1 alpha | 原生 Linter | `linter/vize_patina` | npm: `oxlint-plugin-vize`, `@vizejs/lint`; crates.io: `vize_patina`; JSR: `@vizejs/oxlint-plugin-vize` |
+| v1 alpha | 类型检查器与 Content Mapper | `typechecker/vize_canon` | npm: `@vizejs/typecheck`, `@vizejs/content-mapper`; crates.io: `vize_canon` |
+| v1 alpha | LSP 与编辑器扩展 | `lsp/vize_maestro` | npm: `@vizejs/lsp`, `@vizejs/typescript-vue-plugin`; VS Code Marketplace: `vize`; Open VSX: `vize`; GitHub Releases: `vize.vsix`, `vize-<platform>.vsix`, `zed-vize-extension.tar.gz`, `nvim-vize-extension.tar.gz`, `vim-vize-extension.tar.gz`, `helix-vize-extension.tar.gz`, `emacs-vize-extension.tar.gz` |
+| v1 alpha | 插件 SDK | `plugins/@vizejs/plugin-sdk` | npm: `@vizejs/plugin-sdk`; JSR: `@vizejs/plugin-sdk` |
+| v0 | Glyph 格式化器 | `formatter/vize_glyph` | npm: `@vizejs/fmt` |
+| v0 | Musea | `musea/vize_musea` | npm: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; crates.io: `vize_musea`; JSR: `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/musea-nuxt`; VS Code Marketplace: `vize-art` |
+| 早期开发 | UI | `ui/@vizejs/ui` | npm: `@vizejs/ui`; JSR: `@vizejs/ui` |
+| 早期开发 | Fresco | `fresco/vize_fresco` | npm: `@vizejs/fresco`, `@vizejs/fresco-native`, `@vizejs/create-fresco`, `@vizejs/tui`; crates.io: `vize_fresco`; JSR: `@vizejs/fresco` |
+| 早期开发 | 应用基础 | `framework/vize_marquette` | npm: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router`, `@vizejs/state`, `@vizejs/devtools`; crates.io: `vize_marquette`; JSR: `@vizejs/marquette`, `@vizejs/composable`, `@vizejs/data`, `@vizejs/router` |
+| 早期开发 | Doctor 与项目分析 | `doctor/vize_doctor` | npm: `@vizejs/doctor`, `@vizejs/curator`; crates.io: `vize_doctor`, `vize_croquis_cf` |
+| v2 预览 | JSX 与 TSRX 方言 | `compiler/vize_atelier_jsx` | npm: `@vizejs/compile-jsx`, `@vizejs/compile-tsrx`; crates.io: `vize_atelier_jsx` |
+| v2 预览 | 构建工具、ESLint、Prettier 与 Volar 适配器 | `integrations/adapters` | npm: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin`, `@vizejs/turbopack-plugin`, `@vizejs/parcel-transformer`, `@vizejs/parcel-transformer-native`, `eslint-plugin-vize`, `prettier-plugin-vize`, `@vizejs/volar-plugin`; JSR: `@vizejs/babel-plugin`, `@vizejs/rspack-plugin` |
+| v3 预览 | Davinci 层级 | `davinci/levels` | crates.io: `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3`, `vize_l4` |
+
+<!-- product-channels:end -->
+
 ## 包支持层级
 
 | 等级       | 包裹                                                                                          | 合同                                                                  |
