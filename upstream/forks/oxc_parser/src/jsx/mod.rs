@@ -56,8 +56,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     ) -> ArenaBox<'a, JSXFragment<'a>> {
         self.expect_jsx_child(Kind::RAngle);
         let opening_fragment = JSXOpeningFragment::new(self.end_span(span), self);
-        let (children, closing) =
-            self.with_stack_headroom(|p| p.parse_jsx_children_and_closing(in_jsx_child));
+        let (children, closing) = self.parse_jsx_children_and_closing(in_jsx_child);
         let closing_fragment = match closing {
             JSXClosing::Fragment(f) => f,
             JSXClosing::Element(e) => {
@@ -83,8 +82,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let (children, closing_element) = if self_closing {
             (ArenaVec::new_in(self), None)
         } else {
-            let (children, closing) =
-                self.with_stack_headroom(|p| p.parse_jsx_children_and_closing(in_jsx_child));
+            let (children, closing) = self.parse_jsx_children_and_closing(in_jsx_child);
             let closing_element = match closing {
                 JSXClosing::Element(e) => {
                     if !Self::jsx_element_name_eq(&opening_element.name, &e.name) {

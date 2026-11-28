@@ -14,13 +14,11 @@ impl<'a, C: Config> CoverGrammar<'a, Expression<'a>, C> for AssignmentTarget<'a>
     fn cover(expr: Expression<'a>, p: &mut ParserImpl<'a, C>) -> Self {
         match expr {
             Expression::ArrayExpression(array_expr) => {
-                let pat =
-                    p.with_stack_headroom(|p| ArrayAssignmentTarget::cover(array_expr.unbox(), p));
+                let pat = ArrayAssignmentTarget::cover(array_expr.unbox(), p);
                 AssignmentTarget::ArrayAssignmentTarget(p.alloc(pat))
             }
             Expression::ObjectExpression(object_expr) => {
-                let pat = p
-                    .with_stack_headroom(|p| ObjectAssignmentTarget::cover(object_expr.unbox(), p));
+                let pat = ObjectAssignmentTarget::cover(object_expr.unbox(), p);
                 AssignmentTarget::ObjectAssignmentTarget(p.alloc(pat))
             }
             _ => AssignmentTarget::from(SimpleAssignmentTarget::cover(expr, p)),
@@ -44,7 +42,7 @@ impl<'a, C: Config> CoverGrammar<'a, Expression<'a>, C> for SimpleAssignmentTarg
                     Expression::ObjectExpression(_) | Expression::ArrayExpression(_) => {
                         p.fatal_error(diagnostics::invalid_assignment(span))
                     }
-                    expr => p.with_stack_headroom(|p| SimpleAssignmentTarget::cover(expr, p)),
+                    expr => SimpleAssignmentTarget::cover(expr, p),
                 }
             }
             Expression::TSAsExpression(expr) => match expr.expression.get_inner_expression() {

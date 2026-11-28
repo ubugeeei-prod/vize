@@ -538,10 +538,10 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     fn parse_array_expression_element(&mut self) -> ArrayExpressionElement<'a> {
         // Grow before recursive element/spread/assignment descent. Empty arrays
         // leave the original delimited list before reaching this callback.
-        self.with_stack_headroom(|p| match p.cur_kind() {
-            Kind::Comma => p.parse_elision(),
-            Kind::Dot3 => ArrayExpressionElement::SpreadElement(p.parse_spread_element()),
-            _ => ArrayExpressionElement::from(p.parse_assignment_expression_or_higher()),
+        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || match self.cur_kind() {
+            Kind::Comma => self.parse_elision(),
+            Kind::Dot3 => ArrayExpressionElement::SpreadElement(self.parse_spread_element()),
+            _ => ArrayExpressionElement::from(self.parse_assignment_expression_or_higher()),
         })
     }
 
@@ -1017,7 +1017,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let is_import = self.at(Kind::Import); // Syntax Error for `new import('mod')` but not `new (import('mod'))`.
         let mut optional = false;
         let mut callee = {
-            let lhs = self.with_stack_headroom(Self::parse_primary_expression);
+            let lhs = self.parse_primary_expression();
             self.parse_member_expression_rest(
                 rhs_span,
                 lhs,
@@ -1289,9 +1289,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let operator = map_unary_operator(self.cur_kind());
         self.bump_any();
         let pure_comment_index = self.lexer.trivia_builder.previous_token_has_pure_comment();
-        let argument_span = self.start_span();
-        let mut argument =
-            self.with_stack_headroom(|p| p.parse_simple_unary_expression(argument_span));
+        let mut argument = self.parse_simple_unary_expression(self.start_span());
         if let Some(index) = pure_comment_index
             && !Self::set_pure_on_call_or_new_expr(&mut argument)
         {
@@ -1501,22 +1499,19 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         &mut self,
         allow_return_type_in_arrow_function: bool,
     ) -> Expression<'a> {
-        // Every nested expression, arrow body and conditional branch descends here.
-        self.with_stack_headroom(|p| {
-            if p.state.type_argument_speculation_depth == 0 || p.fatal_error.is_some() {
-                return p.parse_assignment_expression_or_higher_uncached(
+        if self.state.type_argument_speculation_depth == 0 || self.fatal_error.is_some() {
+            return self.parse_assignment_expression_or_higher_uncached(
+                allow_return_type_in_arrow_function,
+            );
+        }
+        self.memoize_failed_speculative_subproblem(
+            SpeculativeProduction::Assignment { allow_return_type_in_arrow_function },
+            |parser| {
+                parser.parse_assignment_expression_or_higher_uncached(
                     allow_return_type_in_arrow_function,
-                );
-            }
-            p.memoize_failed_speculative_subproblem(
-                SpeculativeProduction::Assignment { allow_return_type_in_arrow_function },
-                |parser| {
-                    parser.parse_assignment_expression_or_higher_uncached(
-                        allow_return_type_in_arrow_function,
-                    )
-                },
-            )
-        })
+                )
+            },
+        )
     }
 
     fn parse_assignment_expression_or_higher_uncached(
@@ -1750,9 +1745,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         if self.ctx.has_await() {
             let span = self.start_span();
             self.bump_any(); // consume `await`
-            let argument_span = self.start_span();
-            let argument =
-                self.with_stack_headroom(|p| p.parse_unary_expression_or_higher(argument_span));
+            let argument = self.parse_unary_expression_or_higher(self.start_span());
             return Expression::new_await_expression(self.end_span(span), argument, self);
         }
 

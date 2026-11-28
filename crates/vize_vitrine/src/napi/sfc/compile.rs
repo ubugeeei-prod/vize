@@ -21,22 +21,7 @@ pub fn compile_sfc(
     source: String,
     options: Option<SfcCompileOptionsNapi>,
 ) -> Result<SfcCompileResultNapi> {
-    // The call runs on the host's thread, whose stack may be far smaller than
-    // the CLI's worker stacks; a source too large for it compiles on one.
-    vize_l0::recursion::with_stack_for_source(source.len(), move || {
-        compile_sfc_on_current_stack(source, options)
-    })
-}
-
-fn compile_sfc_on_current_stack(
-    source: String,
-    options: Option<SfcCompileOptionsNapi>,
-) -> Result<SfcCompileResultNapi> {
-    use vize_atelier_sfc::{
-        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
-        parse_sfc as sfc_parse,
-    };
+    use vize_atelier_sfc::{SfcParseOptions, parse_sfc as sfc_parse};
 
     let opts = options.unwrap_or_default();
     let vue_version = resolve_sfc_vue_version(opts.vue_version.as_deref())?;
@@ -71,6 +56,31 @@ fn compile_sfc_on_current_stack(
                 type_project: None,
             });
         }
+    };
+
+    // The call runs on the host's thread, whose stack may be far smaller than
+    // the CLI's worker stacks; a script too large for it compiles on one.
+    let script_len = descriptor
+        .script
+        .iter()
+        .chain(&descriptor.script_setup)
+        .map(|block| block.content.len())
+        .sum();
+    vize_l0::recursion::with_stack_for_script(script_len, || {
+        compile_descriptor(&descriptor, opts, vue_version, &type_projects, filename)
+    })
+}
+
+fn compile_descriptor(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    opts: SfcCompileOptionsNapi,
+    vue_version: vize_l0::config::VueVersion,
+    type_projects: &vize::type_projects::ImportedTypeProjects,
+    filename: vize_l0::CompactString,
+) -> Result<SfcCompileResultNapi> {
+    use vize_atelier_sfc::{
+        ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
+        StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
     };
 
     let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
@@ -161,13 +171,13 @@ fn compile_sfc_on_current_stack(
 
     let compile_result = type_projects
         .for_descriptor(
-            &descriptor,
+            descriptor,
             std::path::Path::new(opts.filename.as_deref().unwrap_or("anonymous.vue")),
         )
         .and_then(|type_project| {
             whitespace.apply(|| {
                 compile_sfc_for_adapter_with_project(
-                    &descriptor,
+                    descriptor,
                     compile_opts,
                     template_syntax,
                     custom_elements,

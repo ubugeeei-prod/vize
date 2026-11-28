@@ -28,8 +28,8 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 
     pub(crate) fn parse_binding_pattern_kind(&mut self) -> BindingPattern<'a> {
         match self.cur_kind() {
-            Kind::LCurly => self.with_stack_headroom(Self::parse_object_binding_pattern),
-            Kind::LBrack => self.with_stack_headroom(Self::parse_array_binding_pattern),
+            Kind::LCurly => self.parse_object_binding_pattern(),
+            Kind::LBrack => self.parse_array_binding_pattern(),
             _ => self.parse_binding_pattern_identifier(),
         }
     }

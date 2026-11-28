@@ -708,7 +708,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let type_annotation = self.parse_ts_type();
         self.expect(Kind::RAngle);
         let lhs_span = self.start_span();
-        let expression = self.with_stack_headroom(|p| p.parse_simple_unary_expression(lhs_span));
+        let expression = self.parse_simple_unary_expression(lhs_span);
         let span = self.end_span(span);
 
         if matches!(self.source_type.extension(), Some(FileExtension::Mts | FileExtension::Cts)) {

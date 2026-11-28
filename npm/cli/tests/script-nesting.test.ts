@@ -10,8 +10,8 @@ const native = require("@vizejs/native") as {
   ): { code: string; errors: unknown[] };
 };
 
-/** Deeper than any of these shapes reached on a host thread before. */
-const DEPTH = 50_000;
+/** Past every shape's limit on an 8 MiB host thread, within the CLI's 64 MiB. */
+const DEPTH = 20_000;
 
 function nested(open: string, middle: string, close: string): string {
   return open.repeat(DEPTH) + middle + close.repeat(DEPTH);
