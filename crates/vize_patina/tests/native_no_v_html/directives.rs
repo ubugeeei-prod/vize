@@ -4,7 +4,7 @@ use vize_patina::{Rule, RuleCategory, Severity, rules::vue::NoVHtml};
 
 #[test]
 fn registered_warning_essential_nonfixable_metadata_is_retained() {
-    let rule = NoVHtml;
+    let rule = NoVHtml::default();
     assert_eq!(rule.meta().name, "vue/no-v-html");
     assert_eq!(rule.meta().category, RuleCategory::Essential);
     assert_eq!(rule.meta().default_severity, Severity::Warning);

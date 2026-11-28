@@ -252,6 +252,9 @@ impl Linter {
         if !options.configured_vue().is_empty() {
             self = configured_vue::apply(self, options.configured_vue());
         }
+        if !options.template_rules().is_empty() {
+            self = template_rules::apply(self, options.template_rules());
+        }
         self
     }
 }
@@ -306,6 +309,7 @@ mod configured_vue;
 mod macro_order;
 mod max_lines;
 mod max_lines_per_block;
+mod template_rules;
 mod v_bind_style;
 
 #[cfg(test)]

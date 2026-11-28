@@ -1,0 +1,4 @@
+<template>
+  <div class="a" :class="b" style="c" :style="d" />
+  <p class="a" class="b" />
+</template>

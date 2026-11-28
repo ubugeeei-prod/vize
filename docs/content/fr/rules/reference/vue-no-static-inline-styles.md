@@ -9,7 +9,7 @@ Interdire les attributs de style en ligne statiques.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | Aucune | Non | Aucune |
+| `warning` | Aucune | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
@@ -52,5 +52,6 @@ Lancez ensuite `vp run lint`.
 ## Voir aussi
 
 - [Règles Vue](../vue.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L21)

@@ -423,7 +423,7 @@ fn no_jsx_equivalent_v_html_is_skipped() {
     // migrated to the markup IR, and the lowering fallback finds no `v-html`
     // directive in JSX, so linting JSX produces no diagnostic. This is the
     // documented "rule with no JSX equivalent is skipped" behavior.
-    let linter = linter_with(Box::new(NoVHtml));
+    let linter = linter_with(Box::new(NoVHtml::default()));
     let result = linter.lint_jsx(
         r#"const A = () => <div dangerouslySetInnerHTML={{ __html: x }}/>;"#,
         "test.jsx",

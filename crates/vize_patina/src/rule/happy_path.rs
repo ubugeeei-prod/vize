@@ -39,7 +39,7 @@ impl RuleRegistry {
         registry.register(Box::new(
             crate::rules::vue::MustacheInterpolationSpacing::default(),
         ));
-        registry.register(Box::new(crate::rules::vue::NoLoneTemplate));
+        registry.register(Box::new(crate::rules::vue::NoLoneTemplate::default()));
         registry.register(Box::new(crate::rules::vue::NoMultiSpaces::default()));
         registry.register(Box::new(crate::rules::vue::PropNameCasing::default()));
         registry.register(Box::new(crate::rules::vue::VOnStyle::default()));

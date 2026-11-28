@@ -44,6 +44,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{Expression, ObjectProperty, ObjectPropertyKind, PropertyKey};
 use oxc_span::GetSpan;
+use regex::Regex;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
 };
@@ -58,7 +59,45 @@ static META: RuleMeta = RuleMeta {
 
 /// No v-html rule
 #[derive(Default)]
-pub struct NoVHtml;
+pub struct NoVHtml {
+    ignore_pattern: Option<Regex>,
+}
+
+impl NoVHtml {
+    /// Accept a `v-html` whose expression matches `pattern`, as upstream's
+    /// `ignorePattern`. A pattern that does not compile accepts nothing.
+    pub fn with_ignore_pattern(pattern: &str) -> Self {
+        Self {
+            ignore_pattern: Regex::new(pattern).ok(),
+        }
+    }
+
+    /// Upstream tests an identifier's name, and otherwise the expression's
+    /// source text without enclosing parentheses.
+    fn is_ignored(&self, directive: &DirectiveNode<'_>) -> bool {
+        let Some(pattern) = &self.ignore_pattern else {
+            return false;
+        };
+        let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+            return false;
+        };
+        let Some(parsed) = expression.js_ast.and_then(|parsed| parsed.as_expression()) else {
+            return false;
+        };
+        let mut ast = parsed.ast;
+        while let Expression::ParenthesizedExpression(inner) = ast {
+            ast = &inner.expression;
+        }
+        let text = match ast {
+            Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+            _ => {
+                let span = ast.span();
+                parsed.raw.get(span.start as usize..span.end as usize)
+            }
+        };
+        text.is_some_and(|text| pattern.is_match(text))
+    }
+}
 
 impl Rule for NoVHtml {
     fn meta(&self) -> &'static RuleMeta {
@@ -76,6 +115,9 @@ impl Rule for NoVHtml {
         directive: &DirectiveNode<'a>,
     ) {
         if directive.name == "html" {
+            if self.is_ignored(directive) {
+                return;
+            }
             report_sink(
                 ctx,
                 element,

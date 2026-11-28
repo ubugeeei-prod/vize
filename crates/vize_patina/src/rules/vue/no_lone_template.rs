@@ -39,7 +39,10 @@ static META: RuleMeta = RuleMeta {
 
 /// No lone template rule
 #[derive(Default)]
-pub struct NoLoneTemplate;
+pub struct NoLoneTemplate {
+    /// Accept a `<template>` that has an `id` or a `ref`, as upstream's `ignoreAccessible`.
+    pub ignore_accessible: bool,
+}
 
 impl NoLoneTemplate {
     /// Check if the template has a valid directive that justifies its existence
@@ -70,6 +73,19 @@ impl NoLoneTemplate {
         false
     }
 
+    /// Whether a static or statically bound `id` or `ref` names the template.
+    fn is_accessible(element: &ElementNode) -> bool {
+        element.props.iter().any(|prop| match prop {
+            PropNode::Attribute(attr) => matches!(attr.name, "id" | "ref"),
+            PropNode::Directive(dir) if dir.name == "bind" => matches!(
+                &dir.arg,
+                Some(ExpressionNode::Simple(simple))
+                    if simple.is_static && matches!(simple.content, "id" | "ref")
+            ),
+            _ => false,
+        })
+    }
+
     fn is_static_slot_arg(arg: &Option<ExpressionNode<'_>>) -> bool {
         matches!(
             arg,
@@ -92,7 +108,9 @@ impl Rule for NoLoneTemplate {
             return;
         }
 
-        if !Self::has_valid_directive(element) {
+        if !Self::has_valid_directive(element)
+            && !(self.ignore_accessible && Self::is_accessible(element))
+        {
             ctx.warn_with_help(
                 ctx.t("vue/no-lone-template.message"),
                 &element.loc,
@@ -110,8 +128,46 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(NoLoneTemplate));
+        registry.register(Box::new(NoLoneTemplate::default()));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn ignore_accessible_accepts_only_static_id_and_ref_names() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(NoLoneTemplate {
+            ignore_accessible: true,
+        }));
+        let configured = Linter::with_registry(registry);
+        let default = create_linter();
+        for source in [
+            r#"<div><template id="a"><span /></template></div>"#,
+            r#"<div><template ref="a"><span /></template></div>"#,
+            r#"<div><template :id="a"><span /></template></div>"#,
+            r#"<div><template v-bind:ref="a"><span /></template></div>"#,
+        ] {
+            assert_eq!(
+                configured.lint_template(source, "test.vue").warning_count,
+                0,
+                "{source}"
+            );
+            assert_eq!(
+                default.lint_template(source, "test.vue").warning_count,
+                1,
+                "{source}"
+            );
+        }
+        for source in [
+            r#"<div><template :[id]="a"><span /></template></div>"#,
+            r#"<div><template class="a"><span /></template></div>"#,
+            r#"<div><template data-id="a"><span /></template></div>"#,
+        ] {
+            assert_eq!(
+                configured.lint_template(source, "test.vue").warning_count,
+                1,
+                "{source}"
+            );
+        }
     }
 
     #[test]

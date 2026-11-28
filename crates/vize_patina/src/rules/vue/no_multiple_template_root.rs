@@ -28,7 +28,11 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Disallow template shapes that do not render exactly one element root.
-pub struct NoMultipleTemplateRoot;
+#[derive(Default)]
+pub struct NoMultipleTemplateRoot {
+    /// Report comments placed directly in the root, as upstream's `disallowComments`.
+    pub disallow_comments: bool,
+}
 
 #[inline]
 fn has_directive(element: &ElementNode<'_>, name: &str) -> bool {
@@ -200,6 +204,17 @@ impl Rule for NoMultipleTemplateRoot {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        if self.disallow_comments {
+            for child in &root.children {
+                if let TemplateChildNode::Comment(comment) = child {
+                    ctx.error_with_help(
+                        ctx.t("vue/no-multiple-template-root.comment_root"),
+                        &comment.loc,
+                        ctx.t("vue/no-multiple-template-root.comment_help"),
+                    );
+                }
+            }
+        }
         let shape = RootShape::classify(ctx.source, root);
 
         // Upstream gives meaningful text precedence over every element report.

@@ -1,0 +1,7 @@
+<template>
+  <!-- lead -->
+  <div>
+    <!-- inner -->
+  </div>
+  <!-- tail -->
+</template>

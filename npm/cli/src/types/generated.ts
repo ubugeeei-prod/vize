@@ -924,6 +924,25 @@ export interface LintRuleOptions {
     allowModifiers?: boolean;
   };
   "musea/prefer-design-tokens"?: MuseaPreferDesignTokensOptions;
+  "vue/no-duplicate-attributes"?: {
+    allowCoexistClass?: boolean;
+    allowCoexistStyle?: boolean;
+  };
+  "vue/no-multiple-template-root"?: {
+    disallowComments?: boolean;
+  };
+  "vue/no-lone-template"?: {
+    ignoreAccessible?: boolean;
+  };
+  "vue/no-static-inline-styles"?: {
+    allowBinding?: boolean;
+  };
+  "vue/no-unused-components"?: {
+    ignoreWhenBindingPresent?: boolean;
+  };
+  "vue/no-v-html"?: {
+    ignorePattern?: string;
+  };
 }
 export interface NoRestrictedGlobalsOptions {
   globals?: RestrictedGlobal[];

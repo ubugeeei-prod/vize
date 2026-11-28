@@ -74,6 +74,7 @@
       "/rules/options-events": "Eventos",
       "/rules/options-attributes": "Atributos",
       "/rules/options-props": "Props",
+      "/rules/options-template": "Template",
       "/rules/reference/max-lines": "max-lines",
       "/rules/options-script": "Scripts",
       "/rules/options-type": "Tipos",

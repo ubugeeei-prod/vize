@@ -106,6 +106,12 @@ export default defineConfig({}).withVue({
 | `vue/v-slot-style` | `"shorthand" \| "longform"` または `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`（`SlotStyle` は `"v-slot"` も可） | 既定は `atComponent: "v-slot"`、`default: "shorthand"`、`named: "shorthand"` です。名前を消してしまうため、`named` では裸の `v-slot` を受け付けません。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` または `{ style?, ignore? }` | テンプレートのコンポーネントに渡す属性名の形式を指定します。[属性名のオプション](./options-attributes.md)を参照してください。 |
 | `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` では、名前付きスロットの修飾子を許可します。引数なしの修飾子や、そのスロット自身のプロパティに依存する動的な名前は報告します。 |
+| `vue/no-duplicate-attributes` | `{ allowCoexistClass?: boolean; allowCoexistStyle?: boolean }` | どちらも既定は `true` で、eslint-plugin-vue と同じです。`false` にすると `class` と並んだ `:class`、`style` と並んだ `:style` を報告します。[テンプレートのオプション](./options-template.md#vue-no-duplicate-attributes)を参照してください。 |
+| `vue/no-multiple-template-root` | `{ disallowComments?: boolean }` | 既定は `false`。`true` ではテンプレートのルートに直接置かれたコメントも報告します。 |
+| `vue/no-lone-template` | `{ ignoreAccessible?: boolean }` | 既定は `false`。`true` では `id` か `ref` を持つ入れ子の `<template>` を許可します。 |
+| `vue/no-static-inline-styles` | `{ allowBinding?: boolean }` | 既定は `false`。`true` では静的な `style` 属性だけを報告し、`:style` 内の静的な値は報告しません。 |
+| `vue/no-unused-components` | `{ ignoreWhenBindingPresent?: boolean }` | 既定は `true` で、動的な `is` のバインディングがあるファイルでは報告しません。`false` では登録を検査します。 |
+| `vue/no-v-html` | `{ ignorePattern?: string }` | 既定値はありません。式が Rust の正規表現に一致する `v-html` は報告しません。[テンプレートのオプション](./options-template.md#vue-no-v-html)を参照してください。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | トークンのデータを指定し、ルールを有効にするか、空でないトークンのリストで暗黙に選択した場合だけ報告します。`tier` の既定は `primitive` です。 |
 | `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。ルールを明示的に有効にする必要があります。 |
 | `type/no-confusing-void-expression` | `{ ignoreArrowShorthand?: boolean; ignoreVoidOperator?: boolean; ignoreVoidReturningFunctions?: boolean }` | typescript-eslint と同じく、3 つとも既定は `false` です。`ignoreArrowShorthand` で `() => voidCall()` を許可します。 |

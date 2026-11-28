@@ -1,0 +1,163 @@
+{
+  "schema": "vize.patina.template-rule-options",
+  "version": 1,
+  "reference": "eslint-plugin-vue.original.json",
+  "cases": [
+    {
+      "id": "no-duplicate-attributes/default",
+      "file": "DuplicateAttributes.vue.txt",
+      "rule": "vue/no-duplicate-attributes",
+      "options": null
+    },
+    {
+      "id": "no-duplicate-attributes/empty",
+      "file": "DuplicateAttributes.vue.txt",
+      "rule": "vue/no-duplicate-attributes",
+      "options": {}
+    },
+    {
+      "id": "no-duplicate-attributes/class-false",
+      "file": "DuplicateAttributes.vue.txt",
+      "rule": "vue/no-duplicate-attributes",
+      "options": {
+        "allowCoexistClass": false
+      }
+    },
+    {
+      "id": "no-duplicate-attributes/both-false",
+      "file": "DuplicateAttributes.vue.txt",
+      "rule": "vue/no-duplicate-attributes",
+      "options": {
+        "allowCoexistClass": false,
+        "allowCoexistStyle": false
+      }
+    },
+    {
+      "id": "no-duplicate-attributes/both-true",
+      "file": "DuplicateAttributes.vue.txt",
+      "rule": "vue/no-duplicate-attributes",
+      "options": {
+        "allowCoexistClass": true,
+        "allowCoexistStyle": true
+      }
+    },
+    {
+      "id": "no-multiple-template-root/default",
+      "file": "TemplateRootComments.vue.txt",
+      "rule": "vue/no-multiple-template-root",
+      "options": null
+    },
+    {
+      "id": "no-multiple-template-root/false",
+      "file": "TemplateRootComments.vue.txt",
+      "rule": "vue/no-multiple-template-root",
+      "options": {
+        "disallowComments": false
+      }
+    },
+    {
+      "id": "no-multiple-template-root/true",
+      "file": "TemplateRootComments.vue.txt",
+      "rule": "vue/no-multiple-template-root",
+      "options": {
+        "disallowComments": true
+      }
+    },
+    {
+      "id": "no-lone-template/default",
+      "file": "LoneTemplates.vue.txt",
+      "rule": "vue/no-lone-template",
+      "options": null
+    },
+    {
+      "id": "no-lone-template/false",
+      "file": "LoneTemplates.vue.txt",
+      "rule": "vue/no-lone-template",
+      "options": {
+        "ignoreAccessible": false
+      }
+    },
+    {
+      "id": "no-lone-template/true",
+      "file": "LoneTemplates.vue.txt",
+      "rule": "vue/no-lone-template",
+      "options": {
+        "ignoreAccessible": true
+      }
+    },
+    {
+      "id": "no-static-inline-styles/default",
+      "file": "StaticInlineStyles.vue.txt",
+      "rule": "vue/no-static-inline-styles",
+      "options": null
+    },
+    {
+      "id": "no-static-inline-styles/false",
+      "file": "StaticInlineStyles.vue.txt",
+      "rule": "vue/no-static-inline-styles",
+      "options": {
+        "allowBinding": false
+      }
+    },
+    {
+      "id": "no-static-inline-styles/true",
+      "file": "StaticInlineStyles.vue.txt",
+      "rule": "vue/no-static-inline-styles",
+      "options": {
+        "allowBinding": true
+      }
+    },
+    {
+      "id": "no-unused-components/default",
+      "file": "DynamicIs.vue.txt",
+      "rule": "vue/no-unused-components",
+      "options": null
+    },
+    {
+      "id": "no-unused-components/true",
+      "file": "DynamicIs.vue.txt",
+      "rule": "vue/no-unused-components",
+      "options": {
+        "ignoreWhenBindingPresent": true
+      }
+    },
+    {
+      "id": "no-unused-components/false",
+      "file": "DynamicIs.vue.txt",
+      "rule": "vue/no-unused-components",
+      "options": {
+        "ignoreWhenBindingPresent": false
+      }
+    },
+    {
+      "id": "no-v-html/default",
+      "file": "VHtml.vue.txt",
+      "rule": "vue/no-v-html",
+      "options": null
+    },
+    {
+      "id": "no-v-html/empty",
+      "file": "VHtml.vue.txt",
+      "rule": "vue/no-v-html",
+      "options": {
+        "ignorePattern": ""
+      }
+    },
+    {
+      "id": "no-v-html/prefix",
+      "file": "VHtml.vue.txt",
+      "rule": "vue/no-v-html",
+      "options": {
+        "ignorePattern": "^safe"
+      }
+    },
+    {
+      "id": "no-v-html/anywhere",
+      "file": "VHtml.vue.txt",
+      "rule": "vue/no-v-html",
+      "options": {
+        "ignorePattern": "html"
+      }
+    }
+  ]
+}

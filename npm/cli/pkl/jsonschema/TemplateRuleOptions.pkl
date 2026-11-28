@@ -1,0 +1,39 @@
+/// JSON Schema for the eslint-plugin-vue template rule options.
+///
+/// Each option keeps its upstream name and default.
+module vize.jsonschema.TemplateRuleOptions
+
+import "@json_schema/JsonSchema.pkl"
+
+local function flag(defaultValue: Boolean): JsonSchema = new JsonSchema {
+  type = "boolean"
+  default = defaultValue
+}
+
+local function flags(entries: Mapping<String, Boolean>): JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    for (name, defaultValue in entries) {
+      [name] = flag(defaultValue)
+    }
+  }
+  additionalProperties = false
+}
+
+properties: Mapping<String, JsonSchema> = new {
+  ["vue/no-duplicate-attributes"] = flags(new Mapping {
+    ["allowCoexistClass"] = true
+    ["allowCoexistStyle"] = true
+  })
+  ["vue/no-multiple-template-root"] = flags(new Mapping { ["disallowComments"] = false })
+  ["vue/no-lone-template"] = flags(new Mapping { ["ignoreAccessible"] = false })
+  ["vue/no-static-inline-styles"] = flags(new Mapping { ["allowBinding"] = false })
+  ["vue/no-unused-components"] = flags(new Mapping { ["ignoreWhenBindingPresent"] = true })
+  ["vue/no-v-html"] = new JsonSchema {
+    type = "object"
+    properties {
+      ["ignorePattern"] = new JsonSchema { type = "string" }
+    }
+    additionalProperties = false
+  }
+}

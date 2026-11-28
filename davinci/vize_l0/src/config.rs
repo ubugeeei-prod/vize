@@ -56,4 +56,8 @@ pub use model::{
     VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion,
     WarnCustomDirectiveOptions, esquery,
 };
+pub use model::{
+    NoDuplicateAttributesOptions, NoLoneTemplateOptions, NoMultipleTemplateRootOptions,
+    NoStaticInlineStylesOptions, NoUnusedComponentsOptions, NoVHtmlOptions, TemplateRuleOptions,
+};
 pub use normalize::normalize_public_config_value;

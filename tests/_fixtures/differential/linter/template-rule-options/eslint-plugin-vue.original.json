@@ -1,0 +1,659 @@
+{
+  "schema": 1,
+  "provider": {
+    "eslint-plugin-vue": "10.12.0",
+    "eslint": "9.39.5",
+    "vue-eslint-parser": "10.4.2"
+  },
+  "ruleSourceSha256": {
+    "vue/no-duplicate-attributes": "5264c015f6d2e41610221764679cb46ffbeda93b198b0c80352864eb8e369620",
+    "vue/no-multiple-template-root": "3b26b85c6bd9d105b5a03977cbfaf90b0521656552b0ddfeed90eb8b540560ca",
+    "vue/no-lone-template": "b9d8c001a0b0bc548de3a58a951e7b7f2eb5ef694437404cdcc2b1992e0065a7",
+    "vue/no-static-inline-styles": "ded1220c215939cfd1204019b4ab8d83f536879593bd260f1988b69239cf584b",
+    "vue/no-unused-components": "077fb677109b70dbed5384ee5b406fe72aa531c1327631ae87c01133a8950fd6",
+    "vue/no-v-html": "15a911968866dedce93e8197a496742f1f542c954cf7c3a38eee6ba40af5c323"
+  },
+  "rows": [
+    {
+      "id": "no-duplicate-attributes/default",
+      "findings": [
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 3,
+          "column": 16,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 78,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "id": "no-duplicate-attributes/empty",
+      "findings": [
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 3,
+          "column": 16,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 78,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "id": "no-duplicate-attributes/class-false",
+      "findings": [
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 2,
+          "column": 18,
+          "endLine": 2,
+          "endColumn": 28,
+          "start": 28,
+          "end": 38
+        },
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 3,
+          "column": 16,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 78,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "id": "no-duplicate-attributes/both-false",
+      "findings": [
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 2,
+          "column": 18,
+          "endLine": 2,
+          "endColumn": 28,
+          "start": 28,
+          "end": 38
+        },
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'style'.",
+          "line": 2,
+          "column": 39,
+          "endLine": 2,
+          "endColumn": 49,
+          "start": 49,
+          "end": 59
+        },
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 3,
+          "column": 16,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 78,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "id": "no-duplicate-attributes/both-true",
+      "findings": [
+        {
+          "ruleId": "vue/no-duplicate-attributes",
+          "message": "Duplicate attribute 'class'.",
+          "line": 3,
+          "column": 16,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 78,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "id": "no-multiple-template-root/default",
+      "findings": []
+    },
+    {
+      "id": "no-multiple-template-root/false",
+      "findings": []
+    },
+    {
+      "id": "no-multiple-template-root/true",
+      "findings": [
+        {
+          "ruleId": "vue/no-multiple-template-root",
+          "message": "The template root disallows comments.",
+          "line": 2,
+          "column": 3,
+          "endLine": 2,
+          "endColumn": 16,
+          "start": 13,
+          "end": 26
+        },
+        {
+          "ruleId": "vue/no-multiple-template-root",
+          "message": "The template root disallows comments.",
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 16,
+          "start": 65,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "no-lone-template/default",
+      "findings": [
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 3,
+          "column": 5,
+          "endLine": 3,
+          "endColumn": 22,
+          "start": 23,
+          "end": 40
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 4,
+          "column": 5,
+          "endLine": 4,
+          "endColumn": 23,
+          "start": 64,
+          "end": 82
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 5,
+          "column": 5,
+          "endLine": 5,
+          "endColumn": 23,
+          "start": 106,
+          "end": 124
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 6,
+          "column": 5,
+          "endLine": 6,
+          "endColumn": 30,
+          "start": 148,
+          "end": 173
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 7,
+          "column": 5,
+          "endLine": 7,
+          "endColumn": 24,
+          "start": 197,
+          "end": 216
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 8,
+          "column": 5,
+          "endLine": 8,
+          "endColumn": 27,
+          "start": 240,
+          "end": 262
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 9,
+          "column": 5,
+          "endLine": 9,
+          "endColumn": 15,
+          "start": 286,
+          "end": 296
+        }
+      ]
+    },
+    {
+      "id": "no-lone-template/false",
+      "findings": [
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 3,
+          "column": 5,
+          "endLine": 3,
+          "endColumn": 22,
+          "start": 23,
+          "end": 40
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 4,
+          "column": 5,
+          "endLine": 4,
+          "endColumn": 23,
+          "start": 64,
+          "end": 82
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 5,
+          "column": 5,
+          "endLine": 5,
+          "endColumn": 23,
+          "start": 106,
+          "end": 124
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 6,
+          "column": 5,
+          "endLine": 6,
+          "endColumn": 30,
+          "start": 148,
+          "end": 173
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 7,
+          "column": 5,
+          "endLine": 7,
+          "endColumn": 24,
+          "start": 197,
+          "end": 216
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 8,
+          "column": 5,
+          "endLine": 8,
+          "endColumn": 27,
+          "start": 240,
+          "end": 262
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 9,
+          "column": 5,
+          "endLine": 9,
+          "endColumn": 15,
+          "start": 286,
+          "end": 296
+        }
+      ]
+    },
+    {
+      "id": "no-lone-template/true",
+      "findings": [
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 7,
+          "column": 5,
+          "endLine": 7,
+          "endColumn": 24,
+          "start": 197,
+          "end": 216
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 8,
+          "column": 5,
+          "endLine": 8,
+          "endColumn": 27,
+          "start": 240,
+          "end": 262
+        },
+        {
+          "ruleId": "vue/no-lone-template",
+          "message": "`<template>` require directive.",
+          "line": 9,
+          "column": 5,
+          "endLine": 9,
+          "endColumn": 15,
+          "start": 286,
+          "end": 296
+        }
+      ]
+    },
+    {
+      "id": "no-static-inline-styles/default",
+      "findings": [
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "`style` attributes are forbidden.",
+          "line": 2,
+          "column": 8,
+          "endLine": 2,
+          "endColumn": 26,
+          "start": 18,
+          "end": 36
+        },
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "Static inline `style` are forbidden.",
+          "line": 2,
+          "column": 37,
+          "endLine": 2,
+          "endColumn": 49,
+          "start": 47,
+          "end": 59
+        },
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "Static inline `style` are forbidden.",
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 35,
+          "start": 87,
+          "end": 114
+        }
+      ]
+    },
+    {
+      "id": "no-static-inline-styles/false",
+      "findings": [
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "`style` attributes are forbidden.",
+          "line": 2,
+          "column": 8,
+          "endLine": 2,
+          "endColumn": 26,
+          "start": 18,
+          "end": 36
+        },
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "Static inline `style` are forbidden.",
+          "line": 2,
+          "column": 37,
+          "endLine": 2,
+          "endColumn": 49,
+          "start": 47,
+          "end": 59
+        },
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "Static inline `style` are forbidden.",
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 35,
+          "start": 87,
+          "end": 114
+        }
+      ]
+    },
+    {
+      "id": "no-static-inline-styles/true",
+      "findings": [
+        {
+          "ruleId": "vue/no-static-inline-styles",
+          "message": "`style` attributes are forbidden.",
+          "line": 2,
+          "column": 8,
+          "endLine": 2,
+          "endColumn": 26,
+          "start": 18,
+          "end": 36
+        }
+      ]
+    },
+    {
+      "id": "no-unused-components/default",
+      "findings": []
+    },
+    {
+      "id": "no-unused-components/true",
+      "findings": []
+    },
+    {
+      "id": "no-unused-components/false",
+      "findings": [
+        {
+          "ruleId": "vue/no-unused-components",
+          "message": "The \"Unused\" component has been registered but not used.",
+          "line": 5,
+          "column": 23,
+          "endLine": 5,
+          "endColumn": 29,
+          "start": 112,
+          "end": 118
+        }
+      ]
+    },
+    {
+      "id": "no-v-html/default",
+      "findings": [
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 26,
+          "end": 43
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 4,
+          "column": 8,
+          "endLine": 4,
+          "endColumn": 27,
+          "start": 54,
+          "end": 73
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 5,
+          "column": 8,
+          "endLine": 5,
+          "endColumn": 29,
+          "start": 84,
+          "end": 105
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 6,
+          "column": 8,
+          "endLine": 6,
+          "endColumn": 26,
+          "start": 116,
+          "end": 134
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 7,
+          "column": 8,
+          "endLine": 7,
+          "endColumn": 29,
+          "start": 145,
+          "end": 166
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 8,
+          "column": 8,
+          "endLine": 8,
+          "endColumn": 20,
+          "start": 177,
+          "end": 189
+        }
+      ]
+    },
+    {
+      "id": "no-v-html/empty",
+      "findings": [
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 26,
+          "end": 43
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 4,
+          "column": 8,
+          "endLine": 4,
+          "endColumn": 27,
+          "start": 54,
+          "end": 73
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 5,
+          "column": 8,
+          "endLine": 5,
+          "endColumn": 29,
+          "start": 84,
+          "end": 105
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 6,
+          "column": 8,
+          "endLine": 6,
+          "endColumn": 26,
+          "start": 116,
+          "end": 134
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 7,
+          "column": 8,
+          "endLine": 7,
+          "endColumn": 29,
+          "start": 145,
+          "end": 166
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 8,
+          "column": 8,
+          "endLine": 8,
+          "endColumn": 20,
+          "start": 177,
+          "end": 189
+        }
+      ]
+    },
+    {
+      "id": "no-v-html/prefix",
+      "findings": [
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 5,
+          "column": 8,
+          "endLine": 5,
+          "endColumn": 29,
+          "start": 84,
+          "end": 105
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 8,
+          "column": 8,
+          "endLine": 8,
+          "endColumn": 20,
+          "start": 177,
+          "end": 189
+        }
+      ]
+    },
+    {
+      "id": "no-v-html/anywhere",
+      "findings": [
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 25,
+          "start": 26,
+          "end": 43
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 4,
+          "column": 8,
+          "endLine": 4,
+          "endColumn": 27,
+          "start": 54,
+          "end": 73
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 5,
+          "column": 8,
+          "endLine": 5,
+          "endColumn": 29,
+          "start": 84,
+          "end": 105
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 7,
+          "column": 8,
+          "endLine": 7,
+          "endColumn": 29,
+          "start": 145,
+          "end": 166
+        },
+        {
+          "ruleId": "vue/no-v-html",
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 8,
+          "column": 8,
+          "endLine": 8,
+          "endColumn": 20,
+          "start": 177,
+          "end": 189
+        }
+      ]
+    }
+  ]
+}

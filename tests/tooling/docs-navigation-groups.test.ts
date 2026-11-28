@@ -132,6 +132,7 @@ void test("rule option guides are colocated with the rule groups they configure"
           "/rules/options-events",
           "/rules/options-attributes",
           "/rules/options-props",
+          "/rules/options-template",
           "/rules/reference/max-lines",
         ],
       ],

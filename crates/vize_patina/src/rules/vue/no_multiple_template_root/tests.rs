@@ -22,7 +22,7 @@ type DifferentialCase<'a> = (&'a str, &'a [ExpectedFinding]);
 
 fn linter() -> Linter {
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(NoMultipleTemplateRoot));
+    registry.register(Box::new(NoMultipleTemplateRoot::default()));
     Linter::with_registry(registry)
 }
 

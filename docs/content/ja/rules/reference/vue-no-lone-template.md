@@ -9,7 +9,7 @@ description: "不要な template 要素を検出します。"
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -53,5 +53,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32)
