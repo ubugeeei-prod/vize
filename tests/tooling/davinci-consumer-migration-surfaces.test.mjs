@@ -265,7 +265,6 @@ void test("Atelier core singleton and element step slices import L0 through the 
 
   const expectedRows = [
     ["crates/vize_atelier_core/src/codegen/root.rs", "source", 1],
-    ["crates/vize_atelier_core/src/runtime_helpers.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/options.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/structural_keys.rs", "source", 1],
     ["crates/vize_atelier_core/src/lane/context.rs", "source", 3],
