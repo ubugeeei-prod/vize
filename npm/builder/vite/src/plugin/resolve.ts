@@ -16,6 +16,7 @@ import {
 
 import { isHeldByBuild, type VizePluginState } from "./state.ts";
 import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
+import { classifyImporterRequest } from "./importer-request.ts";
 import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
 import { resolvePageMacroRequest } from "./resolve-page-macro.ts";
@@ -693,12 +694,6 @@ export function isPotentialVizeResolveId(id: string): boolean {
   );
 }
 
-function classifyImporterRequest(
-  importer: string | undefined,
-): ReturnType<typeof classifyVitePluginRequest> | null {
-  return importer ? classifyVitePluginRequest(importer) : null;
-}
-
 export function isPotentialVizeImporter(importer: string | undefined): boolean {
   if (importer === undefined) {
     return false;
@@ -827,14 +822,14 @@ export async function resolveIdHook(
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }
-  const importerRequest = classifyImporterRequest(importer);
+  const importerRequest = classifyImporterRequest(state, importer);
 
   const isBuild = state.server === null;
   const isDependencyScan = !!options?.scan;
   const isSsrRequest =
     !!options?.ssr ||
     (importerRequest?.isVizeSsrVirtual ?? false) ||
-    (importer ? isPluginVisibleSsrVirtualId(importer) : false);
+    (importer ? isPluginVisibleSsrVirtualId(importer, importerRequest ?? undefined) : false);
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
