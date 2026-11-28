@@ -75,16 +75,24 @@ fn diagnostic_only_options_never_fail_declaration_emit() {
             "index.d.ts"
         ]
     );
-    for file in &emitted.files {
-        if file.path.to_string_lossy().ends_with(".vue.d.ts") {
-            assert!(
-                file.content
-                    .starts_with("import type { $IsAny, $ComponentInput, "),
-                "{}: the finished output imports its helpers:\n{}",
-                file.path.display(),
-                file.content
-            );
-        }
-    }
+    // The finished outputs import their helpers from the shipped file.
+    let mut imports = emitted
+        .files
+        .iter()
+        .filter_map(|file| {
+            let name = relative_path(&out_dir, &file.path);
+            name.ends_with(".vue.d.ts")
+                .then(|| (name, file.content.lines().next().map(String::from)))
+        })
+        .collect::<Vec<_>>();
+    imports.sort();
+    let helpers = "import type { $IsAny, $ComponentInput, $ComponentInstanceFor, $IsUnknown, $UsePublicInstance, $PublicEmit, $PublicSlots, $ComponentPublicBase } from \"./__vize_helpers.js\";";
+    assert_eq!(
+        imports,
+        [
+            ("Panel.vue.d.ts".into(), Some(helpers.into())),
+            ("Popover.vue.d.ts".into(), Some(helpers.into())),
+        ]
+    );
     let _ = std::fs::remove_dir_all(root);
 }
