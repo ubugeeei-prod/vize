@@ -56,7 +56,7 @@ pub(crate) use self::fallthrough::fallthrough_component_root_starts;
 use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
 pub(crate) use self::imports::extract_declared_name;
 use self::imports::{
-    ImportNames, collect_component_imported_names, emit_reference_path_directives,
+    collect_component_imported_names, emit_reference_path_directives,
     emit_reference_type_directives,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
@@ -196,7 +196,7 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
             script_module::collect(parses, script, recover_lone_setup, generation_options)
         })
         .unwrap_or_default();
-    let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
+    let imports = module_plan.imports(summary, script_content, generation_options);
     let (hoisted_generic_aliases, mut module_spans) = script_blocks.plan(
         summary,
         script_content,
@@ -308,7 +308,7 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
         script_content,
         options,
         global_components.enabled(),
-        &syntactic_type_only_imported_names,
+        (&syntactic_type_only_imported_names, generation_options),
     );
     let _component_aliases = super::component_aliases::cache_aliases(
         summary,

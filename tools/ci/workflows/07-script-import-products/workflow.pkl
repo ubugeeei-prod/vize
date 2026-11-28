@@ -1,0 +1,71 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Original import products"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/07-script-import-products.yml"
+      "tools/ci/workflows/07-script-import-products/**"
+      "davinci/vize_l2/src/query/script.rs"
+      "davinci/vize_l2/src/query/script/**"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_canon/src/virtual_ts.rs"
+      "crates/vize_canon/src/virtual_ts/types.rs"
+      "crates/vize_canon/src/virtual_ts/generator.rs"
+      "crates/vize_canon/src/virtual_ts/generator/imports.rs"
+      "crates/vize_canon/src/virtual_ts/generator/imports/**"
+      "crates/vize_canon/src/virtual_ts/generator/entry.rs"
+    }
+  }
+  workflow_dispatch {}
+}
+permissions { contents = "read" }
+concurrency {
+  group = "original-import-products-${{ github.event.pull_request.number || github.sha }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `original-import-products` {
+    name = "Original import document parity and paired resource measurements"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("07-script-import-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "original-import-products"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Compare complete original documents and measure their resources", ci.workflowScript("measure-original-import-products.sh"))
+      new Dynamic {
+        name = "Retain exact-source parity and raw paired measurements"
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "original-import-products-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/original-import-products"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

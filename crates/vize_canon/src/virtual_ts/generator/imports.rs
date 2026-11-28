@@ -14,15 +14,21 @@ use vize_carton::cstr;
 use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
 
-use super::super::types::VirtualTsOptions;
+use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
+
+#[cfg(feature = "original-import-products")]
+mod original;
+#[cfg(feature = "original-import-products")]
+pub use original::{OriginalImportError, OriginalImportFacts};
 
 pub(super) fn collect_component_imported_names<'a>(
     summary: &Croquis,
     script_content: Option<&'a str>,
     options: &VirtualTsOptions,
     global_components_enabled: bool,
-    type_only: &FxHashSet<CompactString>,
+    (type_only, generation): (&FxHashSet<CompactString>, VirtualTsGenerationOptions<'a>),
 ) -> FxHashSet<&'a str> {
+    let _ = generation;
     // The template-scope unwrap set also needs it: an auto-import already
     // imported by a plain `<script>` must not gain a second shadow.
     let needed = !options.auto_import_stubs.is_empty()
@@ -31,6 +37,10 @@ pub(super) fn collect_component_imported_names<'a>(
             && !vize_croquis::facts::component_usage_slice(summary).is_empty())
         || super::super::component_aliases::needs_imported_names(summary, type_only);
     if needed {
+        #[cfg(feature = "original-import-products")]
+        if let Some(original) = generation.original_imports {
+            return original.value_names(summary).collect();
+        }
         vize_carton::profile!(
             "canon.virtual_ts.extract_imported_names",
             collect_imported_names(summary, script_content)
@@ -122,6 +132,8 @@ pub(super) struct TypeOnlyImportPlan<'a> {
     pub(super) script_content: Option<&'a str>,
     /// Some(empty) is a completed extraction, distinct from the late fallback.
     pub(super) prepared: Option<FxHashSet<CompactString>>,
+    #[cfg(feature = "original-import-products")]
+    pub(super) original: Option<&'a OriginalImportFacts<'a>>,
 }
 
 pub(super) struct ImportNames<'a> {
@@ -158,8 +170,27 @@ impl<'a> ImportNames<'a> {
             type_only: TypeOnlyImportPlan {
                 script_content,
                 prepared,
+                #[cfg(feature = "original-import-products")]
+                original: None,
             },
         }
+    }
+}
+
+impl super::script_module::ScriptModulePlan {
+    #[inline]
+    pub(super) fn imports<'a>(
+        &self,
+        summary: &Croquis,
+        script: Option<&'a str>,
+        generation: VirtualTsGenerationOptions<'a>,
+    ) -> ImportNames<'a> {
+        #[cfg(feature = "original-import-products")]
+        if let (Some(original), Some(script)) = (generation.original_imports, script) {
+            return ImportNames::from_original(summary, script, &self.identifier_usage, original);
+        }
+        let _ = generation;
+        ImportNames::collect(summary, script, &self.identifier_usage)
     }
 }
 

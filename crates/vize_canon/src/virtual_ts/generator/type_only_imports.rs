@@ -26,11 +26,16 @@ pub(super) fn syntactic_type_only_imported_names(
     }
     vize_carton::profile!(
         "canon.virtual_ts.extract_syntactic_type_only_imported_names",
-        plan.prepared
-            .unwrap_or_else(|| collect_syntactic_type_only_imported_names(
-                summary,
-                plan.script_content
-            ))
+        plan.prepared.unwrap_or_else(|| {
+            #[cfg(feature = "original-import-products")]
+            if let Some(original) = plan.original {
+                return original
+                    .type_names(summary)
+                    .map(CompactString::new)
+                    .collect();
+            }
+            collect_syntactic_type_only_imported_names(summary, plan.script_content)
+        })
     )
 }
 

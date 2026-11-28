@@ -1,0 +1,22 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  set -euo pipefail
+  report="$RUNNER_TEMP/original-import-products"
+  mkdir -p "$report"
+  git rev-parse HEAD > "$report/revision.txt"
+  rustc --version --verbose > "$report/rustc.txt"
+  uname -a > "$report/host.txt"
+  export VIZE_ORIGINAL_IMPORT_INPUTS="$report/tracked-vue-inputs"
+  git ls-files -z -- '*.vue' > "$VIZE_ORIGINAL_IMPORT_INPUTS"
+  cargo test --locked --profile ci-opt -p vize_l2 --features script-declaration-queries --lib query::script:: -- --nocapture --test-threads=1 2>&1 | tee "$report/shared-query.log"
+  flags=(--locked --profile ci-opt -p vize_canon --features original-import-products --lib)
+  cargo clippy "${flags[@]}" --no-deps -- -D warnings 2>&1 | tee "$report/clippy.log"
+  cargo test "${flags[@]}" generator::imports::original::tests:: -- --nocapture --test-threads=1 2>&1 | tee "$report/controlled-parity.log"
+  cargo test "${flags[@]}" original_import_documents_on_tracked_sources -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/original-sources.log"
+  cargo test "${flags[@]}" original_import_document_resources -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/paired-resources.log"
+  """#
+}
