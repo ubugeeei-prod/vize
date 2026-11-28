@@ -109,7 +109,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="vue-no-unsupported-features"></span>[`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | 禁止在指定的 Vue.js 版本上使用尚未支持的语法。 | — |  |
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 禁止注册未在模板中使用的组件。 | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | 禁止 defineProps 中定义的未使用属性。 | `happy-path` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | 禁止未使用的脚本变量、导入和参数。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | 禁止 v-for 和 v-slot 指令中未使用的变量定义。 | `essential` |  |
@@ -181,7 +181,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 类型与脚本规则 (125)
+## 类型与脚本规则 (126)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -214,7 +214,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="script-no-get-current-instance"></span>[`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null）。 | `opinionated` |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | 禁止导入自动可用的 Vue 编译器宏。 | `essential` |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | 禁止从 Vue 内部模块导入。 | `essential` |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 禁止在 setup() 中 await 之后注册生命周期钩子。 | `essential` |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()。 | `essential` |  |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | 禁止向作用域插槽函数调用传入多个参数。 | `happy-path` |  |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | 禁止面向 Vapor 的组件使用 nextTick()。 | — |  |
 | <span id="script-no-options-api"></span>[`script/no-options-api`](./reference/script-no-options-api.md) | 禁止 Vapor 模式中的 Options API 模式。 | `opinionated` |  |
@@ -228,6 +228,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | 禁止直接引用必须通过类型化包装器访问的运行时环境全局变量。 | — |  |
 | <span id="script-no-restricted-members"></span>[`script/no-restricted-members`](./reference/script-no-restricted-members.md) | 禁止项目配置的 object.property 成员访问。 | — |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | 禁止 Options API 计算 getter 中的副作用。 | `essential` |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | 禁止在没有组件实例运行的位置调用 useTemplateRef()。 | `essential` |  |
 | <span id="script-no-top-level-ref-in-script"></span>[`script/no-top-level-ref-in-script`](./reference/script-no-top-level-ref-in-script.md) | 禁止顶层 ref/reactive，以防止跨请求状态污染。 | — |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | 禁止在 setup 或 render 函数内定义组件。 | `happy-path` |  |
 | <span id="script-no-unused-emit-declarations"></span>[`script/no-unused-emit-declarations`](./reference/script-no-unused-emit-declarations.md) | 标记已声明却从未发出的事件。 | `opinionated`, `nuxt` |  |

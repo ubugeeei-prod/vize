@@ -120,6 +120,7 @@ export const LINT_RULE_NAMES = [
   "script/no-restricted-globals",
   "script/no-restricted-members",
   "script/no-side-effects-in-computed-properties",
+  "script/no-template-ref-outside-instance",
   "script/no-top-level-ref-in-script",
   "script/no-unstable-nested-components",
   "script/no-unused-emit-declarations",

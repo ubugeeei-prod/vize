@@ -7,6 +7,7 @@ import { inverseJadeProfile } from "./lint-preset-jade-profile.ts";
 import { inverseMatrixRuleOptions12336 } from "./lint-matrix-rule-options-12336.ts";
 import { inverseRuleOptions12944 } from "./lint-preset-rule-options-12944.ts";
 import { inverseScriptUnusedAndTypeAwarePresets } from "./lint-preset-script-unused-type-aware.ts";
+import { inverseTemplateRefOutsideInstance } from "./lint-preset-template-ref-outside-instance.ts";
 
 const publicApiDocSuccessors = [
   {
@@ -141,7 +142,13 @@ export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
                   name,
                   inverseJadeProfile(
                     name,
-                    inverseConsistentTypeImports(name, inverseComponentFileNameCasing(name, body)),
+                    inverseConsistentTypeImports(
+                      name,
+                      inverseComponentFileNameCasing(
+                        name,
+                        inverseTemplateRefOutsideInstance(name, body),
+                      ),
+                    ),
                   ),
                 ),
               ),

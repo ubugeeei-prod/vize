@@ -2628,7 +2628,7 @@ valid:
   import { ref, computed } from 'vue'
 === script/no-lifecycle-after-await
 script/no-lifecycle-after-await · lint rule
-Disallow lifecycle hooks registered after an await in setup()
+Disallow lifecycle hooks and useTemplateRef() after an await in setup()
 
 tier: exact
 domain: the syntax of <script> and <script setup> programs, without type information
@@ -2935,6 +2935,43 @@ valid:
       }
     }
   }
+=== script/no-template-ref-outside-instance
+script/no-template-ref-outside-instance · lint rule
+Disallow useTemplateRef() where no component instance runs it
+
+tier: complete
+domain: Vue's useTemplateRef calls in script blocks and modules, placed by the code that runs them: module evaluation, callbacks of timers, watch, nextTick, promise reactions and DOM listeners, and setup-local functions only those or template v-on handlers use; code whose caller the script cannot determine is outside
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/script-no-template-ref-outside-instance.md
+
+invalid:
+  <script setup lang="ts">
+  import { useTemplateRef } from 'vue'
+  function focus() {
+    useTemplateRef<HTMLInputElement>('input').value?.focus()
+  }
+  setTimeout(() => useTemplateRef('input'))
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
+
+valid:
+  <script setup lang="ts">
+  import { onMounted, useTemplateRef } from 'vue'
+  const input = useTemplateRef<HTMLInputElement>('input')
+  function focus() {
+    input.value?.focus()
+  }
+  onMounted(() => focus())
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
 === script/no-top-level-ref-in-script
 script/no-top-level-ref-in-script · lint rule
 Disallow top-level ref/reactive to prevent Cross-Request State Pollution
@@ -6035,7 +6072,7 @@ valid:
   </template>
 === vue/no-unused-refs
 vue/no-unused-refs · lint rule
-Report template refs (ref="x") never referenced in <script>
+Report template refs (ref="x") that no script binding, useTemplateRef() or $refs reads
 
 tier: complete
 domain: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside

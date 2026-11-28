@@ -1,11 +1,11 @@
 ---
 title: "vue/no-unused-refs"
-description: "Signaler les refs de template (ref=\"x\") jamais référencées dans &lt;script&gt;."
+description: "Signaler les refs de template (ref=\"x\") qu’aucune liaison de script, aucun useTemplateRef() ni $refs ne lit."
 ---
 
 # `vue/no-unused-refs`
 
-Signaler les refs de template (ref="x") jamais référencées dans &lt;script&gt;.
+Signaler les refs de template (ref="x") qu’aucune liaison de script, aucun useTemplateRef() ni $refs ne lit.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |

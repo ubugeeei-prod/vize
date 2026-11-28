@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { ref, useTemplateRef, watch } from 'vue'
+
+const count = ref(0)
+
+function focus() {
+  useTemplateRef<HTMLInputElement>('input').value?.focus()
+}
+
+setTimeout(() => {
+  useTemplateRef('timer')
+}, 100)
+
+watch(count, () => {
+  useTemplateRef('watched')
+})
+
+fetch('/api').then(() => {
+  useTemplateRef('loaded')
+})
+</script>
+
+<template>
+  <input ref="input" />
+  <button @click="focus">Focus</button>
+</template>

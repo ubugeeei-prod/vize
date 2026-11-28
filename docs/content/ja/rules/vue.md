@@ -125,7 +125,7 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | script の非標準の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | SFC ブロックの外部 src 指定を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | template の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに参照しない ref を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに、script の変数、useTemplateRef()、$refs のどれからも読まない ref を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 文字列リテラルだけの不要な mustache を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 文字列リテラルだけの不要な v-bind を検出します。 | `nuxt`, `opinionated` |  |

@@ -174,7 +174,8 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-render-return",
     "vue/jsx-uses-vars",
     "script/require-slots-as-functions",
-    "vue/no-this-in-before-route-enter"
+    "vue/no-this-in-before-route-enter",
+    "script/no-template-ref-outside-instance"
   ],
   "essential": [
     "vue/comment-directive",
@@ -269,7 +270,8 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-deprecated-vue-config-keycodes",
     "script/require-render-return",
     "vue/jsx-uses-vars",
-    "script/require-slots-as-functions"
+    "script/require-slots-as-functions",
+    "script/no-template-ref-outside-instance"
   ],
   "happy_path": [
     "vue/comment-directive",
@@ -434,7 +436,8 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-render-return",
     "vue/jsx-uses-vars",
     "script/require-slots-as-functions",
-    "vue/no-this-in-before-route-enter"
+    "vue/no-this-in-before-route-enter",
+    "script/no-template-ref-outside-instance"
   ],
   "incremental": [],
   "nuxt": [
@@ -701,6 +704,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/one-component-per-file",
     "script/order-in-components",
     "vue/no-this-in-before-route-enter",
+    "script/no-template-ref-outside-instance",
     "css/no-important",
     "css/no-id-selectors",
     "css/prefer-logical-properties",
@@ -976,6 +980,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/one-component-per-file",
     "script/order-in-components",
     "vue/no-this-in-before-route-enter",
+    "script/no-template-ref-outside-instance",
     "css/no-important",
     "css/no-id-selectors",
     "css/prefer-logical-properties",
@@ -1160,6 +1165,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/prefer-prop-type-boolean-first",
     "vue/valid-model-definition",
     "script/consistent-type-imports",
+    "script/no-template-ref-outside-instance",
     "musea/require-title",
     "musea/require-component",
     "musea/valid-variant",

@@ -9,7 +9,7 @@ Checks for `<script>` and `<script setup>`: compiler macros, reactivity, props a
 
 Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 
-## Essential (39)
+## Essential (40)
 
 Correctness rules in the `essential` preset.
 
@@ -33,7 +33,7 @@ Correctness rules in the `essential` preset.
 | <span id="script-no-expose-after-await"></span>[`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | Disallow expose() and defineExpose() after an await. |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | Disallow importing Vue compiler macros that are auto-imported. |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | Disallow importing from Vue internal modules. |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Disallow lifecycle hooks registered after an await in setup(). |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Disallow lifecycle hooks and useTemplateRef() after an await in setup(). |  |
 | <span id="script-no-potential-component-option-typo"></span>[`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | Flag likely typos in Options API component option names. |  |
 | <span id="script-no-ref-as-operand"></span>[`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | Require ref-bound variables to be accessed via `.value` when used as an operand. |  |
 | <span id="script-no-required-prop-with-default"></span>[`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | Disallow a prop that is both required: true and has a default. |  |
@@ -41,6 +41,7 @@ Correctness rules in the `essential` preset.
 | <span id="script-no-reserved-keys"></span>[`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys. |  |
 | <span id="script-no-reserved-props"></span>[`script/no-reserved-props`](./reference/script-no-reserved-props.md) | Disallow reserved names in a component's props declaration. |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | Disallow side effects in Options API computed getters. |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | Disallow useTemplateRef() where no component instance runs it. |  |
 | <span id="script-no-use-computed-property-like-method"></span>[`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | Disallow calling an Options API computed property like a method. |  |
 | <span id="script-no-watch-after-await"></span>[`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | Disallow watchers registered after an await in setup() without keeping their stop handle. |  |
 | <span id="script-prefer-import-from-vue"></span>[`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | Prefer importing from 'vue' instead of internal packages. | ✓ |

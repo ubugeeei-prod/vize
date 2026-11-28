@@ -9,7 +9,7 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 
 各ルールのページに、診断が出る例・出ない例と、そのルールを有効にする設定があります。
 
-## 基本 (39)
+## 基本 (40)
 
 `essential` プリセットに含まれる、正しさを守るルールです。
 
@@ -33,7 +33,7 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 | <span id="script-no-expose-after-await"></span>[`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | await の後の expose() と defineExpose() を禁止します。 |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | 自動的に使える Vue コンパイラーマクロの import を検出します。 |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | Vue 内部モジュールからの import を検出します。 |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | setup() 内で await の後にライフサイクルフックを登録することを禁止します。 |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止します。 |  |
 | <span id="script-no-potential-component-option-typo"></span>[`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | Options API のオプション名の入力ミスを検出します。 |  |
 | <span id="script-no-ref-as-operand"></span>[`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | ref を演算の値として使う際に .value を参照します。 |  |
 | <span id="script-no-required-prop-with-default"></span>[`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | required: true と default を同時に持つ prop を検出します。 |  |
@@ -41,6 +41,7 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 | <span id="script-no-reserved-keys"></span>[`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | Options API のキーに Vue の予約名を使う箇所を検出します。 |  |
 | <span id="script-no-reserved-props"></span>[`script/no-reserved-props`](./reference/script-no-reserved-props.md) | prop 宣言に Vue の予約名を使う箇所を検出します。 |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | Options API の computed getter 内の副作用を検出します。 |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | コンポーネントのインスタンスがない場所での useTemplateRef() 呼び出しを禁止します。 |  |
 | <span id="script-no-use-computed-property-like-method"></span>[`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 |  |
 | <span id="script-no-watch-after-await"></span>[`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。 |  |
 | <span id="script-prefer-import-from-vue"></span>[`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | 内部パッケージではなく vue から import します。 | ✓ |

@@ -9,7 +9,7 @@ Verificações de `<script>` e `<script setup>`: macros do compilador, reativida
 
 Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 
-## Essenciais (39)
+## Essenciais (40)
 
 Regras de correção da predefinição `essential`.
 
@@ -33,7 +33,7 @@ Regras de correção da predefinição `essential`.
 | <span id="script-no-expose-after-await"></span>[`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | Proibir expose() e defineExpose() após um await. |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | Proibir a importação de macros do compilador Vue que são importadas automaticamente. |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | Proibir importações de módulos internos do Vue. |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Proibir hooks de ciclo de vida registrados após um await em setup(). |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Proibir hooks de ciclo de vida e useTemplateRef() após um await em setup(). |  |
 | <span id="script-no-potential-component-option-typo"></span>[`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | Sinalizar prováveis erros de digitação nos nomes de opções de componentes da Options API. |  |
 | <span id="script-no-ref-as-operand"></span>[`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | Exigir que variáveis vinculadas a refs sejam acessadas por `.value` quando usadas como operandos. |  |
 | <span id="script-no-required-prop-with-default"></span>[`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | Proibir uma prop que tenha required: true e também um valor padrão. |  |
@@ -41,6 +41,7 @@ Regras de correção da predefinição `essential`.
 | <span id="script-no-reserved-keys"></span>[`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | Proibir nomes reservados pelo Vue como chaves de props/data/computed/methods/setup/inject na Options API. |  |
 | <span id="script-no-reserved-props"></span>[`script/no-reserved-props`](./reference/script-no-reserved-props.md) | Proibir nomes reservados na declaração de props de um componente. |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | Proibir efeitos colaterais em getters computados da Options API. |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | Proibir useTemplateRef() onde nenhuma instância de componente o executa. |  |
 | <span id="script-no-use-computed-property-like-method"></span>[`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | Proibir chamar uma propriedade computada da Options API como um método. |  |
 | <span id="script-no-watch-after-await"></span>[`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | Proibir watchers registrados após um await em setup() sem guardar a função de parada. |  |
 | <span id="script-prefer-import-from-vue"></span>[`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | Preferir importar de 'vue' em vez de pacotes internos. | ✓ |

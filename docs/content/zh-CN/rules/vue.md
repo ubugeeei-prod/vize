@@ -125,7 +125,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | 不建议使用非标准的 script lang 值。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | 不建议在 SFC 块上使用 src 属性。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | 不建议在 template 块上使用 lang 属性。 | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | 禁止未使用的脚本变量、导入和参数。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 禁止表达式为常量字符串字面量的双花括号插值。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 禁止值为普通字符串字面量的 v-bind。 | `nuxt`, `opinionated` |  |

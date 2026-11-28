@@ -116,6 +116,7 @@ script/no-reserved-props	L1 script	script-oxc	legacy-engine	-	-	script/props_emi
 script/no-restricted-globals	L1 script	script-oxc	legacy-engine	-	-	script/no_restricted_globals.rs
 script/no-restricted-members	L1 script	script-oxc	legacy-engine	-	-	script/no_restricted_members.rs
 script/no-side-effects-in-computed-properties	L1 script	script-oxc	legacy-engine	-	-	script/no_side_effects_in_computed.rs
+script/no-template-ref-outside-instance	L1 script	script-oxc	legacy-engine	-	-	script/no_template_ref_outside_instance.rs
 script/no-top-level-ref-in-script	L1 script	script-oxc	legacy-engine	-	-	script/no_top_level_ref_in_script.rs
 script/no-unstable-nested-components	L2 semantic	script-oxc	legacy-rule	croquis	-	script/no_unstable_nested_components.rs
 script/no-unused-emit-declarations	L1 script	script-oxc	legacy-engine	-	-	script/props_emits/no_unused_emit_declarations.rs

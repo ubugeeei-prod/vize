@@ -2671,7 +2671,7 @@ script/no-internal-imports · lint 规则
   import { ref, computed } from 'vue'
 === script/no-lifecycle-after-await
 script/no-lifecycle-after-await · lint 规则
-禁止在 setup() 中 await 之后注册生命周期钩子
+禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()
 
 精度层级: exact
 适用范围: the syntax of <script> and <script setup> programs, without type information
@@ -2993,6 +2993,43 @@ script/no-side-effects-in-computed-properties · lint 规则
       }
     }
   }
+=== script/no-template-ref-outside-instance
+script/no-template-ref-outside-instance · lint 规则
+禁止在没有组件实例运行的位置调用 useTemplateRef()
+
+精度层级: complete
+适用范围: Vue's useTemplateRef calls in script blocks and modules, placed by the code that runs them: module evaluation, callbacks of timers, watch, nextTick, promise reactions and DOM listeners, and setup-local functions only those or template v-on handlers use; code whose caller the script cannot determine is outside
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/script-no-template-ref-outside-instance.md
+
+错误示例:
+  <script setup lang="ts">
+  import { useTemplateRef } from 'vue'
+  function focus() {
+    useTemplateRef<HTMLInputElement>('input').value?.focus()
+  }
+  setTimeout(() => useTemplateRef('input'))
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
+
+正确示例:
+  <script setup lang="ts">
+  import { onMounted, useTemplateRef } from 'vue'
+  const input = useTemplateRef<HTMLInputElement>('input')
+  function focus() {
+    input.value?.focus()
+  }
+  onMounted(() => focus())
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
 === script/no-top-level-ref-in-script
 script/no-top-level-ref-in-script · lint 规则
 禁止在顶层使用 ref/reactive，以防止跨请求状态污染
@@ -6214,7 +6251,7 @@ vue/no-unused-properties · lint 规则
   </template>
 === vue/no-unused-refs
 vue/no-unused-refs · lint 规则
-报告从未在 <script> 中引用的模板引用（ref="x"）
+报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板引用（ref="x"）
 
 精度层级: complete
 适用范围: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside

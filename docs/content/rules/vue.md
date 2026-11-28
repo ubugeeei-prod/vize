@@ -125,7 +125,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | Discourage non-standard script lang values. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | Discourage src attribute on SFC blocks. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | Discourage lang attribute on template block. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Report template refs (ref="x") never referenced in &lt;script&gt;. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Report template refs (ref="x") that no script binding, useTemplateRef() or $refs reads. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | Disallow unused script variables, imports, and parameters. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | Disallow a mustache interpolation whose expression is a constant string literal. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | Disallow a v-bind whose value is a plain string literal. | `nuxt`, `opinionated` |  |

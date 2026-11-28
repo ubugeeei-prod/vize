@@ -9,7 +9,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 
 每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-## 基础 (39)
+## 基础 (40)
 
 `essential` 预设中的正确性规则。
 
@@ -33,7 +33,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="script-no-expose-after-await"></span>[`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | 禁止在 await 之后调用 expose() 和 defineExpose()。 |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | 禁止导入自动可用的 Vue 编译器宏。 |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | 禁止从 Vue 内部模块导入。 |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 禁止在 setup() 中 await 之后注册生命周期钩子。 |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()。 |  |
 | <span id="script-no-potential-component-option-typo"></span>[`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | 标记 Options API 组件选项名称中的疑似拼写错误。 |  |
 | <span id="script-no-ref-as-operand"></span>[`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | 要求将 ref 绑定变量用作操作数时通过 `.value` 访问。 |  |
 | <span id="script-no-required-prop-with-default"></span>[`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | 禁止 prop 同时具有 required: true 和默认值。 |  |
@@ -41,6 +41,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="script-no-reserved-keys"></span>[`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | 禁止将 Vue 保留名称用作 Options API props/data/computed/methods/setup/inject 键。 |  |
 | <span id="script-no-reserved-props"></span>[`script/no-reserved-props`](./reference/script-no-reserved-props.md) | 禁止在组件 props 声明中使用保留名称。 |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | 禁止 Options API 计算 getter 中的副作用。 |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | 禁止在没有组件实例运行的位置调用 useTemplateRef()。 |  |
 | <span id="script-no-use-computed-property-like-method"></span>[`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | 禁止像方法一样调用 Options API 计算属性。 |  |
 | <span id="script-no-watch-after-await"></span>[`script/no-watch-after-await`](./reference/script-no-watch-after-await.md) | 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器。 |  |
 | <span id="script-prefer-import-from-vue"></span>[`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | 优先从 'vue' 导入，而不是内部包。 | ✓ |

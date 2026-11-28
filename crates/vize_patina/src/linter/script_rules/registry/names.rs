@@ -112,6 +112,8 @@ pub(crate) const RULE_REQUIRE_EXPOSE: &str = "vue/require-expose";
 pub(crate) const RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST: &str = "vue/prefer-prop-type-boolean-first";
 pub(crate) const RULE_VALID_MODEL_DEFINITION: &str = "vue/valid-model-definition";
 pub(crate) const RULE_CONSISTENT_TYPE_IMPORTS: &str = "script/consistent-type-imports";
+pub(crate) const RULE_NO_TEMPLATE_REF_OUTSIDE_INSTANCE: &str =
+    "script/no-template-ref-outside-instance";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -207,6 +209,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
     RULE_VALID_MODEL_DEFINITION,
     RULE_CONSISTENT_TYPE_IMPORTS,
+    RULE_NO_TEMPLATE_REF_OUTSIDE_INSTANCE,
 ];
 
 #[cfg(test)]
@@ -302,4 +305,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
     RULE_VALID_MODEL_DEFINITION,
     RULE_CONSISTENT_TYPE_IMPORTS,
+    RULE_NO_TEMPLATE_REF_OUTSIDE_INSTANCE,
 ];

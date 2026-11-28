@@ -101,7 +101,7 @@ export const portugueseVue1: Record<string, readonly [purpose: string, bad: stri
       "As duas props declaradas são referenciadas pelo template.",
     ],
     "vue/no-unused-refs": [
-      'Reportar refs de template (ref="x") nunca referenciadas em &lt;script&gt;',
+      'Reportar refs de template (ref="x") que nenhuma variável de script, useTemplateRef() ou $refs lê',
       "O template declara o nome de ref unused sem uma variável de referência correspondente no script.",
       "A ref de template inputEl tem uma variável ref de mesmo nome em script setup.",
     ],
