@@ -43,7 +43,9 @@ env {
 jobs {
   observe {
     name = "Performance observations (optional)"
-    `runs-on` = ci.linux
+    // Builds and measurements run at most 8 ways (CARGO_BUILD_JOBS, GOMAXPROCS),
+    // so the 16-vCPU class leaves headroom without idling a 32-vCPU slot.
+    `runs-on` = ci.linuxValidation
     `timeout-minutes` = 50
     steps = new Listing {
       ...ci.stageWorkflowScripts("pr-performance-observation")

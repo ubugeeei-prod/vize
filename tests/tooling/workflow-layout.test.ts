@@ -69,6 +69,12 @@ const smallRunnerJobs: Readonly<Record<string, readonly string[]>> = {
   "title-policy.yml": ["issue-pr-title-policy"],
 };
 const smallRunner = "blacksmith-4vcpu-ubuntu-2404";
+// Jobs that run at most 8 ways take the 16-vCPU validation pool instead of a
+// 32-vCPU slot.
+const validationPoolJobs: Readonly<Record<string, readonly string[]>> = {
+  "pr-performance-observation.yml": ["observe"],
+};
+const validationRunner = "blacksmith-16vcpu-ubuntu-2404";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
@@ -140,6 +146,10 @@ function workflowRunnerLabels(
     }
     if (smallJobs.includes(id)) {
       assert.equal(value["runs-on"], smallRunner, id);
+      return [];
+    }
+    if (validationPoolJobs[file]?.includes(id)) {
+      assert.equal(value["runs-on"], validationRunner, id);
       return [];
     }
     // A planner-selected skip runs hosted; the selected path is the busy runner.

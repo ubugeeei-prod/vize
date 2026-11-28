@@ -35,7 +35,7 @@ env:
 jobs:
   observe:
     name: Performance observations (optional)
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 50
     steps:
       - name: Check out the workflow's scripts
