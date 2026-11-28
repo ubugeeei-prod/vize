@@ -28,6 +28,10 @@ const differential = workflow(".github/workflows/pr-rust-differential.yml");
 const job = differential.jobs.differential;
 const recipePath = ".github/actions/test-rust-workspace-differential";
 const runnerPath = "tools/support/compat/github/rust-differential-lanes.ts";
+// The runner and the modules it imports, copied into each fixture checkout.
+const runnerClosure = [runnerPath, "tools/support/ci/job-packing.ts"];
+// Lanes whose matrix job the planner marks `elementPlus` (rust-differential-batches.test.ts).
+const hydratedLanes = ["program", "sfc-project", "navigation"];
 const recipe = workflow(`${recipePath}/action.yml`);
 const fixturePath = "tests/_fixtures/_git/element-plus";
 const hydrationArgs = ["submodule", "update", "--init", "--depth", "1", "--", fixturePath];
@@ -106,7 +110,13 @@ function selectedSteps(lane) {
         step.run?.includes(runnerPath) ||
         step.uses === "./.github/actions/test-native-navigation",
     )
-    .filter((step) => !step.if || runInNewContext(step.if.slice(3, -3), { matrix: { lane } }))
+    .filter(
+      (step) =>
+        !step.if ||
+        runInNewContext(step.if.slice(3, -3), {
+          matrix: { lane, elementPlus: hydratedLanes.includes(lane) },
+        }),
+    )
     .flatMap((step) => (step.uses ? workflow(`${step.uses}/action.yml`).runs.steps : [step]));
 }
 
@@ -126,8 +136,10 @@ function fixture(lane) {
   mkdirSync(bin);
   writeFileSync(log, "");
   writeFileSync(gitLog, "");
-  mkdirSync(dirname(join(cwd, runnerPath)), { recursive: true });
-  copyFileSync(join(root, runnerPath), join(cwd, runnerPath));
+  for (const file of runnerClosure) {
+    mkdirSync(dirname(join(cwd, file)), { recursive: true });
+    copyFileSync(join(root, file), join(cwd, file));
+  }
   writeFileSync(
     join(bin, "git"),
     readToolingProgram("commands/rust-differential-sibling/git.sh", {
@@ -155,7 +167,7 @@ function fixture(lane) {
       GITHUB_WORKSPACE: cwd,
       RUNNER_TEMP: cwd,
       FAIL: failure,
-      REQUIRE_HYDRATION: ["program", "sfc-project", "navigation"].includes(lane) ? "1" : "0",
+      REQUIRE_HYDRATION: hydratedLanes.includes(lane) ? "1" : "0",
       RUST_PLAN_JSON: JSON.stringify({
         packages: ["vize_maestro", "vize_l1_to_l2", "vize_atelier_ssr", "vize_atelier_sfc"],
       }),

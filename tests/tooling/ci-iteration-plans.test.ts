@@ -75,7 +75,9 @@ test("the pure source selector retains the actual reverse dependency closure in 
       event,
     );
     assert.deepEqual(plan.packages, ["vize_armature", "vize_atelier_ssr", "vize_vitrine"]);
-    assert.deepEqual(plan.differentialMatrix, { lane: ["ssr", "wasm"] });
+    assert.deepEqual(plan.differentialMatrix, {
+      include: [{ lane: "ssr+wasm", elementPlus: false }],
+    });
     assert.deepEqual(rustCommand(plan, ["cargo", "test", "@packages@", "--doc"]), [
       "cargo",
       "test",
@@ -314,8 +316,10 @@ test("product differential partitions preserve each selected command exactly onc
   const all = [
     ...new Set(rustDifferentialLanes.flatMap((lane) => lane.steps.map((step) => step.package))),
   ];
-  assert.ok(differentialMatrix(all).lane.includes("navigation"));
-  assert.deepEqual(differentialMatrix(["vize_atelier_ssr"]), { lane: ["ssr"] });
+  assert.ok(differentialMatrix(all).include.some(({ lane }) => lane === "navigation"));
+  assert.deepEqual(differentialMatrix(["vize_atelier_ssr"]), {
+    include: [{ lane: "ssr", elementPlus: false }],
+  });
   const commands = differentialSteps("ssr", ["vize_atelier_ssr"]);
   assert.equal(commands.length, 3);
   assert.ok(commands[0].args.includes("davinci_ssr_corpus"));

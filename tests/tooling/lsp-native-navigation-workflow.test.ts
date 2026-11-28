@@ -66,8 +66,10 @@ test("affected Maestro source builds require real native feature tests before re
 });
 
 test("affected merge candidates require the same native navigation recipe in the differential lane", () => {
-  assert.ok(differentialMatrix(["vize_maestro"]).lane.includes("navigation"));
-  assert.equal(differentialMatrix(["vize_atelier_ssr"]).lane.includes("navigation"), false);
+  const lanes = (packages: string[]) =>
+    differentialMatrix(packages).include.map(({ lane }) => lane);
+  assert.ok(lanes(["vize_maestro"]).includes("navigation"));
+  assert.equal(lanes(["vize_atelier_ssr"]).includes("navigation"), false);
   const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml"));
   const merge = workflow.jobs["merge-rust-differential"];
   assert.equal(merge.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");

@@ -501,6 +501,7 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
 export const rustFeatureLaneInputs: readonly string[] = [
   "tools/support/ci/rust-feature-tests.ts",
   "tools/support/ci/rust-feature-batches.ts",
+  "tools/support/ci/job-packing.ts",
   "tools/ci/commands/rust-feature-tests.ts",
   "tools/ci/lib/RustFeatureTests.pkl",
   ".github/workflows/pr-rust-products.yml",

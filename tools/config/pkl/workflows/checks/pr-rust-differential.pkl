@@ -79,7 +79,8 @@ jobs {
       }
       new Dynamic {
         name = "Hydrate pinned Element Plus fixture"
-        `if` = "${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}"
+        // The planner marks the jobs whose lanes read the fixture (rust-differential-lanes.ts).
+        `if` = "${{ matrix.elementPlus }}"
         run = "git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus"
       }
       new Dynamic {

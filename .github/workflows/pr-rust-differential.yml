@@ -59,7 +59,7 @@ jobs:
       - name: Install product oracle dependencies
         run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'
       - name: Hydrate pinned Element Plus fixture
-        if: ${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}
+        if: ${{ matrix.elementPlus }}
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Materialize affected Rust plan
         run: . "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh"

@@ -4,6 +4,7 @@
 // the Blacksmith concurrency cap each extra job also waits for a 32-vCPU slot.
 // A job therefore runs several rows in sequence, and the estimates below decide
 // only which rows share a job, never whether a row runs.
+import { fewestJobs } from "./job-packing.ts";
 import type { RustFeatureRow } from "./rust-feature-tests.ts";
 
 export interface RustFeatureMatrix {
@@ -61,34 +62,9 @@ export const rustFeatureRowSeconds: Readonly<Record<string, number>> = {
 const rowSeconds = (row: RustFeatureRow): number =>
   rustFeatureRowSeconds[row.id] ?? RUST_FEATURE_BATCH_SECONDS;
 
-// Longest-processing-time packing onto the least-loaded job. Ties resolve by
-// declaration order and job index, so the same selection always yields the same jobs.
-function pack(rows: readonly RustFeatureRow[], total: number): RustFeatureRow[][] {
-  const loads = Array.from({ length: total }, () => 0);
-  const jobs: number[][] = Array.from({ length: total }, () => []);
-  const order = rows
-    .map((row, index) => ({ index, seconds: rowSeconds(row) }))
-    .sort((left, right) => right.seconds - left.seconds || left.index - right.index);
-  for (const { index, seconds } of order) {
-    let target = 0;
-    for (let job = 1; job < total; job += 1) if (loads[job]! < loads[target]!) target = job;
-    loads[target]! += seconds;
-    jobs[target]!.push(index);
-  }
-  return jobs
-    .filter((indexes) => indexes.length > 0)
-    .map((indexes) => indexes.sort((left, right) => left - right).map((index) => rows[index]!));
-}
-
 /** The fewest jobs whose estimated Cargo work stays within the budget (or within the heaviest row). */
 export function rustFeatureBatches(rows: readonly RustFeatureRow[]): RustFeatureRow[][] {
-  if (rows.length === 0) return [];
-  const budget = Math.max(RUST_FEATURE_BATCH_SECONDS, ...rows.map(rowSeconds));
-  for (let total = 1; ; total += 1) {
-    const jobs = pack(rows, total);
-    const fits = jobs.every((job) => job.reduce((sum, row) => sum + rowSeconds(row), 0) <= budget);
-    if (fits || total === rows.length) return jobs;
-  }
+  return fewestJobs(rows, rowSeconds, RUST_FEATURE_BATCH_SECONDS);
 }
 
 /** Matrix of the selected rows: Windows rows never share a job with Linux rows. */
