@@ -7,6 +7,7 @@ use crate::context::{LintContext, TemplateCommentDirectives};
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRules};
+use crate::rule::RuleHooks;
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
 use vize_l0::{SmallVec, profile};
@@ -124,10 +125,24 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     let all_names = linter.rule_names();
     let names = all_names.get(..input.rule_count).unwrap_or(all_names);
     let exit = linter.registry.has_exit_element_rules();
+    // The facade owns the template comment directives: their suppression
+    // effects are registered before any rule runs, and the walk below only
+    // replays each directive at its comment's callback position.
     let directives = TemplateCommentDirectives::new(input.l2.surface());
+    directives.prescan(ctx);
     let selected = linter.named_markup_rules(input.rule_count, input.rules);
 
     if selected.is_empty() {
+        if rules
+            .iter()
+            .all(|rule| rule.template_hooks() == RuleHooks::NONE)
+        {
+            // Directive-only work. The compatibility root mirrors the L1
+            // comments one to one, so a walk would meet the same directives in
+            // the same order with no rule callback between them.
+            directives.replay_all(ctx);
+            return;
+        }
         let mut visitor =
             LintVisitor::new(ctx, rules, names, exit).with_template_directives(&directives);
         profile!("patina.template.visit", visitor.visit_root(input.root));

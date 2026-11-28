@@ -23,6 +23,9 @@ impl Linter {
     }
 
     /// Legacy rules (no markup entry point) over one lowered Relief root.
+    ///
+    /// JSX lowering emits no template comment nodes, so the root carries no
+    /// template comment directives to replay.
     pub(super) fn lint_jsx_fallback_root(
         &self,
         allocator: &Allocator,

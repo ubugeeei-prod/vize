@@ -20,7 +20,7 @@ pub(crate) use compatibility_parses::RetainedVFor;
 pub use project_directives::ProjectLintDirectives;
 pub(crate) use reporting::{ScriptSuppression, SfcSuppression, offset_diagnostic};
 pub use state::{DisabledRange, ElementContext, SsrMode};
-pub(crate) use template_directives::{TemplateCommentDirectives, process_vize_directive};
+pub(crate) use template_directives::TemplateCommentDirectives;
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
 use std::{borrow::Cow, cell::OnceCell};

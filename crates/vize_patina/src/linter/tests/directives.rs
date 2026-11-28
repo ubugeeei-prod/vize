@@ -1,5 +1,6 @@
 use super::Linter;
 
+mod directive_only;
 mod root_comment_scope;
 mod script_file_scope;
 mod script_style;

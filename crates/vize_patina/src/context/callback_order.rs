@@ -6,7 +6,6 @@ use vize_l0::{FxHashMap, SmallVec};
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub(crate) enum CallbackSite {
-    Prescan,
     Template,
     Element(u32),
     Attributes(u32),

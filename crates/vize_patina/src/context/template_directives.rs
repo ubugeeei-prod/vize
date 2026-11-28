@@ -6,7 +6,7 @@ use vize_l1::framework::vue::directive::{DirectivePrefix, DirectiveSyntax, VueDi
 use vize_l1::markup::{Element, ElementClose, Interpolation, SurfaceChild, SurfaceTree, Token};
 use vize_relief::SourceLocation;
 
-use super::LintContext;
+use super::{CallbackSite, LintContext};
 
 mod expression_comments;
 
@@ -54,16 +54,20 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
         self.prescan_children(ctx, &self.surface.children);
     }
 
-    /// Replay a diagnostic-producing directive at the original comment visit.
-    pub(crate) fn process_at(&self, ctx: &mut LintContext<'_>, start: u32) {
-        let Some(directive) = self.directive_at(start) else {
-            return;
-        };
-        process_vize_directive(ctx, directive.content, directive.span, directive.kind);
+    /// Replay the directive of the comment at `start`, if it has one, at its
+    /// callback position in the template walk.
+    pub(crate) fn replay_comment(&self, ctx: &mut LintContext<'_>, start: u32) {
+        if let Some(directive) = self.directive_at(start) {
+            replay(ctx, directive);
+        }
     }
 
-    pub(crate) fn contains(&self, start: u32) -> bool {
-        self.directive_at(start).is_some()
+    /// Replay every directive in source order, the order a template walk
+    /// meets the comments, when no template walk runs.
+    pub(crate) fn replay_all(&self, ctx: &mut LintContext<'_>) {
+        for directive in &self.directives {
+            replay(ctx, directive);
+        }
     }
 
     fn directive_at(&self, start: u32) -> Option<&CommentDirective<'a>> {
@@ -251,7 +255,12 @@ fn collect_directives<'a>(
     });
 }
 
-pub(crate) fn process_vize_directive(
+fn replay(ctx: &mut LintContext<'_>, directive: &CommentDirective<'_>) {
+    ctx.record_callback_site(CallbackSite::Comment(directive.span.start));
+    process_vize_directive(ctx, directive.content, directive.span, directive.kind);
+}
+
+fn process_vize_directive(
     ctx: &mut LintContext<'_>,
     content: &str,
     span: Span,
