@@ -51,6 +51,22 @@ const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "tsBuildInfoFile",
 ];
 
+/// Options that only add diagnostics and never change a type or an emitted
+/// declaration. The check program reports them against the authored source,
+/// and declarations are emitted only after it reports nothing, so the
+/// emit-only program turns them off: Canon's generated scaffolding must not
+/// fail an emit the check already accepted.
+const DIAGNOSTIC_ONLY_COMPILER_OPTIONS: &[(&str, bool)] = &[
+    ("noUnusedLocals", false),
+    ("noUnusedParameters", false),
+    ("noImplicitReturns", false),
+    ("noFallthroughCasesInSwitch", false),
+    ("noPropertyAccessFromIndexSignature", false),
+    ("noImplicitOverride", false),
+    ("allowUnreachableCode", true),
+    ("allowUnusedLabels", true),
+];
+
 impl VirtualProject {
     /// The current member's generated package probes require arbitrary extensions.
     /// Inherited union requirements are passed separately and never become owned facts.
@@ -229,6 +245,9 @@ impl VirtualProject {
             compiler_options.insert("declaration".into(), Value::Bool(true));
             compiler_options.insert("emitDeclarationOnly".into(), Value::Bool(true));
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
+            for (option, value) in DIAGNOSTIC_ONLY_COMPILER_OPTIONS {
+                compiler_options.insert((*option).into(), Value::Bool(*value));
+            }
             if mirror_layout {
                 // Another program of this check mirrors the outputs in place
                 // of the sources: no checking, and `out_dir` repeats the

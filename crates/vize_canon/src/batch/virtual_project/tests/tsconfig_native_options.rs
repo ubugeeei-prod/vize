@@ -278,3 +278,83 @@ fn materialized_tsconfig_adds_vue_jsx_defaults_for_lowered_tsx() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn declaration_tsconfig_turns_off_options_that_only_add_diagnostics() {
+    let case_dir = unique_case_dir("tsconfig-declaration-diagnostic-only-options");
+    let _ = fs::remove_dir_all(&case_dir);
+    let src_dir = case_dir.join("src");
+    fs::create_dir_all(&src_dir).unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  }
+}"#,
+    )
+    .unwrap();
+    let vue_path = src_dir.join("App.vue");
+    fs::write(&vue_path, "<template><slot /></template>").unwrap();
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    project.register_path(&vue_path).unwrap();
+    project.materialize().unwrap();
+    let read_options = |path: &std::path::Path| {
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
+        value["compilerOptions"].clone()
+    };
+    let lint_options = [
+        ("noUnusedLocals", false),
+        ("noUnusedParameters", false),
+        ("noImplicitReturns", false),
+        ("noFallthroughCasesInSwitch", false),
+        ("noPropertyAccessFromIndexSignature", false),
+        ("noImplicitOverride", false),
+        ("allowUnreachableCode", true),
+        ("allowUnusedLabels", true),
+    ];
+
+    // The check program keeps the authored policy: it owns these diagnostics.
+    let check = read_options(&project.virtual_root().join("tsconfig.json"));
+    for (option, emit_value) in lint_options {
+        assert_eq!(
+            check[option],
+            serde_json::Value::Bool(!emit_value),
+            "{check:#}"
+        );
+    }
+
+    let declaration = read_options(
+        &project
+            .write_declaration_tsconfig(&case_dir.join("dist"), false, false)
+            .unwrap(),
+    );
+    for (option, emit_value) in lint_options {
+        assert_eq!(
+            declaration[option],
+            serde_json::Value::Bool(emit_value),
+            "{declaration:#}"
+        );
+    }
+    // Options that change a type stay authored.
+    assert_eq!(declaration["strict"], serde_json::Value::Bool(true));
+    assert_eq!(
+        declaration["exactOptionalPropertyTypes"],
+        serde_json::Value::Bool(true)
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
