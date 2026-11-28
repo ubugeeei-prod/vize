@@ -95,14 +95,20 @@ run("npm", [
 fs.mkdirSync(path.join(consumer, "node_modules/@vizejs"), { recursive: true });
 fs.symlinkSync(nativePackage, path.join(consumer, "node_modules/@vizejs/native"), "dir");
 fs.copyFileSync(
-  new URL("./packed-consumer.mjs", import.meta.url),
-  path.join(consumer, "consumer.mjs"),
+  new URL("./packed-consumer.ts", import.meta.url),
+  path.join(consumer, "consumer.ts"),
 );
-const result = run(process.execPath, ["consumer.mjs"], {
+fs.copyFileSync(
+  new URL("./real-projects.ts", import.meta.url),
+  path.join(consumer, "real-projects.ts"),
+);
+const result = run(process.execPath, ["--experimental-strip-types", "consumer.ts"], {
   ...process.env,
   VIZE_PREFER_WORKSPACE_BINDING: "1",
   VIZE_ESLINT_EXPECTED_NODE: nodeVersion,
   VIZE_ESLINT_EXPECTED_TYPESCRIPT: typescriptVersion,
+  VIZE_ESLINT_PROJECT_ROOT: path.resolve(import.meta.dirname, "../../../.."),
+  VIZE_ESLINT_PROJECT_EVIDENCE: path.join(output, "real-projects.json"),
 });
 const packet = JSON.parse(result.stdout) as ConsumerPacket;
 fs.writeFileSync(path.join(output, "consumer.json"), JSON.stringify(packet, null, 2) + "\n");

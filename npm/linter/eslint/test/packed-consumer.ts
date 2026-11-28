@@ -6,6 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
 import plugin from "eslint-plugin-vize";
+import bridge from "oxlint-plugin-vize/eslint";
+import type { Linter } from "eslint";
+import { qualifyRealProjects } from "./real-projects.ts";
 
 const require = createRequire(import.meta.url);
 const pluginEntry = import.meta.resolve("eslint-plugin-vize");
@@ -24,12 +27,15 @@ if (process.env.VIZE_ESLINT_EXPECTED_TYPESCRIPT) {
 }
 const native = require("@vizejs/native");
 const nativeImages = Object.values(require.cache)
-  .filter((entry) => entry?.filename.endsWith(".node") && entry.exports === native)
+  .filter((entry): entry is NodeJS.Module =>
+    Boolean(entry?.filename.endsWith(".node") && entry.exports === native),
+  )
   .map((entry) => ({
     path: fs.realpathSync(entry.filename),
     sha256: createHash("sha256").update(fs.readFileSync(entry.filename)).digest("hex"),
   }));
 assert.equal(nativeImages.length, 1);
+assert.ok(plugin.meta);
 assert.equal(plugin.meta.name, "eslint-plugin-vize");
 const eslint = new ESLint({
   overrideConfigFile: true,
@@ -51,13 +57,13 @@ const scripts = {
     '<script>export default {};</script>\r\n<script setup lang="ts">const n: number = 1;</script>\r\n',
 };
 const packets = [];
-function normalized(results) {
-  return JSON.parse(JSON.stringify(results)).map((result) => ({
+function normalized(results: ESLint.LintResult[]): unknown {
+  return (JSON.parse(JSON.stringify(results)) as ESLint.LintResult[]).map((result) => ({
     ...result,
     filePath: path.basename(result.filePath),
   }));
 }
-function expectedResult(filePath, messages, output) {
+function expectedResult(filePath: string, messages: Linter.LintMessage[], output?: string) {
   return {
     filePath,
     messages,
@@ -115,6 +121,9 @@ const providers = Object.fromEntries(
     ];
   }),
 );
+const projectRoot = process.env.VIZE_ESLINT_PROJECT_ROOT;
+assert.ok(projectRoot, "application qualification requires the actual source checkout");
+const realProjects = await qualifyRealProjects({ ESLint, plugin, bridge, native, projectRoot });
 console.log(
   JSON.stringify({
     plugin: plugin.meta,
@@ -126,5 +135,6 @@ console.log(
     nativeImages,
     pluginEntry,
     packets,
+    realProjects,
   }),
 );

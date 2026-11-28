@@ -7,6 +7,10 @@ on:
   pull_request:
     paths:
       - "npm/linter/eslint/**"
+      - examples/vite-musea/src/**
+      - examples/vite-musea/package.json
+      - examples/jsx-tsx/src/**
+      - examples/jsx-tsx/package.json
       - "npm/linter/oxlint/src/eslint*"
       - "npm/linter/oxlint/src/native.ts"
       - "npm/linter/oxlint/src/configs.ts"
@@ -51,14 +55,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
-        with:
-          {
-            version: 1.8.0,
-            node-version-file: package.json,
-            cache: true,
-            cache-save: false,
-            run-install: false,
-          }
+        with: { version: 1.8.0, node-version-file: package.json, cache: true, cache-save: false, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -77,7 +74,7 @@ jobs:
       - name: Verify no physical SFC reads, including native code
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/verify-no-physical-sfc-reads-including-native-code.sh"
-      - name: Qualify packed public entries in an isolated consumer
+      - name: Qualify packed public entries and real application packets in an isolated consumer
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/qualify-packed-public-entries-in-an-isolated-consumer.sh"
       - name: Stage the same source addon for supported Node and TypeScript consumers
@@ -111,8 +108,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["22.13.0", "24.14.0"]
-        typescript: ["4.8.4", "5.9.3", "6.0.3"]
+        node: [ "22.13.0", "24.14.0" ]
+        typescript: [ "4.8.4", "5.9.3", "6.0.3" ]
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -131,11 +128,7 @@ jobs:
           path: ${{ runner.temp }}/eslint-packed-source
       - name: Check installed public exports with the exact supported providers
         run: >-
-          node --experimental-strip-types npm/linter/eslint/test/legacy-consumer.ts
-          --artifacts "$RUNNER_TEMP/eslint-packed-source"
-          --output "$RUNNER_TEMP/eslint-compatibility"
-          --node "${{ matrix.node }}"
-          --typescript "${{ matrix.typescript }}"
+          node --experimental-strip-types npm/linter/eslint/test/legacy-consumer.ts --artifacts "$RUNNER_TEMP/eslint-packed-source" --output "$RUNNER_TEMP/eslint-compatibility" --node "${{ matrix.node }}" --typescript "${{ matrix.typescript }}"
       - name: Retain install logs, exact providers and complete failure/clean packets
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -144,6 +137,7 @@ jobs:
           path: |
             ${{ runner.temp }}/eslint-compatibility/*.json
             ${{ runner.temp }}/eslint-compatibility/project*/package*.json
-            ${{ runner.temp }}/eslint-compatibility/project*/consumer.mjs
+            ${{ runner.temp }}/eslint-compatibility/project*/consumer.ts
+            ${{ runner.temp }}/eslint-compatibility/project*/real-projects.ts
           if-no-files-found: error
           retention-days: 14
