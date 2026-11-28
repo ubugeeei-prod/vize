@@ -1,5 +1,5 @@
 // Jobs whose planner can select only a skip notice take a hosted runner then,
-// so they never hold a Blacksmith slot to print it (#6830). Their selected
+// so they never hold a Blacksmith slot to print it. Their selected
 // path keeps the reviewed maximum runner.
 export const plannedBusyRunner = "blacksmith-32vcpu-ubuntu-2404";
 export const plannedIdleRunner = "ubuntu-24.04";

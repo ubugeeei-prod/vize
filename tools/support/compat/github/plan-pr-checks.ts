@@ -67,7 +67,7 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
   };
   const js = planAffectedJs(workspace, paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });
-  // #6830 T1: native runtime lanes execute real Vue and tsgo oracles. The merge
+  // Merge-queue tier: native runtime lanes execute real Vue and tsgo oracles. The merge
   // queue plans the same affected lanes from the same diff; `full-ci` PRs and
   // unknown diffs (heavy tier) keep them on the PR.
   const affectedNative = planNativeRuntime(paths, affectedRust);

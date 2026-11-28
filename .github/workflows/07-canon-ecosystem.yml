@@ -3,7 +3,7 @@
 name: Canon ecosystem producer qualification
 
 on:
-  # #6830: off the PR tier; main runs it nightly.
+  # Off the PR tier: main runs it nightly.
   schedule:
     - cron: "19 4 * * *"
   workflow_dispatch:

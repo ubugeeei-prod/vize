@@ -7,7 +7,7 @@ on {
     branches = List("main", "davinci")
     paths = List(".github/**")
   }
-  // #6830: PRs audit workflows only when they change them.
+  // PRs audit workflows only when they change them.
   pull_request {
     paths = List(".github/**")
   }

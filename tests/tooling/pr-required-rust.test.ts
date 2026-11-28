@@ -125,7 +125,7 @@ test("Rust PRs validate their actual reverse dependency closure without replacin
     ["compiler", "cli-and-integrations"],
   );
   assert.deepEqual(compiler.js.groups, ["builders", "ui", "oxlint"]);
-  // #6830: the fast PR tier defers native runtime lanes to the merge queue.
+  // The fast PR tier defers native runtime lanes to the merge queue.
   assert.deepEqual(compiler.native.matrix, { lane: ["none"] });
   assert.equal(compiler.native.deferred.length, 8);
   assert.equal(

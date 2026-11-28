@@ -329,7 +329,7 @@ function requireSplitRustRecipes(
   }
   for (const report of [source["rust-source-report"], products["rust-product-report"]]) {
     assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
-    const prefix = structuredClone(report.steps.slice(0, 3)); // + sparse checkout (#6830)
+    const prefix = structuredClone(report.steps.slice(0, 3)); // + sparse checkout
     assert.equal(prefix[0].with?.["sparse-checkout-cone-mode"], false, "closure test pins paths");
     delete prefix[0].with;
     assert.equal(restoreVpVersionPin(prefix), 1);

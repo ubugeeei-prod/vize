@@ -29,7 +29,7 @@ const contracts = {
       "tools/support/json-value.ts",
     ],
   },
-  // #6830: the source gate's script closure (report-checkout-closure.test.ts).
+  // The source gate's script closure (report-checkout-closure.test.ts).
   "source-report": {
     depth: 1,
     files: [

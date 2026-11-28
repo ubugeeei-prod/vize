@@ -107,7 +107,7 @@ const hostedZeroComputeJobs = new Set([
 
 function restoreMaximumRunner(file: string, id: string, job: Job, original: Job) {
   if (job["runs-on"] === original["runs-on"]) return 0;
-  // #6830: a planner-selected skip runs hosted; the selected path keeps the maximum runner.
+  // A planner-selected skip runs hosted; the selected path keeps the maximum runner.
   if (plannedRunnerCondition(file, id, job["runs-on"]) !== undefined) {
     assert.equal(original["runs-on"], maximumRunner, id);
     job["runs-on"] = original["runs-on"];

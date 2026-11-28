@@ -1,7 +1,7 @@
 import "../../lib/Actions.pkl" as ci
 
 name = "Nuxt 3 module build"
-// #6830: off the PR tier; merge candidates call it and main runs it per commit.
+// Off the PR tier: merge candidates call it and main runs it per commit.
 on {
   push {
     branches = List("main")

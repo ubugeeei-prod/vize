@@ -353,7 +353,7 @@ test("the PR planner requires the setup lane and its chained selected-SFC captur
       cargoMetadata,
     });
     const outputs = prCheckOutputs(plan);
-    // #6830: fast PRs defer native runtime lanes; the queue runs the same lanes.
+    // Fast PRs defer native runtime lanes; the queue runs the same lanes.
     const lanes = ["setup", "selected-template"];
     if (eventName === "pull_request") {
       assert.equal(outputs.heavy, "false");

@@ -2,7 +2,7 @@
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt scoped style build
 on:
-  # #6830: off the PR tier; main runs it per commit and nightly.
+  # Off the PR tier: main runs it per commit and nightly.
   push:
     branches: [main, davinci]
   workflow_call:

@@ -2,7 +2,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "V1 qualification manifest"
 
-// #6830: off the PR tier; nightly Full qualification calls it.
+// Off the PR tier: nightly Full qualification calls it.
 on {
   workflow_call {
     inputs {
