@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
+
 export interface HostFixture {
   id: string;
   source: string;
@@ -26,7 +30,17 @@ export interface HostFixture {
   modules?: boolean;
   sfc?: boolean;
   sourceMaps?: boolean;
+  componentExport?: "default";
+  authoredFilename?: string;
+  projectSource?: { path: string; sourceSha256: string; manifestSha256: string };
 }
+
+const applicationFile = new URL(
+  "../../../../../examples/jsx-tsx/src/AccessibleMedia.jsx",
+  import.meta.url,
+);
+const applicationSource = fs.readFileSync(applicationFile, "utf8");
+const hash = (source: string): string => createHash("sha256").update(source).digest("hex");
 
 const basic = 'export const render = () => <div data-probe="original">hello</div>;\n';
 export const coldFixtures: HostFixture[] = [
@@ -46,6 +60,19 @@ export const coldFixtures: HostFixture[] = [
   { id: "pre-hook-jsx-removed", pre: "remove", source: basic },
 ];
 export const positiveFixtures: HostFixture[] = [
+  {
+    id: "real-application-accessible-media",
+    source: applicationSource,
+    componentExport: "default",
+    sourceMaps: true,
+    authoredFilename: fileURLToPath(applicationFile),
+    projectSource: {
+      path: "examples/jsx-tsx/src/AccessibleMedia.jsx",
+      sourceSha256: hash(applicationSource),
+      manifestSha256: hash(fs.readFileSync(new URL("../package.json", applicationFile), "utf8")),
+    },
+    html: '<article class="media-card"><img src="/media/team-avatar.png" alt="Avatar for Ada Lovelace"><h2>Ada Lovelace</h2><ul><!--[--><li>Portrait</li><li>Caption</li><!--]--></ul></article>',
+  },
   {
     id: "vue-sfc-script-setup-scoped-style",
     sfc: true,

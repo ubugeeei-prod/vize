@@ -133,3 +133,13 @@ const styles = result.metadata.vize.jsx.scopedStyles;
 
 The same metadata contains the configured default mode, SSR flag, native pass
 count, and compiler warnings. Compiler warnings are also emitted as Node warnings.
+
+## Application conformance
+
+The packed Babel 7/8 ESM and CommonJS consumer matrix also compiles the unmodified
+`AccessibleMedia.jsx` module from the JSX/TSX example application at its authored
+filename. It checks the complete returned AST, native pass metadata, original
+source content in the final source map, and exact HTML from the actual Vue server
+renderer. The retained packets include application source and manifest digests.
+This qualifies the standalone application module; complete application builds
+require their environment's adapter gates. The package remains a compatibility preview.

@@ -129,11 +129,13 @@ export async function runHost(input: HostWorkerInput, load: HostLoader) {
             preparation,
             "source preparation lease remains current",
           );
-        const filename = path.join(
-          input.host.root,
-          "src",
-          fixture.id + (fixture.filenameSuffix ?? (fixture.typescript ? ".tsx" : ".jsx")),
-        );
+        const filename =
+          fixture.authoredFilename ??
+          path.join(
+            input.host.root,
+            "src",
+            fixture.id + (fixture.filenameSuffix ?? (fixture.typescript ? ".tsx" : ".jsx")),
+          );
         const parserOpts: HostOptions["parserOpts"] = {
           plugins: fixture.sfc ? [] : fixture.typescript ? ["jsx", "typescript"] : ["jsx"],
         };
@@ -316,6 +318,19 @@ export async function runHost(input: HostWorkerInput, load: HostLoader) {
         }
         if (actualError) throw actualError;
         assert(item.result);
+        if (fixture.projectSource) {
+          assert.equal(
+            fs.readFileSync(filename, "utf8"),
+            fixture.source,
+            "original application source custody",
+          );
+          assert.equal(hash(fixture.source), fixture.projectSource.sourceSha256);
+          assert(item.result.map, "the actual application module retains a requested source map");
+          assert(
+            item.result.map.sourcesContent?.includes(fixture.source),
+            "the complete authored application module remains in its map",
+          );
+        }
         if (fixture.generatorOverrides) assert.deepEqual(item.generatorCalls, [0]);
         if (fixture.upstream) assertUpstream(await load.trace(), item.result, fixture.source);
         if (beforeAst && fixture.cloneInputAst !== false)
@@ -395,7 +410,7 @@ export async function runHost(input: HostWorkerInput, load: HostLoader) {
         const vue = await load.vue(),
           renderer = await load.renderer();
         const html = await renderer.renderToString(
-          fixture.sfc
+          fixture.sfc || fixture.componentExport === "default"
             ? vue.createSSRApp(exports.default)
             : vue.createSSRApp({ render: () => exports.render(fixture.renderProps) }),
         );

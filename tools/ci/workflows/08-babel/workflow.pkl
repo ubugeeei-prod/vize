@@ -9,6 +9,8 @@ on {
   pull_request {
     paths = new Listing {
       "npm/builder/babel/**"
+      "examples/jsx-tsx/src/AccessibleMedia.jsx"
+      "examples/jsx-tsx/package.json"
       "crates/vize_atelier_jsx/**"
       "crates/vize_atelier_sfc/**"
       "crates/vize_atelier_vapor/**"
