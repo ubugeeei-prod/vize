@@ -5,6 +5,12 @@ output hooks. Install `@vizejs/native` **0.474.0 or newer** to execute plugins.
 The optional native peer lets this package install independently for authoring;
 its helpers alone do not compile or lint Vue files. Node 22 or newer is required.
 
+Each code block below is a complete TypeScript module. CI checks the displayed
+source for formatting, lint, and types against the public SDK and native
+declarations, then executes it through the real host. The isolated callback example also
+requires the container runtime described in its section. The final trace example
+uses the workspace-only `@vizejs/devtools` package in the Vize checkout.
+
 ## Experimental plugin API v2
 
 > [!WARNING]
@@ -107,10 +113,11 @@ entrypoints; importing this module never registers either callback globally.
 
 ## Lint rules and autofixes
 
-```js
+```ts
 import * as native from "@vizejs/native";
 import { definePlugin, applyFixes } from "@vizejs/plugin-sdk";
 
+const source = '<template><button :disabled="true">Save</button></template>';
 const rule = definePlugin({
   name: "team-rule",
   version: "1.0.0",
@@ -133,6 +140,7 @@ const output = native.lintWithPlugins(source, [rule], {
   validateDeterminism: true,
 });
 const fixed = applyFixes(source, output.fixes);
+console.log(fixed);
 ```
 
 A report names a visited L2 node. Rust assigns its authored UTF-8 byte range;
@@ -172,8 +180,12 @@ and the individual native contracts. Custom provider groups can use
 
 ## Fact providers
 
-```js
+```ts
+import * as native from "@vizejs/native";
 import { defineFactProvider, definePlugin } from "@vizejs/plugin-sdk";
+
+const source =
+  '<script setup>const label = "Save";</script><template><button>{{ label }}</button></template>';
 const labels = defineFactProvider({
   name: "design",
   version: "1",
@@ -182,7 +194,11 @@ const labels = defineFactProvider({
   demands: ["bindings"],
   cacheInputs: [],
   provide(batch) {
-    return { "design/labels": batch.nodes.map((node) => [node.id, node.name]) };
+    return {
+      "design/labels": batch.nodes.flatMap((node) =>
+        node.name === undefined ? [] : [[node.id, node.name] as const],
+      ),
+    };
   },
 });
 const consumer = definePlugin({
@@ -193,6 +209,7 @@ const consumer = definePlugin({
   rules: {
     check(ctx) {
       const labels = ctx.facts("design/labels");
+      console.log(labels);
     },
   },
 });
@@ -207,8 +224,11 @@ Provider dependency stamps enter the consumer cache key automatically.
 
 ## Native template transforms
 
-```js
+```ts
+import * as native from "@vizejs/native";
 import { defineTransformPlugin } from "@vizejs/plugin-sdk";
+
+const template = '<button class="legacy-btn">Save</button>';
 const design = defineTransformPlugin({
   name: "design-system",
   version: "1",
@@ -232,6 +252,7 @@ const transformed = native.compileWithTransformPlugins(template, [design], {
   cache: true,
   cacheDir: ".vize-cache",
 });
+console.log(transformed.result.code);
 ```
 
 The hook runs at the native pre-canonical L2 point. It can replace existing
@@ -244,19 +265,26 @@ module with prefixed identifiers. `plugins` contains per-plugin costs.
 
 ## Formatter and output hooks
 
-```js
+```ts
+import * as native from "@vizejs/native";
 import { defineOutputPlugin } from "@vizejs/plugin-sdk";
+
+const template = "<button>Save</button>";
+const options = { filename: "Button.vue", sourceMap: true };
 const license = defineOutputPlugin({
   name: "license",
   version: "1",
   family: "output",
   cacheInputs: [],
   output() {
-    return [{ placement: "prepend", comment: "Copyright Example" }];
+    return [{ placement: "prepend" as const, comment: "Copyright Example" }];
   },
 });
 const compiled = native.compileWithOutputPlugins(template, [license], options);
-const decorated = native.applyOutputPlugins(transformed.result, [license], { cache: true });
+const decorated = native.applyOutputPlugins(native.compile(template, options), [license], {
+  cache: true,
+});
+console.log(compiled.result.code, decorated.result.code);
 ```
 
 `family: "formatter"` returns `{start,end,text}` edits using UTF-8 byte offsets.
@@ -284,12 +312,15 @@ ambient reads; their declarations remain the author's responsibility.
 
 ## Isolated callback sources
 
-```js
+```ts
+import * as native from "@vizejs/native";
 import {
   createSandboxRunner,
   SANDBOX_IMAGE,
   SandboxRuntimeError,
 } from "@vizejs/plugin-sdk/sandbox";
+
+const source = "<template><button>Save</button></template>";
 const isolated = createSandboxRunner(
   {
     name: "isolated-rule",
@@ -300,7 +331,14 @@ const isolated = createSandboxRunner(
   },
   { timeoutMs: 5000, maxBytes: 1048576 },
 );
-native.lintWithPlugins(source, [isolated], { cache: true });
+console.log(`Required sandbox image: ${SANDBOX_IMAGE}`);
+try {
+  const output = native.lintWithPlugins(source, [isolated], { cache: true });
+  console.log(output.diagnostics);
+} catch (error) {
+  if (error instanceof SandboxRuntimeError) console.error(error.code);
+  throw error;
+}
 ```
 
 Install Docker, start its daemon and pull the exported pinned `SANDBOX_IMAGE`
@@ -329,7 +367,7 @@ separate versioned WIT guest interface.
 negotiated for the native type-check host. The ordinary `typeCheck` entrypoint
 remains plugin-free; callers opt in through the separate visitor entrypoint.
 
-```js
+```ts
 import { typeCheckWithVirtualTsVisitors } from "@vizejs/native";
 import {
   VISITOR_API_VERSION,
@@ -337,6 +375,7 @@ import {
   defineVisitorPlugin,
 } from "@vizejs/plugin-sdk/visitor";
 
+const source = "<template><button>Save</button></template>";
 const observer = defineVisitorPlugin({
   apiVersion: VISITOR_API_VERSION,
   name: "virtual-ts-observer",
@@ -368,7 +407,7 @@ through the negotiated adapter; disabled recorders do not invoke configured
 hosts, and ordinary recorders without `visitorHosts` do not inspect plugin
 descriptors.
 
-```js
+```ts
 import { createDevtoolsTraceRecorder } from "@vizejs/devtools";
 import {
   VISITOR_API_VERSION,
@@ -392,6 +431,13 @@ const observer = defineVisitorPlugin({
 const trace = createDevtoolsTraceRecorder({
   sessionId: "request-1",
   visitorHosts: [createDevtoolsTraceVisitorHost(observer)],
+});
+trace.record({
+  kind: "render:end",
+  componentId: "SaveButton",
+  componentName: "SaveButton",
+  source: "src/SaveButton.vue",
+  durationMs: 1,
 });
 ```
 

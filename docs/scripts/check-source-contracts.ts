@@ -12,6 +12,7 @@ export const documentationSourceContractTests = [
   "tests/tooling/patina-rule-documentation-metadata.test.ts",
   "tests/tooling/docs-executable-rust.test.ts",
   "tests/tooling/compiled-docs-inputs.test.ts",
+  "tests/tooling/docs-plugin-examples.test.ts",
 ] as const;
 
 function main(): void {

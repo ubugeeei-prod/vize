@@ -77,8 +77,15 @@ const evidence = {
     "npm/devtools/README.md",
     "tests/tooling/docs-public-api.test.ts",
     "tools/support/release/jsr/packages.ts",
+    "tests/tooling/docs-plugin-examples.test.ts",
+    "tests/tooling/davinci-plugin-doc-examples.test.ts",
   ],
-  plugins: ["npm/plugin-sdk/README.md", "tests/tooling/docs-public-api.test.ts"],
+  plugins: [
+    "npm/plugin-sdk/README.md",
+    "tests/tooling/docs-public-api.test.ts",
+    "tests/tooling/docs-plugin-examples.test.ts",
+    "tests/tooling/davinci-plugin-doc-examples.test.ts",
+  ],
 } as const;
 
 /** Complete serializable contract published by the documentation site. */

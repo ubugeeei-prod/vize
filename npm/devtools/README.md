@@ -27,17 +27,43 @@ trace.record({
 });
 
 const snapshot = trace.snapshot();
+console.log(snapshot.events);
 ```
 
 Visitor-style JavaScript observers are an explicit opt-in through
 `@vizejs/plugin-sdk/visitor`:
 
 ```ts
-import { createDevtoolsTraceVisitorHost } from "@vizejs/plugin-sdk/visitor";
+import { createDevtoolsTraceRecorder } from "@vizejs/devtools";
+import {
+  VISITOR_API_VERSION,
+  createDevtoolsTraceVisitorHost,
+  defineVisitorPlugin,
+} from "@vizejs/plugin-sdk/visitor";
+
+const traceObserver = defineVisitorPlugin({
+  apiVersion: VISITOR_API_VERSION,
+  name: "trace-observer",
+  version: "1",
+  capabilities: ["devtools-trace"] as const,
+  cacheInputs: [],
+  visitors: {
+    "devtools-trace"({ file, payload }) {
+      console.log(file, payload.events);
+    },
+  },
+});
 
 const trace = createDevtoolsTraceRecorder({
   sessionId: "request-1",
   visitorHosts: [createDevtoolsTraceVisitorHost(traceObserver)],
+});
+trace.record({
+  kind: "render:end",
+  componentId: "ArticleView",
+  componentName: "ArticleView",
+  source: "src/pages/ArticleView.vue",
+  durationMs: 2.1,
 });
 ```
 
