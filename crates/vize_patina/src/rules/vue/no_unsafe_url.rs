@@ -260,12 +260,11 @@ impl NoUnsafeUrl {
             let range = retained.authored_range(retained.ast.span())?;
             ctx.source.get(range.start as usize..range.end as usize)
         });
-        if let Some(expression) = expression.map(str::trim) {
-            if (attr_name.eq_ignore_ascii_case("href") && is_hash_prefixed_expression(expression))
+        if expression.map(str::trim).is_some_and(|expression| {
+            (attr_name.eq_ignore_ascii_case("href") && is_hash_prefixed_expression(expression))
                 || expression_is_sanitizer_call(expression)
-            {
-                return;
-            }
+        }) {
+            return;
         }
 
         let help_message = if attr_name == "href" {
