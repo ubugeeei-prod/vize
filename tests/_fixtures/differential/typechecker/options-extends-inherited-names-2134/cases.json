@@ -37,6 +37,100 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "extends-base-method-argument-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/Button.vue",
+          "source": "method-argument.Button.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Button.vue",
+          "line": 11,
+          "column": 48,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "define-component-extends-base-members-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Base.vue",
+          "source": "define-component.Base.vue.txt"
+        },
+        {
+          "file": "src/Derived.vue",
+          "source": "define-component.Derived.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Derived.vue",
+          "line": 12,
+          "column": 22,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/Derived.vue",
+          "line": 19,
+          "column": 17,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/Derived.vue",
+          "line": 19,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        },
+        {
+          "file": "src/Derived.vue",
+          "line": 19,
+          "column": 45,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        },
+        {
+          "file": "src/Derived.vue",
+          "line": 19,
+          "column": 66,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'length' does not exist on type 'boolean'."
+        },
+        {
+          "file": "src/Derived.vue",
+          "line": 19,
+          "column": 85,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
     }
   ]
 }
