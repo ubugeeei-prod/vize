@@ -38,6 +38,9 @@ export const SURFACES: Scan.Surface[] = [
   stageSurface("l1", "L1", "vize_l1", ["vize_sinopia"]),
   stageSurface("l2", "L2", "vize_l2", ["vize_disegno"]),
   stageSurface("l1_to_l2", "L1->L2", "vize_l1_to_l2", ["vize_ricalco"]),
+  stageSurface("l2_to_l3", "L2->L3", "vize_l2_to_l3"),
+  stageSurface("l3", "L3", "vize_l3", ["vize_impeto"]),
+  stageSurface("l4", "L4", "vize_l4", ["vize_stesura"]),
   {
     id: "old_ast",
     label: "old AST/parser",

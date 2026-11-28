@@ -1,64 +1,60 @@
-# Davinci stage dependency policy
+# Stage dependency policy
 
-Stage names are the primary implementation vocabulary. Historical art names
-remain Cargo package ids and release identities only where a dedicated
-compatibility change is still required.
+L0–L4 are physical Cargo package identities. The conversion packages consume
+the levels on both sides of their boundary. `vize_l0_derive` is the proc-macro
+leaf used by L0; `vize_carton` is a host and compatibility consumer of L0.
 
-| Role                             | Preferred crate name | Current package id |
-| -------------------------------- | -------------------- | ------------------ |
-| L0 source and storage foundation | `vize_l0`            | `vize_carton`      |
-| L1 lossless surface tree         | `vize_l1`            | `vize_l1`          |
-| L2 semantic IR                   | `vize_l2`            | `vize_l2`          |
-| L3 reactivity/backend scheduling | `vize_l3`            | `vize_impeto`      |
-| L1 to L2 lowering                | `vize_l1_to_l2`      | `vize_l1_to_l2`    |
-| L2 to L3 lowering                | `vize_l2_to_l3`      | `vize_l2_to_l3`    |
+| Package          | Direct stage dependencies |
+| ---------------- | ------------------------- |
+| `vize_l0_derive` | none                      |
+| `vize_l0`        | `vize_l0_derive`          |
+| `vize_l1`        | L0                        |
+| `vize_l2`        | L0, L1                    |
+| `vize_l3`        | L0, L2                    |
+| `vize_l1_to_l2`  | L0, L1, L2                |
+| `vize_l2_to_l3`  | L0, L2, L3                |
+| `vize_l4`        | L0, L1, L1→L2, L2, L3     |
+| `vize_carton`    | L0                        |
 
-`vize_davinci` is shared infrastructure rather than another artifact stage. It
-owns ids, diagnostics, side tables, pass machinery, Folio contracts, and the
-canonical alias metadata used by tools.
+The authoritative role map is
+[`stage-dependencies.ts`](../../../tools/support/compat/davinci/stage-dependencies.ts).
+The dependency gate reads Cargo metadata, so normal and build declarations are
+checked even when optional or limited to another target. Direct stage edges must
+fit the package's role. A helper cannot hide a reverse path. The policy graph
+itself must be acyclic, and newly numbered stages need an explicit role.
+Dev-only differential oracles remain permitted.
 
-## One-way graph
+The broader [level dependency gate](../../../tools/support/compat/davinci/level-dependencies.ts)
+also rejects stage-to-product paths and new legacy debt. Existing legacy
+permissions can only shrink. Its five-minute Actions job runs mutation controls
+for L4, the derive leaf, build edges, optional/target-specific declarations,
+aliases and helper paths without installing JavaScript dependencies.
+The [stage package tests](../../../tests/tooling/davinci-stage-dependencies.test.ts)
+add exact normal-edge, physical identity and registry-publication checks.
 
-The graph is ordered by build tier, not by semantic stage number. Dependencies
-may point only to an earlier tier:
+## Product declarations
 
-| Build tier | Preferred crate | Allowed Davinci dependencies                    |
-| ---------- | --------------- | ----------------------------------------------- |
-| 0          | `vize_l0`       | none                                            |
-| 1          | `vize_davinci`  | `vize_l0`                                       |
-| 1          | `vize_l1`       | `vize_l0`                                       |
-| 2          | `vize_l2`       | `vize_l0`, `vize_davinci`                       |
-| 3          | `vize_l3`       | `vize_l0`, `vize_davinci`, `vize_l2`            |
-| 3          | `vize_l1_to_l2` | `vize_l0`, `vize_davinci`, `vize_l1`, `vize_l2` |
-| 4          | `vize_l2_to_l3` | `vize_l0`, `vize_davinci`, `vize_l2`, `vize_l3` |
+Products declare direct stage dependencies in their Cargo manifests. The table
+below records those declarations, including optional dependencies. They describe
+the product boundary and do not prove complete native adoption.
 
-L0 must never depend on a later tier. L3's native decision result borrows its
-actual sealed L2 owner through a normal downward dependency. The conversion
-edge re-exports that sole producer; it still owns flat-program lowering.
+| Product         | Direct declared stages and conversions | Owning manifests                   |
+| --------------- | -------------------------------------- | ---------------------------------- |
+| Compiler        | L0–L4, L1→L2, L2→L3                    | `crates/vize_atelier_*/Cargo.toml` |
+| Native linter   | L0–L4, L1→L2                           | `crates/vize_patina/Cargo.toml`    |
+| Typechecker     | L0, L1, L2, L4, L1→L2                  | `crates/vize_canon/Cargo.toml`     |
+| Language server | L0, L1, L2, L1→L2                      | `crates/vize_maestro/Cargo.toml`   |
+| Formatter       | L0, L1                                 | `crates/vize_glyph/Cargo.toml`     |
 
-The resident tier (`vize_incremental`, P5-4a) is a consumer above every stage
-tier: it runs the stage functions as salsa queries for long-lived processes
-and is the only crate allowed to depend on `salsa`
-(`tests/tooling/davinci-resident-salsa.test.ts`). No stage crate may depend
-on it, and the one-shot CLI never links it.
+The [consumer inventory](./consumer-migration-surfaces.md) scans every level and
+both conversions, separating production/manifest mentions from test oracles and
+retained compatibility spellings. Its generated shards and on-demand summary
+show which source files use each surface. Manifest and lexical mentions do not
+grant zero-fallback or behavior/performance parity credit.
 
-The [storage boundary](./storage-boundary.md) defines how every stage consumes
-L0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
-keeps host filesystem and process I/O in the `vize` CLI.
-
-Cargo manifests use dependency renames where the package id still differs from
-the preferred crate name. Today those exceptions are L0/Carton and L3/Impeto,
-so source imports stay on `vize_l0`, `vize_l1`, `vize_l2`, `vize_l3`, and
-`vize_l1_to_l2` while package publication remains compatible.
-`tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo metadata to pin
-every spelling and reject a reversed tier edge or cycle.
-
-## L0 host boundary
-
-`vize_l0` names the accepted Carton foundation; it does not claim that the
-entire Carton package is `no_std`. Carton still exposes host-side configuration,
-path, LSP, and profiling modules for existing consumers. Davinci stage libraries
-must import compact strings, small collections, source, span, and arena storage
-through `vize_l0` without importing `std` storage directly. Splitting Carton's
-core and host surfaces is a later compatibility change, not part of this alias
-transition.
+L3's native decisions borrow their actual sealed L2 owner. L4 consumes those
+decisions and the admitted source artifacts. The resident `vize_incremental`
+consumer remains above the stages; stage libraries cannot depend on it.
+The [storage boundary](./storage-boundary.md) owns shared strings and collections,
+and the host-runtime boundary keeps filesystem/process integration outside the
+stage dependency graph.

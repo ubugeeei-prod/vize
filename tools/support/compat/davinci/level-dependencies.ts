@@ -3,6 +3,7 @@ import { appendFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inspectDirectoryDependencies, type DirectoryViolation } from "./directory-dependencies.ts";
+import { inspectStageDependencies, type StageDependencyViolation } from "./stage-dependencies.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 import {
@@ -83,6 +84,7 @@ interface Witness {
   readonly path: readonly string[];
 }
 export interface DependencyReport {
+  readonly stageViolations: readonly StageDependencyViolation[];
   readonly directoryViolations: readonly DirectoryViolation[];
   readonly roots: readonly {
     readonly name: string;
@@ -215,7 +217,7 @@ export function inspectLevelDependencies(
       } else if (byName.has(dep.name)) {
         requireEvidence(forbidden(dep.name), "missing workspace dependency path: " + dep.name);
       }
-      if (dep.kind === null && levelName.test(dep.rename ?? dep.name)) {
+      if (dep.kind !== "dev" && levelName.test(dep.rename ?? dep.name)) {
         requireEvidence(destination, "missing level alias owner: " + (dep.rename ?? dep.name));
         requireEvidence(
           !forbidden(destination.name),
@@ -295,12 +297,14 @@ export function inspectLevelDependencies(
       .map((root) => ({ root, edge: key(entry) })),
   );
   const rootDeclarations = [...roots].flatMap((root) => edges.get(root) ?? []);
+  const declaredMetadata = {
+    workspace_root: workspaceRoot,
+    workspace_members: [...seenIds],
+    packages: packages.map((pkg) => ({ ...pkg, dependencies: pkg.dependencies.map(dependency) })),
+  };
   return {
-    directoryViolations: inspectDirectoryDependencies({
-      workspace_root: workspaceRoot,
-      workspace_members: [...seenIds],
-      packages: packages.map((pkg) => ({ ...pkg, dependencies: pkg.dependencies.map(dependency) })),
-    }),
+    stageViolations: inspectStageDependencies(declaredMetadata, Object.fromEntries(aliases)),
+    directoryViolations: inspectDirectoryDependencies(declaredMetadata),
     roots: [...roots].sort(byCodeUnit).map((name) => {
       const pkg = byName.get(name);
       requireEvidence(pkg, "missing level root package: " + name);
@@ -327,6 +331,10 @@ export function inspectLevelDependencies(
 }
 
 export function assertDependencyReport(report: DependencyReport): void {
+  requireEvidence(
+    report.stageViolations.length === 0,
+    "forbidden level dependency direction: " + JSON.stringify(report.stageViolations),
+  );
   requireEvidence(
     report.directoryViolations.length === 0,
     "Davinci-to-crates dependency paths: " + JSON.stringify(report.directoryViolations),

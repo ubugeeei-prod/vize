@@ -62,7 +62,7 @@ void test("consumer migration scan classifies stage physical names separately fr
   const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
   assert.deepEqual(
     stageSurfaces.map((surface) => surface.label),
-    ["L0", "L1", "L2", "L1->L2"],
+    ["L0", "L1", "L2", "L1->L2", "L2->L3", "L3", "L4"],
   );
   assert.ok(stageSurfaces.every((surface) => !surface.label.includes("/")));
   const rawOxc = SURFACES.find((surface) => surface.id === "raw_oxc");
@@ -106,6 +106,9 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
     ["l1", "L1"],
     ["l2", "L2"],
     ["l1_to_l2", "L1->L2"],
+    ["l2_to_l3", "L2->L3"],
+    ["l3", "L3"],
+    ["l4", "L4"],
   ]);
   for (const row of rows.filter((row) => physicalLabels.has(row.surface_id))) {
     assert.equal(row.surface_group, "stage");
@@ -121,6 +124,8 @@ void test("consumer migration TSV serializes retained compatibility stage names"
     { id: "l1", label: "L1", preferred: "vize_l1", compat: "vize_sinopia" },
     { id: "l2", label: "L2", preferred: "vize_l2", compat: "vize_disegno" },
     { id: "l1_to_l2", label: "L1->L2", preferred: "vize_l1_to_l2", compat: "vize_ricalco" },
+    { id: "l3", label: "L3", preferred: "vize_l3", compat: "vize_impeto" },
+    { id: "l4", label: "L4", preferred: "vize_l4", compat: "vize_stesura" },
   ];
   const surfaceNameCounts = Object.fromEntries(SURFACES.map((surface) => [surface.id, {}]));
   for (const stage of stages) {

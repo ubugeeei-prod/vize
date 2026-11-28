@@ -76,6 +76,19 @@ void test("renaming a legacy package to a level alias cannot hide its identity",
   assert.throws(value.report, /level alias hides a legacy/u);
 });
 
+void test("a build dependency cannot hide a legacy package behind a stage alias", () => {
+  const value = fixture();
+  value.add("vize_l2", "vize_relief", { kind: "build", rename: "vize_l4" });
+  assert.throws(value.report, /level alias hides a legacy/u);
+});
+
+void test("an external build declaration cannot invent an unowned stage", () => {
+  const value = fixture();
+  value.add("vize_l2", "vize_l5", { kind: "build" });
+  delete value.pkg("vize_l2").dependencies.at(-1).path;
+  assert.throws(value.report, /missing level alias owner/u);
+});
+
 void test("a registry declaration cannot reuse a measured workspace exception", () => {
   rejectsPath(
     ({ pkg }) => {
