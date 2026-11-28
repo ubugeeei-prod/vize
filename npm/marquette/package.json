@@ -52,6 +52,11 @@
       "import": "./dist/native-build-validate.mjs",
       "default": "./dist/native-build-validate.mjs"
     },
+    "./native-build/admission": {
+      "types": "./dist/native-build-admission.d.mts",
+      "import": "./dist/native-build-admission.mjs",
+      "default": "./dist/native-build-admission.mjs"
+    },
     "./navigation": {
       "types": "./dist/navigation.d.mts",
       "import": "./dist/navigation.mjs",
