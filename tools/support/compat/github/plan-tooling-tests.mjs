@@ -38,6 +38,24 @@ const matchesAny = (path, patterns) => patterns.some((pattern) => matchesGlob(pa
 
 export { toolingTestFiles };
 
+// One planning pass reads a fixed checkout, but every candidate test walks the
+// shared helpers again. Memoize reads and file checks for the pass only:
+// direct callers and later passes always see the current files.
+let checkout = null;
+function readSource(cwd, file) {
+  const key = join(cwd, file);
+  if (!checkout) return readFileSync(key, "utf8");
+  if (!checkout.sources.has(key)) checkout.sources.set(key, readFileSync(key, "utf8"));
+  return checkout.sources.get(key);
+}
+function isFile(cwd, file) {
+  const key = join(cwd, file);
+  const probe = () => existsSync(key) && statSync(key).isFile();
+  if (!checkout) return probe();
+  if (!checkout.files.has(key)) checkout.files.set(key, probe());
+  return checkout.files.get(key);
+}
+
 // Add every literal local import, including transitive helpers, to the input
 // set. Unresolved imports restore broad inputs rather than making a skip safe.
 export function localImportInputs(file, cwd = root, visited = new Set(), typed = false) {
@@ -45,7 +63,7 @@ export function localImportInputs(file, cwd = root, visited = new Set(), typed =
   visited.add(file);
   const files = [file];
   let complete = true;
-  const source = readFileSync(join(cwd, file), "utf8");
+  const source = readSource(cwd, file);
   const imports = typed
     ? /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']([^"']+)["']/g
     : /\b(?:from\s*|import\s*(?:\(\s*)?)["']([^"']+)["']/g;
@@ -57,9 +75,7 @@ export function localImportInputs(file, cwd = root, visited = new Set(), typed =
       continue;
     }
     const candidates = typed ? typeImportCandidates(literal) : [literal];
-    const dependency = candidates.find(
-      (candidate) => existsSync(join(cwd, candidate)) && statSync(join(cwd, candidate)).isFile(),
-    );
+    const dependency = candidates.find((candidate) => isFile(cwd, candidate));
     if (typed) files.push(...candidates);
     if (literal.startsWith("..") || !dependency) {
       complete = false;
@@ -282,7 +298,17 @@ export function memberReferences(member, source, importers) {
     : found;
 }
 
-export function planToolingTests(
+export function planToolingTests(paths, options = {}) {
+  if (checkout) return planToolingTestsInCheckout(paths, options);
+  checkout = { sources: new Map(), files: new Map() };
+  try {
+    return planToolingTestsInCheckout(paths, options);
+  } finally {
+    checkout = null;
+  }
+}
+
+function planToolingTestsInCheckout(
   paths,
   { tier = "pr", cwd = root, includeDedicated = false } = {},
 ) {
@@ -323,7 +349,7 @@ export function planToolingTests(
   const referenceCache = new Map();
   const references = (member) => {
     if (!referenceCache.has(member)) {
-      const source = thirdPartySource(member) ? "" : readFileSync(join(cwd, member), "utf8");
+      const source = thirdPartySource(member) ? "" : readSource(cwd, member);
       referenceCache.set(member, memberReferences(member, source, importers.get(member) ?? 0));
     }
     return referenceCache.get(member);
@@ -377,7 +403,7 @@ export function planToolingTests(
           if (nativeBuildExemptTests.has(file)) return false;
           const imports = closures.get(file);
           return imports?.files.some((input) => {
-            const source = readFileSync(join(cwd, input), "utf8");
+            const source = readSource(cwd, input);
             return (
               localNativeRuntimeImport.test(source) ||
               typescriptPluginRuntimeLoad.test(source) ||
