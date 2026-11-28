@@ -28,10 +28,10 @@ env:
 jobs:
   native-template-products:
     name: Native template parity and paired resource measurements
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
-      CARGO_BUILD_JOBS: "24"
+      CARGO_BUILD_JOBS: "12"
       CARGO_INCREMENTAL: "0"
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: 1.100.0
