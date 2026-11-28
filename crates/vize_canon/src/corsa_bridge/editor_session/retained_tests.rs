@@ -3,9 +3,13 @@
 use super::{EditorMirrorSession, GcLock, RETAINED_FAILURE, open_existing_session_lock};
 
 fn generated(session: &EditorMirrorSession) -> std::path::PathBuf {
+    generated_from_source(session, "export const generated = 42;\n")
+}
+
+fn generated_from_source(session: &EditorMirrorSession, source: &str) -> std::path::PathBuf {
     let file = session.root().unwrap().join("projects/current/App.vue.ts");
     std::fs::create_dir_all(file.parent().unwrap()).unwrap();
-    std::fs::write(&file, "export const generated = 42;\n").unwrap();
+    std::fs::write(&file, source).unwrap();
     file
 }
 
@@ -52,8 +56,13 @@ fn failed_owner_keeps_exact_generated_bytes_through_clear_drop_and_later_sweep()
 
 #[test]
 fn stale_sweep_observation_keeps_retention_armed_before_owner_unlock() {
+    let input = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/",
+        "editor-retained-native-owner-gc-race/generated.ts.txt"
+    ));
     let session = EditorMirrorSession::new();
-    let file = generated(&session);
+    let file = generated_from_source(&session, input);
     let root = session.root().unwrap().to_path_buf();
     let gc = GcLock::acquire(root.parent().unwrap()).unwrap();
 
@@ -72,10 +81,7 @@ fn stale_sweep_observation_keeps_retention_armed_before_owner_unlock() {
     // Resume the same sweep after the owner's lifetime lock is released.
     reaper_lock.try_lock().unwrap();
     gc.reap_unlocked_session(&root, reaper_lock);
-    assert_eq!(
-        std::fs::read_to_string(&file).unwrap(),
-        "export const generated = 42;\n"
-    );
+    assert_eq!(std::fs::read_to_string(&file).unwrap(), input);
     assert!(root.join(RETAINED_FAILURE).is_file());
     // This fixture has no native reader; only the test removes its own owner.
     std::fs::remove_dir_all(root).unwrap();
