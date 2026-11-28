@@ -64,10 +64,10 @@ jobs {
       }
     }
   }
-  // The lent walk restores oxc's callback borrows to the walked root's
-  // lifetime (`vize_patina/src/lent_walk.rs`). Its tests keep every lent node
-  // past the walk, so Miri checks each widened reference under the aliasing
-  // model. Only the `lent_walk::tests` module runs.
+  // The lent walk carries the walked root's borrow through every child
+  // (`vize_patina/src/lent_walk.rs`). Its tests keep every lent node past
+  // the walk and compare observable hooks with OXC. Miri checks those real
+  // references under the aliasing model. Only `lent_walk::tests` runs.
   `patina-lent-walk` {
     `runs-on` = ci.linux
     `timeout-minutes` = 10
