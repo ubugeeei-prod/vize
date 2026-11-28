@@ -6,7 +6,7 @@ use crate::diagnostic::LintDiagnostic;
 use crate::ir::TemplateSyntax;
 use crate::linter::LintResult;
 use crate::markup::{MarkupContext, MarkupDocument};
-use crate::rules::html::id_duplication::IdDuplication;
+use crate::rules::html::IdDuplication;
 use vize_atelier_jsx::JsxLang;
 use vize_l0::{Allocator, ToCompactString};
 
