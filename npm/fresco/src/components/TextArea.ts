@@ -35,35 +35,65 @@ import {
 
 /** Controlled or initial multiline text, editing state, viewport, and emitted events. */
 export interface TextAreaProps {
-  /** Controlled text value. */
+  /** Text used initially and synchronized when a defined v-model value changes.
+   * @default undefined
+   */
   modelValue?: string;
-  /** Initial value used when modelValue is omitted. */
+  /** Initial text when modelValue is omitted; later changes do not reset editing.
+   * @default ""
+   */
   defaultValue?: string;
-  /** Placeholder text. */
+  /** Text displayed only while empty and unfocused.
+   * @default undefined
+   */
   placeholder?: string;
-  /** Number of retained visible rows. */
+  /** Visible rows, floored to an integer; invalid or nonpositive values become one.
+   * @default 5
+   */
   rows?: number;
-  /** Whether the textarea owns keyboard input. */
+  /** Own keyboard input unless disabled, and show the focused cursor and highlight.
+   * @default false
+   */
   focused?: boolean;
-  /** Prevent editing and render dimmed text. */
+  /** Prevent editing and render dimmed text.
+   * @default false
+   */
   disabled?: boolean;
-  /** Show one-based line numbers. */
+  /** Show one-based line numbers.
+   * @default false
+   */
   lineNumbers?: boolean;
-  /** Border style. */
+  /** Border style; none also removes padding and the two border rows.
+   * @default "single"
+   */
   border?: "single" | "double" | "rounded" | "none";
-  /** Foreground color. */
+  /** Foreground color.
+   * @default undefined
+   */
   fg?: string;
-  /** Placeholder foreground color. */
+  /** Placeholder foreground color.
+   * @default "gray"
+   */
   placeholderFg?: string;
-  /** Line number foreground color. */
+  /** Line number foreground color.
+   * @default "gray"
+   */
   lineNumberFg?: string;
-  /** Controlled cursor line, zero based. */
+  /** Zero-based cursor line; an omitted initial line becomes zero if a column is set.
+   * @default undefined
+   */
   cursorLine?: number;
-  /** Controlled cursor column, in graphemes. */
+  /** Grapheme cursor column; omitted initial coordinates put the cursor at text end.
+   * @default undefined
+   */
   cursorColumn?: number;
-  /** Glyph rendered at the focused cursor. */
+  /** Glyph rendered at the focused cursor.
+   * @default "│"
+   */
   cursor?: string;
-  /** Validate the current value; a string becomes the error message. */
+  /** Validate text; false or any string is invalid, and a string is its message.
+   * @default undefined
+   */
   validate?: (value: string) => boolean | string | null | undefined;
 }
 
