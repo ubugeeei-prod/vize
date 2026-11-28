@@ -1,7 +1,7 @@
-//! Differential test for `rebuild_source`'s single-pass copy (it writes into
-//! the string's spare capacity under `unsafe`): seeded random part lists must
+//! Differential test for `rebuild_source`'s inline collection and heap copy:
+//! seeded random part lists must
 //! rebuild byte for byte as the plain `push_str` spelling does. The lengths
-//! straddle the 24-byte inline capacity, and the text mixes 1- to 4-byte
+//! straddle the architecture's inline capacity, and text mixes 1- to 4-byte
 //! UTF-8 so a piece boundary never lands inside a character by accident.
 //! `tests/fuzz/fuzz_targets/text_rebuild.rs` runs the same oracle under
 //! libFuzzer.
@@ -51,12 +51,12 @@ fn part(rng: &mut Rng) -> TextPart {
     let text: String = (0..length)
         .map(|_| ALPHABET.get(rng.below(10)).copied().unwrap_or('a'))
         .collect();
-    let kind = rng.below(3);
+    let kind = rng.below(4);
     TextPart {
         text,
         span: Span::new(0, 0),
-        dynamic: kind > 0,
-        raw_html: kind == 2,
+        dynamic: kind == 1 || kind == 2,
+        raw_html: kind >= 2,
     }
 }
 
@@ -75,8 +75,10 @@ fn rebuild_matches_the_push_str_spelling() {
 
 #[test]
 fn rebuild_fills_the_inline_capacity_exactly() {
-    // 24 bytes is the inline capacity, so the last byte also holds the tag.
-    for split in 0..=18 {
+    let inline = core::mem::size_of::<String>();
+    let text = inline - 6;
+    // The last byte of a full inline string also holds its tag.
+    for split in 0..=text {
         let parts = [
             TextPart {
                 text: String::from("x".repeat(split)),
@@ -85,14 +87,14 @@ fn rebuild_fills_the_inline_capacity_exactly() {
                 raw_html: false,
             },
             TextPart {
-                text: String::from("y".repeat(18 - split)),
+                text: String::from("y".repeat(text - split)),
                 span: Span::new(0, 0),
                 dynamic: true,
                 raw_html: false,
             },
         ];
         let rebuilt = rebuild_source(&parts);
-        assert_eq!(rebuilt.len(), 24);
+        assert_eq!(rebuilt.len(), inline);
         assert_eq!(rebuilt, oracle(&parts));
         assert!(!rebuilt.is_heap_allocated());
     }

@@ -125,6 +125,27 @@ pub fn rebuild_source(parts: &[TextPart]) -> String {
             open.len() + part.text.len() + close.len()
         })
         .sum();
+    let mut remaining = core::mem::size_of::<String>();
+    if capacity <= remaining {
+        // CompactString's str iterator fills inline storage directly, using
+        // only whole UTF-8 pieces. Keep the original inline-capacity budget:
+        // if the capacity sum wraps, the former fill stops at the first piece
+        // that does not fit rather than rebuilding the full oversized input.
+        return parts
+            .iter()
+            .flat_map(|part| {
+                let (open, close) = delimiters(part);
+                [open, part.text.as_str(), close]
+            })
+            .take_while(|piece| {
+                if piece.len() > remaining {
+                    return false;
+                }
+                remaining -= piece.len();
+                true
+            })
+            .collect();
+    }
     let mut out = String::with_capacity(capacity);
     // One pass of plain copies into the pre-sized buffer, so the cost never
     // depends on whether LLVM inlines `CompactString::push_str` at six call
@@ -133,10 +154,8 @@ pub fn rebuild_source(parts: &[TextPart]) -> String {
     // SAFETY: `spare` is `out`'s uninitialized tail (`out` is empty, so it
     // starts at byte 0). `fill` initializes a prefix of it and returns its
     // length, which is at most `spare.len()`. That prefix is a concatenation
-    // of whole `&str` pieces, so it is valid UTF-8. An inline string's tag byte
-    // is overwritten only when the prefix fills the inline capacity, and then
-    // it is the final byte of that complete, valid UTF-8 string, which is what
-    // `spare_capacity_mut` allows.
+    // of whole `&str` pieces, so it is valid UTF-8. This branch's capacity is
+    // above CompactString's inline limit, so its representation is heap-owned.
     let written = fill(unsafe { out.spare_capacity_mut() }, parts);
     // SAFETY: `fill` initialized exactly `written <= capacity()` bytes of
     // valid UTF-8 (see above), and nothing touched `out` in between.
