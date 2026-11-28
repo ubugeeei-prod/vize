@@ -1,0 +1,70 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/07-native-script-checker-products/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Native script checker products
+on:
+  pull_request:
+    paths:
+      - .github/workflows/07-native-script-checker-products.yml
+      - tools/ci/workflows/07-native-script-checker-products/**
+      - crates/vize_maestro/src/source_project/script_queries.rs
+      - crates/vize_maestro/src/source_project/script_queries/**
+      - crates/vize_canon/src/script_parse/**
+      - davinci/vize_l1/src/embed/syntax/program.rs
+      - davinci/vize_l1_to_l2/src/native_file/script.rs
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: native-script-checker-products-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  native-script-checker-products:
+    name: Native script checker parity and paired resource measurements
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: 1.100.0
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/07-native-script-checker-products/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: native-script-checker-products
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Compare complete original script products and measure their resources
+        run: . "${{ env.VIZE_CI_FILES }}/measure-native-script-checker-products.sh"
+      - name: Retain exact-source parity and raw paired measurements
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: native-script-checker-products-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-script-checker-products
+          if-no-files-found: error
+          retention-days: 30
