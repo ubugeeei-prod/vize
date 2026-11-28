@@ -253,3 +253,69 @@ export default {
         ]
     );
 }
+
+#[test]
+fn pinned_literal_is_counts_the_named_component_as_used() {
+    let sfc = include_str!(
+        "../../../../../../tests/_fixtures/differential/linter/no-unused-components-literal-is/LiteralIs.vue.txt"
+    );
+
+    assert_eq!(
+        lint_messages(sfc),
+        vec!["Component 'Unused' is registered but never used in template"]
+    );
+}
+
+#[test]
+fn script_setup_import_used_through_literal_is() {
+    let sfc = r#"<script setup lang="ts">
+import MyComp from './MyComp.vue'
+import Unused from './Unused.vue'
+</script>
+
+<template>
+  <component :is="'MyComp'" />
+</template>
+"#;
+
+    assert_eq!(
+        lint_messages(sfc),
+        vec!["Component 'Unused' is registered but never used in template"]
+    );
+}
+
+#[test]
+fn template_literal_without_expressions_names_its_component() {
+    // `eslint-plugin-vue` treats every template literal as a dynamic binding
+    // and stops reporting for the file; one without expressions names its
+    // component as plainly as a string literal does.
+    let sfc = r#"<script setup lang="ts">
+import Backticked from './Backticked.vue'
+import Unused from './Unused.vue'
+</script>
+
+<template>
+  <component :is="`Backticked`" />
+</template>
+"#;
+
+    assert_eq!(
+        lint_messages(sfc),
+        vec!["Component 'Unused' is registered but never used in template"]
+    );
+}
+
+#[test]
+fn dynamic_v_is_suppresses_reports() {
+    let sfc = r#"<script>
+import Unused from './Unused.vue'
+export default { components: { Unused } }
+</script>
+
+<template>
+  <div v-is="current" />
+</template>
+"#;
+
+    assert_eq!(lint_messages(sfc), Vec::<String>::new());
+}
