@@ -9,6 +9,8 @@ Vize formats the `<script>`, `<template>` and `<style>` blocks of a Vue componen
 
 ## Format a project
 
+The formatter ships through the Vize CLI. Its Rust library, `vize_glyph`, is available from the source workspace and is excluded from crates.io publication. For Rust embedding, place a Vize checkout at `../vize` relative to the consuming project and use `cargo add vize_glyph --path ../vize/crates/vize_glyph`. Use the checkout's pinned Rust toolchain when building it.
+
 With the [Vite+ integration](./vite-plus.md):
 
 ```bash

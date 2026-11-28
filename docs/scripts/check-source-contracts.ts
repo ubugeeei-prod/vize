@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 export const documentationSourceContractTests = [
   "tests/tooling/docs-public-api.test.ts",
   "tests/tooling/docs-contract-metadata.test.ts",
+  "tests/tooling/docs-release-source-consumer.test.ts",
   "tests/tooling/lib-reference-docs.test.ts",
   "tests/tooling/fresco-public-docs.test.ts",
   "tests/tooling/fresco-prop-defaults.test.ts",

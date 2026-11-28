@@ -11,6 +11,7 @@ import { pathToFileURL } from "node:url";
 
 import { documentationSourceContractTests } from "./check-source-contracts.ts";
 import { jsrPackages } from "../../tools/support/release/jsr/packages.ts";
+import { crateDocumentationInstallation } from "../../tools/support/documentation/crate-installation.ts";
 
 import { COMPOSABLE_CATALOG } from "../../npm/compose/core/src/catalog.ts";
 import {
@@ -37,6 +38,7 @@ function publicSubpaths(relativePath: string): readonly string[] {
 function npmInstallation(packageName: string) {
   const published = jsrPackages.some((entry) => entry.npmName === packageName);
   return {
+    ecosystem: "npm",
     distribution: published ? "registry" : "workspace",
     package: published ? `pnpm add ${packageName}` : `pnpm add '${packageName}@workspace:*'`,
   } as const;
@@ -66,11 +68,17 @@ const evidence = {
     "docs/scripts/generate-patina-rules-page.ts",
     "docs/content/rules/index.md",
     ".github/workflows/pr-rust-checks.yml",
+    "crates/vize_patina/Cargo.toml",
+    "tools/support/documentation/crate-installation.ts",
+    "tools/support/release/publish_crates/main.ts",
   ],
   glyph: [
     "docs/content/guide/formatter.md",
     ".github/workflows/pr-rust-checks.yml",
     "crates/vize_glyph/src/lib.rs",
+    "crates/vize_glyph/Cargo.toml",
+    "tools/support/documentation/crate-installation.ts",
+    "tools/support/release/publish_crates/main.ts",
   ],
   davinci: [
     "docs/davinci/README.md",
@@ -165,7 +173,7 @@ export function documentationContractMetadata() {
         title: "Patina",
         packageName: "vize_patina",
         documentation: "/rules/",
-        installation: { package: "cargo add vize_patina" },
+        installation: crateDocumentationInstallation("vize_patina"),
         evidence: evidence.patina,
       },
       {
@@ -173,7 +181,7 @@ export function documentationContractMetadata() {
         title: "Glyph",
         packageName: "vize_glyph",
         documentation: "/guide/formatter.html",
-        installation: { package: "cargo add vize_glyph" },
+        installation: crateDocumentationInstallation("vize_glyph"),
         evidence: evidence.glyph,
       },
       {
@@ -218,6 +226,7 @@ export function documentationContractMetadata() {
         rust: "cargo test --locked --profile ci -p vize_glyph -p vize_patina --doc",
       },
       releaseEvidence: {
+        consumer: "tests/tooling/docs-release-source-consumer.test.ts",
         workflow: ".github/workflows/release.yml",
         notesGenerator: "tools/support/release/github_release_notes.ts",
         source: "exact merged revision",

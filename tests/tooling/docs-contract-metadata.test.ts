@@ -12,6 +12,8 @@ import { COMPOSABLE_CATALOG } from "../../npm/compose/core/src/catalog.ts";
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 import { documentationSourceContractTests } from "../../docs/scripts/check-source-contracts.ts";
 import { jsrPackages } from "../../tools/support/release/jsr/packages.ts";
+import { publishedCrates } from "../../tools/support/release/publish_crates/main.ts";
+import { crateDocumentationInstallation } from "../../tools/support/documentation/crate-installation.ts";
 
 void test("the published docs contract covers every required product surface", () => {
   const metadata = documentationContractMetadata();
@@ -60,7 +62,8 @@ void test("hover and completion records come from the exact UI and Compose catal
 void test("installation claims follow the release inventory and preserve workspace-only packages", () => {
   const metadata = documentationContractMetadata();
   for (const surface of metadata.surfaces) {
-    if (!("distribution" in surface.installation)) continue;
+    if (!("ecosystem" in surface.installation) || surface.installation.ecosystem !== "npm")
+      continue;
     const published = jsrPackages.some((entry) => entry.npmName === surface.packageName);
     assert.equal(surface.installation.distribution, published ? "registry" : "workspace");
     assert.equal(
@@ -77,6 +80,47 @@ void test("installation claims follow the release inventory and preserve workspa
     readFileSync(new URL("../../npm/devtools/README.md", import.meta.url), "utf8"),
     /workspace-only and has not been published/u,
   );
+});
+
+void test("Rust installation claims follow crate release and manifest policy", () => {
+  const metadata = documentationContractMetadata();
+  for (const id of ["glyph", "patina"]) {
+    const surface = metadata.surfaces.find((surface) => surface.id === id);
+    assert.ok(surface && "ecosystem" in surface.installation);
+    const installation = crateDocumentationInstallation(surface.packageName);
+    assert.deepEqual(surface.installation, installation);
+    assert.equal(installation.ecosystem, "cargo");
+    assert.equal(
+      installation.distribution,
+      publishedCrates.includes(surface.packageName) ? "registry" : "workspace",
+    );
+  }
+  assert.equal(crateDocumentationInstallation("vize_patina").package, "cargo add vize_patina");
+  assert.deepEqual(crateDocumentationInstallation("vize_glyph"), {
+    ecosystem: "cargo",
+    distribution: "workspace",
+    package: "cargo add vize_glyph --path ../vize/crates/vize_glyph",
+    checkout: "../vize",
+    sourcePath: "crates/vize_glyph",
+  });
+  const guide = readFileSync(
+    new URL("../../docs/content/guide/formatter.md", import.meta.url),
+    "utf8",
+  );
+  assert.ok(guide.includes(crateDocumentationInstallation("vize_glyph").package));
+  assert.throws(() => crateDocumentationInstallation("../vize_glyph"), {
+    message: "Invalid crate name: ../vize_glyph",
+  });
+  const index = publishedCrates.length;
+  const inventory = publishedCrates as string[];
+  inventory.push("vize_glyph");
+  try {
+    assert.throws(() => crateDocumentationInstallation("vize_glyph"), {
+      message: "Release inventory contradicts crate publication policy: vize_glyph",
+    });
+  } finally {
+    inventory.splice(index);
+  }
 });
 
 void test("docs builds publish a deterministic machine-readable endpoint", () => {
