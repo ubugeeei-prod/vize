@@ -65,6 +65,8 @@ Nuxt ではコンポーネントを必要になった時点でコンパイルす
 
 Nuxt 3 と 4 では、モジュールが `prepare:types` の実行時に `{ "package": "vize", "extensions": [".vue"] }` を生成済みの `.nuxt/tsconfig.app.json` へ追加します。この処理は `compiler` オプションとは独立しています。型チェックを担当するのは SFC のビルドコンパイラではなく、TypeScript ホストだからです。`contentMappers` に `.vue` 用のマッパーがすでにある場合は、その明示的な選択を維持し、重複する項目を追加しません。他のマッパーの順序と値も変えません。Nuxt 2 の出力は変更しません。
 
+`vize` を別途インストールする必要はありません。TypeScript はマッパーの `package` を生成された tsconfig のディレクトリから解決します。pnpm はそこに直接の依存関係しかリンクしません。`vize` が `@vizejs/nuxt` 経由でしかインストールされていない場合、モジュールは `vize` という名前の代わりに、インストール済みの `vize` パッケージの絶対パスを書き込みます。
+
 外部マッパーのコードを実行できるかどうかは、引き続き TypeScript ホストが管理します。CLI では TypeScript 7.1 以降を `--runExternalCode` とともに使い、エディターの Content Mapper 対応は信頼できるワークスペースでだけ有効にしてください。ホストとエディターの完全な設定手順は、[TypeScript Content Mapper](../guide/content-mapper.md)を参照してください。
 
 <span id="options"></span>
