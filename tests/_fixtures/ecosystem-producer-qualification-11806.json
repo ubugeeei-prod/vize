@@ -146,38 +146,64 @@
           "src/GraphAnd3D.vue": "e7acedea6ebda3a7b3bf0a4ba66a58f5620768cd3e7e867db3d75cf3e905011e"
         }
       }
+    },
+    {
+      "qualificationRun": "local qualification on the PR head (tests/tooling/ecosystem-producer-qualification.test.ts)",
+      "source": "7c868fc07770f0e552375c4d348e09103a5a2150",
+      "supersededBy": "#13856 / bound-props instance of unmarked constructor components",
+      "unchanged": "diagnostics, inputSha256, exit statuses, the restored packet and every generated hash except the GraphAnd3D, NaiveUiOptionsApi, PrimeVueOptionsApi and UiLibraries entries, which move only because the gated emit-props calls of their packaged constructor components now capture the bound props type and construct a bound instance",
+      "virtualTsSha256Delta": {
+        "baseline": {
+          "src/GraphAnd3D.vue": "b3e4c3b0defb89f423dbe354c0b4ae30350ffd72733d87abf938237a6e298421",
+          "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
+          "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",
+          "src/UiLibraries.vue": "d96c096202d5003c5062bfb2530c8a8129b2836adb8829d6f73b5492421df9be"
+        },
+        "negative": {
+          "src/GraphAnd3D.vue": "a8d3f191de21efc52b5a58447a7e434bae19f51c5217202b3faf4761daf07cf7",
+          "src/NaiveUiOptionsApi.vue": "940c7e33574854a15933bd290fde0050e7e3737bb0ccfe71d9acf3b113c7d339",
+          "src/PrimeVueOptionsApi.vue": "0507e260f62782e5c3a8e9eecb1482ba718b563c65eb14f4f4c85c1186355c14",
+          "src/UiLibraries.vue": "e8eb821d327fcfa6e30af1d83606249e55292c9393ca0946e8e0ac2908bbfbcd"
+        },
+        "positive": {
+          "src/GraphAnd3D.vue": "e677d96da49bb522a37361cc88e05c9bd727804a8ad1d4f5ea4c6a33570afafc",
+          "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
+          "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",
+          "src/UiLibraries.vue": "9265418da4871a811a2b12f6ae6ca0204353d707ac04ceb18259de98753d810e"
+        }
+      }
     }
   ],
   "virtualTsSha256": {
     "baseline": {
       "src/ComposablesAndRouting.vue": "e1fb8fd4f08c97b400ef02e2545a67230f1ab05df5bcc5fce918659dfaaff9f5",
-      "src/GraphAnd3D.vue": "b3e4c3b0defb89f423dbe354c0b4ae30350ffd72733d87abf938237a6e298421",
+      "src/GraphAnd3D.vue": "029b08f8960e84d7a61643aead57f4e8947d3033e195ae6c21b6f8002e8b6385",
       "src/MediaAndDataViz.vue": "9a66a799ef9482fd8c5685c118bba789f408a9945b4f2a70fe7c834ff69862b6",
-      "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
-      "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",
-      "src/UiLibraries.vue": "d96c096202d5003c5062bfb2530c8a8129b2836adb8829d6f73b5492421df9be",
+      "src/NaiveUiOptionsApi.vue": "fd5cf2fd218699b68d6054e33f4dc98b3773fad7f7c067e7292ddb3091792795",
+      "src/PrimeVueOptionsApi.vue": "a86b2d6d8407da4a2aae29344ec21b20a0d3a695189424b044f50a2e281fd4f0",
+      "src/UiLibraries.vue": "be0be5e389e28bc2d586aefb12e193769cdf824f27f6f5509745939c84b99300",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
     },
     "negative": {
       "src/ComposablesAndRouting.vue": "7ef8d90b67c3b6f72546b82dc07a1396ab09177a903079ecb2984c4aae0c7663",
-      "src/GraphAnd3D.vue": "a8d3f191de21efc52b5a58447a7e434bae19f51c5217202b3faf4761daf07cf7",
+      "src/GraphAnd3D.vue": "075cefb7a359c5c629b0caf19f05896b6b56fa45a3d40b893df974468cf349fe",
       "src/MediaAndDataViz.vue": "5f290a4ba2b0f01b70d07c13e0bd16c8587a2c01755b0f19142a012f03f08ebb",
-      "src/NaiveUiOptionsApi.vue": "940c7e33574854a15933bd290fde0050e7e3737bb0ccfe71d9acf3b113c7d339",
-      "src/PrimeVueOptionsApi.vue": "0507e260f62782e5c3a8e9eecb1482ba718b563c65eb14f4f4c85c1186355c14",
-      "src/UiLibraries.vue": "e8eb821d327fcfa6e30af1d83606249e55292c9393ca0946e8e0ac2908bbfbcd",
+      "src/NaiveUiOptionsApi.vue": "b0b1e54254c7f86fcd52d1b37c125233f98cbec3f35d493093dd4ebfaa1418d8",
+      "src/PrimeVueOptionsApi.vue": "6afcd1394b4f9b898def4c6512e699610085591cc372b149ac1281e6e027b30b",
+      "src/UiLibraries.vue": "cc9e9f4060b371973a5fac21b752cfd6549d4dd2848f00f8f05bbb6fbc5d54e6",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
     },
     "positive": {
       "src/ComposablesAndRouting.vue": "e1fb8fd4f08c97b400ef02e2545a67230f1ab05df5bcc5fce918659dfaaff9f5",
-      "src/GraphAnd3D.vue": "e677d96da49bb522a37361cc88e05c9bd727804a8ad1d4f5ea4c6a33570afafc",
+      "src/GraphAnd3D.vue": "c0a60e2fb262c70656ed089818d452dedd6ef129f64af712239357c12791c7bb",
       "src/MediaAndDataViz.vue": "9a66a799ef9482fd8c5685c118bba789f408a9945b4f2a70fe7c834ff69862b6",
-      "src/NaiveUiOptionsApi.vue": "86c2a2b2a03e457b8f5450074837017b397e16b63b1b10efe1f795c45807812a",
-      "src/PrimeVueOptionsApi.vue": "e65776f5f67b9c9e9900c68a03fe1ff12f9d165a8f96d7e2de839a98e5af1abe",
-      "src/UiLibraries.vue": "9265418da4871a811a2b12f6ae6ca0204353d707ac04ceb18259de98753d810e",
+      "src/NaiveUiOptionsApi.vue": "fd5cf2fd218699b68d6054e33f4dc98b3773fad7f7c067e7292ddb3091792795",
+      "src/PrimeVueOptionsApi.vue": "a86b2d6d8407da4a2aae29344ec21b20a0d3a695189424b044f50a2e281fd4f0",
+      "src/UiLibraries.vue": "d05cb8a3ce56ae59818e3cffbeb82ee27606ac1505179b90486fba2bc21aef23",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
