@@ -85,6 +85,8 @@ jobs:
           path: |-
             npm/native-host-fixture/.build/compiler-build.json
             ${{ runner.temp }}/vize-native-first-host-*/qualification.json
+            ${{ runner.temp }}/vize-native-first-host-*/interaction-summary.json
+            ${{ runner.temp }}/vize-native-first-host-*/packet-tests.xml
             ${{ runner.temp }}/vize-native-first-host-*/*.log
             ${{ runner.temp }}/vize-native-first-host-*/*.xcresult
             npm/native-host-fixture/.build/application-build.json

@@ -121,14 +121,30 @@ for (const type of [...(selectedRuntime.supportedDeviceTypes ?? []), ...deviceTy
     candidates.set(type.identifier, type.name);
 }
 
+const packetResults = path.join(output, "packet-tests.xml");
 command(
   "swift",
-  ["test", "--package-path", ios, "--scratch-path", path.join(output, "swift-build")],
+  [
+    "test",
+    "--package-path",
+    ios,
+    "--scratch-path",
+    path.join(output, "swift-build"),
+    "--disable-swift-testing",
+    "--xunit-output",
+    packetResults,
+  ],
   "packet-tests.log",
 );
+const packets = readFileSync(packetResults, "utf8");
+const packetTestCount = [...packets.matchAll(/<testcase\b/g)].length;
+if (packetTestCount !== 10 || /<(?:failure|error|skipped)\b/.test(packets)) {
+  throw new Error("Native packet qualification requires ten passing XCTest cases without skips.");
+}
 let ownedDevice = "";
 let selectedDeviceName = "";
 const refusedTypes: { readonly identifier: string; readonly message: string }[] = [];
+let cleanupFailed = false;
 try {
   for (const [identifier, name] of candidates) {
     const result = spawnSync(
@@ -183,6 +199,40 @@ try {
     ],
     "interaction-tests.log",
   );
+  const interaction = JSON.parse(
+    command("xcrun", [
+      "xcresulttool",
+      "get",
+      "test-results",
+      "summary",
+      "--path",
+      resultBundle,
+      "--compact",
+    ]),
+  ) as {
+    readonly result: string;
+    readonly totalTestCount: number;
+    readonly passedTests: number;
+    readonly failedTests: number;
+    readonly skippedTests: number;
+    readonly expectedFailures: number;
+  };
+  writeFileSync(
+    path.join(output, "interaction-summary.json"),
+    `${JSON.stringify(interaction, null, 2)}\n`,
+  );
+  if (
+    interaction.result !== "Passed" ||
+    interaction.totalTestCount !== 2 ||
+    interaction.passedTests !== 2 ||
+    interaction.failedTests !== 0 ||
+    interaction.skippedTests !== 0 ||
+    interaction.expectedFailures !== 0
+  ) {
+    throw new Error(
+      "Native interaction qualification requires two passing UI cases without skips.",
+    );
+  }
   const application = path.join(
     derived,
     "Build/Products/Debug-iphonesimulator/VizeNativeHostFixture.app",
@@ -219,8 +269,8 @@ try {
     simulator: selectedDeviceName,
     applicationBytes: bytes,
     maximumBytes,
-    packetTests: "passed",
-    nativeInteractionTests: "passed",
+    packetTests: packetTestCount,
+    nativeInteractionTests: interaction.passedTests,
     resultBundle,
   };
   writeFileSync(path.join(output, "qualification.json"), `${JSON.stringify(receipt, null, 2)}\n`);
@@ -234,8 +284,7 @@ try {
       path.join(output, "simulator-cleanup.log"),
       `${shutdown.stdout ?? ""}${shutdown.stderr ?? ""}${deletion.stdout ?? ""}${deletion.stderr ?? ""}`,
     );
-    if (deletion.error || deletion.status !== 0) {
-      throw new Error("The invocation-owned native simulator could not be removed.");
-    }
+    cleanupFailed = deletion.error !== undefined || deletion.status !== 0;
   }
 }
+if (cleanupFailed) throw new Error("The invocation-owned native simulator could not be removed.");
