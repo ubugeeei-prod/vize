@@ -35,6 +35,7 @@ import {
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
+import { giantComponentProps } from "./content-mapper-pair-giant.ts";
 import { COMPILER_OPTIONS, generateScaleProject, writeProject } from "./scale-project-generator.ts";
 import {
   type BurstSample,
@@ -261,6 +262,7 @@ async function main(): Promise<void> {
       root: { type: "string" },
       sizes: { type: "string", default: "1000,5000" },
       runs: { type: "string", default: "5" },
+      "giant-blocks": { type: "string", default: "0" },
       "serial-files": { type: "string", default: "300" },
       label: { type: "string", default: process.platform },
       out: { type: "string" },
@@ -300,10 +302,30 @@ async function main(): Promise<void> {
   const runs = Number(values.runs);
   const serialFiles = Number(values["serial-files"]);
   mkdirSync(out, { recursive: true });
+  const giantBlocks = Number(values["giant-blocks"]);
+  if (!Number.isSafeInteger(giantBlocks) || giantBlocks < 0)
+    throw new Error("--giant-blocks must be a natural number");
+  const shapes = values.sizes.split(",").map((size) => ({
+    id: `vue-${size}`,
+    sfcs: Number(size),
+    giantBlocks: 0,
+  }));
+  if (giantBlocks > 0)
+    shapes.push({ id: `giant-component-props-${giantBlocks}`, sfcs: 2, giantBlocks });
   const cells: Cell[] = [];
-  for (const sfcs of values.sizes.split(",").map(Number)) {
-    const project = join(root, `vue-${sfcs}`);
-    writeProject(project, generateScaleProject({ kind: "vue", sfcs }).files);
+  for (const shape of shapes) {
+    const { sfcs } = shape;
+    const project = join(root, shape.id);
+    const inputs =
+      shape.giantBlocks > 0
+        ? giantComponentProps(shape.giantBlocks)
+        : generateScaleProject({ kind: "vue", sfcs }).files;
+    const corpusSha = createHash("sha256");
+    for (const [file, text] of [...inputs].sort(([left], [right]) =>
+      left < right ? -1 : Number(left > right),
+    ))
+      corpusSha.update(`${file}\0${text}\0`);
+    writeProject(project, inputs);
     if (values.typescript) {
       mkdirSync(join(project, "node_modules"), { recursive: true });
       symlinkSync(
@@ -314,12 +336,12 @@ async function main(): Promise<void> {
     }
     const files = sfcFiles(project);
     const messages = sessionMessages(project, files);
-    const stream = join(root, `stream-${sfcs}.bin`);
+    const stream = join(root, `stream-${shape.id}.bin`);
     writeFileSync(
       stream,
       Buffer.concat(messages.map((m, i) => frame({ jsonrpc: "2.0", id: i + 1, ...m }))),
     );
-    const scratch = join(root, `scratch-${sfcs}`);
+    const scratch = join(root, `scratch-${shape.id}`);
     mkdirSync(scratch, { recursive: true });
     const all = [...builds, ...references];
     const bursts = new Map<string, BurstSample[]>(all.map((b) => [b.id, []]));
@@ -341,6 +363,8 @@ async function main(): Promise<void> {
     const cell = summarizeCell({
       label: values.label,
       sfcs,
+      giantBlocks: shape.giantBlocks || undefined,
+      corpusSha256: corpusSha.digest("hex"),
       serialFiles: serialMessages.length - 2,
       replicates: runs,
       orderSeed: PAIR_ORDER_SEED,

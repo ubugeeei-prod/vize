@@ -91,6 +91,10 @@ on:
         description: "content-mapper: comma-separated SFC counts of the generated projects"
         type: string
         default: 1000,5000
+      giant_blocks:
+        description: "content-mapper: also measure one giant component with this many typed prop uses (0 skips)"
+        type: string
+        default: "0"
       reference_mapper:
         description: "content-mapper: also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts)"
         type: boolean
@@ -134,7 +138,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.corpora }}
+  group: typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.giant_blocks }}-${{ inputs.corpora }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -567,6 +571,7 @@ jobs:
       - name: Measure
         env:
           SIZES: ${{ inputs.sizes }}
+          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -618,8 +623,9 @@ jobs:
       - name: Measure ext4 and the Windows mount
         shell: wsl-bash {0}
         env:
-          WSLENV: SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
+          WSLENV: GIANT_BLOCKS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
           SIZES: ${{ inputs.sizes }}
+          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -652,6 +658,7 @@ jobs:
         shell: pwsh
         env:
           SIZES: ${{ inputs.sizes }}
+          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}

@@ -35,6 +35,8 @@ export type BuildSummary = {
 export type Cell = {
   label: string;
   sfcs: number;
+  giantBlocks?: number;
+  corpusSha256?: string;
   serialFiles: number;
   replicates: number;
   orderSeed: number;
@@ -95,6 +97,8 @@ const defined = (values: (number | undefined)[]): number[] =>
 export function summarizeCell(input: {
   label: string;
   sfcs: number;
+  giantBlocks?: number;
+  corpusSha256?: string;
   serialFiles: number;
   replicates: number;
   orderSeed?: number;
@@ -154,6 +158,8 @@ export function summarizeCell(input: {
   return {
     label: input.label,
     sfcs: input.sfcs,
+    giantBlocks: input.giantBlocks,
+    corpusSha256: input.corpusSha256,
     serialFiles: input.serialFiles,
     replicates: input.replicates,
     orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
@@ -182,7 +188,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
         ? "AB+BA"
         : `${cell.ordersPerReplicate} position-balanced orders`;
     lines.push(
-      `**${cell.sfcs} SFCs**, ${cell.replicates} balanced replicates ` +
+      `**${cell.sfcs} SFCs${cell.giantBlocks ? ` (giant component with ${cell.giantBlocks} typed prop uses)` : ""}**, ${cell.replicates} balanced replicates ` +
         `(${schedule}, seed 0x${cell.orderSeed.toString(16)}): ` +
         `${cell.burstSamplesPerBuild} burst samples/build; ` +
         `${cell.builds[0]?.serialSessions ?? 0} serial sessions/build × ${cell.serialFiles} transforms ` +
@@ -194,6 +200,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
             : "Responses differ between builds (allowed)."),
       "",
     );
+    if (cell.corpusSha256) lines.push(`Input corpus SHA-256: \`${cell.corpusSha256}\`.`, "");
     if (cell.failure) continue;
     const first = cell.builds[0];
     lines.push(

@@ -2,7 +2,7 @@
 # DO NOT EDIT. Generated from tools/ci/workflows/03-typecheck-compare/scripts/mapper-measure-ext4-and-the-windows-mount.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
-[[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+[[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]] && [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
 # Binaries run from ext4 in both cells; only the project location differs.
 bin="$HOME/pair-bin"
 mkdir -p "$bin/base" "$bin/head" "$WSL_MOUNT_ROOT"
@@ -21,7 +21,7 @@ for entry in "wsl2-ext4=$HOME/vize-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/pro
   label=${entry%%=*}
   node tools/benchmarks/scripts/content-mapper-pair.ts \
     --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" "${reference[@]}" \
-    --root "${entry#*=}" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
+    --root "${entry#*=}" --sizes "$SIZES" --giant-blocks "$GIANT_BLOCKS" --runs "$RUNS" $ALLOW \
     --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
   cat "$WSL_MOUNT_ROOT/out/pair-$label.md" >> "$summary_path"
 done

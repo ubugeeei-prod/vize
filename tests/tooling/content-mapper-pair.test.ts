@@ -147,7 +147,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
   }
   assert.match(
     workflow,
-    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
+    /WSLENV: GIANT_BLOCKS\/u:SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
   assert.match(workflow, /AB\+BA replicates/);
@@ -169,4 +169,17 @@ test("the syscall census reads strace lines and collapses generated spellings", 
     pathShape("/p/src/features/f0024/Widget09.vue", "/p"),
     "<project>/src/features/fNNNN/Name.vue",
   );
+});
+
+test("the giant prop workload retains every distinct script value and typed child use", async () => {
+  const { giantComponentProps } =
+    await import("../../tools/benchmarks/scripts/content-mapper-pair-giant.ts");
+  const files = giantComponentProps(1000);
+  const app = files.get("src/App.vue") ?? "";
+  assert.equal(app.match(/const value\d+ = /g)?.length, 1000);
+  assert.equal(app.match(/<Child :count="value\d+" \/>/g)?.length, 1000);
+  assert.match(app, /const value999 = 999;/);
+  assert.match(files.get("src/Child.vue") ?? "", /count: number/);
+  assert.throws(() => giantComponentProps(0), /positive integer/);
+  assert.throws(() => giantComponentProps(1.5), /positive integer/);
 });
