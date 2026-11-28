@@ -195,7 +195,7 @@ fn nuxt4_components_are_typed_with_their_local_types() {
                 "declare const NuxtTime: typeof import(\"{root}/node_modules/nuxt/dist/app/components/nuxt-time.vue\")['default'];"
             ),
             format!(
-                "declare const LazyCard: __VizeNuxtLocalTypes__nuxt_types_components_d_ts.LazyComponent<typeof import(\"./app/components/Card.vue.ts\")['default']>;"
+                "declare const LazyCard: __VizeNuxtLocalTypes__2e_nuxt_2f_types_2f_components_2e_d_2e_ts.LazyComponent<typeof import(\"./app/components/Card.vue.ts\")['default']>;"
             ),
         ]
     );
@@ -207,7 +207,7 @@ fn nuxt4_components_are_typed_with_their_local_types() {
     assert_eq!(
         namespaces,
         vec![
-            "declare namespace __VizeNuxtLocalTypes__nuxt_types_components_d_ts {\n\
+            "declare namespace __VizeNuxtLocalTypes__2e_nuxt_2f_types_2f_components_2e_d_2e_ts {\n\
 type HydrationStrategies = {\n  hydrateNever?: true\n}\n\
 type LazyComponent<T> = import('vue').DefineComponent<HydrationStrategies> & T\n\
 }"
@@ -225,8 +225,8 @@ fn an_app_inside_a_workspace_names_component_mirrors_from_the_workspace() {
     assert_eq!(
         stubs_named(&stubs, &["LazyCard"]),
         vec![format!(
-            "declare const LazyCard: __VizeNuxtLocalTypes_{}__nuxt_types_components_d_ts.LazyComponent<typeof import(\"./{app}/app/components/Card.vue.ts\")['default']>;",
-            app.replace('-', "_")
+            "declare const LazyCard: __VizeNuxtLocalTypes_{}_2f__2e_nuxt_2f_types_2f_components_2e_d_2e_ts.LazyComponent<typeof import(\"./{app}/app/components/Card.vue.ts\")['default']>;",
+            app.replace('-', "_2d_")
         )]
     );
 }
@@ -248,4 +248,44 @@ fn generated_types_leave_no_fallback_type_alias_or_builtin_any() {
         .filter(|stub| stub.ends_with(": any;"))
         .collect::<Vec<_>>();
     assert_eq!(any_builtins, vec!["declare const NuxtPage: any;"]);
+}
+
+#[test]
+fn local_type_namespaces_keep_distinct_declaration_paths_distinct() {
+    use super::generated::local_types_namespace;
+    let root = Path::new("/app");
+    let names = [
+        ".nuxt/types/ui-kit.d.ts",
+        ".nuxt/types/ui_kit.d.ts",
+        ".nuxt/types/ui_2d_kit.d.ts",
+        ".nuxt/types/État.d.ts",
+    ]
+    .map(|path| local_types_namespace(root, &root.join(path)));
+    let unique = names.iter().collect::<std::collections::HashSet<_>>();
+    assert_eq!(unique.len(), names.len());
+}
+
+#[test]
+fn local_type_aliases_rewrite_vue_imports_inside_the_namespace() {
+    let (root, program) = nuxt4_project("namespace-vue-import");
+    write(
+        &root,
+        ".nuxt/types/components.d.ts",
+        "type LazyFoo = typeof import('../../app/Foo.vue')['default']; declare module 'vue' { interface GlobalComponents { LazyFoo: LazyFoo } } export {};",
+    );
+    let stubs = detect_program(&root, &program);
+    let namespace = stubs
+        .iter()
+        .find(|stub| stub.starts_with("declare namespace "))
+        .unwrap();
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed =
+        oxc_parser::Parser::new(&allocator, namespace.as_str(), oxc_span::SourceType::d_ts())
+            .parse();
+    assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
+    assert!(
+        namespace.contains("import('./app/Foo.vue.ts')"),
+        "{namespace}"
+    );
+    assert!(!namespace.contains("Foo.vue'"));
 }

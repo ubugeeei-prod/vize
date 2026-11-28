@@ -248,11 +248,15 @@ fn collect_global_component_stubs(
 /// The namespace holding the file-local types of one generated declaration.
 /// Built from the file's project-relative path, so two declarations never
 /// share one, and spelled so that no authored code names it.
-fn local_types_namespace(root: &Path, path: &Path) -> String {
+pub(super) fn local_types_namespace(root: &Path, path: &Path) -> String {
     let relative = path.strip_prefix(root).unwrap_or(path);
     let mut namespace = String::from("__VizeNuxtLocalTypes_");
     for ch in relative.to_string_lossy().chars() {
-        namespace.push(if ch.is_ascii_alphanumeric() { ch } else { '_' });
+        if ch.is_ascii_alphanumeric() {
+            namespace.push(ch);
+        } else {
+            namespace.push_str(vize_l0::cstr!("_{:x}_", ch as u32).as_str());
+        }
     }
     namespace
 }
