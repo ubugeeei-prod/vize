@@ -73,8 +73,8 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 公開しているパッケージ、クレート、拡張機能、リリースアセットは、それぞれちょうど 1 つのリリースチャンネル、
 プロダクト、オーナーに属します。チャンネルは成果物がどのプロダクトラインとして出荷されるかを示し、
 下のサポート区分は現在の API の成熟度を示します。すべてのチャンネルは今も 1 つのバージョン番号で
-一緒にリリースされるため、バージョンが同じでも成熟度が同じとは限りません。npm パッケージは
-`metadata.vize.channel` にチャンネルを記録します。この表は `tools/support/release/product-channels.ts`
+一緒にリリースされるため、バージョンが同じでも成熟度が同じとは限りません。多くの npm パッケージは
+`metadata.vize.channel` にもチャンネルを記録します。この表は `tools/support/release/product-channels.ts`
 から生成されます。
 
 <!-- product-channels:start -->

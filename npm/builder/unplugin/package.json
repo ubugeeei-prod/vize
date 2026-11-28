@@ -113,8 +113,7 @@
   "metadata": {
     "vize": {
       "stability": "compatibility-preview",
-      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers",
-      "channel": "v1-alpha"
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
     }
   }
 }

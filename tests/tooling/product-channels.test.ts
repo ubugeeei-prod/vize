@@ -81,11 +81,23 @@ void test("every publishable npm package and native binary is registered", () =>
   );
 });
 
+// Manifests whose exact bytes an enforced byte-custody record pins keep those bytes; the
+// registry alone carries their channel until the record moves on.
+const custodyPinned = new Set(
+  readFileSync(path.join(root, "tools/config/byte-custody.tsv"), "utf8")
+    .split("\n")
+    .map((line) => line.split("\t"))
+    .filter(([, , kind]) => kind === "enforced")
+    .map(([file]) => file),
+);
+
 void test("npm manifests record the channel of their registered product", () => {
   for (const manifest of publicNpm) {
     const product = npmProduct(manifest.name);
     assert.ok(product, manifest.name);
-    assert.equal(manifest.metadata?.vize?.channel, productChannel(product), manifest.file);
+    const recorded = manifest.metadata?.vize?.channel;
+    if (custodyPinned.has(manifest.file) && recorded === undefined) continue;
+    assert.equal(recorded, productChannel(product), manifest.file);
   }
 });
 

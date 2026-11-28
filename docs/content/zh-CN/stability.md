@@ -74,7 +74,7 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 
 每个已发布的包、crate、扩展和发布资产都恰好属于一个发布渠道、一个产品和一个负责人。渠道说明产物随哪条产品线发布；
 下面的支持层级说明其当前 API 的成熟度。所有渠道目前仍以同一个版本号一起发布，因此版本相同并不代表成熟度相同。
-npm 包在 `metadata.vize.channel` 中记录其渠道。该表由 `tools/support/release/product-channels.ts` 生成。
+大多数 npm 包还会在 `metadata.vize.channel` 中记录其渠道。该表由 `tools/support/release/product-channels.ts` 生成。
 
 <!-- product-channels:start -->
 

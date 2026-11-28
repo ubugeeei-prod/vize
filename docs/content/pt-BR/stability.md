@@ -76,7 +76,7 @@ Cada pacote, crate, extensão e asset de lançamento publicado pertence a exatam
 lançamento, um produto e um responsável. O canal indica a linha de produto com que o artefato é
 distribuído; os níveis de suporte abaixo indicam a maturidade da API atual. Todos os canais ainda
 são lançados juntos com um único número de versão, então compartilhar a versão não significa
-compartilhar a maturidade. Pacotes npm registram o canal em `metadata.vize.channel`. A tabela é
+compartilhar a maturidade. A maioria dos pacotes npm também registra o canal em `metadata.vize.channel`. A tabela é
 gerada a partir de `tools/support/release/product-channels.ts`.
 
 <!-- product-channels:start -->

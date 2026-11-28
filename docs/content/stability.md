@@ -92,8 +92,8 @@ the move is called out in release notes when it changes. Downstream packagers sh
 Every published package, crate, extension and release asset belongs to exactly one release
 channel, one product and one owner. The channel names the product line an artifact ships with;
 the support tiers below name how mature its current API is. All channels still release together
-under one version number, so a shared version does not mean two channels share a maturity. npm
-packages record their channel in `metadata.vize.channel`. The table is generated from
+under one version number, so a shared version does not mean two channels share a maturity. Most npm
+packages also record their channel in `metadata.vize.channel`. The table is generated from
 `tools/support/release/product-channels.ts`.
 
 <!-- product-channels:start -->
