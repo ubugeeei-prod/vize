@@ -1,7 +1,7 @@
 use super::{Actions, PreviousAction, PreviousActions, SUPERVISED_SIGNALS};
 use std::{
     mem::MaybeUninit,
-    sync::{Arc, Barrier, atomic::Ordering},
+    sync::{Barrier, atomic::Ordering},
     thread,
 };
 
@@ -68,34 +68,32 @@ fn same_thread_nested_readers_keep_independent_slots() {
 
 #[test]
 fn a_retained_reader_keeps_its_generation_while_the_installer_retries() {
-    let table = Arc::new(PreviousActions::new());
+    let table = PreviousActions::new();
     table.publish(&actions(1));
     let reader = table.acquire();
-    let ready = Arc::new(Barrier::new(2));
-    let writer = {
-        let table = Arc::clone(&table);
-        let ready = Arc::clone(&ready);
-        thread::spawn(move || {
+    let ready = Barrier::new(2);
+    thread::scope(|scope| {
+        let writer = scope.spawn(|| {
             table.publish(&actions(2));
             ready.wait();
             // This reuses the first reader's generation. It must wait until
             // that reader releases its slot, including after rollback.
             table.publish(&actions(3));
-        })
-    };
-    ready.wait();
-    for _ in 0..16 {
-        thread::yield_now();
-        assert_snapshot(reader.actions(), 1);
-    }
-    drop(reader);
-    writer.join().unwrap();
+        });
+        ready.wait();
+        for _ in 0..16 {
+            thread::yield_now();
+            assert_snapshot(reader.actions(), 1);
+        }
+        drop(reader);
+        writer.join().unwrap();
+    });
     assert_snapshot(table.acquire().actions(), 3);
 }
 
 #[test]
 fn concurrent_readers_observe_complete_immutable_generations() {
-    let table = Arc::new(PreviousActions::new());
+    let table = PreviousActions::new();
     table.publish(&actions(1));
     thread::scope(|scope| {
         for _ in 0..3 {
@@ -137,9 +135,13 @@ fn owned_chaining_values_release_the_reader_before_foreign_dispatch() {
     first.sa_sigaction = libc::SIG_DFL;
     let flags = first.sa_flags;
     table.publish(&saved);
-    let Some(PreviousAction::Default(default)) = table.read(0) else {
-        unreachable!("the complete default action is retained");
-    };
+    let default = table
+        .read(0)
+        .and_then(|saved| match saved {
+            PreviousAction::Default(action) => Some(action),
+            _ => None,
+        })
+        .expect("the complete default action is retained");
     assert_eq!(default.sa_sigaction, libc::SIG_DFL);
     assert_eq!(default.sa_flags, flags);
     assert_eq!(table.first.readers.load(Ordering::SeqCst), 0);
