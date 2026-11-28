@@ -67,7 +67,7 @@ fn imports_from_sfc(program: &Program<'_>, name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::super::component_options_from_program;
-    use super::extends_base_assertion;
+    use super::{EXTENDS_BASE_CAST, extends_base_assertion};
     use oxc_allocator::Allocator;
     use oxc_parser::Parser;
     use oxc_span::SourceType;
@@ -87,8 +87,10 @@ mod tests {
             script.get(..offset).unwrap().rsplit(' ').next(),
             Some("Base")
         );
-        assert!(text.starts_with(" as (typeof Base extends infer __B ? "));
-        assert!(text.ends_with(" : never)"));
+        assert_eq!(
+            text.as_str(),
+            [" as (typeof Base", EXTENDS_BASE_CAST].concat()
+        );
 
         let named =
             "import { Base } from './Base.vue'\nexport default defineComponent({ extends: Base })";
