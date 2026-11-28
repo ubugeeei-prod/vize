@@ -23,7 +23,7 @@ interface ProjectFile {
 interface Consumer {
   ESLint: typeof import("eslint").ESLint;
   plugin: ESLint.Plugin & { configs: { recommended: Linter.Config } };
-  bridge: ESLint.Plugin;
+  bridge: typeof import("oxlint-plugin-vize/eslint").default;
   native: Native;
   projectRoot: string;
 }
@@ -72,7 +72,9 @@ export async function qualifyRealProjects({
   });
   const reference = new ESLint({
     overrideConfigFile: true,
-    overrideConfig: configuration(bridge),
+    // The compatibility bridge retains its host's Context type in declarations;
+    // its actual rule objects are the ones exercised by the public adapter.
+    overrideConfig: configuration(bridge as unknown as ESLint.Plugin),
     fix: true,
   });
   const report = {
