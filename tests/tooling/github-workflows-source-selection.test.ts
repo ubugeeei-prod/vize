@@ -260,6 +260,7 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     1,
   );
   assert.deepEqual(reportSteps[gateRuntime].with, {
+    version: "1.8.0",
     "node-version-file": "package.json",
     "run-install": false,
   });

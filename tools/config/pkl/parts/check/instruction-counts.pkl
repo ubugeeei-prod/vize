@@ -1,3 +1,5 @@
 name = "Instruction ceilings"
-`if` = "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+// Pull requests measure too, so a ceiling regression fails before it reaches
+// the merge queue and ejects every group stacked behind it.
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 uses = "./.github/workflows/level-instruction-counts.yml"

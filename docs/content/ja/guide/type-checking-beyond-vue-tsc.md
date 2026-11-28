@@ -167,6 +167,103 @@ slot (`#default`) に渡すと何も報告されません。n8n の `InputPanel.
 テスト:
 [`unknown-slot-name`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/unknown-slot-name)。
 
+### ローカル関数の中で読むテンプレート ref
+
+Vize は、コンポーネント自身のスクリプトが呼ぶ `useTemplateRef("key")` を、ローカルの composable や
+ライフサイクルフックの中であってもテンプレートから型付けします。テンプレートが登録していないキーは、
+このコンポーネントのインスタンスがその呼び出しを実行する場所ではエラーになります。setup の本体、
+setup が `onMounted` などの呼び出しに渡すコールバック、setup が呼ぶローカル関数です。別の
+コンポーネントとして描画されるローカル関数や、どこからも呼ばれないローカル関数は、別のインスタンスが
+実行しうるため、型推論だけを行い、このチェックは行いません。vue-tsc がテンプレートの ref を読むのは
+`<script setup>` のトップレベルの呼び出しだけです:
+
+```vue
+<!-- src/ConfirmDialog.vue -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+function useModal() {
+  const dialog = useTemplateRef("dialgo");
+  return () => dialog.value?.showModal();
+}
+
+const open = useModal();
+</script>
+
+<template>
+  <button @click="open">Delete</button>
+  <dialog ref="dialog">Delete this item?</dialog>
+</template>
+```
+```diagnostic
+src/ConfirmDialog.vue
+  error:5:33 [TS2339] Property 'dialgo' does not exist on type '$TemplateRefs'.
+  error:6:30 [TS2339] Property 'showModal' does not exist on type '{}'.
+```
+vue-tsc はキーの打ち間違いを見逃し、型のない ref から生じる `{}` のエラーだけを報告します:
+
+```diagnostic
+src/ConfirmDialog.vue(6,30): error TS2339: Property 'showModal' does not exist on type '{}'.
+```
+テンプレートが登録しているのは `dialgo` ではなく `dialog` なので、ダイアログは開きません。
+キーを直すと Vize は何も報告せず、`dialog.value` を `HTMLDialogElement | null` と型付けします。
+一方 vue-tsc は、直したコードにも同じ `showModal` のエラーを出し続けます:
+
+```vue
+<!-- src/ConfirmDialog.vue (fixed) -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+function useModal() {
+  const dialog = useTemplateRef("dialog");
+  return () => dialog.value?.showModal();
+}
+
+const open = useModal();
+</script>
+
+<template>
+  <button @click="open">Delete</button>
+  <dialog ref="dialog">Delete this item?</dialog>
+</template>
+```
+`export` した関数の中の呼び出しは Vue 本来のシグネチャのままです。別のモジュールが、別の
+テンプレートを持つコンポーネントから呼ぶことがあるためです。名前空間インポート経由の
+`Vue.useTemplateRef("key")` も同じように読みます。固定しているフィクスチャ:
+[`template-ref-key-in-local-function`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/template-ref-key-in-local-function)。
+
+### `<component is="…">` の ref は描画される要素
+
+静的な `is` は `<component>` が描画するものを指すので、その template ref はその要素になります。
+ref に束縛した動的な `:is`（`const tag = ref<"div" | "span">("div")`）は、テンプレートと同じく
+unwrap して読みます:
+
+```vue
+<!-- src/SearchBox.vue -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const field = useTemplateRef("field");
+
+function selectAll() {
+  field.value?.selct();
+}
+</script>
+
+<template>
+  <component is="input" ref="field" @focus="selectAll" />
+</template>
+```
+```diagnostic
+src/SearchBox.vue
+  error:7:16 [TS2551] Property 'selct' does not exist on type 'HTMLInputElement'. Did you mean 'select'?
+```
+vue-tsc はこの ref を `Record<string, any>` と型付けし、何も報告しません。
+
+`HTMLInputElement` にあるのは `selct()` ではなく `select()` なので、フィールドにフォーカスした
+時点で呼び出しが例外になります。固定しているフィクスチャ:
+[`static-component-is-template-ref`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/static-component-is-template-ref)。
+
 ## エディター
 
 [言語サーバー](./language-server.md)も同じチェッカーを使います。ここに載せる応答は記録したエディターの

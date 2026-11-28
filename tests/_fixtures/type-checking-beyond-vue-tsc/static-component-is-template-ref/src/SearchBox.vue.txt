@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const field = useTemplateRef("field");
+
+function selectAll() {
+  field.value?.selct();
+}
+</script>
+
+<template>
+  <component is="input" ref="field" @focus="selectAll" />
+</template>

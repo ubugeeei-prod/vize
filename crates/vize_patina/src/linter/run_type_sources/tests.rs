@@ -56,7 +56,9 @@ fn undefined_refs<'s>(linter: &Linter, filename: &str, source: &'s str) -> Vec<&
 
 fn run_linter(root: Option<&Path>) -> Linter {
     let mut linter = Linter::with_preset(LintPreset::HappyPath);
-    linter.type_sources = Some(RunTypeSources::with_root(root.map(Path::to_path_buf)));
+    linter.type_sources = Some(crate::linter::config::TypeSources::Owned(Box::new(
+        RunTypeSources::with_root(root.map(Path::to_path_buf)),
+    )));
     linter
 }
 

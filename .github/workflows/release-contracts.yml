@@ -46,7 +46,7 @@ jobs:
         with: { persist-credentials: false }
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: package.json, cache: true, run-install: true }
+        with: { version: 1.8.0, node-version-file: package.json, cache: true, run-install: true }
       - name: Release workflow, versioning and publication
         run: . "${{ env.VIZE_CI_FILES }}/test-release-pipeline.sh"
       - name: Concurrent npm publication

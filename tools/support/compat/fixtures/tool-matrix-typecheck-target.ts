@@ -3,6 +3,10 @@ import { readFileSync, statSync, type Stats } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
 import { typecheckUnits } from "./typecheck-targets.ts";
+import {
+  typecheckInputOverlays,
+  verifyTypecheckInputOverlays,
+} from "./typecheck-input-overlays.ts";
 
 export interface TypecheckTargetProject {
   readonly id: string;
@@ -86,12 +90,19 @@ export function validateTypecheckPerformanceTarget(
   const baseline = performance.baseline as Readonly<Record<string, unknown>> | null | undefined;
   if (baseline == null) return;
   if (
-    Object.keys(baseline).some((key) => !["excludedInputs", "prepare", "tsconfig"].includes(key))
+    Object.keys(baseline).some(
+      (key) => !["excludedInputs", "inputOverlays", "prepare", "tsconfig"].includes(key),
+    )
   ) {
     invalid(project, "baseline has unknown fields");
   }
   requireRelativePath(project, baseline.tsconfig, "baseline tsconfig");
   validateExcludedInputs(project, fixtureRoot, baseline.excludedInputs);
+  const inputs = typecheckInputOverlays(baseline.inputOverlays);
+  if (inputs.length > 0 && baseline.prepare == null) {
+    invalid(project, "baseline.inputOverlays requires a preparation command");
+  }
+  if (requireBaseline) verifyTypecheckInputOverlays(fixtureRoot, baseline.inputOverlays);
   if (baseline.prepare == null) {
     requireFile(project, fixtureRoot, baseline.tsconfig, "baseline tsconfig");
     return;

@@ -10,6 +10,8 @@ export const REFERENCED_PATHS_PROJECT_ROOT = "imported-props-referenced-paths-13
 export const REFERENCED_EXTENDS_PROJECT_ROOT = "imported-props-referenced-extends-13090";
 export const SOURCE_EXPORTS_PROJECT_ROOT = "imported-props-source-exports-13110";
 export const VUE_DECLARATION_PROJECT_ROOT = "vue-declaration-props-13577";
+export const ALIASED_SPECIFIER_PROJECT_ROOT = "imported-props-aliased-specifier";
+export const MODULE_SCOPED_NAMES_PROJECT_ROOT = "imported-props-module-scoped-names";
 export const COMPILER_PROJECT_ADAPTER = "compiler-cli-ssr-project-v1";
 export const COMPILER_PROJECT_CONTRACT = "compiler-ssr-project-module-bytes-v1";
 const inputs = [
@@ -64,6 +66,15 @@ const vueDeclarationInputs = [
     "node_modules/component-library/dist/components/Navbar.vue.d.ts",
   ],
 ] as const;
+const aliasedSpecifierInputs = [
+  ["Layout.vue.txt", "entry", "Layout.vue"],
+  ["types.ts.txt", "dependency", "types.ts"],
+] as const;
+const moduleScopedNamesInputs = [
+  ["Layout.vue.txt", "entry", "Layout.vue"],
+  ["list.ts.txt", "dependency", "list.ts"],
+  ["detail.ts.txt", "dependency", "detail.ts"],
+] as const;
 const cohorts = new Map<
   string,
   { inputs: readonly (readonly [string, string, string])[]; selector: string }
@@ -104,6 +115,20 @@ const cohorts = new Map<
     {
       inputs: vueDeclarationInputs,
       selector: "adjacent compiled Vue runtime and declaration files",
+    },
+  ],
+  [
+    ALIASED_SPECIFIER_PROJECT_ROOT,
+    {
+      inputs: aliasedSpecifierInputs,
+      selector: "a type imported under a local alias",
+    },
+  ],
+  [
+    MODULE_SCOPED_NAMES_PROJECT_ROOT,
+    {
+      inputs: moduleScopedNamesInputs,
+      selector: "a same-named type declared by another imported module",
     },
   ],
 ]);

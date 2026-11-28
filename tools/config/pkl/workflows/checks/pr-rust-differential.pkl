@@ -29,7 +29,7 @@ jobs {
       matrix = "${{ fromJSON(inputs.rust-plan).differentialMatrix }}"
     }
     `if` = "${{ github.event_name == 'merge_group' && inputs.run-rust }}"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxValidation
     `timeout-minutes` = 15
     env {
       VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pr-rust-differential"
@@ -58,7 +58,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp121
         with {
-          version = "latest"
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           cache = true
           `cache-save` = false

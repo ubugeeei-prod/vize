@@ -306,3 +306,42 @@ fn template_ref_setter_reads_setup_state_only_for_script_setup() {
         );
     }
 }
+
+/// A `<script setup>` prop used as a component tag reads the render
+/// function's `$props`, as Vue's Vapor compiler does (`$props.myIcon`). Setup
+/// bindings win over a prop spelling, and a renamed props destructure
+/// (`{ icon: Icon }`) is not a setup reference, so its tag resolves as an asset.
+#[test]
+fn test_props_component_tags_read_dollar_props() {
+    let allocator = Allocator::new();
+    let mut bindings = FxHashMap::default();
+    bindings.insert("myIcon".into(), BindingType::Props);
+    bindings.insert("icon".into(), BindingType::Props);
+    bindings.insert("Icon".into(), BindingType::PropsAliased);
+    bindings.insert("other".into(), BindingType::Props);
+    bindings.insert("Other".into(), BindingType::SetupConst);
+
+    let result = compile_vapor(
+        &allocator,
+        r#"<my-icon /><myIcon.Item /><Icon /><other />"#,
+        VaporCompilerOptions {
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(result.error_messages.len(), 0);
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec![
+            "const _component_my_icon = $props.myIcon",
+            "const _component_myIcon_Item = $props.myIcon.Item",
+            "const _component_Icon = _resolveComponent(\"Icon\")",
+            "const _component_other = _ctx.Other",
+        ]
+    );
+}

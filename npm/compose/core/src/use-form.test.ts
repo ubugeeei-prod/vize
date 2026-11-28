@@ -285,3 +285,79 @@ void test("server rendering renders initial state without validating", async () 
   assert.equal(state, '{"city":"Tokyo","tags":[0,1,2],"valid":true,"dirty":false}');
   assert.equal(validated, false);
 });
+
+void test("a path that names the prototype chain is ignored", () => {
+  const form = useForm({ initialValues: initialProfile });
+  const setValue = form.setValue as (path: string, value: unknown) => void;
+  const getValue = form.getValue as (path: string) => unknown;
+  const field = form.field as unknown as (path: string) => {
+    readonly value: { value: unknown };
+    readonly reset: () => void;
+  };
+  const fieldArray = form.fieldArray as unknown as (path: string) => {
+    readonly append: (item: unknown) => void;
+    readonly replace: (items: readonly unknown[]) => void;
+  };
+
+  try {
+    setValue("__proto__.shared", 1);
+    assert.equal(Reflect.get({}, "shared"), undefined, "setValue");
+    setValue("address.__proto__.shared", 1);
+    assert.equal(Reflect.get({}, "shared"), undefined, "nested setValue");
+    setValue("tags.__proto__.shared", 1);
+    assert.equal(Reflect.get([], "shared"), undefined, "array setValue");
+    setValue("constructor.prototype.shared", 1);
+    assert.equal(Reflect.get({}, "shared"), undefined, "constructor setValue");
+    field("__proto__.shared").value.value = 1;
+    assert.equal(Reflect.get({}, "shared"), undefined, "field value");
+    field("__proto__.shared").reset();
+    assert.equal(Reflect.get({}, "shared"), undefined, "field reset");
+    fieldArray("__proto__.shared").append("item");
+    assert.equal(Reflect.get({}, "shared"), undefined, "field array append");
+    fieldArray("__proto__.shared").replace(["item"]);
+    assert.equal(Reflect.get({}, "shared"), undefined, "field array replace");
+  } finally {
+    Reflect.deleteProperty(Object.prototype, "shared");
+    Reflect.deleteProperty(Array.prototype, "shared");
+  }
+
+  assert.deepEqual(form.values.value, initialProfile());
+  for (const path of ["__proto__", "constructor", "address.constructor", "prototype.name"]) {
+    assert.equal(getValue(path), undefined, path);
+  }
+});
+
+void test("reads only a value's own keys", async () => {
+  const form = useForm({ initialValues: (): { extra: Record<string, string> } => ({ extra: {} }) });
+  const getValue = form.getValue as (path: string) => unknown;
+  for (const path of ["toString", "extra.toString", "extra.hasOwnProperty", "extra.valueOf"]) {
+    assert.equal(getValue(path), undefined, path);
+  }
+
+  const late = form.field("extra.late");
+  assert.equal(late.value.value, undefined);
+  form.setValue("extra.late", "set");
+  await nextTick();
+  assert.equal(late.value.value, "set", "a key added later is still tracked");
+});
+
+void test("issue paths named like prototype members are collected as ordinary errors", async () => {
+  const form = useForm({
+    initialValues: initialProfile,
+    schema: schema(() => ({
+      issues: [
+        { message: "Bad key", path: [{ key: "constructor" }] },
+        { message: "Bad key", path: [{ key: "__proto__" }] },
+        { message: "Bad key", path: [{ key: "toString" }] },
+      ],
+    })),
+    validate: () => ({ valueOf: ["Bad value"] }),
+  });
+
+  const errors: unknown = JSON.parse(
+    '{"constructor":["Bad key"],"__proto__":["Bad key"],"toString":["Bad key"],"valueOf":["Bad value"]}',
+  );
+  assert.deepEqual(await form.validate(), { status: "invalid", errors });
+  assert.deepEqual(form.errors.value, errors);
+  assert.equal(form.valid.value, false);
+});

@@ -97,18 +97,114 @@ fn array_form_validates_only_the_first_element() {
 
 #[test]
 fn assignable_targets_are_accepted() {
-    // Identifiers, member access of both forms, optional chaining, and the
-    // type-only wrappers TSX allows must all still lower cleanly.
+    // Identifiers, member access of both forms, and the type-only wrappers
+    // TSX allows must all still lower cleanly.
     for source in [
         "const A = () => <input v-model={val}/>;",
         "const A = () => <input v-model={state.val}/>;",
         "const A = () => <input v-model={state[key]}/>;",
-        "const A = () => <input v-model={state?.val}/>;",
         "const A = () => <input v-model={(val)}/>;",
         "const A = () => <B v-model={[val, 'arg', ['trim']]}/>;",
         "const A = () => <input v-model_lazy={val}/>;",
     ] {
         assert_eq!(errors(source), Vec::<String>::new(), "source: {source}");
+    }
+}
+
+/// `state?.val = $event` is not valid JavaScript, so an optional chain is no
+/// write-back target. `@vue/babel-plugin-jsx` and Vue's template compiler both
+/// emit that assignment, a module that does not parse; Vize's template compiler
+/// rejects `v-model="state?.val"`, and the JSX lowering rejects it the same way
+/// instead of failing later in the backend.
+#[test]
+fn optional_chain_targets_are_rejected() {
+    let message = |target: &str| {
+        format!(
+            "v-model target `{target}` is an optional chain, which cannot be assigned to; \
+             v-model needs a variable or property reference."
+        )
+    };
+    for (source, target) in [
+        (
+            "const A = () => <input v-model={state?.val}/>;",
+            "state?.val",
+        ),
+        ("const A = () => <input v-model={a?.b.c}/>;", "a?.b.c"),
+        (
+            "const A = () => <input v-model={state?.[key]}/>;",
+            "state?.[key]",
+        ),
+        (
+            "const A = () => <input v-model={(state?.val)}/>;",
+            "(state?.val)",
+        ),
+        (
+            "const A = () => <input v-model_trim={state?.val}/>;",
+            "state?.val",
+        ),
+        (
+            "const A = () => <B v-model={[state?.val, 'arg']}/>;",
+            "state?.val",
+        ),
+    ] {
+        assert_eq!(errors(source), vec![message(target)], "source: {source}");
+    }
+    assert_eq!(
+        errors("const A = () => <B v-models={[[state?.val, 'a']]}/>;"),
+        vec![
+            "v-models target `state?.val` cannot be assigned to; v-model needs \
+             a variable or property reference."
+                .to_string()
+        ]
+    );
+    // The attribute is dropped, so the component still renders and no invalid
+    // assignment reaches the output.
+    assert_eq!(
+        render_code("const A = () => <input v-model={state?.val}/>;"),
+        "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"input\"))\n}"
+    );
+}
+
+/// The full public entry reports the targeted diagnostic for every target and
+/// compat mode instead of a backend error with no render code. Babel compat
+/// has no Vapor output, so it is checked on the VDOM targets.
+#[test]
+fn optional_chain_target_reaches_compile_jsx_as_one_diagnostic() {
+    use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxOutputMode, compile_jsx};
+    let source = "const A = () => <input v-model={state?.val}/>;";
+    for compat in [JsxCompatMode::Native, JsxCompatMode::Babel] {
+        for (default_mode, ssr) in [
+            (JsxOutputMode::Vdom, false),
+            (JsxOutputMode::Vapor, false),
+            (JsxOutputMode::Vdom, true),
+            (JsxOutputMode::Vapor, true),
+        ] {
+            if compat == JsxCompatMode::Babel && default_mode == JsxOutputMode::Vapor {
+                continue;
+            }
+            let config = JsxCompileConfig {
+                default_mode,
+                compat,
+                ssr,
+                ..Default::default()
+            };
+            let bump = Allocator::new();
+            let output = compile_jsx(&bump, source, JsxLang::Tsx, &config);
+            let errors: Vec<&str> = output
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.is_error())
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect();
+            assert_eq!(
+                errors,
+                vec![
+                    "v-model target `state?.val` is an optional chain, which cannot be \
+                     assigned to; v-model needs a variable or property reference."
+                ],
+                "{compat:?} {default_mode:?} ssr={ssr}"
+            );
+        }
     }
 }
 

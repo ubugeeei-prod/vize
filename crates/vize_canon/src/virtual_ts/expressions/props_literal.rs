@@ -23,7 +23,7 @@ use vize_croquis::{
 use vize_l0::ts;
 
 mod dynamic_names;
-pub(crate) use dynamic_names::is_dynamic_name_binding;
+pub(crate) use dynamic_names::{append_camelized_key_alias, is_dynamic_name_binding};
 mod entry_marks;
 mod prop_entry;
 pub(crate) use entry_marks::{literal_carries_value, named_entry_marks};

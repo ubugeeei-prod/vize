@@ -35,7 +35,8 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         expected: r#"import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
 import { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from "vue"
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_mergeProps({ class: "a" }, _ssrGetDirectiveProps(_ctx, _resolveDirective("focus"), _ctx.x, "a", { b: true })))}>t</p></div>`)
+  const _directive_focus = _resolveDirective("focus")
+  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_mergeProps({ class: "a" }, _ssrGetDirectiveProps(_ctx, _directive_focus, _ctx.x, "a", { b: true })))}>t</p></div>`)
 }
 "#,
     },
@@ -54,8 +55,10 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         expected: r#"import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
 import { resolveDirective as _resolveDirective } from "vue"
 function ssrRender(_ctx, _push, _parent, _attrs) {
+  const _directive_content = _resolveDirective("content")
+  const _directive_markup = _resolveDirective("markup")
   let _temp0, _temp1
-  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _resolveDirective("content")))}>${("textContent" in _temp0) ? _ssrInterpolate(_temp0.textContent) : _temp0.innerHTML ?? ''}</p><p${_ssrRenderAttrs(_temp1 = _ssrGetDirectiveProps(_ctx, _resolveDirective("markup")))}>${("textContent" in _temp1) ? _ssrInterpolate(_temp1.textContent) : _temp1.innerHTML ?? ''}</p></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _directive_content))}>${("textContent" in _temp0) ? _ssrInterpolate(_temp0.textContent) : _temp0.innerHTML ?? ''}</p><p${_ssrRenderAttrs(_temp1 = _ssrGetDirectiveProps(_ctx, _directive_markup))}>${("textContent" in _temp1) ? _ssrInterpolate(_temp1.textContent) : _temp1.innerHTML ?? ''}</p></div>`)
 }
 "#,
     },
@@ -74,8 +77,9 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         expected: r#"import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
 import { resolveDirective as _resolveDirective } from "vue"
 function ssrRender(_ctx, _push, _parent, _attrs) {
+  const _directive_val = _resolveDirective("val")
   let _temp0
-  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _resolveDirective("val")), "textarea")}>${_ssrInterpolate(("value" in _temp0) ? _temp0.value : "fallback")}</textarea></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><textarea${_ssrRenderAttrs(_temp0 = _ssrGetDirectiveProps(_ctx, _directive_val), "textarea")}>${_ssrInterpolate(("value" in _temp0) ? _temp0.value : "fallback")}</textarea></div>`)
 }
 "#,
     },
@@ -95,7 +99,8 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         expected: r#"import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
 import { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from "vue"
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<section${_ssrRenderAttrs(_mergeProps({ class: "r" }, _attrs, _ssrGetDirectiveProps(_ctx, _resolveDirective("focus"), _ctx.x)))}>x</section>`)
+  const _directive_focus = _resolveDirective("focus")
+  _push(`<section${_ssrRenderAttrs(_mergeProps({ class: "r" }, _attrs, _ssrGetDirectiveProps(_ctx, _directive_focus, _ctx.x)))}>x</section>`)
 }
 "#,
     },

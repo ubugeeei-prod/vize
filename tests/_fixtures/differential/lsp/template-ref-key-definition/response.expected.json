@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 3,
+    "character": 35
+  },
+  "result": {
+    "range": {
+      "end": {
+        "character": 19,
+        "line": 12
+      },
+      "start": {
+        "character": 14,
+        "line": 12
+      }
+    },
+    "uri": "${workspace}/KeyedRef.vue"
+  }
+}

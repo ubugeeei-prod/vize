@@ -443,3 +443,5 @@ const x = 1
     // must still only ever flag the single unused ref.
     assert!(warnings(sfc) <= 1);
 }
+
+mod use_template_ref_keys;

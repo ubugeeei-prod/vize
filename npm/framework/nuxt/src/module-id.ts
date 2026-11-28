@@ -1,3 +1,6 @@
+/** Superset of generated Vue and in-place JSX IDs accepted by the bridge. */
+export const NUXT_TRANSFORM_BRIDGE_ID_FILTER = /\.vue(?:\.tsx?)?(?:\?|$)|\.[jt]sx(?:\?|$)/;
+
 /** Recognize compiled modules without assigning raw Vue/style queries to Vize. */
 export function isVizeGeneratedVueModuleId(id: string): boolean {
   const normalized = id.replace(/^\/@id\/__x00__|^__x00__/, "");

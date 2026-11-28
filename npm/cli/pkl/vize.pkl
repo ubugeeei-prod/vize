@@ -220,7 +220,6 @@ class EnforceStyleAttributeOptions {
 class RestrictedSyntaxSelector {
   /// esquery selector from the supported subset (see the rule options docs).
   selector: String
-
   /// Message reported instead of the default one.
   message: String?
 }
@@ -238,6 +237,7 @@ class LintRuleOptions {
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
+  `vue/component-definition-name-casing`: ("PascalCase" | "kebab-case")? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null
@@ -386,6 +386,7 @@ class FormatterConfig {
   preset: ("vize" | "prettier" | "compact" | "documentation")? = null
   normalizeDirectiveShorthands: Boolean? = null
   sortBlocks: Boolean? = null
+  blockSpacing: ("blank-line" | "preserve")? = null
   normalizeCssQuotes: Boolean? = null
   normalizeInlineStyles: Boolean? = null
   normalizeVForParens: Boolean? = null

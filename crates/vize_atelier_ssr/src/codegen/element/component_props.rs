@@ -187,17 +187,10 @@ impl SsrCodegenContext<'_> {
                     let key = transform_bound_prop_key(&self.expression_to_string(arg), dir);
                     entries.push(component_prop_entry(&key, &value, false));
                 } else {
-                    let key = self.dynamic_arg_to_string(arg);
-                    let key = if dir
-                        .modifiers
-                        .iter()
-                        .any(|modifier| modifier.content == "camel")
-                    {
-                        self.use_core_helper(RuntimeHelper::Camelize);
-                        cstr!("_camelize(({key}) || \"\")")
-                    } else {
-                        key
-                    };
+                    let mut key = self.dynamic_arg_to_string(arg);
+                    if dir.modifiers.iter().any(|m| m.content == "camel") {
+                        key = self.camelized_dynamic_key(&key);
+                    }
                     entries.push(component_prop_entry(&key, &value, true));
                 }
             }

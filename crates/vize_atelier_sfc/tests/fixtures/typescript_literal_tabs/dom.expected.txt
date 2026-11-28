@@ -1,0 +1,24 @@
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const tab = "	";
+const raw = "a	b";
+
+export default {
+  __name: 'Layout',
+  setup(__props) {
+
+const tpl = `x	y
+	z`;
+const re = /	/;
+/* keep	a comment tab */
+function pad() {
+  return `
+	${tab}`;
+}
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("p", null, _toDisplayString(tab) + _toDisplayString(raw) + _toDisplayString(tpl) + _toDisplayString(re) + _toDisplayString(pad()), 1 /* TEXT */))
+}
+}
+
+}

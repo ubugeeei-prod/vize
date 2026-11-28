@@ -8,6 +8,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 import type { TemplateNode } from "../sfc-equivalence.ts";
+import type { SfcDialect } from "../sfc-baseline-routes.ts";
 
 const require = createRequire(import.meta.url);
 export const pug = require("pug") as {
@@ -100,7 +101,7 @@ export const PUG_ORACLE_BASELINE = Object.freeze({
     integrity: COMPILER_DOM_INTEGRITY,
   },
   sfcEnvelopeParser: { package: "@vue/compiler-sfc", version: compilerSfcPackage.version },
-  dialectContext: "fixed-vue3",
+  dialectContext: "registry-project-dialect",
   mapBasis: "preprocessed-html",
   authoredPugMapAvailable: false,
   executionPolicy: "static-pug-only-with-explicit-filters",
@@ -114,6 +115,7 @@ export type PugOracleContext = {
   filename: string;
   displayFilename: string;
   basedir: string;
+  dialect?: SfcDialect;
   filters?: Record<string, PugFilter>;
 };
 

@@ -3,12 +3,13 @@
 //! Vue; the focused cases pin intentional `walkDeclaration` differences.
 
 mod support {
+    pub mod ui_inventory;
     pub mod vue_setup;
 }
 
 use std::collections::BTreeMap;
-use std::path::Path;
 
+use support::ui_inventory::{Inventory, assert_new_ui_present, inventory};
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
 use vize_l2::framework::vue::{ReactiveSource, SetupAnalysis, SetupBindingKind};
@@ -64,14 +65,6 @@ fn known_vue_kind_difference(
     )
 }
 
-/// Whether the file belongs to the tracked corpus whose reviewed inventories
-/// are pinned. Hydrated `tests/_fixtures/_git` checkouts vary by CI lane (the
-/// merge queue hydrates ElementPlus) and by developer, so they still join the
-/// mismatch checks but never the pinned counts.
-fn pinned_inventory(relative: &Path) -> bool {
-    !relative.starts_with("tests/_fixtures/_git")
-}
-
 /// Every natively classified binding has Croquis' kind, and in files with no
 /// unclassified pattern Croquis has no other binding except props read
 /// without a local, which belong to the props contract.
@@ -82,6 +75,8 @@ fn every_corpus_setup_binding_matches_croquis() {
     let mut mismatches = Vec::new();
     let mut intentional = BTreeMap::<String, usize>::new();
     let mut hydrated = BTreeMap::<String, usize>::new();
+    let mut new_ui = BTreeMap::<String, usize>::new();
+    assert_new_ui_present(&root, &files);
     for file in &files {
         let Ok(source) = std::fs::read_to_string(file) else {
             continue;
@@ -90,10 +85,10 @@ fn every_corpus_setup_binding_matches_croquis() {
             continue;
         };
         let path = file.strip_prefix(&root).unwrap_or(file);
-        let inventory = if pinned_inventory(path) {
-            &mut intentional
-        } else {
-            &mut hydrated
+        let inventory = match inventory(path) {
+            Inventory::Pinned => &mut intentional,
+            Inventory::NewUi => &mut new_ui,
+            Inventory::Hydrated => &mut hydrated,
         };
         let relative = path.display();
         let facts = match facts {
@@ -166,6 +161,10 @@ fn every_corpus_setup_binding_matches_croquis() {
             (cstr!("none <- Some(SetupConst)"), 22),
         ]),
         "reviewed Vue/Croquis difference inventory changed"
+    );
+    assert_eq!(
+        new_ui,
+        BTreeMap::from([(cstr!("SetupConst <- Some(SetupMaybeRef)"), 28)])
     );
     assert_eq!(mismatches, Vec::<String>::new());
 }
@@ -400,7 +399,8 @@ fn croquis_reactive(source: ReactiveSource) -> vize_croquis::reactivity::Reactiv
 #[test]
 fn every_corpus_reactive_source_matches_croquis() {
     let (root, files) = corpus();
-    let (mut compared, mut sources, mut hydrated) = (0usize, 0usize, 0usize);
+    let (mut compared, mut sources, mut hydrated, mut new_ui) = (0usize, 0usize, 0usize, 0usize);
+    assert_new_ui_present(&root, &files);
     let mut mismatches = Vec::new();
     for file in &files {
         let Ok(source) = std::fs::read_to_string(file) else {
@@ -425,10 +425,10 @@ fn every_corpus_reactive_source_matches_croquis() {
             oracle.retain(|(known, _)| *known != name);
             oracle.push((name, Some(registered.kind)));
         }
-        if pinned_inventory(path) {
-            sources += native.len();
-        } else {
-            hydrated += native.len();
+        match inventory(path) {
+            Inventory::Pinned => sources += native.len(),
+            Inventory::NewUi => new_ui += native.len(),
+            Inventory::Hydrated => hydrated += native.len(),
         }
         for (name, source) in native {
             let expected = oracle
@@ -447,7 +447,8 @@ fn every_corpus_reactive_source_matches_croquis() {
     eprintln!(
         "compared {sources} reactive sources (+{hydrated} in hydrated fixtures) in {compared} setup scripts"
     );
-    assert_eq!(sources, 3_195, "corpus reactive-source inventory changed");
+    assert_eq!(sources, 3_194, "corpus reactive-source inventory changed");
+    assert_eq!(new_ui, 29, "new UI reactive-source inventory changed");
     assert_eq!(mismatches, Vec::<String>::new());
 }
 

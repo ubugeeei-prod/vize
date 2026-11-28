@@ -184,41 +184,51 @@ fn implied_end_tags_keep_the_vue_v_pre_scope() {
     }
 }
 
-/// Two shapes where **both** vize lanes differ from Vue, recorded so the
-/// gap is a known one rather than a surprise. Neither is this fix's to
-/// close — the fix is about the L2 lane matching the shipped lane — and
-/// the two lanes do agree with each other on the first.
+/// A component or `<slot>` spelling under `v-pre` stays a plain element, as
+/// Vue keeps it: `<MyComp v-pre :x="1">c</MyComp>` is
+/// `_createElementVNode("MyComp", { ":x": "1" }, "c")` and a PascalCase tag
+/// inside the subtree is never resolved (`@vue/compiler-dom` 3.6.0-rc.17).
+/// Both lanes resolved the component before.
 ///
-/// - `<MyComp v-pre :x="1">c</MyComp>`: Vue emits
-///   `_createElementVNode("MyComp", { ":x": "1" }, "c")` — under `v-pre`
-///   a component tag is not resolved, it stays a plain element. Both
-///   vize lanes resolve it, which is what the pin below states.
-/// - `<MyComp><template v-pre #head>c</template></MyComp>`: Vue keeps the
-///   wrapper, `_createElementVNode("template", { "#head": "" }, […])`.
-///   Both vize lanes unwrap it into the default slot, and there they also
-///   disagree with each other on hoisting the content, so this one is not
-///   in [`CASES`].
+/// `<MyComp><template v-pre #head>c</template></MyComp>` is still a known
+/// gap: Vue keeps the wrapper, `_createElementVNode("template", { "#head":
+/// "" }, […])`, while both vize lanes unwrap it into the default slot, and
+/// there they also disagree with each other on hoisting the content, so it
+/// is not in [`CASES`].
 #[test]
-fn the_component_tag_under_v_pre_is_a_known_gap() {
-    let source = r#"<MyComp v-pre :x="1">c</MyComp>"#;
-    let allocator = Allocator::new();
-    let (_, _, s2) = compile_template(&allocator, source);
-    let legacy_allocator = Allocator::new();
-    let (_, _, legacy) = compile_template_legacy_with_options(
-        &legacy_allocator,
-        source,
-        DomCompilerOptions::default(),
-    );
-
-    // The two lanes agree, which is this fix's contract.
-    assert_eq!(render_body(&s2.code), render_body(&legacy.code));
-    // And both resolve the component, where Vue would not. If that ever
-    // changes, this pin is the place that says so out loud.
-    assert_eq!(
-        render_body(&s2.code),
-        "return (_openBlock(), _createBlock(_component_MyComp, _hoisted_1, { \
-default: _withCtx(() => [ _createTextVNode(\"c\") ]), _: 1 /* STABLE */ })) }",
-    );
+fn a_component_tag_under_v_pre_stays_an_element() {
+    for (source, expected, preamble) in [
+        (
+            r#"<MyComp v-pre :x="1">c</MyComp>"#,
+            r#"return (_openBlock(), _createElementBlock("MyComp", _hoisted_1, "c")) }"#,
+            "const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst _hoisted_1 = { \":x\": \"1\" }\n",
+        ),
+        (
+            r#"<div v-pre><div><Child>{{ x }}</Child></div></div>"#,
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("div", null, [ _createElementVNode("Child", null, "{{ x }}") ]) ])) }"#,
+            "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+        ),
+        (
+            r#"<div v-pre><Child /><slot name="s">f</slot><my-comp></my-comp></div>"#,
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("Child"), _createElementVNode("slot", { name: "s" }, "f"), _createElementVNode("my-comp") ])) }"#,
+            "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (_, errors, s2) = compile_template(&allocator, source);
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        let legacy_allocator = Allocator::new();
+        let (_, legacy_errors, legacy) = compile_template_legacy_with_options(
+            &legacy_allocator,
+            source,
+            DomCompilerOptions::default(),
+        );
+        assert!(legacy_errors.is_empty(), "{source}: {legacy_errors:?}");
+        assert_eq!(s2.code, legacy.code, "{source}");
+        assert_eq!(s2.preamble, legacy.preamble, "{source}");
+        assert_eq!(render_body(&s2.code), expected, "{source}");
+        assert_eq!(s2.preamble, preamble, "{source}");
+    }
 }
 
 /// The frozen names, pinned exactly. Every expectation is

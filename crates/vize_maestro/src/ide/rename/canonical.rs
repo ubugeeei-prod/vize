@@ -85,7 +85,7 @@ pub(super) async fn prepare_strict(
     let attribute = corsa_support::component_attribute_position(ctx, &document);
     let Some((line, character)) = event_rename::semantic_position(ctx, &document).or_else(|| {
         attribute.unwrap_or_else(|| {
-            corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+            corsa_support::canonical_symbol_position(&document, &ctx.content, ctx.offset)
         })
     }) else {
         return Ok(if attribute.is_some() {

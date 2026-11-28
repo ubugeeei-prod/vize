@@ -48,10 +48,21 @@ defineSlots<{
 const context = navigationRailContext.use();
 const active = computed(() => context.active.value === value);
 // Script-capable URLs never render; only safe hrefs are bound (spread keeps the attribute absent).
-const unsafeHref = /^\s*(?:javascript|vbscript|data):/i;
-const linkAttributes = computed(() =>
-  href === undefined || disabled || unsafeHref.test(href) ? {} : { href },
-);
+const unsafeHref = /^(?:javascript|vbscript|data):/i;
+// Browsers drop control characters inside a scheme, so an href holding one never renders.
+function safeHref(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (trimmed.length === 0 || unsafeHref.test(trimmed)) return undefined;
+  for (let index = 0; index < trimmed.length; index++) {
+    const code = trimmed.charCodeAt(index);
+    if (code < 32 || code === 127) return undefined;
+  }
+  return trimmed;
+}
+const linkAttributes = computed(() => {
+  const safe = href === undefined || disabled ? undefined : safeHref(href);
+  return safe === undefined ? {} : { href: safe };
+});
 
 function onClick(event: MouseEvent): void {
   if (disabled) {

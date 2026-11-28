@@ -210,7 +210,8 @@ vue/attribute-order	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/attribute_
 vue/block-lang	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/block_lang.rs
 vue/camelcase	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/core_rules/camelcase.rs
 vue/comment-directive	L1 syntax	relief-visitor	legacy-engine	-	-	vue/comment_directive.rs
-vue/component-definition-name-casing	L1 syntax	relief-visitor	legacy-rule	relief	yes	vue/component_definition_name_casing.rs
+vue/component-definition-name-casing	L1 syntax	relief-visitor+sfc-descriptor	legacy-engine	-	-	vue/component_definition_name_casing.rs
+vue/component-file-name-casing	L1 syntax	relief-visitor	legacy-rule	relief	yes	vue/component_file_name_casing.rs
 vue/component-name-in-template-casing	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	opinionated/vue/component_name_in_template_casing.rs
 vue/dot-notation	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/compatibility_template/core_rules/dot_notation.rs
 vue/enforce-style-attribute	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/compatibility_sfc/enforce_style_attribute.rs
@@ -220,7 +221,7 @@ vue/html-end-tags	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/html_end_tag
 vue/html-quotes	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/html_quotes.rs
 vue/html-self-closing	L1 syntax	relief-visitor	legacy-rule	relief	-	opinionated/vue/html_self_closing.rs
 vue/jsx-uses-vars	L1 script	script-oxc	legacy-engine	-	-	script/jsx_uses_vars.rs
-vue/match-component-file-name	L1 syntax	sfc-descriptor	legacy-rule	atelier_sfc	-	vue/match_component_file_name.rs
+vue/match-component-file-name	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/match_component_file_name.rs
 vue/max-lines-per-block	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/max_lines_per_block.rs
 vue/max-props	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/max_props.rs
 vue/max-template-complexity	L1 syntax	sfc-descriptor	legacy-engine	-	-	facts/max_template_complexity.rs
@@ -302,7 +303,7 @@ vue/no-unsandboxed-iframe	L1 syntax	markup-l2	legacy-rule	atelier_jsx,relief	-	v
 vue/no-unsupported-features	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/unsupported_features.rs
 vue/no-unused-components	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_components.rs
 vue/no-unused-properties	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_properties.rs
-vue/no-unused-refs	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/no_unused_refs.rs
+vue/no-unused-refs	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	atelier_sfc,relief	-	opinionated/vue/no_unused_refs.rs
 vue/no-unused-script-vars	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/script_unused/no_unused_script_vars.rs
 vue/no-unused-setup-bindings	L2 semantic	relief-visitor+sfc-descriptor	legacy-rule	atelier_sfc,croquis,relief	-	facts/unused_setup_bindings.rs
 vue/no-unused-vars	L2 semantic	relief-visitor	legacy-rule	croquis,relief	-	vue/no_unused_vars.rs

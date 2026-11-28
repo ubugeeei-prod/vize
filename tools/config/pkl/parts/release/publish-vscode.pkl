@@ -8,13 +8,13 @@ environment = "vscode-marketplace"
 env {
   NPM_TAG = "${{ needs.version.outputs.npm_tag }}"
   VSCE_DLX_BIN = "npx"
-  VSCE_PAT = "${{ secrets.VSCE_PAT }}"
 }
 steps = new Listing {
   ci.checkoutAt("${{ needs.version.outputs.tag }}")
   new Dynamic {
     uses = ci.setupVp
     with {
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       `run-install` = false
     }
@@ -28,6 +28,8 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Publish to the VS Code Marketplace"
+    // Only this step reads the registry token.
+    env { VSCE_PAT = "${{ secrets.VSCE_PAT }}" }
     run = "node tools/support/release/publish_vscode_extension/main.ts editor-extensions/editors/vscode/dist/vize.vsix"
   }
 }

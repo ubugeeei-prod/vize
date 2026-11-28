@@ -12,7 +12,7 @@ use vize_carton::{Box, String, Vec, ensure_sufficient_stack};
 
 use crate::ir::{
     BlockIRNode, ChildRefIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot,
-    NextRefIRNode, OperationNode, SetTemplateRefIRNode, SlotOutletIRNode,
+    NextRefIRNode, OperationNode, PropValueKind, SetTemplateRefIRNode, SlotOutletIRNode,
 };
 use vize_atelier_core::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
@@ -284,7 +284,7 @@ pub(super) fn transform_classified_element<'a>(
                             // Handler getter: the Vapor runtime resolves raw
                             // component props lazily before emit invokes it.
                             let handler_content = {
-                                let mut s = String::from("__RAW__() => _value => (_ctx.");
+                                let mut s = String::from("() => _value => (_ctx.");
                                 s.push_str(binding.as_str());
                                 s.push_str(" = _value)");
                                 s
@@ -296,7 +296,10 @@ pub(super) fn transform_classified_element<'a>(
                             );
                             let mut handler_values = Vec::new_in(&ctx.allocator);
                             handler_values.push(Box::new_in(handler_node, &ctx.allocator));
-                            props.push(IRProp::new(event_key_box, handler_values, true));
+                            props.push(
+                                IRProp::new(event_key_box, handler_values, true)
+                                    .with_value_kind(PropValueKind::RawGetter),
+                            );
 
                             // Add modifiers prop if present
                             if !dir.modifiers.is_empty() {
@@ -314,7 +317,7 @@ pub(super) fn transform_classified_element<'a>(
                                 );
                                 let mod_key = Box::new_in(mod_key_node, &ctx.allocator);
                                 // Build modifiers object content
-                                let mut mod_content = String::from("__RAW__() => ({ ");
+                                let mut mod_content = String::from("() => ({ ");
                                 for (i, m) in dir.modifiers.iter().enumerate() {
                                     if i > 0 {
                                         mod_content.push_str(", ");
@@ -330,7 +333,10 @@ pub(super) fn transform_classified_element<'a>(
                                 );
                                 let mut mod_values = Vec::new_in(&ctx.allocator);
                                 mod_values.push(Box::new_in(mod_val_node, &ctx.allocator));
-                                props.push(IRProp::new(mod_key, mod_values, true));
+                                props.push(
+                                    IRProp::new(mod_key, mod_values, true)
+                                        .with_value_kind(PropValueKind::RawGetter),
+                                );
                             }
                         }
                     }
@@ -376,7 +382,7 @@ pub(super) fn transform_classified_element<'a>(
         }
         ElementType::Slot => {
             let name = get_slot_outlet_name(ctx, el);
-            let props = get_slot_outlet_props(ctx, el);
+            let (props, has_ref) = get_slot_outlet_props(ctx, el);
             let fallback = lower_fallback(ctx, el);
             let slot_outlet = SlotOutletIRNode {
                 flags: 0,
@@ -389,6 +395,9 @@ pub(super) fn transform_classified_element<'a>(
             };
 
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));
+            if has_ref {
+                transform_template_ref(ctx, el, element_id, block);
+            }
         }
         ElementType::Template => {
             // Peeled at entry (no DOM element); emit nothing, never an invalid op.

@@ -23,6 +23,7 @@ import {
   checkWorkflowJobSources,
   restorePinnedWildAction,
   restoreRustToolchainPin,
+  restoreVpVersionPin,
 } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
@@ -171,10 +172,7 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
     (step) => step.uses === "./.github/actions/setup-rust-script",
   );
   assert.equal(originalSetupIndex >= 0, true);
-  assert.equal(
-    steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
-    false,
-  );
+  assert(!steps.some((step) => step.uses === "./.github/actions/setup-rust-script"));
   steps.splice(originalSetupIndex, 0, structuredClone(originalSteps[originalSetupIndex]));
 
   const publisher = steps.find((step) => step.name === "Coverage report");
@@ -189,7 +187,14 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
   publisher.run = originalPublisherRun;
 }
 
-test("maximum non-release runners preserve every original job contract", () => {
+// Pull requests also measure the instruction ceilings; the job is otherwise unchanged.
+function restoreQueueOnlyInstructionCeilings(job: Job) {
+  const pullRequest = "github.event_name == 'pull_request' || ";
+  assert.equal(String(job.if).split(pullRequest).length, 2, "one pull-request ceilings predicate");
+  job.if = String(job.if).replace(pullRequest, "");
+}
+
+test("the reviewed frontend runner transition preserves every original job contract", () => {
   let selectedJobs = 0,
     protectedJobs = 0,
     restoredHostedJobs = 0;
@@ -205,6 +210,9 @@ test("maximum non-release runners preserve every original job contract", () => {
         original,
       );
     }
+    // Every setup-vp step now passes the pinned Vite+ CLI version.
+    for (const [id, job] of Object.entries(restored.jobs))
+      restoreVpVersionPin(job.steps ?? [], before.jobs[id]?.steps);
     let restoredWildSteps = 0;
     if (specification.name === "check") {
       restoredWildSteps += Object.values(restored.jobs).reduce(
@@ -214,6 +222,7 @@ test("maximum non-release runners preserve every original job contract", () => {
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreQueueOnlyInstructionCeilings(restored.jobs["instruction-counts"]);
       restoreCoverageSummaryPublisher(restored.jobs.coverage, before.jobs.coverage);
       restoreTestReportComment(restored, before);
       restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
@@ -450,11 +459,11 @@ test("helper ABI inversion rejects missing, duplicate, moved and unknown step ch
   }
 });
 
-test("all check-js event classes use the maximum non-release runner", () => {
-  const check = workflows.find((entry) => entry.specification.name === "check");
-  const selector = check?.after.jobs["check-js"]?.["runs-on"];
-  assert(selector);
-  assert.equal(selector, maximumRunner);
+test("current check-js event classes use the available validation runner", () => {
+  const live = parse(
+    fs.readFileSync(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
+  ) as Workflow;
+  assert.equal(live.jobs["check-js"]?.["runs-on"], "blacksmith-16vcpu-ubuntu-2404");
 });
 
 test("test report inversions reject any other change to the report or tooling jobs", () => {

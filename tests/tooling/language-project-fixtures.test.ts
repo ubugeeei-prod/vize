@@ -26,6 +26,12 @@ const manifest = JSON.parse(
   ),
 );
 const rows: unknown[] = manifest.languageProjectCases;
+// These registered producers changed after admission, so the registration
+// authenticates their admitted bytes, frozen under the byte-custody fixtures.
+const frozenProducers = new Set([
+  "tests/typescript-plugin/package-options.test.cjs",
+  "tests/typescript-plugin/project-configuration.test.cjs",
+]);
 const read = (side: "base" | "head", file: string) => {
   const pair = pairs.find((item) => item.source === file);
   if (pair) {
@@ -33,7 +39,9 @@ const read = (side: "base" | "head", file: string) => {
     return text === null ? null : Buffer.from(text);
   }
   if (side === "base") return null;
-  const source = path.join(root, file);
+  const source = frozenProducers.has(file)
+    ? path.join(root, "tests/_fixtures/byte-custody", file)
+    : path.join(root, file);
   return fs.existsSync(source) ? fs.readFileSync(source) : null;
 };
 const copy = () => structuredClone(manifest.languageProjectCases);

@@ -76,6 +76,52 @@ Use `directory` and `environment` for package-local setup. Root Vite+ sequences 
 `steps(...)` in `tools/config/vite-plus/tasks/`, and Nix shell hooks read the
 generated files under `tools/nix/scripts/`.
 
+## Writing scripts in ush
+
+Repository scripts are written in [ush](https://github.com/ubugeeei-prod/ush), a
+typed language that compiles to POSIX `sh`. A program `scripts/<name>.ush` is
+committed together with its build, `scripts/compiled/<name>.sh`, so CI and
+contributors run it with `sh` alone. You need ush only to change a program:
+`nix develop` provides the pinned release, and the generator above compiles every
+program and checks that each committed build is current.
+
+```ush
+# Check that docs previews wait for their resources, keeping the TAP log as evidence.
+use $bin::{node, tee, vp}
+use std::fs::mkdir_p
+
+let evidence = "docs-render-evidence/resource-readiness"
+let log = $"$evidence/tests.tap"
+
+vp node docs/scripts/ensure-browser.ts
+mkdir_p $evidence
+node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts |& tee $log
+node tools/support/github/docs-preview-readiness.ts $log $evidence
+```
+
+- Open with one comment line saying what the program does and why.
+- Name every external program in `use $bin::{…}`, so the first lines list what the
+  program needs. Quote a name that is not an identifier and alias it:
+  `"apt-get" as apt_get`.
+- Write real ush: pipelines, `cd dir { … }`, `export NAME = value { … }`, std
+  modules. Never embed shell text with `shell` or `$ …`.
+- Write arguments as on a command line: a bare word is a string, `$name` reads a
+  binding, `$env::NAME` reads the environment, and `$"…"` interpolates. Break a
+  long call after ` \` with one flag per line.
+- Reach files next to the program with `std::path::from_source`, not with
+  `$VIZE_CI_FILES`.
+- Use only the portable std. The functions of the
+  [optional runtime](https://github.com/ubugeeei-prod/ush/blob/main/docs/std-runtime.md),
+  such as `std::int::sub`, call ush when the build runs, so the generator refuses
+  them. Integer arithmetic such as `n + -1` compiles to the shell's own.
+- Put helpers that several programs share in a `lib/` module, such as
+  `tools/ci/lib/github.ush`, and import it with `mod "../../../lib/github.ush"`.
+  Modules are inlined into each build and have no build of their own.
+- Run a workflow program with `ci.workflowProgram("<name>")` and a composite
+  action's with `ci.actionProgram("<name>")`. WSL steps use `ci.wslProgram("<name>")`.
+- CI gets the compiler from `.github/actions/setup-ush`. When the flake pin moves,
+  update the version and the copied `sha256sums.txt` in its `install-ush.ush`.
+
 ## Typecheck comparison evidence
 
 `tools/commands/fixtures/typecheck-divergence-report.rs` writes

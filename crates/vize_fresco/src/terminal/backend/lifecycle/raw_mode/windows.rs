@@ -2,13 +2,17 @@
 
 use std::{
     error::Error,
-    fmt, io, ptr,
+    fmt, io,
     sync::atomic::{AtomicBool, AtomicIsize, AtomicU32, AtomicUsize, Ordering},
 };
 
 use windows_sys::Win32::{
     Foundation::{HANDLE, INVALID_HANDLE_VALUE},
-    System::Console::{GetConsoleMode, GetStdHandle, STD_INPUT_HANDLE, SetConsoleMode},
+    System::Console::STD_INPUT_HANDLE,
+};
+
+use crate::terminal::backend::lifecycle::windows_console::{
+    console_mode, set_console_mode, std_handle,
 };
 
 static RAW_SNAPSHOT_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -26,7 +30,7 @@ pub(in crate::terminal::backend::lifecycle) fn enable_raw_mode() -> io::Result<(
     if !claim_snapshot() {
         return Ok(());
     }
-    let handle = match stdin_handle() {
+    let handle = match std_handle(STD_INPUT_HANDLE) {
         Ok(handle) => handle,
         Err(error) => {
             release_unpublished_snapshot_claim();
@@ -164,15 +168,17 @@ fn fail_enable_transition(enable: io::Error) -> io::Result<()> {
             )
         })
         .unwrap_or(Ok(()));
-    if rollback.is_ok() {
-        deactivate_snapshot();
-        return Err(enable);
+    match rollback {
+        Ok(()) => {
+            deactivate_snapshot();
+            Err(enable)
+        }
+        Err(rollback) => Err(combine_transition_errors(
+            "enabling raw mode",
+            enable,
+            rollback,
+        )),
     }
-    Err(combine_transition_errors(
-        "enabling raw mode",
-        enable,
-        rollback.unwrap_err(),
-    ))
 }
 
 fn deactivate_snapshot() {
@@ -197,37 +203,6 @@ fn claim_snapshot() -> bool {
 
 fn release_unpublished_snapshot_claim() {
     RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
-}
-
-fn stdin_handle() -> io::Result<HANDLE> {
-    // SAFETY: `STD_INPUT_HANDLE` is the documented selector for the
-    // process standard input handle.
-    let handle = unsafe { GetStdHandle(STD_INPUT_HANDLE) };
-    if handle.is_null() || handle == INVALID_HANDLE_VALUE {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(handle)
-}
-
-fn console_mode(handle: HANDLE) -> io::Result<u32> {
-    let mut mode = 0_u32;
-    // SAFETY: `mode` points to writable storage and `handle` was accepted
-    // by `GetStdHandle` or stored from a prior successful call.
-    if unsafe { GetConsoleMode(handle, ptr::addr_of_mut!(mode)) } == 0 {
-        Err(io::Error::last_os_error())
-    } else {
-        Ok(mode)
-    }
-}
-
-fn set_console_mode(handle: HANDLE, mode: u32) -> io::Result<()> {
-    // SAFETY: `mode` is the exact value previously returned by
-    // `GetConsoleMode` for this console input handle.
-    if unsafe { SetConsoleMode(handle, mode) } == 0 {
-        Err(io::Error::last_os_error())
-    } else {
-        Ok(())
-    }
 }
 
 fn combine_transition_errors(

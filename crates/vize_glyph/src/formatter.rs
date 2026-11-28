@@ -5,6 +5,8 @@
 mod block_indent;
 mod blocks;
 mod custom_block;
+#[cfg(test)]
+mod nesting_tests;
 mod opening_tag;
 mod raw_mask;
 mod root_content;
@@ -15,8 +17,9 @@ mod template_indent;
 
 use crate::VueVersion;
 use crate::error::FormatError;
-use crate::options::FormatOptions;
+use crate::options::{BlockSpacing, FormatOptions};
 use blocks::{BlockAttrs, BlockKind, BlockLocation, SfcBlock};
+use vize_l0::string_builder::TextBuf;
 use vize_l0::{Allocator, FxHashMap, String};
 
 /// Result of formatting a Vue SFC
@@ -100,11 +103,11 @@ impl<'a> GlyphFormatter<'a> {
                 });
         }
         let blocks = blocks::split(source)?;
-        let newline = self.options.newline_bytes();
+        let newline = self.options.newline_string();
 
         // Pre-calculate output size for efficient allocation
         let estimated_size = estimate_output_size(source, &blocks);
-        let mut output = Vec::with_capacity(estimated_size);
+        let mut output = TextBuf::with_capacity(estimated_size);
 
         // Blocks do not own the top-level content between them. Attach each
         // gap to the following block before block sorting, so comments stay
@@ -119,22 +122,40 @@ impl<'a> GlyphFormatter<'a> {
         } else {
             root_content::split_prologue(original_prologue)
         };
+        // `BlankLine` writes one blank line between root nodes. `Preserve`
+        // reads each separator from the source, as Prettier does: an authored
+        // blank line (any run of them) becomes one, and none adds none.
+        let preserve_spacing = self.options.block_spacing == BlockSpacing::Preserve;
+        let prologue_blank = !preserve_spacing
+            || first_attachment.is_some()
+            || root_content::has_blank_line(trailing_whitespace(original_prologue));
         let mut leading_content = FxHashMap::default();
+        let mut blank_before = FxHashMap::default();
         if let Some(content) = first_attachment {
             leading_content.insert(first_tag_start, (content, true));
         }
         let mut previous_end = first_tag_start;
-        for loc in blocks.iter().map(|block| &block.loc) {
-            if let Some(content) = source
-                .get(previous_end..loc.tag_start)
-                .map(|gap| (gap.trim(), root_content::is_attached_comment(gap)))
-                .filter(|(content, _)| !content.is_empty())
-            {
-                leading_content.insert(loc.tag_start, content);
+        for (index, loc) in blocks.iter().map(|block| &block.loc).enumerate() {
+            let gap = source.get(previous_end..loc.tag_start).unwrap_or_default();
+            let content = gap.trim();
+            if !content.is_empty() {
+                let attached = if preserve_spacing {
+                    !root_content::has_blank_line(trailing_whitespace(gap))
+                } else {
+                    root_content::is_attached_comment(gap)
+                };
+                leading_content.insert(loc.tag_start, (content, attached));
+            }
+            if preserve_spacing && index > 0 {
+                let blank = root_content::has_blank_line(leading_whitespace(gap));
+                blank_before.insert(loc.tag_start, blank);
             }
             previous_end = loc.tag_end;
         }
-        let trailing_content = source.get(previous_end..).unwrap_or_default().trim();
+        let trailing_gap = source.get(previous_end..).unwrap_or_default();
+        let trailing_content = trailing_gap.trim();
+        let trailing_blank =
+            !preserve_spacing || root_content::has_blank_line(leading_whitespace(trailing_gap));
 
         // Sorting is stable: style and custom blocks keep their authored order
         // within their group. CSS cascade order is semantic.
@@ -158,24 +179,34 @@ impl<'a> GlyphFormatter<'a> {
         blocks.sort_by_key(|(order, _)| *order);
 
         if !prologue.is_empty() {
-            output.extend_from_slice(prologue.as_bytes());
+            output.push_str(prologue);
             if !blocks.is_empty() {
-                output.extend_from_slice(newline);
-                output.extend_from_slice(newline);
+                output.push_str(newline);
+                if prologue_blank {
+                    output.push_str(newline);
+                }
             }
         }
 
         // Format each block in order
         for (i, (_, block)) in blocks.iter().enumerate() {
             if i > 0 {
-                output.extend_from_slice(newline);
-                output.extend_from_slice(newline);
+                output.push_str(newline);
+                // A block that sorting moved off the source start has no
+                // authored separator and takes the blank line.
+                if blank_before
+                    .get(&block.loc.tag_start)
+                    .copied()
+                    .unwrap_or(true)
+                {
+                    output.push_str(newline);
+                }
             }
             if let Some((content, attached)) = leading_content.get(&block.loc.tag_start) {
-                output.extend_from_slice(content.as_bytes());
-                output.extend_from_slice(newline);
+                output.push_str(content);
+                output.push_str(newline);
                 if !attached {
-                    output.extend_from_slice(newline);
+                    output.push_str(newline);
                 }
             }
             match block.kind {
@@ -209,28 +240,21 @@ impl<'a> GlyphFormatter<'a> {
         }
 
         if !trailing_content.is_empty() && !blocks.is_empty() {
-            output.extend_from_slice(newline);
-            output.extend_from_slice(newline);
-            output.extend_from_slice(trailing_content.as_bytes());
+            output.push_str(newline);
+            if trailing_blank {
+                output.push_str(newline);
+            }
+            output.push_str(trailing_content);
         }
 
         // Trim trailing whitespace efficiently
-        while output
-            .last()
-            .is_some_and(|&b| b == b'\n' || b == b'\r' || b == b' ' || b == b'\t')
-        {
-            output.pop();
-        }
+        let kept = output.trim_end_matches(['\n', '\r', ' ', '\t']).len();
+        output.truncate(kept);
         if !output.is_empty() {
-            output.extend_from_slice(newline);
+            output.push_str(newline);
         }
 
-        // SAFETY: `output` is composed from the original UTF-8 SFC source plus
-        // formatter output returned as `&str` and ASCII whitespace/newlines. All
-        // byte slicing uses block ranges produced by the SFC parser, which are
-        // source-owned UTF-8 boundaries. We keep the conversion unchecked to avoid
-        // revalidating the full formatted document on every format run.
-        let code = unsafe { String::from_utf8_unchecked(output) };
+        let code = output.into_compact();
         let changed = code != source;
 
         Ok(FormatResult { code, changed })
@@ -248,6 +272,17 @@ impl<'a> GlyphFormatter<'a> {
         let changed = code.as_str() != source;
         Ok(FormatResult { code, changed })
     }
+}
+
+#[inline]
+fn leading_whitespace(gap: &str) -> &str {
+    gap.get(..gap.len() - gap.trim_start().len())
+        .unwrap_or_default()
+}
+
+#[inline]
+fn trailing_whitespace(gap: &str) -> &str {
+    gap.get(gap.trim_end().len()..).unwrap_or_default()
 }
 
 /// Estimate output size for pre-allocation
@@ -273,7 +308,7 @@ fn estimate_output_size(source: &str, blocks: &[SfcBlock<'_>]) -> usize {
 /// matching how template attributes behave. Returns `false` when the caller
 /// should print its canonical order instead.
 fn write_authored_attrs(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     attrs: &BlockAttrs<'_>,
     source: &str,
     loc: &BlockLocation,
@@ -297,7 +332,7 @@ fn write_authored_attrs(
     true
 }
 
-fn write_remaining_attrs(output: &mut Vec<u8>, attrs: &BlockAttrs<'_>, handled: &[&str]) {
+fn write_remaining_attrs(output: &mut TextBuf, attrs: &BlockAttrs<'_>, handled: &[&str]) {
     let mut remaining_attrs: Vec<_> = attrs
         .iter()
         .filter(|(name, _)| !handled.contains(&name.as_ref()))
@@ -314,11 +349,11 @@ fn write_remaining_attrs(output: &mut Vec<u8>, attrs: &BlockAttrs<'_>, handled: 
     }
 }
 
-fn write_attr(output: &mut Vec<u8>, name: &str, value: Option<&str>) {
-    output.push(b' ');
-    output.extend_from_slice(name.as_bytes());
+fn write_attr(output: &mut TextBuf, name: &str, value: Option<&str>) {
+    output.push(' ');
+    output.push_str(name);
     if let Some(value) = value {
-        output.push(b'=');
-        crate::attribute::write_attr_value(value, |s| output.extend_from_slice(s.as_bytes()));
+        output.push('=');
+        crate::attribute::write_attr_value(value, |s| output.push_str(s));
     }
 }

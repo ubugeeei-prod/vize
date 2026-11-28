@@ -38,7 +38,9 @@ const article = await data.load(
 
 Server renderers can call `serializeDataSnapshot(data)` and hydrate the client with
 `hydrateDataClient(snapshot)`. Hydrated success entries satisfy the first client load without
-issuing duplicate network work; `policy: "replace"` opts back into a fresh request.
+issuing duplicate network work; `policy: "replace"` opts back into a fresh request. A failed fetch
+serializes as its name, message, and status: the decoded error body stays on the server unless
+`serializeError` returns it.
 
 ## Cache, races, and optimistic work
 

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type { Options } from "./list";
+import type { Item } from "./detail";
+
+defineProps<{ item: Item; options?: Options }>();
+</script>
+
+<template><p>{{ item.name }}</p></template>

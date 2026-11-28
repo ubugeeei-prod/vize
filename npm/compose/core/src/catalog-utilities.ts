@@ -231,7 +231,7 @@ export const utilities = [
     ssr: "safe",
     hydration: "caller-managed",
     cleanupOwners: ["none"],
-    runtimeGlobals: [],
+    runtimeGlobals: ["window"],
     dependencies: [],
   },
   {

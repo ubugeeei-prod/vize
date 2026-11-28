@@ -7,6 +7,10 @@ mod analyze;
 use analyze::analyze_expression_nesting;
 
 mod operators;
+mod plain;
+use plain::is_short_plain_expression;
+#[cfg(test)]
+mod plain_tests;
 pub mod scan;
 
 use scan::{
@@ -81,12 +85,16 @@ pub fn expression_has_balanced_delimiters(content: &str) -> bool {
 }
 
 /// Returns whether an expression can be handed to OXC's recursive parser safely.
+#[inline]
 pub fn expression_is_safe_to_parse(content: &str) -> bool {
-    // `expr00` / `item000` cannot nest or carry a prefix-operator run.
-    // Longer text falls through; the miss is one length compare.
-    if is_short_plain_identifier(content) {
-        return true;
-    }
+    // `post.title` / `format(item.date)` cannot trip any budget below. Other
+    // text falls through after at most one short prefix scan.
+    is_short_plain_expression(content) || analysis_admits(content)
+}
+
+/// The complete scan behind [`expression_is_safe_to_parse`].
+#[inline(never)]
+fn analysis_admits(content: &str) -> bool {
     let analysis = analyze_expression_nesting(content);
     analysis.delimiters_balanced
         && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
@@ -95,30 +103,11 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
         && !analysis.excessive_arrow_default_speculation
         && !analysis.oversized_numeric_token
         && !analysis.unterminated_template
-        && !operators::has_excessive_prefix_operator_run(content)
+        && !operators::has_excessive_operator_recursion(content)
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
 #[inline]
 pub fn expression_exceeds_max_depth(content: &str) -> bool {
     expression_nesting_depth(content) > MAX_EXPRESSION_NESTING_DEPTH
-}
-
-fn is_short_plain_identifier(content: &str) -> bool {
-    let bytes = content.as_bytes();
-    if bytes.len() > 16 {
-        return false;
-    }
-    let [first, rest @ ..] = bytes else {
-        return false;
-    };
-    is_ascii_ident_start(*first) && rest.iter().copied().all(is_ascii_ident_continue)
-}
-
-fn is_ascii_ident_start(byte: u8) -> bool {
-    matches!(byte, b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$')
-}
-
-fn is_ascii_ident_continue(byte: u8) -> bool {
-    matches!(byte, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'$')
 }

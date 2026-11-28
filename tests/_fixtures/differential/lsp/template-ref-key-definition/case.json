@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "lsp/regression/template-ref-key-definition",
+  "provenance": {
+    "fixCommit": "7b56c699fefb018e351e4ac63d936897bcf27b8d",
+    "inputOrigin": "A useTemplateRef key spelled like an unrelated setup binding",
+    "contractOrigin": "Complete definition response at the key literal: the string names the template ref registered by ref=\"field\", not the same-spelled binding",
+    "witnessPath": "crates/vize_maestro/src/ide/template_ref/keys/wire_tests.rs",
+    "witnessTest": "pinned_fixtures_answer_over_the_wire"
+  },
+  "files": [
+    {
+      "source": "KeyedRef.vue.txt",
+      "runtimePath": "KeyedRef.vue",
+      "sha256": "ac54cbf3d284ce1d378d923b3889a59d9e638890bf5812598999e2eeaf699269"
+    }
+  ],
+  "entry": "KeyedRef.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "15bbaeb6454908a5eea5ffaedb1302c70fed6d560ced8e9a59accea6a1563da3"
+  },
+  "method": "textDocument/definition",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  }
+}

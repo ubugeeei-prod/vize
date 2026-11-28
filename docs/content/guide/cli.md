@@ -165,6 +165,7 @@ Default discovery formats Vue, JavaScript/TypeScript, TSRX and JSON/JSONC files.
 | `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
 | `--sort-blocks`                    | Toggle canonical SFC block ordering                  |
+| `--block-spacing`                  | Choose `blank-line` or `preserve` between SFC blocks |
 | `--self-close-void-elements`       | Toggle `/>` on HTML void elements                    |
 | `--normalize-css-quotes`          | Re-quote CSS, SCSS and Less strings using `--single-quote` |
 | `--normalize-inline-styles`       | Lay out plain static `style` declarations            |

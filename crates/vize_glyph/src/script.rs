@@ -249,6 +249,18 @@ mod tests {
     }
 
     #[test]
+    fn test_expression_the_parser_guard_refuses_is_not_formatted() {
+        let options = FormatOptions::default();
+        let nested = "(".repeat(20_000) + "a" + &")".repeat(20_000);
+        assert_eq!(format_js_expression(&nested, &options), None);
+        let unary = "!".repeat(20_000) + "a";
+        assert_eq!(format_js_expression(&unary, &options), None);
+        // The reused parse buffer is intact for the expression that follows.
+        let formatted = format_js_expression("a+b", &options).unwrap();
+        assert_eq!(formatted.as_str(), "a + b");
+    }
+
+    #[test]
     fn test_format_js_expression_simple() {
         let options = FormatOptions::default();
         let result = format_js_expression("count+1", &options);

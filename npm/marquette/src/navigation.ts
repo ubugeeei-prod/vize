@@ -77,8 +77,9 @@ export interface MarquetteNavigator<Marquette extends ApplicationMarquette, Resu
  *
  * A `:name` segment accepts one scalar and is encoded as one path segment. A
  * `*name` segment also accepts a scalar, but preserves `/` between its encoded
- * segments. Unknown routes, missing parameters, extra parameters, empty
- * strings, and non-finite numbers fail before the host adapter runs.
+ * segments, without the empty ones a leading `/` produces. Unknown routes,
+ * missing parameters, extra parameters, empty strings, `.` or `..` segments,
+ * and non-finite numbers fail before the host adapter runs.
  */
 export function createMarquetteNavigator<const Marquette extends ApplicationMarquette, Result>(
   marquette: Marquette,
@@ -158,6 +159,13 @@ function encodeParameter(routeId: string, name: string, value: unknown, rest: bo
   ) {
     throw new Error(`Invalid navigation parameter "${name}" for route "${routeId}".`);
   }
-  const text = String(value);
-  return rest ? text.split("/").map(encodeURIComponent).join("/") : encodeURIComponent(text);
+  const segments = rest ? String(value).split("/") : [String(value)];
+  // Empty leading segments would make the path start with `//`.
+  const first = segments.findIndex((segment) => segment !== "");
+  const kept = first === -1 ? [] : segments.slice(first);
+  // A dot segment is removed when the path is parsed, which would name another route.
+  if (kept.length === 0 || kept.some((segment) => segment === "." || segment === "..")) {
+    throw new Error(`Invalid navigation parameter "${name}" for route "${routeId}".`);
+  }
+  return kept.map(encodeURIComponent).join("/");
 }

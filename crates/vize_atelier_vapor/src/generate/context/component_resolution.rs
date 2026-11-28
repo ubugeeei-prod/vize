@@ -1,3 +1,4 @@
+use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_carton::{String, ToCompactString, camelize, capitalize, cstr};
 
 use super::GenerateContext;
@@ -26,18 +27,57 @@ impl<'a> GenerateContext<'a> {
 
         if let Some((base, suffix)) = component.split_once('.') {
             let resolved_base = resolve_base(base)?;
+            if is_props_binding(bindings, &resolved_base) {
+                return self.resolve_props_component_expr(bindings, base, Some(suffix));
+            }
             return Some(if self.jsx_closure {
                 cstr!("{}.{}", resolved_base, suffix)
             } else {
                 cstr!("_ctx.{}.{}", resolved_base, suffix)
             });
         }
-        resolve_base(component).map(|binding| {
-            if self.jsx_closure {
-                binding
-            } else {
-                cstr!("_ctx.{}", binding)
-            }
+        let binding = resolve_base(component)?;
+        if is_props_binding(bindings, &binding) {
+            return self.resolve_props_component_expr(bindings, component, None);
+        }
+        Some(if self.jsx_closure {
+            binding
+        } else {
+            cstr!("_ctx.{}", binding)
+        })
+    }
+
+    /// Vue's `resolveSetupReference` once a spelling of the tag names a prop:
+    /// a setup binding under any spelling wins, then a prop, read off the
+    /// render function's `$props`. A renamed props destructure
+    /// (`{ icon: Icon }`) is not a setup reference, so its tag resolves as an
+    /// asset. Out of line: an ordinary tag never takes this path.
+    #[cold]
+    #[inline(never)]
+    fn resolve_props_component_expr(
+        &self,
+        bindings: &BindingMetadata,
+        name: &str,
+        suffix: Option<&str>,
+    ) -> Option<String> {
+        let camel = camelize(name);
+        let pascal = capitalize(&camel);
+        let spellings = [name, camel.as_str(), pascal.as_str()];
+        let kind = |spelling: &str| bindings.bindings.get(spelling).copied();
+        let (binding, owner) = spellings
+            .iter()
+            .find(|spelling| kind(spelling).is_some_and(|kind| !is_props_kind(kind)))
+            .map(|spelling| (*spelling, "_ctx."))
+            .or_else(|| {
+                spellings
+                    .iter()
+                    .find(|spelling| kind(spelling) == Some(BindingType::Props))
+                    .map(|spelling| (*spelling, "$props."))
+            })?;
+        let owner = if self.jsx_closure { "" } else { owner };
+        Some(match suffix {
+            Some(suffix) => cstr!("{owner}{binding}.{suffix}"),
+            None => cstr!("{owner}{binding}"),
         })
     }
 
@@ -76,4 +116,15 @@ impl<'a> GenerateContext<'a> {
             component.to_compact_string()
         }
     }
+}
+
+fn is_props_kind(kind: BindingType) -> bool {
+    matches!(kind, BindingType::Props | BindingType::PropsAliased)
+}
+
+fn is_props_binding(bindings: &BindingMetadata, name: &str) -> bool {
+    bindings
+        .bindings
+        .get(name)
+        .is_some_and(|kind| is_props_kind(*kind))
 }

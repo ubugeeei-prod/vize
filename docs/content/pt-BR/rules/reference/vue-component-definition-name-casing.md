@@ -9,29 +9,31 @@ Exigir PascalCase ou kebab-case nos nomes de definição de componentes.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Não | Nenhuma |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-O nome de arquivo do componente é verificado. PascalCase e kebab-case são aceitos; o uso misturado de maiúsculas e minúsculas é reportado.
+Verifica o nome estático de uma definição de componente: a opção name, defineOptions({ name }) e o primeiro argumento de app.component(). O nome de arquivo é verificado por vue/component-file-name-casing.
 
 ## Incorreto
 
-O nome de arquivo myComponent.vue mistura uma inicial minúscula com uma letra maiúscula interna, em vez de usar PascalCase ou kebab-case.
+O nome my_component declarado com defineOptions separa as palavras com sublinhado, em vez de usar PascalCase.
 
-`myComponent.vue`
-
-```vue
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineOptions({ name: "my_component" });
+</script>
 <template><p>Content</p></template>
 ```
 
 ## Correto
 
-Renomear o arquivo para MyComponent.vue aplica PascalCase; o conteúdo do template permanece igual.
+O nome declarado MyComponent usa PascalCase, o padrão.
 
-`MyComponent.vue`
-
-```vue
+```vue annotate="add:2"
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
 <template><p>Content</p></template>
 ```
 
@@ -45,6 +47,9 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/component-definition-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/component-definition-name-casing": "PascalCase"
     }
   },
 });
@@ -55,5 +60,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L68)

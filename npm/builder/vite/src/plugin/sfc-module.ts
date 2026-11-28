@@ -41,10 +41,12 @@ import {
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import { isServedFileAllowed, servedStylesheetRoots } from "./served-files.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
 import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
 import { siblingTargetFor, type BuildEnvironment } from "./sibling-compiles.ts";
+import { findSfcJsxScript, lowerSfcJsx } from "./sfc-jsx.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -141,6 +143,8 @@ export function loadSfcModuleSource(
   sfc: SfcModuleRequest,
   ssr: boolean,
 ): string | { code: string; map: SourceMapV3 } | null {
+  // Vite's own load then answers for a file its `server.fs` rules refuse.
+  if (!isServedFileAllowed(state, sfc.realPath, ssr)) return null;
   // A build compiles one snapshot of each source: what its first reader took
   // (a pre-compile, a batch, another environment's load) is what the module
   // loads. A dev server reads the file on every request.
@@ -262,10 +266,15 @@ export async function transformSfcModule(
         state.cssAliasRules,
         state.server !== null,
         currentBase,
+        servedStylesheetRoots(state, !!isSsr),
       ),
     };
   }
-  const emitted = generateOutputWithMap(compiled, outputOptions);
+  const assembled = generateOutputWithMap(compiled, outputOptions);
+  const jsxScript = findSfcJsxScript(code);
+  const emitted = jsxScript
+    ? lowerSfcJsx(state, realPath, jsxScript, assembled, { ssr: isSsr, logWarnings })
+    : assembled;
   // Each rewrite below substitutes inside a single line, but they go through
   // `MappedModule` anyway so the map cannot silently drift if one ever does not.
   const rewritten = new MappedModule(

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 import { test } from "vite-plus/test";
 
+import { countDateTimeFormats, timeZoneSpellings } from "../../../testing/time-zone-cache.ts";
 import { createCalendarFormatters, normalizeWeekday, resolveWeekStart } from "./calendar-locale.ts";
 import {
   addDays,
@@ -135,6 +136,25 @@ test("instants resolve to calendar dates per IANA time zone", () => {
   assert.deepEqual(fromEpochMilliseconds(Date.UTC(-5, 0, 1, 12), "UTC")?.year, -5);
   assert.equal(fromEpochMilliseconds(instant, "Not/AZone"), null);
   assert.equal(fromEpochMilliseconds(Number.NaN, "UTC"), null);
+});
+
+test("the per-zone formatter cache keeps 64 spellings and then drops the oldest", () => {
+  const spellings = timeZoneSpellings(65);
+  const [first = "", last = ""] = [spellings[0], spellings[64]];
+  const read = (timeZone: string) => {
+    assert.deepEqual(fromEpochMilliseconds(0, timeZone), { year: 1969, month: 12, day: 31 });
+  };
+
+  assert.deepEqual(
+    [
+      countDateTimeFormats(() => spellings.slice(0, 64).forEach(read)),
+      countDateTimeFormats(() => read(first)),
+      countDateTimeFormats(() => read(last)),
+      countDateTimeFormats(() => read(last)),
+      countDateTimeFormats(() => read(first)),
+    ],
+    [64, 0, 1, 0, 1],
+  );
 });
 
 test("ranges are ordered, normalized, and compared by day", () => {

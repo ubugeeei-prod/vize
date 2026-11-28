@@ -68,10 +68,6 @@ const explicitPatinaAliases = new Map([
 ]);
 const intentionalDivergenceOverrides = new Map([
   [
-    "vue/component-definition-name-casing",
-    "Patina's rule checks SFC file-name casing; eslint-plugin-vue checks the component definition name, so their findings are not comparable.",
-  ],
-  [
     "vue/no-unused-properties",
     "Patina intentionally checks defineProps declarations only; eslint-plugin-vue also checks Options API props, so the surfaces are not comparable.",
   ],

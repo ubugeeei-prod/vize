@@ -220,7 +220,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
             &tree,
             &errors,
             caps,
-            LowerPolicy::compile(options.comments),
+            LowerPolicy::compile(options.comments).with_literal_v_pre_tags(),
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

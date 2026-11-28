@@ -8,6 +8,10 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join, resolve } from "node:path";
 
 import { DEFAULT_SHAPE, generateWorkspace } from "./check-workspace.ts";
+import {
+  prepareTypecheckInputOverlays,
+  typecheckPreparationIdentity,
+} from "../../support/compat/fixtures/typecheck-input-overlays.ts";
 
 export interface BenchProject {
   id: string;
@@ -25,7 +29,7 @@ interface RegistryProject {
   typecheckPerformance?: {
     packageManager: string;
     packageManagerVersion: string;
-    baseline?: { tsconfig?: string; prepare?: string[] | string[][] };
+    baseline?: { tsconfig?: string; prepare?: string[] | string[][]; inputOverlays?: unknown };
   };
 }
 
@@ -79,7 +83,14 @@ export function prepareRealProject(
   const root = populated(submodule) ? submodule : resolve(fixturesDir, id);
   const stamp = join(root, ".tcbench-ready");
   const tsconfig = performance.baseline?.tsconfig ?? project.tsconfig ?? "tsconfig.json";
-  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === project.revision) {
+  const identity = typecheckPreparationIdentity(project.revision, performance.baseline);
+  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === identity) {
+    prepareTypecheckInputOverlays(
+      repoRoot,
+      root,
+      project.revision,
+      performance.baseline?.inputOverlays,
+    );
     return { id, cwd: root, tsconfig };
   }
   if (!populated(root)) {
@@ -94,9 +105,15 @@ export function prepareRealProject(
     performance.packageManagerVersion,
   );
   run(manager, [...prefix, ...installArgs(performance.packageManager, root)], root);
+  prepareTypecheckInputOverlays(
+    repoRoot,
+    root,
+    project.revision,
+    performance.baseline?.inputOverlays,
+  );
   for (const step of registryPrepareSteps(performance.baseline?.prepare))
     run(manager, [...prefix, ...step.slice(1)], root);
-  writeFileSync(stamp, `${project.revision}\n`);
+  writeFileSync(stamp, `${identity}\n`);
   return { id, cwd: root, tsconfig };
 }
 

@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
   assertTwin,
+  collectInstructionSuite,
   foldRuns,
   measurePair,
   movedRows,
@@ -212,6 +213,94 @@ void test("measurePair builds base, head and twins once each with the base commi
       readFileSync(join(out, "summary.md"), "utf8"),
       /Every build uses `SOURCE_DATE_EPOCH=1700000000` \(the base commit time\)\./,
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("instruction captures share one execution path and retain each original side", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-capture-"));
+  try {
+    const paths: string[] = [];
+    for (const label of ["base", "head", "base-twin", "head-twin"]) {
+      const destination = join(root, "out", label, "formatter", "measurement");
+      const dir = collectInstructionSuite(
+        "/source",
+        join(root, "scratch"),
+        destination,
+        ["--formatter"],
+        {},
+        (executable, args) => {
+          assert.equal(executable, "node");
+          assert.equal(args[1], "--formatter");
+          const capture = args.at(-1)!;
+          paths.push(capture);
+          mkdirSync(capture, { recursive: true });
+          writeFileSync(join(capture, "measurement.json"), JSON.stringify({ label }));
+        },
+      );
+      assert.equal(dir, destination);
+    }
+    assert.equal(new Set(paths).size, 1);
+    for (const label of ["base", "head", "base-twin", "head-twin"]) {
+      assert.deepEqual(
+        JSON.parse(
+          readFileSync(
+            join(root, "out", label, "formatter", "measurement", "measurement.json"),
+            "utf8",
+          ),
+        ),
+        { label },
+      );
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("failed collection retains partial evidence, propagates failure and empties the capture", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-capture-failure-"));
+  const scratch = join(root, "scratch");
+  const failure = new Error("instruction ceiling exceeded");
+  try {
+    for (const partial of [false, true]) {
+      const destination = join(root, "out", String(partial));
+      assert.throws(
+        () =>
+          collectInstructionSuite("/source", scratch, destination, [], {}, (_executable, args) => {
+            if (partial) {
+              const dir = args.at(-1)!;
+              mkdirSync(dir, { recursive: true });
+              writeFileSync(join(dir, "measurement.json"), "partial evidence");
+            }
+            throw failure;
+          }),
+        (error) => error === failure,
+      );
+      assert.equal(existsSync(join(scratch, "instruction-capture")), false);
+      assert.equal(existsSync(destination), partial);
+      if (partial)
+        assert.equal(
+          readFileSync(join(destination, "measurement.json"), "utf8"),
+          "partial evidence",
+        );
+    }
+    const destination = join(root, "occupied");
+    mkdirSync(destination);
+    writeFileSync(join(destination, "measurement.json"), "original evidence");
+    assert.throws(
+      () =>
+        collectInstructionSuite("/source", scratch, destination, [], {}, (_executable, args) => {
+          const dir = args.at(-1)!;
+          mkdirSync(dir, { recursive: true });
+          writeFileSync(join(dir, "measurement.json"), "partial evidence");
+          throw failure;
+        }),
+      (error) =>
+        error instanceof AggregateError && error.errors.length === 2 && error.errors[0] === failure,
+    );
+    assert.equal(readFileSync(join(destination, "measurement.json"), "utf8"), "original evidence");
+    assert.equal(existsSync(join(scratch, "instruction-capture")), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

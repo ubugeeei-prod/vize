@@ -56,7 +56,7 @@ jobs:
   packaging-changes:
     name: Plan native packaging
     if: ${{ github.event_name == 'pull_request' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 5
     permissions:
       contents: read
@@ -73,19 +73,267 @@ jobs:
               - 'npm/builder/parcel-native/**'
               - 'crates/vize_parcel_transformer/**'
               - '.github/workflows/parcel-transformer.yml'
-
-  native-plugin-packages:
+  native-plugin-matrix:
+    name: Read targets
     needs: packaging-changes
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.packaging-changes.outputs.packages == 'true') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      plugins: ${{ steps.matrix.outputs.plugins }}
+      name: ${{ steps.matrix.outputs.name }}
+      version: ${{ steps.matrix.outputs.version }}
+      language: ${{ steps.matrix.outputs.language }}
+      publish: ${{ github.repository == 'ubugeeei-prod/vize' && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish == true && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))) }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /.github/scripts/workflows/parcel-transformer/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check out packaging scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: parcel-bundler/parcel
+          ref: 2bcfb43e725b2688b787e497e0b0b4105c353222
+          path: .parcel-native-plugin-scripts
+          sparse-checkout: .github/scripts/native-plugin
+          sparse-checkout-cone-mode: false
+          filter: blob:none
+      - name: Move packaging scripts out of the workspace
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/move-the-native-plugin-scripts-out-of-the-workspace.sh"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Compute build matrix
+        id: matrix
+        shell: bash
+        env:
+          PLUGIN_DIRS: npm/builder/parcel-native
+          LANGUAGE: ""
+          PARCEL_PLUGIN_VERSION: ${{ inputs.version }}
+        run: node "$RUNNER_TEMP/native-plugin/matrix.mjs" --dirs "$PLUGIN_DIRS" --language "$LANGUAGE"
+  native-plugin-build:
+    name: ${{ matrix.plugin }} (${{ matrix.target }})
+    needs: native-plugin-matrix
+    if: ${{ !cancelled() && needs.native-plugin-matrix.result == 'success' }}
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.native-plugin-matrix.outputs.matrix) }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /.github/scripts/workflows/parcel-transformer/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check out packaging scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: parcel-bundler/parcel
+          ref: 2bcfb43e725b2688b787e497e0b0b4105c353222
+          path: .parcel-native-plugin-scripts
+          sparse-checkout: .github/scripts/native-plugin
+          sparse-checkout-cone-mode: false
+          filter: blob:none
+      - name: Move packaging scripts out of the workspace
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/move-the-native-plugin-scripts-out-of-the-workspace.sh"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install Rust
+        if: ${{ matrix.language == 'rust' }}
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc
+        with:
+          toolchain: 1.100.0
+          targets: ${{ matrix.target }}
+      - if: ${{ matrix.language == 'rust' }}
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
+        with:
+          workspaces: ${{ matrix.dir }}
+          shared-key: ${{ matrix.plugin }}-${{ matrix.target }}
+      - name: Install Zig
+        if: ${{ matrix.builder == 'zig' }}
+        uses: goto-bus-stop/setup-zig@222d316fd35ce56a4141fe4a869e1aeefc7f3590
+        with:
+          version: 0.14.0
+      - name: Install cargo-zigbuild
+        if: ${{ matrix.builder == 'zig' && matrix.language == 'rust' }}
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tool: cargo-zigbuild@0.24.1
+      - name: Build (Rust)
+        if: ${{ matrix.language == 'rust' }}
+        shell: bash
+        working-directory: ${{ matrix.dir }}
+        env:
+          TARGET: ${{ matrix.target }}
+          ZIG_TARGET: ${{ matrix.zigTarget }}
+          BUILDER: ${{ matrix.builder }}
+          CARGO_ARGS: ""
+          EXTRA_RUSTFLAGS: " ${{ matrix.rustflags }}"
+          EXT: ${{ matrix.ext }}
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-native-plugin-library.sh"
+      - name: Pack ${{ matrix.package }}
+        shell: bash
+        env:
+          PLUGIN_DIR: ${{ matrix.dir }}
+          TARGET: ${{ matrix.target }}
+          PARCEL_PLUGIN_VERSION: ${{ inputs.version }}
+        run: . "${{ env.VIZE_CI_FILES }}/pack-the-native-plugin-target.sh"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-artifact-${{ matrix.plugin }}-${{ matrix.target }}
+          path: ${{ runner.temp }}/artifacts/${{ matrix.target }}.tgz
+          if-no-files-found: error
+  native-plugin-pack:
+    name: Pack ${{ matrix.name }}
+    needs:
+      - native-plugin-matrix
+      - native-plugin-build
+    if: ${{ !cancelled() && needs.native-plugin-matrix.result == 'success' && needs.native-plugin-build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.native-plugin-matrix.outputs.plugins) }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /.github/scripts/workflows/parcel-transformer/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check out packaging scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: parcel-bundler/parcel
+          ref: 2bcfb43e725b2688b787e497e0b0b4105c353222
+          path: .parcel-native-plugin-scripts
+          sparse-checkout: .github/scripts/native-plugin
+          sparse-checkout-cone-mode: false
+          filter: blob:none
+      - name: Move packaging scripts out of the workspace
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/move-the-native-plugin-scripts-out-of-the-workspace.sh"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Download artifact packages
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: native-artifact-${{ matrix.plugin }}-*
+          path: ${{ runner.temp }}/artifacts
+          merge-multiple: true
+      - name: Pack plugin package
+        shell: bash
+        env:
+          PLUGIN_DIR: ${{ matrix.dir }}
+          PARCEL_PLUGIN_VERSION: ${{ inputs.version }}
+        run: . "${{ env.VIZE_CI_FILES }}/pack-the-native-plugin-package.sh"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-plugin-main-${{ matrix.plugin }}
+          path: ${{ runner.temp }}/main/*.tgz
+          if-no-files-found: error
+  native-plugin-publish:
+    name: Publish to npm
+    needs:
+      - native-plugin-matrix
+      - native-plugin-pack
+    if: ${{ !cancelled() && needs.native-plugin-pack.result == 'success' && needs.native-plugin-matrix.outputs.publish == 'true' }}
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write
-    uses: parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222 # v3.0.0-alpha.2
-    with:
-      paths: npm/builder/parcel-native
-      publish: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}
-      version: ${{ inputs.version }}
-      rust-toolchain: "1.100.0"
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /.github/scripts/workflows/parcel-transformer/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Check out packaging scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: parcel-bundler/parcel
+          ref: 2bcfb43e725b2688b787e497e0b0b4105c353222
+          path: .parcel-native-plugin-scripts
+          sparse-checkout: .github/scripts/native-plugin
+          sparse-checkout-cone-mode: false
+          filter: blob:none
+      - name: Move packaging scripts out of the workspace
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/move-the-native-plugin-scripts-out-of-the-workspace.sh"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - name: Update npm
+        shell: bash
+        run: npm install -g npm@12.2.3
+      - name: Download artifact packages
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: native-artifact-*
+          path: ${{ runner.temp }}/artifacts
+      - name: Download plugin packages
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: native-plugin-main-*
+          path: ${{ runner.temp }}/main
+      - name: Publish artifact packages
+        shell: bash
+        env:
+          TAG: ""
+        run: node "$RUNNER_TEMP/native-plugin/publish.mjs" --tag "$TAG" "$RUNNER_TEMP"/artifacts/*/*.tgz
+      - name: Publish plugin packages
+        shell: bash
+        env:
+          TAG: ""
+        run: node "$RUNNER_TEMP/native-plugin/publish.mjs" --tag "$TAG" "$RUNNER_TEMP"/main/*/*.tgz
 
   native-consumer:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -110,6 +358,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: package.json
           run-install: false
       - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
@@ -149,6 +398,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: package.json
           run-install: false
       - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable

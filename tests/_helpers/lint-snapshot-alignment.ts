@@ -5,6 +5,7 @@ import path from "node:path";
 import { gunzipSync } from "node:zlib";
 
 import { admitAppE2eRefresh } from "./lint-snapshot-app-e2e-refresh.ts";
+import { admitNuxtModeSuffixRefresh } from "./lint-snapshot-nuxt-mode-suffix-refresh.ts";
 
 type Packet = Record<string, any> & { file: string; messages: Record<string, any>[] };
 type Changes = Record<string, number>;
@@ -201,11 +202,9 @@ export function loadLintSnapshotAlignments(root: string): Map<string, LintSnapsh
   assert.equal(payload.entries.length, 7);
   const alignments = new Map(payload.entries.map((entry) => [entry.path, entry]));
   admitSnapshotSuccessors(root, alignments);
-  admitAppE2eRefresh(root, alignments, {
-    canonical,
-    hash,
-    verify: verifyLintSnapshotAlignment,
-  });
+  const support = { canonical, hash, verify: verifyLintSnapshotAlignment };
+  admitAppE2eRefresh(root, alignments, support);
+  admitNuxtModeSuffixRefresh(root, alignments, support);
   return alignments;
 }
 

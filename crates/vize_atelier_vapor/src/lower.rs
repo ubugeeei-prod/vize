@@ -115,6 +115,7 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
 }
 
 /// Transform children nodes
+#[inline]
 pub(crate) fn transform_children<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],

@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="Item">
+import type { RowEvent } from "./lib/table";
+
+defineProps<{ items: readonly Item[] }>();
+defineEmits<{ "row-clicked": [event: RowEvent<Item>] }>();
+</script>
+
+<template>
+  <div />
+</template>

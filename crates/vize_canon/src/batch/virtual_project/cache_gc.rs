@@ -174,13 +174,19 @@ pub(super) fn acquire_usage_lock(root: &Path) -> Option<File> {
     Some(file)
 }
 
+/// Refresh a lease file's modification time. The file is only ever empty, so
+/// nothing is truncated, and a link at `path` is refused instead of followed.
 fn touch(path: &Path) -> std::io::Result<()> {
-    let _ = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(path)?;
-    Ok(())
+    let mut options = OpenOptions::new();
+    options.create(true).write(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NOFOLLOW);
+    }
+    options
+        .open(path)?
+        .set_modified(std::time::SystemTime::now())
 }
 
 fn access_path(root: &Path) -> PathBuf {

@@ -6,7 +6,7 @@ use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
 
 use super::super::dts::{
-    parse_declared_global_values, parse_interface_members_with_rewritten_imports,
+    GlobalTypeReexport, parse_declared_globals, parse_interface_members_with_rewritten_imports,
 };
 use super::super::tsconfig_inputs::normalize_input_path;
 use super::generated_ast::{
@@ -20,6 +20,15 @@ use super::generated_values::{
 };
 use super::parsing::normalize_component_binding_name;
 use super::stubs::{push_declared_const, tracked_read_to_string};
+use super::type_auto_imports::TypeAutoImports;
+
+/// What the generated declarations of a Nuxt project supply.
+pub(super) struct GeneratedImports {
+    /// Whether the project has a generated import manifest at all, read or not.
+    pub(super) found_manifest: bool,
+    /// The auto-imported types of the manifests this program reads.
+    pub(super) types: TypeAutoImports,
+}
 
 pub(super) fn collect_generated_stubs(
     cwd: &Path,
@@ -29,9 +38,10 @@ pub(super) fn collect_generated_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
-) -> bool {
+) -> GeneratedImports {
     let nuxt_types_dir = generated_dir.types_dir();
-    let mut found_import_manifest = false;
+    let mut found_manifest = false;
+    let mut types = TypeAutoImports::default();
 
     for path in generated_files
         .iter()
@@ -41,38 +51,29 @@ pub(super) fn collect_generated_stubs(
             continue;
         }
         if is_imports_declaration(path) {
-            found_import_manifest = true;
+            found_manifest = true;
         }
         if !is_configured_declaration(path, declaration_graph) {
             continue;
         }
 
-        if let Ok(values) = parse_declared_global_values(path) {
-            for (name, type_annotation) in values {
-                push_generated_declared_global_const(
-                    cwd,
-                    path,
-                    stubs,
-                    seen_names,
-                    external_template_bindings,
-                    &name,
-                    &type_annotation,
-                );
-            }
-        }
-
+        let reexports =
+            collect_declared_global_stubs(cwd, path, stubs, seen_names, external_template_bindings);
+        collect_manifest_type_reexports(path, reexports, &mut types);
         collect_global_component_stubs(cwd, path, stubs, seen_names, external_template_bindings);
     }
 
-    collect_root_generated_global_stubs(
-        cwd,
-        generated_dir,
-        generated_files,
-        declaration_graph,
-        stubs,
-        seen_names,
-        external_template_bindings,
-    );
+    for path in generated_files
+        .iter()
+        .filter(|path| path.parent() == Some(generated_dir.path()))
+    {
+        if !is_configured_declaration(path, declaration_graph) {
+            continue;
+        }
+        let reexports =
+            collect_declared_global_stubs(cwd, path, stubs, seen_names, external_template_bindings);
+        collect_manifest_type_reexports(path, reexports, &mut types);
+    }
     collect_root_generated_component_stubs(
         cwd,
         generated_dir,
@@ -83,70 +84,92 @@ pub(super) fn collect_generated_stubs(
         external_template_bindings,
     );
 
-    if found_import_manifest {
-        return true;
-    }
-
-    let imports_path = generated_dir.imports_path();
-    if !imports_path.exists() {
-        return false;
-    }
-    found_import_manifest = true;
-    if !is_configured_declaration(&imports_path, declaration_graph) {
-        return found_import_manifest;
-    }
-
-    if let Ok(content) = tracked_read_to_string(&imports_path) {
-        let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
-        for manifest_export in parse_import_manifest_exports(content.as_str(), base_dir) {
-            let type_annotation = cstr!(
-                "typeof import('{}')['{}']",
-                manifest_export.module_specifier,
-                manifest_export.local_name
-            );
-            push_generated_declared_const(
-                cwd,
-                &imports_path,
-                stubs,
-                seen_names,
-                manifest_export.exported_name.as_str(),
-                type_annotation.as_str(),
-            );
+    if !found_manifest {
+        let imports_path = generated_dir.imports_path();
+        if imports_path.exists() {
+            found_manifest = true;
+            if is_configured_declaration(&imports_path, declaration_graph) {
+                collect_root_manifest_export_stubs(cwd, &imports_path, stubs, seen_names);
+            }
         }
     }
 
-    found_import_manifest
+    GeneratedImports {
+        found_manifest,
+        types,
+    }
 }
 
-fn collect_root_generated_global_stubs(
+fn collect_root_manifest_export_stubs(
     cwd: &Path,
-    generated_dir: &NuxtGeneratedDir,
-    generated_files: &[PathBuf],
-    declaration_graph: Option<&FxHashSet<PathBuf>>,
+    imports_path: &Path,
+    stubs: &mut Vec<String>,
+    seen_names: &mut FxHashSet<String>,
+) {
+    let Ok(content) = tracked_read_to_string(imports_path) else {
+        return;
+    };
+    let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
+    for manifest_export in parse_import_manifest_exports(content.as_str(), base_dir) {
+        let type_annotation = cstr!(
+            "typeof import('{}')['{}']",
+            manifest_export.module_specifier,
+            manifest_export.local_name
+        );
+        push_generated_declared_const(
+            cwd,
+            imports_path,
+            stubs,
+            seen_names,
+            manifest_export.exported_name.as_str(),
+            type_annotation.as_str(),
+        );
+    }
+}
+
+/// Turn the `declare global` consts of one generated declaration into stubs,
+/// and hand back the type re-exports the same walk found.
+fn collect_declared_global_stubs(
+    cwd: &Path,
+    path: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
+) -> Vec<GlobalTypeReexport> {
+    let Ok(globals) = parse_declared_globals(path) else {
+        return Vec::new();
+    };
+    for (name, type_annotation) in globals.values {
+        push_generated_declared_global_const(
+            cwd,
+            path,
+            stubs,
+            seen_names,
+            external_template_bindings,
+            &name,
+            &type_annotation,
+        );
+    }
+    globals.type_reexports
+}
+
+/// Only an import manifest hands its type re-exports to the stub. The program
+/// reads every other generated declaration itself, re-exports included, so a
+/// stub for those would declare each of their names a second time.
+fn collect_manifest_type_reexports(
+    path: &Path,
+    reexports: Vec<GlobalTypeReexport>,
+    types: &mut TypeAutoImports,
 ) {
-    for path in generated_files
-        .iter()
-        .filter(|path| path.parent() == Some(generated_dir.path()))
-    {
-        if !is_configured_declaration(path, declaration_graph) {
-            continue;
-        }
-        if let Ok(values) = parse_declared_global_values(path.as_path()) {
-            for (name, type_annotation) in values {
-                push_generated_declared_global_const(
-                    cwd,
-                    path.as_path(),
-                    stubs,
-                    seen_names,
-                    external_template_bindings,
-                    &name,
-                    &type_annotation,
-                );
-            }
-        }
+    if !is_imports_declaration(path) {
+        return;
+    }
+    for reexport in reexports {
+        types.reexport(
+            reexport.specifier.as_str(),
+            reexport.local.as_str(),
+            reexport.exported.as_str(),
+        );
     }
 }
 

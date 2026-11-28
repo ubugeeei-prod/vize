@@ -22,7 +22,7 @@ const path = "crates/vize_canon/src/virtual_ts/generator.rs";
 const raw = read("tests/_fixtures/tooling/default-export-projection-13693.json");
 assert.equal(
   identity(raw).sha256,
-  "7a5b4a543771cadb66b9e41b6797fb365d97eaccd40d74ad3f3e2b094528cf6b",
+  "3b0c7768c8b9913eb83fa53b869af5e88a4c0e613b00eb651d0ef66962e1ac58",
 );
 const record = JSON.parse(raw);
 const [file] = record.files;

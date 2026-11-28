@@ -154,97 +154,60 @@ pub(super) fn restore_owned_presentation_modes(
     }
 }
 
+/// Write `bytes` to standard output with direct `write` calls.
+///
+/// rustix's `write` is one system call on Linux and libc's `write` elsewhere;
+/// POSIX lists it as async-signal-safe. It bypasses Rust's reentrant
+/// standard-output lock and buffer, so the path neither allocates nor locks.
 #[cfg(unix)]
 pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
     while !bytes.is_empty() {
-        // SAFETY: `bytes` remains valid for the duration of the call, its exact
-        // length is supplied, and `STDOUT_FILENO` is not borrowed or closed.
-        // POSIX `write` avoids Rust's reentrant standard-output lock and heap.
-        let written = unsafe {
-            libc::write(
-                libc::STDOUT_FILENO,
-                bytes.as_ptr().cast::<libc::c_void>(),
-                bytes.len(),
-            )
-        };
-        if written <= 0 || written as usize > bytes.len() {
-            return false;
+        match rustix::io::write(rustix::stdio::stdout(), bytes) {
+            Ok(written) if written != 0 && written <= bytes.len() => {
+                bytes = bytes.get(written..).unwrap_or_default();
+            }
+            _ => return false,
         }
-        bytes = bytes.get(written as usize..).unwrap_or_default();
     }
     true
 }
 
+/// Write `bytes` to the standard output handle with synchronous `WriteFile`
+/// calls, enabling virtual-terminal processing for the duration.
 #[cfg(windows)]
 pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
-    use std::ptr;
-    use windows_sys::Win32::{
-        Foundation::{HANDLE, INVALID_HANDLE_VALUE},
-        Storage::FileSystem::WriteFile,
-        System::Console::{
-            ENABLE_PROCESSED_OUTPUT, ENABLE_VIRTUAL_TERMINAL_PROCESSING, GetStdHandle,
-            STD_OUTPUT_HANDLE,
-        },
+    use windows_sys::Win32::System::Console::{
+        ENABLE_PROCESSED_OUTPUT, ENABLE_VIRTUAL_TERMINAL_PROCESSING, STD_OUTPUT_HANDLE,
     };
 
-    // SAFETY: `STD_OUTPUT_HANDLE` is the documented selector for standard
-    // output. The returned handle is used only for synchronous writes below.
-    let handle: HANDLE = unsafe { GetStdHandle(STD_OUTPUT_HANDLE) };
-    if handle.is_null() || handle == INVALID_HANDLE_VALUE {
+    use super::windows_console::{console_mode, set_console_mode, std_handle, write_file};
+
+    let Ok(handle) = std_handle(STD_OUTPUT_HANDLE) else {
         return false;
-    }
-    let original_mode = console_output_mode(handle);
+    };
+    let original_mode = console_mode(handle).ok();
     if let Some(mode) = original_mode {
         let emergency_mode = mode | ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         if emergency_mode != mode {
-            let _ = set_console_output_mode(handle, emergency_mode);
+            let _ = set_console_mode(handle, emergency_mode);
         }
     }
     let mut complete = true;
     while !bytes.is_empty() {
-        let chunk_len = bytes.len().min(u32::MAX as usize) as u32;
-        let mut written = 0_u32;
-        // SAFETY: `bytes` remains valid for the duration of the call, its
-        // current chunk length is supplied, and no overlapped state is used.
-        let ok = unsafe {
-            WriteFile(
-                handle,
-                bytes.as_ptr(),
-                chunk_len,
-                ptr::addr_of_mut!(written),
-                ptr::null_mut(),
-            )
-        };
-        if ok == 0 || written == 0 || written > chunk_len {
-            complete = false;
-            break;
+        match write_file(handle, bytes) {
+            Ok(written) if written != 0 && written <= bytes.len() => {
+                bytes = bytes.get(written..).unwrap_or_default();
+            }
+            _ => {
+                complete = false;
+                break;
+            }
         }
-        bytes = bytes.get(written as usize..).unwrap_or_default();
     }
     if let Some(mode) = original_mode {
-        let _ = set_console_output_mode(handle, mode);
+        let _ = set_console_mode(handle, mode);
     }
     complete
-}
-
-#[cfg(windows)]
-fn console_output_mode(handle: windows_sys::Win32::Foundation::HANDLE) -> Option<u32> {
-    use std::ptr;
-    use windows_sys::Win32::System::Console::GetConsoleMode;
-
-    let mut mode = 0_u32;
-    // SAFETY: `mode` points to writable storage and `handle` is the process
-    // standard output handle accepted by `GetStdHandle`.
-    (unsafe { GetConsoleMode(handle, ptr::addr_of_mut!(mode)) } != 0).then_some(mode)
-}
-
-#[cfg(windows)]
-fn set_console_output_mode(handle: windows_sys::Win32::Foundation::HANDLE, mode: u32) -> bool {
-    use windows_sys::Win32::System::Console::SetConsoleMode;
-
-    // SAFETY: `mode` is either the exact value read from this output handle or
-    // that value with documented virtual-terminal output flags added.
-    unsafe { SetConsoleMode(handle, mode) != 0 }
 }
 
 #[cfg(test)]

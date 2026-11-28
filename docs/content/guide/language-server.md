@@ -25,6 +25,20 @@ with completion and navigation for `.vue` and Musea `.art.vue` files.
 | Formatting  | [Vize formatter](./formatter.md) for `.vue` files                                                   |
 | Ecosystem   | Vue Router route names and params, Vue I18n keys, Nuxt, and Void Vue helpers                        |
 
+### Template ref keys
+
+A template ref key, such as `box` in `useTemplateRef("box")` and `ref="box"`, behaves like one
+name. It is also spelled `$refs.box` or `$refs["box"]` (`this.$refs` in a script) and
+`:ref="'box'"`. Find references on any spelling lists every place the component spells the key,
+and rename rewrites all of them together. The variable the call is assigned to keeps its own
+name. Go to definition on a `useTemplateRef` argument or a `$refs` key reaches the elements that
+register the ref.
+
+The key is renamed only when every spelling is known. When the component also reaches refs
+through a computed `$refs` key, a `:ref` that isn't a plain string, or a `useTemplateRef` argument
+that isn't a plain string, the key gets no rename, so a rename never leaves one spelling behind. A
+key spelled `$refs.box` is renamed only to another identifier.
+
 ## Profiles
 
 Every editor integration starts the same server with one of three profiles. Choose by who owns Vue
@@ -86,8 +100,9 @@ shipping query-latency estimates or a general tail bound.
 
 ## Zed
 
-Install the Vize extension for Zed. From a clone of the Vize repository, `vize ide zed --install`
-copies `editors/zed` into Zed for you. Then select the server in your Zed `settings.json`:
+Install the Vize extension for Zed with `vize ide zed --install`. A released `vize` downloads the
+extension that matches its version; a `vize` built in a clone of the Vize repository copies that
+clone's `editors/zed` instead. Then select the server in your Zed `settings.json`:
 
 ```json
 {

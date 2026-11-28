@@ -150,7 +150,8 @@ fn generate_component_spread_props<'a>(
                 PropValueKind::ModelModifiers => cstr!("({key}) + \"Modifiers\""),
                 PropValueKind::Expression
                 | PropValueKind::DisplayString
-                | PropValueKind::ForwardedSlots => key,
+                | PropValueKind::ForwardedSlots
+                | PropValueKind::RawGetter => key,
             };
             // Dynamic handler keys retain the event-name expression through
             // lowering; convert after resolving its authored lexical scope.
@@ -330,11 +331,13 @@ fn format_component_prop_named_entry(key: &str, is_static: bool, value: String) 
 }
 
 fn component_prop_getter_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> String {
+    // Only the value's kind makes it a getter; an authored value is a string
+    // literal whatever its text.
     if prop.handler_modifiers.is_none()
+        && prop.value_kind == PropValueKind::RawGetter
         && let Some(first) = prop.values.first()
-        && let Some(raw) = first.content.strip_prefix("__RAW__")
     {
-        return String::from(raw);
+        return String::from(first.content);
     }
     cstr!("() => ({})", component_prop_expression_value(ctx, prop))
 }
@@ -349,10 +352,12 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
             PropValueKind::DisplayString => {
                 return cstr!("_toDisplayString({})", ctx.resolve_expression_node(first));
             }
-            PropValueKind::Expression | PropValueKind::ForwardedSlots => {}
+            PropValueKind::Expression
+            | PropValueKind::ForwardedSlots
+            | PropValueKind::RawGetter => {}
         }
-        if let Some(raw) = first.content.strip_prefix("__RAW__") {
-            cstr!("({})()", raw)
+        if prop.value_kind == PropValueKind::RawGetter {
+            cstr!("({})()", first.content)
         } else if first.is_static {
             cstr!("\"{}\"", escape_js_string_literal(first.content))
         } else if prop.key.is_handler_key

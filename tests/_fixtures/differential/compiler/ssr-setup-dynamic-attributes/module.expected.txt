@@ -1,0 +1,30 @@
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProps, camelize as _camelize } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[--><p${_ssrRenderAttrs({ [$setup.attr || ""]: 'x' })}>a</p><p${_ssrRenderAttrs({ [$setup.r || ""]: 'y' })}>b</p><p${_ssrRenderAttrs({ [$props.pk || ""]: 'z' })}>c</p><p${_ssrRenderAttrs({ [_camelize(($setup.attr) || "") || ""]: 'w' })}>d</p>`)
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _normalizeProps({ [$setup.attr || ""]: 'x' }), null, _parent))
+  _push(`<!--]-->`)
+}
+import { ref } from 'vue'
+
+const attr = "data-dyn";
+
+export default {
+  __name: 'Layout',
+  props: {
+    pk: { type: String, required: true }
+  },
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const r = ref("data-ref");
+
+const __returned__ = { ref, attr, r }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

@@ -1,0 +1,13 @@
+<template>
+  <div>
+    <section
+      id="first-section"
+      class="a-long-class-name another-long-class-name-here-and-more"
+    ></section>
+    <textarea
+      id="first-textarea"
+      class="a-long-class-name another-long-class-name-here-and-more"
+    ></textarea>
+    <section id="first-section" class="a-long-class-name another-long-class-name-here-ab"></section>
+  </div>
+</template>

@@ -1,0 +1,28 @@
+<template>
+  <div class="card" />
+</template>
+
+<style scoped>
+.card {
+  display: none;
+  margin-left: 4px;
+  color: red !important;
+  width: calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(1px)))))))))))))))))))))))))))))));
+}
+</style>
+
+<style scoped>
+.card {
+  display: none;
+  margin-left: 4px;
+  color: red !important;
+  width: calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(1px))))))))))))))))))))))))))))))));
+}
+</style>
+
+<style scoped>
+.card {
+  display: none;
+  color: rgb(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(calc(1px;
+}
+</style>

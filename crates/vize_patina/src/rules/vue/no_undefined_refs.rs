@@ -5,10 +5,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::Croquis;
 use vize_croquis::facts::{Analysis, AnalysisConsumer, Demand, UndefinedRefs};
 use vize_l0::{FxHashSet, String, cstr};
 use vize_relief::RootNode;
+mod options_scope;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-undefined-refs",
@@ -119,11 +119,11 @@ fn report_undefined_refs(ctx: &mut LintContext<'_>, globals: Option<&FxHashSet<S
         return;
     }
 
-    let instance_names = ctx
-        .art_script_analysis
-        .or_else(|| ctx.analysis())
-        .map(options_instance_names)
-        .unwrap_or_default();
+    // Mixins, `...mapState(...)` and other unresolved members can define any
+    // of these names, so such a component reports nothing.
+    let Some(instance_names) = options_scope::instance_names(ctx) else {
+        return;
+    };
     for (name, start, end) in undefined_refs {
         if instance_names.contains(&name) {
             continue;
@@ -138,28 +138,6 @@ fn report_undefined_refs(ctx: &mut LintContext<'_>, globals: Option<&FxHashSet<S
             .with_help("Define in <script setup> or ensure it's imported"),
         );
     }
-}
-
-/// Names an Options API component puts on the instance its template reads:
-/// the literal `props`, `inject`, `computed`, `methods`, `data` and `setup()`
-/// members. Lint draws a normal `<script>` without Options API bindings, so
-/// reads of these names arrive unresolved.
-fn options_instance_names(analysis: &Croquis) -> Vec<String> {
-    analysis
-        .options_descriptor
-        .as_ref()
-        .map(|options| {
-            options
-                .members
-                .iter()
-                .filter_map(|member| {
-                    vize_croquis::croquis::normalize_options_template_binding_name(
-                        member.name.as_str(),
-                    )
-                })
-                .collect()
-        })
-        .unwrap_or_default()
 }
 
 #[cfg(test)]

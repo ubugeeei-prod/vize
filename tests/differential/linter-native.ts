@@ -89,7 +89,7 @@ export function expectedNativeReason(fixture: any) {
   const rule = api === "--native-static-class" ? "vapor/prefer-static-class" : input.rule;
   if (rule === "a11y/form-control-has-label") return expectedInputLabelReason(input, api);
   if (rule === "a11y/placeholder-label-option") return expectedPlaceholderReason(input, api);
-  if (rule !== "vue/component-definition-name-casing")
+  if (rule !== "vue/component-file-name-casing")
     return { api, entry, kind: "UnprovidedRule", detail: `UnprovidedRule { rule: "${rule}" }` };
   return null;
 }

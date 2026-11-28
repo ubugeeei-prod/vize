@@ -200,10 +200,12 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     if block_has_template_refs(&ir.block) {
         ctx.use_helper("createTemplateRefSetter");
         // Only a `<script setup>` returns the SFC's binding-aware setter; reading
-        // it elsewhere warns in development that `_ctx` lacks the property.
-        if ctx
-            .binding_metadata
-            .is_some_and(|bindings| bindings.is_script_setup)
+        // it elsewhere warns in development that `_ctx` lacks the property. A
+        // JSX closure render has no `_ctx` at all: its refs are closure values.
+        if !ctx.jsx_closure
+            && ctx
+                .binding_metadata
+                .is_some_and(|bindings| bindings.is_script_setup)
         {
             ctx.push_line(
                 "const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()",
@@ -228,7 +230,10 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
                 .resolve_directive_binding_expr(&directive)
                 .unwrap_or_else(|| {
                     ctx.use_helper("resolveDirective");
-                    vize_carton::cstr!("_resolveDirective(\"{}\")", directive)
+                    vize_carton::cstr!(
+                        "_resolveDirective(\"{}\")",
+                        super::escape_js_string_literal(directive.as_str())
+                    )
                 });
             ctx.push_line(&vize_carton::cstr!(
                 "const _directive_{} = {}",

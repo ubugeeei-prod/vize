@@ -41,6 +41,8 @@ pub(super) fn generate_vue_document_with_options(
             preserve_event_navigation: options.preserve_event_navigation,
             configured_global_template_ref: alias_context
                 .is_some_and(super::super::vue_dependencies_alias::AliasContext::configured_global_template_ref),
+            imports_alias_template_ref: alias_context
+                .is_some_and(super::super::vue_dependencies_alias::AliasContext::imports_alias_template_ref),
             dialect: options.dialect,
             preserve_missing_vue_diagnostics: true,
         },

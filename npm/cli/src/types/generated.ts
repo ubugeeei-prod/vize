@@ -286,6 +286,7 @@ export interface LintRuleOptions {
   };
   "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
+  "vue/component-definition-name-casing"?: "PascalCase" | "kebab-case";
   "vue/component-name-in-template-casing"?: {
     casing?: "PascalCase" | "kebab-case";
     registeredComponentsOnly?: boolean;
@@ -1138,6 +1139,10 @@ export interface FormatterConfig {
    * Sort SFC blocks in canonical order
    */
   sortBlocks?: boolean;
+  /**
+   * Write one blank line between SFC blocks, or preserve the authored spacing (at most one blank line)
+   */
+  blockSpacing?: "blank-line" | "preserve";
   /**
    * Re-quote strings in CSS, SCSS and Less blocks with the singleQuote preference
    */

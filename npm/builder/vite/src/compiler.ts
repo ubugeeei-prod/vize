@@ -173,6 +173,8 @@ export interface JsxCompileFileOptions {
    * path which only injects on the client.
    */
   ssr?: boolean;
+  /** The source language, for a file whose extension does not name it. */
+  lang?: "jsx" | "tsx";
   /**
    * Request a v3 source map for the generated render code (#1533). When set,
    * the returned `map` carries the map JSON (or `null` when the native compiler
@@ -198,7 +200,7 @@ export function compileJsxModule(
 ): { code: string; map: string | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
-    lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
+    lang: options.lang ?? (filePath.endsWith(".tsx") ? "tsx" : "jsx"),
     jsxMode: options.jsxMode,
     jsxCompat: options.jsxCompat,
     vapor: options.vapor ?? false,

@@ -145,7 +145,12 @@ impl RefOperandVisitor<'_> {
     /// for both operator operands and condition positions (`if`, `while`,
     /// ternary test, ...), where a ref object is always truthy.
     fn check_operand(&mut self, expression: &Expression<'_>) {
-        if let Expression::Identifier(id) = expression.without_parentheses()
+        // `el!` asserts the ref object is non-null; it is still the object.
+        let mut operand = expression.without_parentheses();
+        while let Expression::TSNonNullExpression(asserted) = operand {
+            operand = asserted.expression.without_parentheses();
+        }
+        if let Expression::Identifier(id) = operand
             && self.is_ref(&id.name)
         {
             self.report(id.span, &id.name);

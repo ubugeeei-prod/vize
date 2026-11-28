@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+function useModal() {
+  const dialog = useTemplateRef("dialog");
+  return () => dialog.value?.showModal();
+}
+
+const open = useModal();
+</script>
+
+<template>
+  <button @click="open">Delete</button>
+  <dialog ref="dialog">Delete this item?</dialog>
+</template>

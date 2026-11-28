@@ -102,11 +102,16 @@ export function compareFile(original: string, formatted: string, filename: strin
   }
 }
 
-export function pugContext(project: CorpusProject, file: string) {
+export function pugContext(
+  project: CorpusProject,
+  file: string,
+  route: ResolvedSfcDialect | null = null,
+) {
   return {
     filename: path.join(project.fixtureDir, file),
     displayFilename: `${project.id}/${file}`,
     basedir: project.fixtureDir,
+    dialect: route?.dialect ?? "3",
   };
 }
 
@@ -126,7 +131,11 @@ export function compareCorpusFile(
   const filename = path.join(project.fixtureDir, file);
   try {
     if (isPugSfc(original, filename)) {
-      const pug = comparePugTemplateEquivalence(original, formatted, pugContext(project, file));
+      const pug = comparePugTemplateEquivalence(
+        original,
+        formatted,
+        pugContext(project, file, route),
+      );
       return {
         differences: pug.differences,
         category: pug.baselineUsable ? "semantic-diff" : "baseline-unusable",
@@ -197,7 +206,7 @@ export function sweepProject(
           const fixedPoint = comparePugTemplateEquivalence(
             formatted,
             formattedAgain,
-            pugContext(project, file),
+            pugContext(project, file, route),
           );
           const sourceBytesEqual = formattedBuffer.equals(formattedAgainBuffer);
           if (!sourceBytesEqual) differences.push("formatter fixed point changed source bytes");

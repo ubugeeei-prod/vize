@@ -1,488 +1,38 @@
-import { computed, ref, shallowRef, toRaw, triggerRef } from "vue";
-import type { ComputedRef, Ref, ShallowRef, WritableComputedRef } from "vue";
+import { computed, ref, shallowRef, toRaw, toValue, triggerRef } from "vue";
+import type { Ref } from "vue";
 
+import { dirtyFieldsOf, valuesEqual, valuesKeepingDirty } from "./form-dirty.ts";
+import { readPath, writePath } from "./form-value-paths.ts";
 import { tryOnScopeDispose } from "./scope.ts";
 import { validateStandardSchema } from "./standard-schema.ts";
-import type { NormalizedSchemaIssue, StandardSchemaV1 } from "./standard-schema.ts";
-
-/** Values treated as leaves: paths never descend into them. */
-export type FormLeaf =
-  | string
-  | number
-  | bigint
-  | boolean
-  | symbol
-  | null
-  | undefined
-  | Date
-  | RegExp
-  | Blob
-  | Map<unknown, unknown>
-  | Set<unknown>
-  | ((...arguments_: never[]) => unknown);
-
-type Decrement = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8];
-
-/**
- * Every dotted path into `Values`, as template-literal keys.
- *
- * Objects contribute their string keys, arrays and tuples contribute
- * `${number}` segments, and {@link FormLeaf} values end a path. Recursion
- * is bounded at eight levels to keep type checking fast.
- */
-export type FormPath<Values, Depth extends number = 8> = [Depth] extends [never]
-  ? never
-  : Values extends FormLeaf
-    ? never
-    : Values extends readonly (infer Item)[]
-      ? `${number}` | `${number}.${FormPath<Item, Decrement[Depth]>}`
-      : {
-          [Key in keyof Values & string]:
-            | Key
-            | (FormPath<Values[Key], Decrement[Depth]> extends infer Rest extends string
-                ? [Rest] extends [never]
-                  ? never
-                  : `${Key}.${Rest}`
-                : never);
-        }[keyof Values & string];
-
-/** Value type found at `Path` inside `Values`. */
-export type FormPathValue<Values, Path extends string> = Path extends `${infer Head}.${infer Rest}`
-  ? Values extends readonly (infer Item)[]
-    ? Head extends `${number}`
-      ? FormPathValue<Item, Rest>
-      : never
-    : Head extends keyof Values
-      ? FormPathValue<Values[Head], Rest>
-      : never
-  : Values extends readonly (infer Item)[]
-    ? Path extends `${number}`
-      ? Item
-      : never
-    : Path extends keyof Values
-      ? Values[Path]
-      : never;
-
-/** Paths whose value is an array (usable with {@link FormControls.fieldArray}). */
-export type FormArrayPath<Values> = {
-  [Path in FormPath<Values>]: FormPathValue<Values, Path> extends readonly unknown[] ? Path : never;
-}[FormPath<Values>];
-
-/** Item type of the array at `Path`. */
-export type FormArrayItem<Values, Path extends string> =
-  FormPathValue<Values, Path> extends readonly (infer Item)[] ? Item : never;
-
-/**
- * Error messages keyed by dotted path; `""` holds form-level errors.
- *
- * Known paths are typed for autocompletion; the string index signature
- * stays because schemas and servers may report paths that are not fields.
- */
-export type FormErrors<Values> = {
-  readonly [Path in FormPath<Values> | ""]?: readonly string[];
-} & { readonly [path: string]: readonly string[] | undefined };
-
-/** Current errors as recorded: messages keyed by dotted path (`""` = form level). */
-export type FormErrorRecord = Readonly<Record<string, readonly string[]>>;
-
-/** Result of a validator: messages, one message, or nothing when valid. */
-export type ValidatorResult = string | readonly string[] | null | undefined | void;
-
-/** Context passed to field validators. */
-export interface FieldValidatorContext<Values> {
-  /** Current form values (`undefined` for standalone fields). */
-  readonly values: Values;
-
-  /** Dotted path of the validated field. */
-  readonly path: string;
-
-  /** Aborted when a newer validation supersedes this one. */
-  readonly signal: AbortSignal;
-}
-
-/** Plain validator for one field value. */
-export type FieldValidator<Value, Values = undefined> = (
-  value: Value,
-  context: FieldValidatorContext<Values>,
-) => ValidatorResult | Promise<ValidatorResult>;
-
-/** Plain validator for the whole form, returning errors keyed by path. */
-export type FormValidator<Values> = (
-  values: Values,
-  context: { readonly signal: AbortSignal },
-) => FormErrors<Values> | undefined | void | Promise<FormErrors<Values> | undefined | void>;
-
-/** Per-field validators keyed by path. */
-export type FormFieldValidators<Values> = {
-  readonly [Path in FormPath<Values>]?: FieldValidator<FormPathValue<Values, Path>, Values>;
-};
-
-/** When validation runs automatically. */
-export type FormValidationTrigger = "change" | "blur" | "submit";
-
-/** Discriminated outcome of {@link FormControls.validate} and submission. */
-export type FormResult<Output> =
-  | {
-      /** Every validator passed. */
-      readonly status: "valid";
-      /** Schema output, or the values when no schema is configured. */
-      readonly value: Output;
-    }
-  | {
-      /** At least one validator failed. */
-      readonly status: "invalid";
-      /** Errors keyed by path. */
-      readonly errors: FormErrorRecord;
-    }
-  | {
-      /** A newer validation started before this one finished. */
-      readonly status: "superseded";
-    };
-
-/** Options for {@link useForm}. */
-export interface UseFormOptions<Values extends object, Output> {
-  /** Initial values, or a factory producing fresh initial values. */
-  readonly initialValues: Values | (() => Values);
-
-  /**
-   * Standard Schema v1 validator for the whole form. Its output becomes the
-   * submitted value.
-   *
-   * @default undefined
-   */
-  readonly schema?: StandardSchemaV1<NoInfer<Values>, Output>;
-
-  /**
-   * Plain whole-form validator.
-   *
-   * @default undefined
-   */
-  readonly validate?: NoInfer<FormValidator<Values>>;
-
-  /**
-   * Plain per-field validators keyed by path.
-   *
-   * @default {}
-   */
-  readonly validators?: NoInfer<FormFieldValidators<Values>>;
-
-  /**
-   * When fields validate before the first submit.
-   *
-   * @default "submit"
-   */
-  readonly validateOn?: FormValidationTrigger;
-
-  /**
-   * When fields re-validate after the first submit.
-   *
-   * @default "change"
-   */
-  readonly revalidateOn?: FormValidationTrigger;
-
-  /**
-   * Default submit handler for {@link FormControls.submit}.
-   *
-   * @default undefined
-   */
-  readonly onSubmit?: (value: Output, context: { readonly signal: AbortSignal }) => unknown;
-}
-
-/** Options for {@link FormControls.setValue}. */
-export interface SetFieldValueOptions {
-  /**
-   * Mark the field touched.
-   *
-   * @default false
-   */
-  readonly touch?: boolean;
-
-  /**
-   * Validate the field after setting it.
-   *
-   * @default true while the active trigger is "change"
-   */
-  readonly validate?: boolean;
-}
-
-/** Reactive controls for one field, returned by {@link FormControls.field}. */
-export interface FormFieldControls<Value, Path extends string = string> {
-  /** Dotted path of the field (also a suitable `name` attribute). */
-  readonly path: Path;
-
-  /** Writable value bound to the form state (use with `v-model`). */
-  readonly value: WritableComputedRef<Value>;
-
-  /** Current error messages. */
-  readonly errors: ComputedRef<readonly string[]>;
-
-  /** First error message. */
-  readonly error: ComputedRef<string | undefined>;
-
-  /** Whether the value differs from its initial value. */
-  readonly dirty: ComputedRef<boolean>;
-
-  /** Whether the field was blurred or touched programmatically. */
-  readonly touched: ComputedRef<boolean>;
-
-  /** Whether a validation of this field is pending. */
-  readonly validating: ComputedRef<boolean>;
-
-  /** Mark the field touched (wire to `blur`); validates when configured. */
-  readonly onBlur: () => void;
-
-  /**
-   * Validate this field.
-   *
-   * @returns Whether the field is valid (`false` also when superseded).
-   */
-  readonly validate: () => Promise<boolean>;
-
-  /** Restore the initial value and clear errors and touched state. */
-  readonly reset: () => void;
-}
-
-/** One entry of a field array, with a stable key for `v-for`. */
-export interface FormArrayEntry<Item, Path extends string = string> {
-  /** Stable key that follows the item through moves. */
-  readonly key: number;
-
-  /** Current index. */
-  readonly index: number;
-
-  /** Dotted path of the item, e.g. `items.2`. */
-  readonly path: `${Path}.${number}`;
-
-  /** Current item value. */
-  readonly value: Item;
-}
-
-/** Typed operations on an array field, returned by {@link FormControls.fieldArray}. */
-export interface FormFieldArrayControls<Item, Path extends string = string> {
-  /** Entries with stable keys. */
-  readonly entries: ComputedRef<readonly FormArrayEntry<Item, Path>[]>;
-
-  /** Append items. */
-  readonly append: (...items: Item[]) => void;
-
-  /** Prepend items. */
-  readonly prepend: (...items: Item[]) => void;
-
-  /** Insert an item at `index`. */
-  readonly insert: (index: number, item: Item) => void;
-
-  /** Remove the item at `index`, shifting errors and touched state. */
-  readonly remove: (index: number) => void;
-
-  /** Move an item from one index to another, carrying its state along. */
-  readonly move: (from: number, to: number) => void;
-
-  /** Swap two items. */
-  readonly swap: (first: number, second: number) => void;
-
-  /** Replace all items and reset their state. */
-  readonly replace: (items: readonly Item[]) => void;
-}
-
-/** Reactive state and actions returned by {@link useForm}. */
-export interface FormControls<Values extends object, Output> {
-  /** Current values. Mutations are tracked (dirty state derives from them). */
-  readonly values: Ref<Values>;
-
-  /** Current errors keyed by path; `""` holds form-level errors. */
-  readonly errors: Readonly<ShallowRef<FormErrorRecord>>;
-
-  /** Whether no errors are currently recorded. */
-  readonly valid: ComputedRef<boolean>;
-
-  /** Whether any value differs from its initial value. */
-  readonly dirty: ComputedRef<boolean>;
-
-  /** Whether any validation is pending. */
-  readonly validating: ComputedRef<boolean>;
-
-  /** Whether a submission is in progress. */
-  readonly submitting: Readonly<Ref<boolean>>;
-
-  /** Number of submit attempts. */
-  readonly submitCount: Readonly<Ref<number>>;
-
-  /**
-   * Typed controls for one field.
-   *
-   * @param path Dotted path.
-   * @returns Field controls whose value type follows the path.
-   */
-  readonly field: <Path extends FormPath<Values>>(
-    path: Path,
-  ) => FormFieldControls<FormPathValue<Values, Path>, Path>;
-
-  /**
-   * Typed operations for an array field.
-   *
-   * @param path Dotted path of an array.
-   * @returns Field array controls.
-   */
-  readonly fieldArray: <Path extends FormArrayPath<Values>>(
-    path: Path,
-  ) => FormFieldArrayControls<FormArrayItem<Values, Path>, Path>;
-
-  /**
-   * Read the value at a path.
-   *
-   * @param path Dotted path.
-   * @returns The value.
-   */
-  readonly getValue: <Path extends FormPath<Values>>(path: Path) => FormPathValue<Values, Path>;
-
-  /**
-   * Write the value at a path.
-   *
-   * @param path Dotted path.
-   * @param value New value.
-   * @param options Touch and validation behavior.
-   */
-  readonly setValue: <Path extends FormPath<Values>>(
-    path: Path,
-    value: FormPathValue<Values, Path>,
-    options?: SetFieldValueOptions,
-  ) => void;
-
-  /**
-   * Replace (or shallowly merge) the values without touching initial values.
-   *
-   * @param values New values.
-   * @param options `merge: true` shallowly merges top-level keys.
-   */
-  readonly setValues: (values: Partial<Values>, options?: { readonly merge?: boolean }) => void;
-
-  /**
-   * Whether a field was touched.
-   *
-   * @param path Dotted path.
-   * @returns Touched state.
-   */
-  readonly isTouched: (path: FormPath<Values>) => boolean;
-
-  /**
-   * Replace errors (for example with server-side errors).
-   *
-   * @param errors Errors keyed by path.
-   */
-  readonly setErrors: (errors: FormErrors<Values>) => void;
-
-  /**
-   * Clear errors of one path, or all errors.
-   *
-   * @param path Dotted path; omit to clear everything.
-   */
-  readonly clearErrors: (path?: FormPath<Values> | "") => void;
-
-  /**
-   * Run every validator, aborting any older validation still in flight.
-   *
-   * @returns The discriminated result; never rejects on validation failure.
-   */
-  readonly validate: () => Promise<FormResult<Output>>;
-
-  /**
-   * Validate and, when valid, call `handler` (or the `onSubmit` option).
-   * A newer submit aborts an older one's pending validation.
-   *
-   * @param handler Submit handler overriding `onSubmit`.
-   * @returns The validation result.
-   */
-  readonly submit: (
-    handler?: (value: Output, context: { readonly signal: AbortSignal }) => unknown,
-  ) => Promise<FormResult<Output>>;
-
-  /**
-   * Create a `submit` event listener that prevents the native submission.
-   *
-   * @param handler Submit handler overriding `onSubmit`.
-   * @returns Event listener for `<form @submit>`.
-   */
-  readonly handleSubmit: (
-    handler?: (value: Output, context: { readonly signal: AbortSignal }) => unknown,
-  ) => (event?: Event) => Promise<FormResult<Output>>;
-
-  /**
-   * Restore initial values (or install new ones) and clear all state.
-   *
-   * @param values New initial values.
-   */
-  readonly reset: (values?: Values) => void;
-}
-
-type Container = Record<string, unknown> | unknown[];
-
-function isContainer(value: unknown): value is Container {
-  if (Array.isArray(value)) return true;
-  if (typeof value !== "object" || value === null) return false;
-  const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function splitPath(path: string): readonly string[] {
-  return path === "" ? [] : path.split(".");
-}
-
-function readChild(container: Container, key: string): unknown {
-  return Array.isArray(container) ? container[Number(key)] : container[key];
-}
-
-function writeChild(container: Container, key: string, value: unknown): void {
-  if (Array.isArray(container)) container[Number(key)] = value;
-  else container[key] = value;
-}
-
-/** Read a dotted path. */
-function readPath(root: unknown, path: string): unknown {
-  let current = root;
-  for (const key of splitPath(path)) {
-    if (!isContainer(current)) return undefined;
-    current = readChild(current, key);
-  }
-  return current;
-}
-
-/** Write a dotted path, creating intermediate containers. */
-function writePath(root: unknown, path: string, value: unknown): void {
-  const keys = splitPath(path);
-  const last = keys.at(-1);
-  if (last === undefined || !isContainer(root)) return;
-  let current: Container = root;
-  for (let index = 0; index < keys.length - 1; index += 1) {
-    const key = keys[index] ?? "";
-    let next = readChild(current, key);
-    if (!isContainer(next)) {
-      next = /^\d+$/.test(keys[index + 1] ?? "") ? [] : {};
-      writeChild(current, key, next);
-    }
-    if (!isContainer(next)) return;
-    current = next;
-  }
-  writeChild(current, last, value);
-}
+import type { NormalizedSchemaIssue } from "./standard-schema.ts";
+import type {
+  FormControls,
+  FormFieldArrayControls,
+  FormFieldControls,
+} from "./form-control-types.ts";
+import type {
+  FormResetOptions,
+  FormResult,
+  FormValidationTrigger,
+  SetFieldValueOptions,
+  UseFormOptions,
+} from "./form-options.ts";
+import type {
+  DirtyFields,
+  FormArrayItem,
+  FormArrayPath,
+  FormPath,
+  FormPathValue,
+  ValidatorResult,
+} from "./form-path-types.ts";
+
+export type * from "./form-control-types.ts";
+export type * from "./form-options.ts";
+export type * from "./form-path-types.ts";
 
 function cloneValue<Value>(value: Value): Value {
   return structuredClone(toRaw(value));
-}
-
-function deepEqual(left: unknown, right: unknown): boolean {
-  if (Object.is(left, right)) return true;
-  if (left instanceof Date && right instanceof Date) return left.getTime() === right.getTime();
-  if (Array.isArray(left) && Array.isArray(right)) {
-    return (
-      left.length === right.length && left.every((item, index) => deepEqual(item, right[index]))
-    );
-  }
-  if (isContainer(left) && isContainer(right) && !Array.isArray(left) && !Array.isArray(right)) {
-    const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
-    for (const key of keys) if (!deepEqual(left[key], right[key])) return false;
-    return true;
-  }
-  return false;
 }
 
 function toMessages(result: ValidatorResult): readonly string[] {
@@ -535,7 +85,12 @@ function remapKeys<Entry>(
  * … via the `~standard` protocol), a whole-form validator, and per-field
  * validators; all may be asynchronous. A newer validation aborts older ones
  * through their `signal` and their results are discarded, so a slow check
- * can never overwrite fresher errors.
+ * can never overwrite fresher errors. `criteriaMode: "first"` keeps one
+ * message per path, in source order: schema, form validator, field validator.
+ * `dirtyFields` mirrors edited branches, `watch` reads one path, and
+ * `setError` updates a single path. `disabled` ignores writes and submission.
+ * `reset` can keep dirty values, errors, touched fields, the submit count,
+ * or the success flag.
  *
  * This composable owns the *values*. `@vizejs/ui/form` owns accessible
  * error presentation (error summaries, focus management, native constraint
@@ -578,6 +133,8 @@ export function useForm<Values extends object, Output = Values>(
   const pending = ref(new Map<string, number>());
   const submitting = ref(false);
   const submitCount = ref(0);
+  const isSubmitSuccessful = ref(false);
+  const disabled = computed(() => toValue(options.disabled) === true);
   const arrayKeys = new Map<string, number[]>();
   let nextKey = 0;
   let formController: AbortController | undefined;
@@ -626,10 +183,18 @@ export function useForm<Values extends object, Output = Values>(
     signal: AbortSignal,
   ): Promise<{ readonly errors: Record<string, string[]>; readonly output: unknown }> => {
     const snapshot = values.value;
-    const collected: Record<string, string[]> = {};
-    const add = (path: string, messages: readonly string[]): void => {
+    // Separate buckets keep message order stable: schema, form, then field.
+    // A null prototype keeps paths such as `constructor` as ordinary keys.
+    const schemaMessages: Record<string, string[]> = Object.create(null);
+    const formMessages: Record<string, string[]> = Object.create(null);
+    const fieldMessages: Record<string, string[]> = Object.create(null);
+    const add = (
+      bucket: Record<string, string[]>,
+      path: string,
+      messages: readonly string[],
+    ): void => {
       if (messages.length === 0) return;
-      (collected[path] ??= []).push(...messages);
+      (bucket[path] ??= []).push(...messages);
     };
     let output: unknown = snapshot;
     const tasks: Promise<void>[] = [];
@@ -638,7 +203,7 @@ export function useForm<Values extends object, Output = Values>(
       tasks.push(
         validateStandardSchema(schema, cloneValue(snapshot)).then((result) => {
           if (result.status === "valid") output = result.value;
-          else for (const issue of result.issues) add(issue.path, [issue.message]);
+          else for (const issue of result.issues) add(schemaMessages, issue.path, [issue.message]);
         }),
       );
     }
@@ -648,18 +213,29 @@ export function useForm<Values extends object, Output = Values>(
         Promise.resolve(validate(snapshot, { signal })).then((result) => {
           if (!result) return;
           for (const [path, messages] of Object.entries(result)) {
-            if (messages !== undefined) add(path, toMessages(messages));
+            if (messages !== undefined) add(formMessages, path, toMessages(messages));
           }
         }),
       );
     }
     for (const [path, validator] of validators) {
       tasks.push(
-        runValidator(validator, path, snapshot, signal).then((messages) => add(path, messages)),
+        runValidator(validator, path, snapshot, signal).then((messages) =>
+          add(fieldMessages, path, messages),
+        ),
       );
     }
     await Promise.all(tasks);
-    return { errors: collected, output };
+    const collected: Record<string, string[]> = Object.create(null);
+    const firstOnly = options.criteriaMode === "first";
+    for (const bucket of [schemaMessages, formMessages, fieldMessages]) {
+      for (const [path, messages] of Object.entries(bucket)) {
+        const target = (collected[path] ??= []);
+        if (firstOnly && target.length > 0) continue;
+        target.push(...(firstOnly ? messages.slice(0, 1) : messages));
+      }
+    }
+    return { errors: { ...collected }, output };
   };
 
   const validate = async (): Promise<FormResult<Output>> => {
@@ -717,7 +293,8 @@ export function useForm<Values extends object, Output = Values>(
           : Promise.resolve([]),
       ]);
       if (controller.signal.aborted) return false;
-      const messages = [...fromSchema, ...fromForm, ...own];
+      const combined = [...fromSchema, ...fromForm, ...own];
+      const messages = options.criteriaMode === "first" ? combined.slice(0, 1) : combined;
       setErrorsFor(path, messages);
       return messages.length === 0;
     } finally {
@@ -734,6 +311,7 @@ export function useForm<Values extends object, Output = Values>(
   };
 
   const setValueAt = (path: string, value: unknown, setOptions: SetFieldValueOptions = {}) => {
+    if (disabled.value) return;
     writePath(values.value, path, value);
     if (setOptions.touch) touch(path);
     if (setOptions.validate ?? trigger() === "change") void validateField(path);
@@ -791,7 +369,7 @@ export function useForm<Values extends object, Output = Values>(
       }),
       errors: computed(() => errors.value[key] ?? []),
       error: computed(() => errors.value[key]?.[0]),
-      dirty: computed(() => !deepEqual(readPath(values.value, key), readPath(initial, key))),
+      dirty: computed(() => !valuesEqual(readPath(values.value, key), readPath(initial, key))),
       touched: computed(() => touched.value.has(key)),
       validating: computed(() => pending.value.has(key) || pending.value.has("")),
       onBlur: () => {
@@ -800,6 +378,7 @@ export function useForm<Values extends object, Output = Values>(
       },
       validate: () => validateField(key),
       reset: () => {
+        if (disabled.value) return;
         writePath(values.value, key, cloneValue(readPath(initial, key)));
         setErrorsFor(key, []);
         const next = new Set(touched.value);
@@ -819,6 +398,7 @@ export function useForm<Values extends object, Output = Values>(
       if (trigger() === "change") void validateField(key);
     };
     const insertAt = (index: number, items: readonly Item[]): void => {
+      if (disabled.value) return;
       const array = readArray(key);
       const keys = syncKeys(key, array.length);
       const at = Math.max(0, Math.min(index, array.length));
@@ -845,6 +425,7 @@ export function useForm<Values extends object, Output = Values>(
       prepend: (...items) => insertAt(0, items),
       insert: (index, item) => insertAt(index, [item]),
       remove: (index) => {
+        if (disabled.value) return;
         const array = readArray(key);
         if (index < 0 || index >= array.length) return;
         const keys = syncKeys(key, array.length);
@@ -854,6 +435,7 @@ export function useForm<Values extends object, Output = Values>(
         afterChange();
       },
       move: (from, to) => {
+        if (disabled.value) return;
         const array = readArray(key);
         if (from < 0 || from >= array.length || to < 0 || to >= array.length || from === to) return;
         const keys = syncKeys(key, array.length);
@@ -870,6 +452,7 @@ export function useForm<Values extends object, Output = Values>(
         afterChange();
       },
       swap: (first, second) => {
+        if (disabled.value) return;
         const array = readArray(key);
         if (first < 0 || second < 0 || first >= array.length || second >= array.length) return;
         const keys = syncKeys(key, array.length);
@@ -883,6 +466,7 @@ export function useForm<Values extends object, Output = Values>(
         afterChange();
       },
       replace: (items) => {
+        if (disabled.value) return;
         remapState(key, () => undefined);
         writePath(values.value, key, [...items]);
         arrayKeys.delete(key);
@@ -899,15 +483,23 @@ export function useForm<Values extends object, Output = Values>(
   const submitWith = async (
     handler?: (value: Output, context: { readonly signal: AbortSignal }) => unknown,
   ): Promise<FormResult<Output>> => {
+    if (disabled.value) return { status: "invalid", errors: {} };
     submitCount.value += 1;
     submitting.value = true;
     try {
       const result = await validate();
       const signal = formController?.signal ?? new AbortController().signal;
       if (result.status === "valid") {
-        const onSubmit = handler ?? options.onSubmit;
-        if (onSubmit) await onSubmit(result.value, { signal });
+        try {
+          const onSubmit = handler ?? options.onSubmit;
+          if (onSubmit) await onSubmit(result.value, { signal });
+          isSubmitSuccessful.value = true;
+        } catch (error) {
+          isSubmitSuccessful.value = false;
+          throw error;
+        }
       } else if (result.status === "invalid") {
+        isSubmitSuccessful.value = false;
         const next = new Set(touched.value);
         for (const path of Object.keys(result.errors)) if (path !== "") next.add(path);
         touched.value = next;
@@ -918,17 +510,22 @@ export function useForm<Values extends object, Output = Values>(
     }
   };
 
-  const reset = (next?: Values): void => {
+  const reset = (next?: Values, keep: FormResetOptions = {}): void => {
     formController?.abort();
     for (const controller of fieldControllers.values()) controller.abort();
     fieldControllers.clear();
-    initial = next === undefined ? createInitial() : cloneValue(next);
-    values.value = cloneValue(initial);
-    errors.value = {};
-    touched.value = new Set();
+    const previousInitial = initial;
+    const base = next === undefined ? createInitial() : cloneValue(next);
+    initial = cloneValue(base);
+    values.value = keep.keepDirtyValues
+      ? cloneValue(valuesKeepingDirty(base, cloneValue(values.value), previousInitial))
+      : cloneValue(initial);
+    if (!keep.keepErrors) errors.value = {};
+    if (!keep.keepTouched) touched.value = new Set();
     pending.value.clear();
-    submitCount.value = 0;
-    arrayKeys.clear();
+    if (!keep.keepSubmitCount) submitCount.value = 0;
+    if (!keep.keepIsSubmitSuccessful) isSubmitSuccessful.value = false;
+    if (!keep.keepDirtyValues) arrayKeys.clear();
     bumpKeys();
   };
 
@@ -941,17 +538,23 @@ export function useForm<Values extends object, Output = Values>(
     values,
     errors,
     valid: computed(() => Object.keys(errors.value).length === 0),
-    dirty: computed(() => !deepEqual(values.value, initial)),
+    dirty: computed(() => !valuesEqual(values.value, initial)),
+    dirtyFields: computed(() => dirtyFieldsOf(values.value, initial) as DirtyFields<Values>),
     validating: computed(() => pending.value.size > 0),
     submitting,
     submitCount,
+    isSubmitSuccessful,
+    disabled,
     field,
     fieldArray,
     getValue: <Path extends FormPath<Values>>(path: Path) =>
       // Same dotted-path walk as `FormPathValue` (see `field`).
       readPath(values.value, path) as FormPathValue<Values, Path>,
+    watch: <Path extends FormPath<Values>>(path: Path) =>
+      computed(() => readPath(values.value, path) as FormPathValue<Values, Path>),
     setValue: (path, value, setOptions) => setValueAt(path, value, setOptions),
     setValues: (next, setOptions = {}) => {
+      if (disabled.value) return;
       if (setOptions.merge) {
         values.value = { ...values.value, ...cloneValue(next) };
       } else {
@@ -968,6 +571,7 @@ export function useForm<Values extends object, Output = Values>(
       }
       errors.value = normalized;
     },
+    setError: (path, message) => setErrorsFor(path, toMessages(message)),
     clearErrors,
     validate,
     submit: submitWith,

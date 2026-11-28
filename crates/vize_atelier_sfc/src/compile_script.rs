@@ -4,6 +4,7 @@
 //! following the Vue.js core output format.
 
 pub(crate) mod artifacts;
+pub(crate) mod component_name;
 #[cfg(test)]
 mod define_expose_tests;
 pub(crate) mod erasure;
@@ -13,6 +14,7 @@ pub mod inline;
 pub(crate) mod lazy_hydration;
 pub mod macros;
 pub mod props;
+pub(crate) mod returned_bindings;
 pub(crate) mod runtime_bindings;
 pub(crate) mod runtime_imports;
 pub mod statement_sections;

@@ -210,12 +210,12 @@ l4	-	davinci/vize_l4/src/targets/css.rs	0	0	1	4	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/css_rules.rs	0	0	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact.rs	1	2	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/framework/vue/dom/budget/capture.rs	0	0	1	2	0	0	0	0
-l4	emit	davinci/vize_l4/src/targets/dom/artifact/buf.rs	1	8	1	8	0	0	0	0
+l4	emit	davinci/vize_l4/src/targets/dom/artifact/buf.rs	1	8	1	7	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/buf/helper_order.rs	1	5	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/buf/helper_order/tests.rs	0	0	1	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/buf/preamble.rs	0	0	1	3	0	0	0	0
-l4	emit	davinci/vize_l4/src/targets/dom/artifact/cache_slots.rs	1	2	1	1	0	0	0	0
-l4	-	davinci/vize_l4/src/targets/dom/artifact/component/binding.rs	0	0	1	6	0	0	0	0
+l4	emit	davinci/vize_l4/src/targets/dom/artifact/cache_slots.rs	1	2	0	0	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/dom/artifact/component/binding.rs	0	0	1	8	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/component/call_props.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/component/preamble.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/constant_expr.rs	1	5	1	2	0	0	0	0
@@ -225,6 +225,7 @@ l4	-	davinci/vize_l4/src/targets/dom/artifact/cx.rs	0	0	1	10	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/directive.rs	1	3	2	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/helper_preference.rs	1	2	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/helper_preference/tests.rs	1	6	0	0	1	0	0	0
+l4	emit	davinci/vize_l4/src/targets/dom/artifact/string_literal_tests.rs	1	6	1	13	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/entity.rs	0	0	1	9	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/dynamic_arg.rs	0	0	1	3	0	0	0	0
 l4	-	davinci/vize_l4/src/framework/vue/dom/entry.rs	0	0	1	3	0	0	0	0

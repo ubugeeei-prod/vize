@@ -36,8 +36,8 @@ pub use entries::{
 pub use experimentals::ConfigExperimentalVueFlags;
 pub use features::ConfigFeatureFlags;
 pub use formatter::{
-    ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, FormatterPreset, FormatterProfile,
-    ObjectWrap, QuoteProps, TrailingComma,
+    ArrowParens, AttributeSortOrder, BlockSpacing, EndOfLine, FormatterConfig, FormatterPreset,
+    FormatterProfile, ObjectWrap, QuoteProps, TrailingComma,
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
@@ -60,29 +60,29 @@ pub use linter_rule_options::type_aware::{
 pub use linter_rule_options::{
     AnchorHasContentOptions, AttributeHyphenationConfig, AttributeHyphenationOptions,
     BlockLangBlock, BlockLangNames, BlockLangOptions, CallAfterAwaitOptions, CallAfterAwaitSpec,
-    ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, ConfiguredVueRuleOptions,
-    ConsistentTypeImportsOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
-    DefineMacrosOrderOptions, DefinePropsDestructuringOptions, EnforceStyleAttributeOptions,
-    HeadingHasContentOptions, HtmlButtonHasTypeOptions, HtmlQuoteStyle, HtmlQuotesConfig,
-    HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
-    HyphenationStyle, LabelHasForOptions, LintRuleOptions, MaxLinesOptions,
-    MaxLinesPerBlockOptions, MaxPropsOptions, MaxTemplateDepthOptions,
-    MultiWordComponentNamesOptions, MuseaDesignToken, MuseaPreferDesignTokensOptions,
-    MustacheInterpolationSpacingStyle, NoBareStringsInTemplateOptions, NoMutatingPropsOptions,
-    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, NoRestrictedSyntaxOptions,
-    NoUnusedScriptVarsOptions, NoUseVIfWithVForOptions, PreferConstDestructuring,
-    PreferConstOptions, PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode,
-    QuotePropsStyle, RestrictedGlobal, RestrictedHtmlElement, RestrictedHtmlElementSpec,
-    RestrictedHtmlElements, RestrictedMember, RestrictedNames, RestrictedSyntaxSelector,
-    RestrictedVOn, RestrictedVOnEntry, RestrictedVOnSpec, SfcElementOrderGroup,
-    SfcElementOrderOptions, SlotNameCasingStyle, SortKeysOptions, SortKeysOrder,
-    StrictBooleanExpressionsOptions, StyleAttributeMode, TemplateComponentNameCasing,
-    TypeImportFixStyle, TypeImportPreference, UnsupportedFeaturesOptions, UnusedArgs,
-    UnusedCaughtErrors, UnusedVarsScope, VBindSameNameShorthand, VBindStyle, VBindStyleConfig,
-    VBindStyleOptions, VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnHandlerAllowed,
-    VOnHandlerKind, VOnHandlerStyleConfig, VOnHandlerStyleOptions, VOnStyle, VSlotNamedStyle,
-    VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions,
-    esquery,
+    ComponentDefinitionNameCasingStyle, ComponentNameInTemplateCasingOptions,
+    ConfigLintRuleOptions, ConfiguredVueRuleOptions, ConsistentTypeImportsOptions,
+    CustomEventNameCasing, CustomEventNameCasingOptions, DefineMacrosOrderOptions,
+    DefinePropsDestructuringOptions, EnforceStyleAttributeOptions, HeadingHasContentOptions,
+    HtmlButtonHasTypeOptions, HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions,
+    HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle,
+    LabelHasForOptions, LintRuleOptions, MaxLinesOptions, MaxLinesPerBlockOptions, MaxPropsOptions,
+    MaxTemplateDepthOptions, MultiWordComponentNamesOptions, MuseaDesignToken,
+    MuseaPreferDesignTokensOptions, MustacheInterpolationSpacingStyle,
+    NoBareStringsInTemplateOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
+    NoRestrictedMembersOptions, NoRestrictedSyntaxOptions, NoUnusedScriptVarsOptions,
+    NoUseVIfWithVForOptions, PreferConstDestructuring, PreferConstOptions, PropNameCasingOptions,
+    PropNameCasingStyle, PropsDestructureMode, QuotePropsStyle, RestrictedGlobal,
+    RestrictedHtmlElement, RestrictedHtmlElementSpec, RestrictedHtmlElements, RestrictedMember,
+    RestrictedNames, RestrictedSyntaxSelector, RestrictedVOn, RestrictedVOnEntry,
+    RestrictedVOnSpec, SfcElementOrderGroup, SfcElementOrderOptions, SlotNameCasingStyle,
+    SortKeysOptions, SortKeysOrder, StrictBooleanExpressionsOptions, StyleAttributeMode,
+    TemplateComponentNameCasing, TypeImportFixStyle, TypeImportPreference,
+    UnsupportedFeaturesOptions, UnusedArgs, UnusedCaughtErrors, UnusedVarsScope,
+    VBindSameNameShorthand, VBindStyle, VBindStyleConfig, VBindStyleOptions,
+    VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnHandlerAllowed, VOnHandlerKind,
+    VOnHandlerStyleConfig, VOnHandlerStyleOptions, VOnStyle, VSlotNamedStyle, VSlotStyle,
+    VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions, esquery,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

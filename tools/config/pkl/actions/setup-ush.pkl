@@ -1,0 +1,14 @@
+import "../../../ci/lib/Actions.pkl" as ci
+
+name = "Setup ush"
+description = "Install the checksum-verified ush release that flake.nix pins, so CI compiles the repository's `.ush` programs with the same compiler as `nix develop`."
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Install ush"
+      shell = "sh"
+      run = ci.actionProgram("install-ush")
+    }
+  }
+}

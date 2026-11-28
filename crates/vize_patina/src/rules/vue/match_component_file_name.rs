@@ -5,15 +5,12 @@
 //! or `kebabCase(name)` equals the stem unchanged. `.vue` and `.jsx` are
 //! checked. Several components in one file stay silent.
 
-mod casing;
-mod scan;
-
+use super::component_definitions::{DefinitionSink, casing::names_match, scan_block};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use scan::{Scan, scan_block};
 
-use vize_l0::{String, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 const RULE: &str = "vue/match-component-file-name";
 const HELP: &str = "Rename the component so its name matches the file name.";
@@ -46,20 +43,24 @@ impl Rule for MatchComponentFileName {
             return;
         };
 
-        let mut scan = Scan::default();
+        let mut scan = Scan {
+            stem,
+            count: 0,
+            misses: Vec::new(),
+        };
         if let Some(script) = descriptor.script.as_ref()
             && script.src.is_none()
             && !script.content.is_empty()
             && let Some(parsed) = scripts.script()
         {
-            scan_block(script, parsed, false, stem, &mut scan);
+            scan_block(script, parsed, false, &mut scan);
         }
         if let Some(script) = descriptor.script_setup.as_ref()
             && script.src.is_none()
             && !script.content.is_empty()
             && let Some(parsed) = scripts.script_setup()
         {
-            scan_block(script, parsed, true, stem, &mut scan);
+            scan_block(script, parsed, true, &mut scan);
         }
         if scan.count > 1 {
             return;
@@ -73,13 +74,46 @@ impl Rule for MatchComponentFileName {
     }
 }
 
+/// Definitions count file-wide; reports are dropped when more than one.
+struct Scan<'stem> {
+    stem: &'stem str,
+    count: u32,
+    misses: Vec<Miss>,
+}
+
+struct Miss {
+    name: String,
+    start: u32,
+    end: u32,
+}
+
+impl DefinitionSink for Scan<'_> {
+    fn definition(&mut self) {
+        self.count += 1;
+    }
+
+    fn name(&mut self, name: &str, start: u32, end: u32) {
+        if names_match(name, self.stem) {
+            return;
+        }
+        self.misses.push(Miss {
+            name: name.to_compact_string(),
+            start,
+            end,
+        });
+    }
+}
+
 fn checked_stem(filename: &str) -> Option<&str> {
     let base = filename.rsplit(['/', '\\']).next().unwrap_or(filename);
     let (stem, extension) = base.rsplit_once('.')?;
     if stem.is_empty() || !matches!(extension, "vue" | "jsx") {
         return None;
     }
-    Some(stem)
+    // Nuxt registers `Foo.client.vue` as `Foo`; a stem that is only a mode
+    // suffix keeps its spelling.
+    let name = crate::component_name::strip_nuxt_mode_suffixes(stem);
+    Some(if name.is_empty() { stem } else { name })
 }
 
 #[cfg(test)]
@@ -174,6 +208,42 @@ mod tests {
             assert_eq!(result.warning_count, 0, "{filename}\n{source}");
             assert!(result.diagnostics.is_empty(), "{filename}");
         }
+    }
+
+    // Nuxt registers `SearchBox.client.vue` as `SearchBox`, so its mode
+    // suffixes are not part of the compared stem.
+    #[test]
+    fn nuxt_mode_suffixes_are_not_part_of_the_file_name() {
+        let source = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/Named.vue.txt"
+        );
+        let cases = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/match-component-file-name.txt"
+        );
+        let mut checked = 0;
+        for line in cases.lines() {
+            let (expected, filename) = line.split_once(' ').unwrap();
+            let result = lint(source, filename);
+            assert_eq!(
+                result.warning_count,
+                expected.parse::<usize>().unwrap(),
+                "{filename}"
+            );
+            checked += 1;
+        }
+        assert_eq!(checked, 9);
+
+        let result = lint(source, "app/components/Other.client.vue");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            message("SearchBox", "Other")
+        );
+        // A stem that is only a mode suffix keeps its spelling.
+        let result = lint(source, ".client.vue");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            message("SearchBox", ".client")
+        );
     }
 
     #[test]

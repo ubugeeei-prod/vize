@@ -125,13 +125,7 @@ await test("the required report runs from its actual checkout closure without pr
     for (const state of mutations)
       await t.test(`${event} preserves the complete ${state} needs gate`, async () => {
         const needs = Object.fromEntries(
-          job.needs.map((name: string) => [
-            name,
-            {
-              result:
-                name === "instruction-counts" && event === "pull_request" ? "skipped" : "success",
-            },
-          ]),
+          job.needs.map((name: string) => [name, { result: "success" }]),
         );
         if (state === "missing") delete needs["iteration-plan"].result;
         else if (state !== "success") needs["iteration-plan"].result = state;

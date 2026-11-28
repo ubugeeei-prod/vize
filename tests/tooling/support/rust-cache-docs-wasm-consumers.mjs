@@ -1,3 +1,4 @@
+import { restoreVpVersionPin } from "./github-workflows.ts";
 import { packageCommands } from "./package-task-source.ts";
 import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
 import assert from "node:assert/strict";
@@ -60,8 +61,10 @@ const producerHashes = {
     "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
     "631bc9b08a4a78c996b40ca2245079bcc61d5df435285d6a0d3fd5f517b118d1",
   ],
-  ".github/actions/stage-workflow-scripts/stage.ts":
+  ".github/actions/stage-workflow-scripts/stage.ts": [
     "25af079b7060133e9261d1c99d60dd8aade5298e85fe68cf604ceacc4f0654de",
+    "3b36f28aad148dbb68b194206bc08a7d3fed275c1dc019a28d41ab96590b5bde",
+  ],
   "tools/ci/workflows/10-app-e2e/scripts/plan-full-rows.sh": [
     "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
     "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
@@ -223,8 +226,11 @@ function verifyRecipes(root, docs, e2e) {
   );
   // Seal the whole dedicated producer, including conditions, environment and
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
+  // The seal predates the Vite+ CLI pin, so compare it with that input removed.
+  const producer = structuredClone(docs.jobs["build-playground"]);
+  assert.equal(restoreVpVersionPin(producer.steps), 1, "Docs WASM producer Vite+ pin");
   assert.equal(
-    hash(JSON.stringify(docs.jobs["build-playground"])),
+    hash(JSON.stringify(producer)),
     "8039a8eba4e5a56c1a668ada91829b33f27c9a94450b34cc4a608a6762a330f0",
     "reviewed whole Docs WASM producer changed",
   );

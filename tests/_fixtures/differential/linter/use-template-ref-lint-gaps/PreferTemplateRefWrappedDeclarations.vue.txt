@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import * as Vue from 'vue'
+import { onMounted, ref, ref as vRef, type Ref } from 'vue'
+
+const a = (ref<HTMLElement | null>(null))
+const b = ref(null) as Ref<HTMLElement | null>
+const c = ref<HTMLElement | null>(null)!
+const d = vRef<HTMLElement | null>(null)
+const e = Vue.ref<HTMLElement | null>(null)
+onMounted(() => {
+  console.log(a.value, b.value, c.value, d.value, e.value)
+})
+</script>
+
+<template>
+  <div>
+    <div ref="a">a</div>
+    <div ref="b">b</div>
+    <div ref="c">c</div>
+    <div ref="d">d</div>
+    <div ref="e">e</div>
+  </div>
+</template>

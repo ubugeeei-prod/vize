@@ -108,11 +108,8 @@ try {
   });
   const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
   assert.equal(path.relative(result.installedExtensionPath, installed), "");
-  assert.equal(result.server.source, "configured");
-  assert.equal(
-    result.server.workspaceFallbackReason,
-    "Workspace servers skipped in Restricted Mode.",
-  );
+  assert.equal(result.server, null);
+  assert.equal(fs.existsSync(safeServerLog), false);
   assert.equal(fs.existsSync(forbiddenMarker), false);
   fs.writeFileSync(
     path.join(evidence, "artifact.json"),

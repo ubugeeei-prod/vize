@@ -66,3 +66,30 @@ fn script_setup_and_unimported_hooks_are_ignored() {
     let local = "<script>\nexport default {\n  async setup() {\n    await load()\n    onMounted(go)\n  },\n}\n</script>\n";
     assert!(findings(local).is_empty());
 }
+
+#[test]
+fn a_template_ref_after_await_in_setup_is_reported() {
+    let source = "<script>\nimport { defineComponent, useTemplateRef as utr } from 'vue'\nimport * as Vue from 'vue'\nexport default defineComponent({\n  async setup() {\n    const before = utr('before')\n    await load()\n    const el = utr('el')\n    const other = Vue.useTemplateRef('other')\n    return { before, el, other }\n  },\n})\n</script>\n";
+    assert_eq!(
+        findings(source),
+        ["utr('el')", "Vue.useTemplateRef('other')"]
+    );
+    let linter = Linter::new().with_enabled_rules(Some(vec![RULE.into()]));
+    let result = linter.lint_sfc(source, "Test.vue");
+    assert_eq!(
+        result.diagnostics[0].message.as_str(),
+        "`useTemplateRef()` is forbidden after an `await` expression."
+    );
+}
+
+#[test]
+fn a_template_ref_after_await_in_script_setup_is_allowed() {
+    let source = "<script setup>\nimport { useTemplateRef } from 'vue'\nawait load()\nconst el = useTemplateRef('el')\n</script>\n";
+    assert!(findings(source).is_empty());
+}
+
+#[test]
+fn a_setup_local_shadowing_the_vue_import_is_not_vue() {
+    let source = "<script>\nimport { defineComponent, onMounted, useTemplateRef as makeRef } from 'vue'\nexport default defineComponent({\n  async setup() {\n    const makeRef = (value) => value\n    await load()\n    const el = makeRef('el')\n    if (ok) { function onMounted() {} }\n    onMounted(go)\n    return { el }\n  },\n})\n</script>\n";
+    assert!(findings(source).is_empty());
+}

@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-test("staged drivers survive replacing the product checkout and refuse links outside the script tree", (t) => {
+test("staged drivers and their compiled builds survive replacing the product checkout and refuse links outside the script tree", (t) => {
   const root = mkdtempSync(join(tmpdir(), "vize-workflow-stage-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const workspace = join(root, "workspace");
@@ -33,6 +33,8 @@ test("staged drivers survive replacing the product checkout and refuse links out
       mkdirSync(directory, { recursive: true });
       writeFileSync(join(directory, "receipt.ts"), name);
     }
+    mkdirSync(join(programs.acceptance, "compiled"), { recursive: true });
+    writeFileSync(join(programs.acceptance, "compiled/receipt.sh"), "compiled acceptance");
     copyFileSync(
       new URL("../../.github/actions/stage-workflow-scripts/stage.ts", import.meta.url),
       script,
@@ -56,6 +58,8 @@ test("staged drivers survive replacing the product checkout and refuse links out
   assert.match(output, /^VIZE_CI_FILES=[^\r\n]+\n$/u);
   const directory = output.trimEnd().slice("VIZE_CI_FILES=".length);
   assert.equal(readFileSync(join(directory, "receipt.ts"), "utf8"), "acceptance");
+  // An ush program's build sits in compiled/ beside its source.
+  assert.equal(readFileSync(join(directory, "compiled/receipt.sh"), "utf8"), "compiled acceptance");
   // The staged copy keeps the repository layout, so shared programs keep their relative path.
   assert.equal(readFileSync(join(directory, "../../../lib/scripts/receipt.ts"), "utf8"), "shared");
   if (process.platform !== "win32") {

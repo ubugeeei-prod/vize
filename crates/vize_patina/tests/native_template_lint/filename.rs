@@ -1,8 +1,6 @@
 use super::support::*;
 use vize_l0::Allocator;
-use vize_patina::{
-    HelpLevel, Rule, RuleCategory, Severity, rules::vue::ComponentDefinitionNameCasing,
-};
+use vize_patina::{HelpLevel, Rule, RuleCategory, Severity, rules::vue::ComponentFileNameCasing};
 
 #[test]
 fn all_eight_original_filename_inputs_have_complete_native_public_results() {
@@ -33,7 +31,7 @@ fn all_eight_original_filename_inputs_have_complete_native_public_results() {
 
 #[test]
 fn actual_registered_metadata_and_callback_capability_are_preserved() {
-    let rule = ComponentDefinitionNameCasing;
+    let rule = ComponentFileNameCasing;
     let meta = rule.meta();
     assert_eq!(meta.name, RULE);
     assert!(matches!(meta.category, RuleCategory::StronglyRecommended));
@@ -104,6 +102,37 @@ fn invalid_casing_separator_unicode_and_digit_branches_keep_whole_diagnostics() 
                 &filename,
                 expected(
                     &filename,
+                    vec![warning(locale, HelpLevel::Full, stem, Severity::Warning)],
+                ),
+            );
+        }
+    }
+}
+
+#[test]
+fn nuxt_mode_suffixes_leave_the_component_name_on_both_paths() {
+    for locale in LOCALES {
+        let linter = configured(locale, HelpLevel::Full);
+        for filename in [
+            "components/ClientBox.client.vue",
+            "components/ServerTime.server.vue",
+            "components/GlobalThing.global.vue",
+            "components/IslandCard.island.vue",
+            "components/Counter.client.global.vue",
+        ] {
+            assert_pair(&linter, SOURCE, filename, expected(filename, vec![]));
+        }
+        for (filename, stem) in [
+            ("myComponent.client.vue", "myComponent"),
+            ("Foo.global.client.vue", "Foo.global"),
+            ("Foo.bar.vue", "Foo.bar"),
+        ] {
+            assert_pair(
+                &linter,
+                SOURCE,
+                filename,
+                expected(
+                    filename,
                     vec![warning(locale, HelpLevel::Full, stem, Severity::Warning)],
                 ),
             );

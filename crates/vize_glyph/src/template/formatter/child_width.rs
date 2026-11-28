@@ -5,6 +5,7 @@ use super::{
 };
 use crate::template::helpers::{is_whitespace, parse_closing_tag};
 use unicode_width::UnicodeWidthStr;
+use vize_l0::string_builder::TextBuf;
 
 pub(super) fn hugged_closing_name(
     source: &[u8],
@@ -150,16 +151,9 @@ impl TemplateFormatter<'_> {
     }
 
     #[inline(always)]
-    pub(super) fn hugged_inline_suffix_overflows(
-        &self,
-        output: &[u8],
-        suffix_width: usize,
-    ) -> bool {
-        let line = output
-            .rsplit(|byte| matches!(byte, b'\r' | b'\n'))
-            .next()
-            .unwrap_or_default();
-        let tabs = line.iter().filter(|&&byte| byte == b'\t').count();
+    pub(super) fn hugged_inline_suffix_overflows(&self, output: &str, suffix_width: usize) -> bool {
+        let line = super::current_line(output);
+        let tabs = line.bytes().filter(|&byte| byte == b'\t').count();
         let byte_width = line.len()
             + suffix_width
             + self.base_depth * self.options.tab_width as usize
@@ -167,7 +161,6 @@ impl TemplateFormatter<'_> {
         if byte_width <= self.options.print_width as usize && line.is_ascii() {
             return false;
         }
-        let line = core::str::from_utf8(line).unwrap_or_default();
         line.split('\t').map(str::width).sum::<usize>()
             + suffix_width
             + self.base_depth * self.options.tab_width as usize
@@ -178,7 +171,7 @@ impl TemplateFormatter<'_> {
     #[inline(always)]
     pub(super) fn write_wrapped_hugged_child(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         formatted: &str,
         start: usize,
         end: usize,
@@ -192,11 +185,10 @@ impl TemplateFormatter<'_> {
         let Some(name) = joiner.hugged_closing_name(start, end) else {
             return false;
         };
-        let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
-        let line = output.get(line_start..).unwrap_or_default();
+        let line = super::current_line(output);
         let suffix_width = name.len() + 3 + self.base_depth * self.options.tab_width as usize;
         if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
-            && memchr::memchr(b'\t', line).is_none()
+            && memchr::memchr(b'\t', line.as_bytes()).is_none()
             && !formatted.contains('\t')
         {
             return false;
@@ -210,7 +202,6 @@ impl TemplateFormatter<'_> {
                         * self.options.tab_width as usize
             }
         };
-        let line = core::str::from_utf8(line).unwrap_or_default();
         if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
             return false;
         }
@@ -223,23 +214,20 @@ impl TemplateFormatter<'_> {
             return false;
         }
         let parent_depth = depth.saturating_sub(1);
-        output.extend_from_slice(b"{{");
-        output.extend_from_slice(self.newline);
+        output.push_str("{{");
+        output.push_str(self.newline);
         let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
-        output.extend_from_slice(
-            self.render_interpolation_expr_lines(expression, parent_depth)
-                .as_bytes(),
-        );
+        output.push_str(&self.render_interpolation_expr_lines(expression, parent_depth));
         self.write_indent(output, parent_depth);
-        output.extend_from_slice(b"}}");
-        output.extend_from_slice(self.newline);
+        output.push_str("}}");
+        output.push_str(self.newline);
         true
     }
 
     #[inline(always)]
     pub(super) fn write_wrapped_text_interpolation(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         formatted: &str,
         source_range: (usize, usize),
         depth: usize,
@@ -255,14 +243,13 @@ impl TemplateFormatter<'_> {
         };
         let bytes = formatted.as_bytes();
         let hugged_name = joiner.hugged_closing_name(start, end);
-        let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
-        let line = output.get(line_start..).unwrap_or_default();
+        let line = super::current_line(output);
         let suffix_width = hugged_name.map_or(0, |name| name.len() + 3)
             + self.base_depth * self.options.tab_width as usize;
         // Without tabs, UTF-8 byte length bounds Unicode display width. Avoid
         // validation and exact width scans when even that upper bound fits.
         if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
-            && memchr::memchr(b'\t', line).is_none()
+            && memchr::memchr(b'\t', line.as_bytes()).is_none()
             && !formatted.contains('\t')
         {
             return false;
@@ -276,7 +263,6 @@ impl TemplateFormatter<'_> {
                         * self.options.tab_width as usize
             }
         };
-        let line = core::str::from_utf8(line).unwrap_or_default();
         if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
             return false;
         }
@@ -313,17 +299,14 @@ impl TemplateFormatter<'_> {
         } else {
             depth
         };
-        output.extend_from_slice(bytes.get(..first_open + 2).unwrap_or_default());
-        output.extend_from_slice(self.newline);
+        output.push_str(formatted.get(..first_open + 2).unwrap_or_default());
+        output.push_str(self.newline);
         let expression = formatted.get(expr_start..expr_end).unwrap_or_default();
-        output.extend_from_slice(
-            self.render_interpolation_expr_lines(expression, layout_depth)
-                .as_bytes(),
-        );
+        output.push_str(&self.render_interpolation_expr_lines(expression, layout_depth));
         self.write_indent(output, layout_depth);
-        output.extend_from_slice(b"}}");
-        output.extend_from_slice(bytes.get(close..).unwrap_or_default());
-        output.extend_from_slice(self.newline);
+        output.push_str("}}");
+        output.push_str(formatted.get(close..).unwrap_or_default());
+        output.push_str(self.newline);
         true
     }
 }

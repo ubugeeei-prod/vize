@@ -695,6 +695,8 @@ export interface FormatOptionsNapi {
   normalizeDirectiveShorthands?: boolean;
   /** Order SFC blocks canonically; false preserves their authored order. */
   sortBlocks?: boolean;
+  /** Write one blank line between SFC blocks, or preserve the authored spacing. */
+  blockSpacing?: "blank-line" | "preserve";
   /** Re-quote CSS, SCSS and Less strings with the singleQuote preference. */
   normalizeCssQuotes?: boolean;
   /** Normalize one-line static style attributes. */
@@ -1410,6 +1412,7 @@ export declare function resolveViteCssImports(
   aliasRules: Array<CssAliasRuleNapi>,
   isDev?: boolean | undefined | null,
   devUrlBase?: string | undefined | null,
+  readableRoots?: Array<string> | undefined | null,
 ): string;
 
 export declare function resolveViteRelativeImport(id: string, importer: string): string | null;

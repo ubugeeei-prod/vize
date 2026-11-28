@@ -1,10 +1,12 @@
 import { readToolingProgram } from "../../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { availableVueRules, resetAvailableVueRulesForTests } from "./runtime.ts";
 
@@ -82,7 +84,7 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     fs.readFileSync(path.join(catalogRoot, "package.json"), "utf8"),
     '{"name":"vize-rule-catalog","private":true}',
   );
-  assert.deepEqual(inventory(catalogRoot), { files: 2, bytes: 56 });
+  assert.deepEqual(inventory(catalogRoot), { files: 3, bytes: 67 });
   if (process.platform !== "win32") {
     assert.equal(fs.statSync(catalogRoot).mode & 0o777, 0o700);
     const catalog = fs
@@ -135,6 +137,17 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     fs.readdirSync(catalogs).some((name) => name.endsWith(".tmp")),
     false,
   );
+});
+
+void test("the installed Vite+ returns its rule catalog from a gitignored cache", () => {
+  // Vite loads this Node package in Node. Bun's test runner otherwise launches
+  // Vite+ through Bun, which takes a separate bunx/native-install path.
+  const node = process.versions.bun ? "node" : process.execPath;
+  const program = fileURLToPath(
+    new URL("../../scripts/test-programs/vite-plus-runtime/ignored-cache.ts", import.meta.url),
+  );
+  const result = spawnSync(node, [program], { encoding: "utf8", timeout: 120_000 });
+  assert.equal(result.status, 0, result.error?.message ?? result.stderr);
 });
 
 function restoreEnvironment(name: string, value: string | undefined): void {

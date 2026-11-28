@@ -147,9 +147,13 @@ fn project<'a>(
     };
     super::expression_bindings::hoist_type_imports(&mut document, script_text);
     if !component_only {
-        super::expression_bindings::bind_template_expressions_from_source(
+        super::expression_bindings::bind_template_expressions_in_scope(
             &mut document,
             descriptor.source.as_ref(),
+            super::options_prop_shape::OptionsPropScope {
+                summary: &analysis.croquis,
+                template_offset,
+            },
         );
     }
     super::relative_imports::absolutize_relative_imports(&mut document, filename);

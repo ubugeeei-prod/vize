@@ -28,6 +28,7 @@ use super::{helpers, template};
 use crate::ide::corsa_support;
 #[cfg(feature = "native")]
 use crate::ide::is_component_tag;
+use crate::ide::template_ref::keys as template_ref_keys;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::DefinitionService {
@@ -37,12 +38,13 @@ impl super::DefinitionService {
             return None;
         }
         match ctx.block_type? {
-            BlockType::Template => import_target::component_tag_definition(ctx)
+            BlockType::Template => template_ref_keys::definition(ctx)
+                .or_else(|| import_target::component_tag_definition(ctx))
                 .or_else(|| component_event::definition(ctx))
                 .or_else(|| Self::definition_in_template_sync(ctx)),
-            BlockType::Script | BlockType::ScriptSetup => {
-                module_specifier::definition(ctx).or_else(|| script::definition_in_script(ctx))
-            }
+            BlockType::Script | BlockType::ScriptSetup => template_ref_keys::definition(ctx)
+                .or_else(|| module_specifier::definition(ctx))
+                .or_else(|| script::definition_in_script(ctx)),
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
                 import_target::component_tag_definition(ctx)
@@ -153,6 +155,9 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if let Some(definition) = template_ref_keys::definition(ctx) {
+            return Some(definition);
+        }
         // A successful manual import walk is deterministic and follows barrel
         // re-exports to their source instead of returning the barrel module.
         if let Some(def) = import_target::component_tag_definition(ctx) {
@@ -310,6 +315,9 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if let Some(definition) = template_ref_keys::definition(ctx) {
+            return Some(definition);
+        }
         if module_specifier::specifier_at_offset(&ctx.content, ctx.offset).is_some() {
             if let Some(bridge) = corsa_bridge.as_ref()
                 && bridge.is_initialized()

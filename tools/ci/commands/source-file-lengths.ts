@@ -29,6 +29,7 @@ const sourceSuffixes = [
   ".scss",
   ".html",
   ".pkl",
+  ".ush",
   ".mbt",
   ".scm",
   ".lua",

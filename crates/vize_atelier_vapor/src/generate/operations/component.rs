@@ -41,7 +41,8 @@ pub(in crate::generate) fn emit_component_resolution(
         .then(|| ctx.tag_start(tag))
         .flatten();
     let mut line = EmitDocument::plain(&cstr!("const {} = _resolveComponent(\"", component_var));
-    line.push_spanned(&ctx.spanned_at(&resolution_name, source));
+    let literal_name = escape_js_string_literal(&resolution_name);
+    line.push_spanned(&ctx.spanned_at(&literal_name, source));
     line.push_str(if ctx.is_self_component_reference(tag) {
         "\", true)"
     } else {

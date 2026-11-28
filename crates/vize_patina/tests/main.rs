@@ -2,11 +2,13 @@
 
 mod attribute_hyphenation_ignore;
 mod jade_profile_lint;
+mod plain_script_rules;
 mod public_expression_reports;
 mod v_bind_prop_longform;
 mod v_for_key_capture;
 
 mod a11y_attribute_spread_labels;
+mod a11y_component_for_ids;
 mod accessible_content;
 mod aria_hidden_static_focus;
 mod art_variant_setup_bindings;

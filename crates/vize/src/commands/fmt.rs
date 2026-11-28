@@ -10,7 +10,7 @@ use vize_carton::source_io as fs;
 use vize_glyph::{Allocator, FormatOptions, FormatResult, VueVersion};
 use vize_l0::{cstr, profile, profiler::global_profiler};
 
-use super::atomic_write::atomic_write;
+use super::atomic_write::atomic_write_in_project;
 use crate::{config, profile_support};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -179,6 +179,7 @@ pub fn run(args: FmtArgs) {
     // worker-local allocator keeps formatter allocations off the global heap on
     // the common "many small SFCs" path while avoiding cross-thread sharing.
     let process_start = Instant::now();
+    crate::commands::start_worker_pool();
     files.par_iter().for_each_init(
         || Allocator::with_capacity(64 * 1024),
         |allocator, path| {
@@ -424,7 +425,7 @@ fn process_file(
             let bytes = result.code.len();
             if let Err(error) = profile!(
                 "cli.fmt.file.write",
-                atomic_write(path, result.code.as_bytes())
+                atomic_write_in_project(path, result.code.as_bytes())
             ) {
                 global_profiler().record_fs_write_failure(bytes);
                 return Err(vize_l0::cstr!("Failed to write file: {}", error).into());

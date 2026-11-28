@@ -294,12 +294,22 @@ fn extract_template_ref_value<'a>(
     None
 }
 
+/// `ref_for` written as an attribute, or as the constant-true binding JSX
+/// lowers a bare `ref_for` to.
 fn has_static_ref_for(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|prop| {
-        matches!(
-            prop,
-            PropNode::Attribute(attr) if attr.name == "ref_for"
-        )
+    el.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attr) => attr.name == "ref_for",
+        PropNode::Directive(dir) => {
+            dir.name == "bind"
+                && matches!(
+                    dir.arg.as_ref(),
+                    Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "ref_for"
+                )
+                && matches!(
+                    dir.exp.as_ref(),
+                    Some(ExpressionNode::Simple(exp)) if exp.content.trim() == "true"
+                )
+        }
     })
 }
 

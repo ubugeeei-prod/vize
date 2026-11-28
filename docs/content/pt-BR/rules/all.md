@@ -5,7 +5,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 
 # Todas as regras de lint
 
-## Regras Vue (170)
+## Regras Vue (171)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | Exige camelCase nos identificadores de expressões do template. | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Aceita comentários de controle de diagnósticos em `<template>`. | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Exigir PascalCase ou kebab-case nos nomes de definição de componentes. | `happy-path` |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | Exigir PascalCase ou kebab-case nos nomes de arquivo de componentes. | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | Aplicar um padrão específico de maiúsculas e minúsculas aos nomes de componentes nos templates. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | Prefere notação de ponto para propriedades estáticas. | — |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | Restringe blocos style aos modos permitidos. | — |  |

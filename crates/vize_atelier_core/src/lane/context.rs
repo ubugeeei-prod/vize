@@ -12,7 +12,7 @@ use crate::{
     SourceLocation, TemplateChildNode,
 };
 
-use super::{ParentNode, ReactiveSource, TransformContext};
+use super::{ReactiveSource, TransformContext};
 
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
@@ -34,9 +34,6 @@ impl<'a> TransformContext<'a> {
             in_ssr: options.ssr,
             options,
             custom_elements: Default::default(),
-            parent: None,
-            grandparent: None,
-            current_node: None,
             child_index: 0,
             helpers: crate::runtime_helpers::RuntimeHelpers::default(),
             components: std::vec::Vec::new(),
@@ -182,6 +179,7 @@ impl<'a> TransformContext<'a> {
     }
 
     /// Add a helper
+    #[inline]
     pub fn helper(&mut self, helper: RuntimeHelper) {
         self.helpers.add(helper);
     }
@@ -192,6 +190,7 @@ impl<'a> TransformContext<'a> {
     }
 
     /// Check if helper exists
+    #[inline]
     pub fn has_helper(&self, helper: RuntimeHelper) -> bool {
         self.helpers.contains(helper)
     }
@@ -315,6 +314,27 @@ impl<'a> TransformContext<'a> {
             0,
             0,
         );
+        if key_alias.is_some_and(for_bindings::is_pattern)
+            || index_alias.is_some_and(for_bindings::is_pattern)
+        {
+            self.bind_key_and_index_patterns(key_alias, index_alias);
+        }
+    }
+
+    /// A destructured key or index alias binds every name of its pattern, so
+    /// `v-model` rejects each one as a scope variable. The scope slot keeps
+    /// one name per alias; the pattern is parsed only here.
+    #[cold]
+    #[inline(never)]
+    fn bind_key_and_index_patterns(&mut self, key_alias: Option<&str>, index_alias: Option<&str>) {
+        for alias in [key_alias, index_alias].into_iter().flatten() {
+            if for_bindings::is_pattern(alias) {
+                for name in for_bindings::value_bindings(alias) {
+                    self.scope_chain
+                        .add_binding(name, ScopeBinding::new(BindingType::SetupConst, 0));
+                }
+            }
+        }
     }
 
     /// Enter a v-slot scope with the given slot params
@@ -391,51 +411,19 @@ impl<'a> TransformContext<'a> {
             .push(CompilerError::with_message(code, message, loc));
     }
 
-    /// Replace current node with a new node
-    pub fn replace_node(&mut self, new_node: TemplateChildNode<'a>) {
-        if let Some(current) = self.current_node {
-            // SAFETY: `current_node` is created from the active child slot that
-            // traversal is visiting. Replacing through that pointer avoids
-            // borrowing the parent children vector a second time while the
-            // current slot is already mutably borrowed.
-            unsafe {
-                *current = new_node;
-            }
-        }
+    /// Take the node out of `slot`, leaving an empty comment in its place
+    /// until the caller stores the node that replaces it.
+    pub fn take_node(&self, slot: &mut TemplateChildNode<'a>) -> TemplateChildNode<'a> {
+        let placeholder = TemplateChildNode::Comment(Box::new_in(
+            CommentNode::new("", SourceLocation::STUB),
+            &self.allocator,
+        ));
+        std::mem::replace(slot, placeholder)
     }
 
-    /// Take the current node, replacing it with a placeholder
-    pub fn take_current_node(&mut self) -> Option<TemplateChildNode<'a>> {
-        if let Some(current) = self.current_node {
-            let placeholder = TemplateChildNode::Comment(Box::new_in(
-                CommentNode::new("", SourceLocation::STUB),
-                &self.allocator,
-            ));
-            // SAFETY: see `replace_node`. The pointer is derived from the
-            // active traversal slot, so this replacement does not create an
-            // independent mutable borrow of the parent children vector.
-            return Some(unsafe { std::mem::replace(&mut *current, placeholder) });
-        }
-        None
-    }
-
-    /// Remove current node
+    /// Remove the node traversal is visiting once its transform returns.
     pub fn remove_node(&mut self) {
-        self.current_node = None;
         self.node_removed_from = Some(self.child_index);
-    }
-
-    /// Remove a specific node
-    pub fn remove_node_at(&mut self, index: usize) {
-        if let Some(children) = self.parent.as_ref().and_then(ParentNode::children_mut)
-            && index < children.len()
-        {
-            children.remove(index);
-            if index < self.child_index {
-                self.child_index -= 1;
-            }
-            self.node_removed_from = Some(self.child_index);
-        }
     }
 
     /// Check if node was removed

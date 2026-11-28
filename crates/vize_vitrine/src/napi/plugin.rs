@@ -58,14 +58,22 @@ pub fn resolve_vite_css_imports(
     alias_rules: Vec<CssAliasRuleNapi>,
     is_dev: Option<bool>,
     dev_url_base: Option<String>,
+    readable_roots: Option<Vec<String>>,
 ) -> String {
     let alias_rules = alias_rules.into_iter().map(Into::into).collect::<Vec<_>>();
-    vize_atelier_sfc::vite_plugin::resolve_css_imports(
+    let readable_roots = readable_roots.map(|roots| {
+        roots
+            .into_iter()
+            .map(std::path::PathBuf::from)
+            .collect::<Vec<_>>()
+    });
+    vize_atelier_sfc::vite_plugin::resolve_css_imports_in(
         &css,
         &importer,
         &alias_rules,
         is_dev.unwrap_or(false),
         dev_url_base.as_deref(),
+        readable_roots.as_deref(),
     )
     .into()
 }

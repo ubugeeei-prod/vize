@@ -32,7 +32,12 @@ export async function artifacts(api: GitHub, owner: WorkflowRun) {
       (owner.status !== "completed" || Date.parse(item.created_at) <= Date.parse(owner.updated_at)),
   );
 }
-export async function buildFromRun(api: GitHub, repositoryId: number, run: WorkflowRun) {
+export async function buildFromRun(
+  api: GitHub,
+  repositoryId: number,
+  run: WorkflowRun,
+  historical = false,
+) {
   const values = await artifacts(api, run);
   const docs = values.filter((item) => item.name === "docs");
   assert.equal(docs.length, 1, "Exactly one immutable native Docs archive");
@@ -44,6 +49,7 @@ export async function buildFromRun(api: GitHub, repositoryId: number, run: Workf
     { runId: run.id, attempt: run.run_attempt, sourceSha: run.head_sha },
     values,
     manifest,
+    { historical },
   );
 }
 async function buildFromReceipt(api: GitHub, repositoryId: number, receipt: Receipt) {
@@ -65,7 +71,7 @@ async function buildFromReceipt(api: GitHub, repositoryId: number, receipt: Rece
     },
     values,
     receipt.build.manifest,
-    false,
+    { available: false, historical: true },
   );
 }
 async function historicalArtifact(api: GitHub, identity: ArtifactIdentity): Promise<Artifact> {
@@ -151,7 +157,7 @@ export async function qualifyLegacy(
   const buildRun = await api.json<WorkflowRun>("/actions/runs/" + matches[0][1]);
   assert.equal(buildRun.run_attempt, 1, "Legacy logs do not prove a rerun attempt");
   assert.equal(buildRun.head_sha, publisher.head_sha, "Original current-main writer source");
-  const build = await buildFromRun(api, repositoryId, buildRun);
+  const build = await buildFromRun(api, repositoryId, buildRun, true);
   const pagesValues = await artifacts(api, publisher);
   const pages = pagesValues.filter((item) => item.name === "github-pages-" + publisher.run_attempt);
   assert.equal(pages.length, 1);

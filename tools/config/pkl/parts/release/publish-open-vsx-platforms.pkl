@@ -14,7 +14,6 @@ env {
   NPM_TAG = "${{ needs.version.outputs.npm_tag }}"
   VIZE_EXTENSION_TARGET = "${{ matrix.settings.target }}"
   VSIX_SOURCE_PATH = "${{ matrix.settings.sourcePath }}"
-  OVSX_PAT = "${{ secrets.OVSX_PAT }}"
   // The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
   PNPM_CONFIG_STRICT_DEP_BUILDS = "false"
   // Release 0.598.0 took over 12 min to expose every target after upload.
@@ -26,6 +25,7 @@ steps = new Listing {
   new Dynamic {
     uses = ci.setupVp
     with {
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       `run-install` = false
     }
@@ -39,6 +39,8 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Publish to Open VSX"
+    // Only this step reads the registry token.
+    env { OVSX_PAT = "${{ secrets.OVSX_PAT }}" }
     run = #"node tools/support/release/publish_open_vsx_extension/main.ts "editor-extensions/$VSIX_SOURCE_PATH""#
   }
 }

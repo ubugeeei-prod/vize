@@ -17,7 +17,7 @@ steps = new Listing {
     uses = ci.setupVp121
     with {
       `node-version-file` = "package.json"
-      version = "latest"
+      version = ci.vpVersion
       cache = true
       `cache-save` = false
       `run-install` = false

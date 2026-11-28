@@ -25,6 +25,8 @@ pub mod steps;
 )]
 mod tests;
 #[cfg(test)]
+mod tests_authored_string_literals;
+#[cfg(test)]
 mod tests_block_shapes;
 #[cfg(test)]
 mod tests_component_assets;
@@ -72,6 +74,10 @@ mod tests_static_style;
 mod tests_svg;
 #[cfg(test)]
 mod tests_template_children;
+#[cfg(test)]
+mod tests_template_refs;
+#[cfg(test)]
+mod tests_v_pre_tags;
 #[cfg(test)]
 mod tests_valueless_attr;
 

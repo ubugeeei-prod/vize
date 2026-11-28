@@ -382,8 +382,15 @@ function loadRuntimeComponents(
   return resolved;
 }
 
+function normalizedPath(filePath: string): string {
+  return filePath.replace(/\\/g, "/");
+}
+
 export function createNuxtComponentResolver(options: NuxtComponentResolverOptions) {
   const registered = new Map<string, NuxtComponentImport[]>();
+  // Files Nuxt's scan listed at some point, and the files its latest scan lists.
+  const everScannedFiles = new Set<string>();
+  let scannedFiles = new Set<string>();
   let dtsResolved: Map<string, NuxtComponentImport> | null = null;
   let runtimeResolved: Map<string, NuxtComponentImport> | null = null;
 
@@ -403,6 +410,11 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
 
   return {
     register(components: NuxtComponentDescriptor[]): void {
+      // Nuxt passes its whole component list on every scan, so a dev rescan
+      // after a component file is added, renamed or deleted replaces the list.
+      registered.clear();
+      scannedFiles = new Set(components.map((component) => normalizedPath(component.filePath)));
+      for (const file of scannedFiles) everScannedFiles.add(file);
       for (const component of components) {
         const resolved = createComponentImport(
           registeredComponentPath(component, components),
@@ -432,8 +444,12 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
         return registeredResolved;
       }
 
+      // `components.d.ts` is read once and is regenerated after a rescan, so
+      // it can still name a file a later scan no longer lists.
       const dtsResolved = getDtsResolved().get(normalizedName);
-      if (matchesBuildMode(dtsResolved, mode)) {
+      const dtsFile = dtsResolved && normalizedPath(dtsResolved.filePath);
+      const removed = !!dtsFile && everScannedFiles.has(dtsFile) && !scannedFiles.has(dtsFile);
+      if (!removed && matchesBuildMode(dtsResolved, mode)) {
         return dtsResolved;
       }
 

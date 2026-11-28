@@ -5,7 +5,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 
 # All lint rules
 
-## Vue rules (170)
+## Vue rules (171)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | Require camelCase identifiers in template expressions. | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Support comment directives in `<template>`. | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Enforce PascalCase or kebab-case for component definition names. | `happy-path` |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | Enforce PascalCase or kebab-case for component file names. | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | Enforce specific casing for component names in templates. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | Prefer dot notation in template expressions. | — |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | Enforce allowed style-block attributes. | — |  |

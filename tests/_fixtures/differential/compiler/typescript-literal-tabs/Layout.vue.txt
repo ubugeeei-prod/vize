@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const tab: string = "\t";
+const raw: string = "a	b";
+const tpl = `x	y
+	z`;
+const re = /	/;
+/* keep	a comment tab */
+function pad(): string {
+	return `
+	${tab}`;
+}
+</script>
+
+<template>
+  <p>{{ tab }}{{ raw }}{{ tpl }}{{ re }}{{ pad() }}</p>
+</template>

@@ -328,6 +328,25 @@ and a letter.
 | none         | the single-break fast path accepts exactly a break first, one break, and spaces or tabs otherwise, so it agrees with the count | —          | `glyph_line_breaks::a_single_line_break_gap_counts_one_break` over `is_single_line_break_gap`, every length        | proved |
 | none         | a byte appended to a gap adds at most one line break and removes none                                                          | —          | `glyph_line_breaks::line_breaks_grow_by_at_most_one_per_byte`                                                      | proved |
 
+## Recovery cursor window (`crates/vize_incremental/providers/graph/src/recovery/positions`)
+
+Kani file, deleted with its harness and its `ir-graph` workflow step:
+`positions/kani.rs`. Its bound was five cursors. Creusot root:
+`positions/creusot.rs`, over the contracts of the shipped
+`window::matching_positions` and `window::skip_below`. Creusot 0.14 has no
+spec for `partition_point`, so `skip_below` writes out the search
+`partition_point` runs and reads with `get_unchecked`; its loop invariant is
+the bound (see the unsafe preconditions below). The law is the window's
+declarative meaning, as the harness stated it: the window starts after
+exactly the cursors before the record and holds exactly the cursors the
+record covers, a nonempty record its half-open interval and an empty record
+the cursors at its position. It holds for every number of cursors and every
+`u32` endpoint, and for a reversed record, which covers none.
+
+| Kani harness                           | Law                                                                                                                                                                                                                       | Kani bound                       | Creusot replacement                                                                                                 | Status |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------ |
+| `window_matches_each_requested_cursor` | for sorted cursors, the window is in bounds, starts after exactly the cursors before the record, and holds exactly the cursors the record covers (a nonempty record its half-open interval, an empty record its position) | 5 cursors, whole `u32` endpoints | `recovery_positions::window_matches_each_requested_cursor` over `matching_positions` and `skip_below`, every length | proved |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
@@ -398,9 +417,10 @@ every Kani harness in the repository.
 
 These laws discharge the precondition of an `unsafe` call in shipped code. No Kani harness stated them; round 1 of the [unsafe record](./2026-11-24-unsafe-model-checking.md) could not bound them in CBMC.
 
-| Law                                                                                                              | Kernel                                        | Creusot proof                                                                                                            | Status |
-| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
-| the current scope row exists (`current < rows.len()`), so `get_unchecked` and `get_unchecked_mut` read in bounds | `crates/vize_croquis/src/scope/chain/rows.rs` | type invariant of `Rows`; `Rows::current`, `Rows::current_mut`; `the_current_row_exists_after_every_transition_sequence` | proved |
+| Law                                                                                                                                                    | Kernel                                                                     | Creusot proof                                                                                                            | Status |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
+| the current scope row exists (`current < rows.len()`), so `get_unchecked` and `get_unchecked_mut` read in bounds                                       | `crates/vize_croquis/src/scope/chain/rows.rs`                              | type invariant of `Rows`; `Rows::current`, `Rows::current_mut`; `the_current_row_exists_after_every_transition_sequence` | proved |
+| the cursor search keeps `base + size <= positions.len()` with `size >= 1` for any cursors, so both `get_unchecked` reads in `skip_below` are in bounds | `crates/vize_incremental/providers/graph/src/recovery/positions/window.rs` | loop invariant of `skip_below`; `skip_below`, `matching_positions`                                                       | proved |
 
 ## Preconditions of unsafe sites
 

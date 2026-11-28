@@ -1,6 +1,6 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
-use std::fs::{File, OpenOptions, TryLockError};
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -200,6 +200,9 @@ impl Drop for EditorStorage {
 
 #[cfg(test)]
 mod retained_tests;
+mod storage_root;
+pub(crate) use storage_root::create_user_temporary_root;
+use storage_root::sessions_base;
 
 impl Default for EditorMirrorSession {
     fn default() -> Self {
@@ -216,13 +219,6 @@ pub(crate) fn fallback_editor_session() -> &'static EditorMirrorSession {
     SESSION.with(|session| *session)
 }
 
-fn sessions_base() -> std::path::PathBuf {
-    vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
-        .join("vize-canon")
-        .join("editor")
-        .join("sessions")
-}
-
 /// True for a file in any editor session's private mirror tree. Those files
 /// are generated checker inputs, never a location an editor client can open.
 pub fn is_editor_mirror_path(path: &Path) -> bool {
@@ -232,8 +228,7 @@ pub fn is_editor_mirror_path(path: &Path) -> bool {
 }
 
 fn create_storage() -> std::io::Result<EditorStorage> {
-    let base = sessions_base();
-    std::fs::create_dir_all(&base)?;
+    let base = storage_root::create_sessions_base()?;
     // Held until the new session holds its own lifetime lock.
     let gc = GcLock::acquire(&base)?;
     gc.reap_abandoned_sessions();
@@ -256,12 +251,15 @@ fn create_storage() -> std::io::Result<EditorStorage> {
 }
 
 fn open_lock(path: &Path) -> std::io::Result<File> {
-    OpenOptions::new()
-        .create(true)
-        .read(true)
-        .truncate(false)
-        .write(true)
-        .open(path)
+    let mut options = OpenOptions::new();
+    options.create(true).read(true).truncate(false).write(true);
+    // A lock is a file of this storage, never a link out of it.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600).custom_flags(libc::O_NOFOLLOW);
+    }
+    options.open(path)
 }
 
 // A stale directory entry must never recreate a lock during owner cleanup.
@@ -301,20 +299,24 @@ impl<'base> GcLock<'base> {
                 continue;
             }
             let lock_path = path.join(".session.lock");
-            let removable = if lock_path.exists() {
-                match open_existing_session_lock(&lock_path) {
-                    Ok(lock) => match lock.try_lock() {
-                        Ok(()) => true,
-                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
-                    },
-                    Err(_) => false,
+            if lock_path.exists() {
+                if let Ok(lock) = open_existing_session_lock(&lock_path)
+                    && lock.try_lock().is_ok()
+                {
+                    self.reap_unlocked_session(&path, lock);
                 }
-            } else {
-                legacy_session_expired(&path, LEGACY_GRACE)
-            };
-            if removable {
+            } else if legacy_session_expired(&path, LEGACY_GRACE) {
                 let _ = std::fs::remove_dir_all(path);
             }
+        }
+    }
+
+    fn reap_unlocked_session(&self, path: &Path, _lifetime_lock: File) {
+        // The owner can arm retention after the sweep's first marker check,
+        // then release its lifetime lock after an incomplete native shutdown.
+        // Recheck while holding that lock before removing any generated input.
+        if !path.join(RETAINED_FAILURE).exists() {
+            let _ = std::fs::remove_dir_all(path);
         }
     }
 }

@@ -53,7 +53,7 @@
         "fixes": 0
       },
       "oracle": "crates/vize_patina/tests/snapshots/lint_history__ref-call-control.snap",
-      "oracleSha256": "812da01796e6a91b28459f73451ca66d4f6327acb82a5e7e4a22dbd78bb429d8",
+      "oracleSha256": "b2cdad3016b35594ce55184e09f1ce5d0d46a76b80f9cd22b1088e51f92ddf00",
       "nativeExpected": "typed-refusal-unprovided-call-setup"
     }
   ]

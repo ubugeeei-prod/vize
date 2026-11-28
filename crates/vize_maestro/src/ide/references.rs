@@ -49,6 +49,9 @@ impl ReferencesService {
 
     /// Find all references to the symbol at the current position.
     pub fn references(ctx: &IdeContext, include_declaration: bool) -> Option<Vec<Location>> {
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return Some(key.locations(ctx));
+        }
         if crate::ide::template_scope::needs_patterned_navigation(ctx) {
             return None;
         }
@@ -79,6 +82,16 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return Some(key.locations(ctx));
+        }
+        // Any other static attribute value names no script symbol, even when
+        // a same-spelled binding exists.
+        if ctx.is_in_template()
+            && crate::ide::corsa_support::in_static_attribute_value(&ctx.content, ctx.offset)
+        {
+            return None;
+        }
         if let Some(locations) = Self::setup_local_references(ctx, include_declaration) {
             return Some(locations);
         }

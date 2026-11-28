@@ -2,7 +2,9 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 `self-hosted-runner` {
   labels = new Listing {
+    ci.linuxSmall
     "blacksmith-8vcpu-ubuntu-2404"
+    ci.linuxValidation
     ci.macos
     ci.linux2204
     // The arm64 release rows (tools/support/github/release-platforms.ts).

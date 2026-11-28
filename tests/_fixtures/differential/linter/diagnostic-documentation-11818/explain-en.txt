@@ -1676,6 +1676,7 @@ valid:
     <p>text</p>
     <li>item</li>
     <td>cell</td>
+    <p v-t="'title'"></p>
   </template>
 
 help:
@@ -4490,15 +4491,44 @@ vue/component-definition-name-casing · lint rule
 Enforce PascalCase or kebab-case for component definition names
 
 tier: exact
-domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+domain: the syntax of <script> and <script setup> programs, without type information
 severity: warning
 category: strongly-recommended
 autofix: no
 docs: docs/content/rules/reference/vue-component-definition-name-casing.md
 
 invalid:
+  <script>
+  export default {
+    name: 'my_component'
+  }
+  </script>
+
+valid:
+  <script>
+  export default {
+    name: 'MyComponent'
+  }
+  </script>
+
+help:
+  Rename the component to '{suggestion}'.
+=== vue/component-file-name-casing
+vue/component-file-name-casing · lint rule
+Enforce PascalCase or kebab-case for component file names
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/reference/vue-component-file-name-casing.md
+
+invalid:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
   my-Component.vue     -> should be MyComponent.vue or my-component.vue
+  myComponent.client.vue
+  page.block.vue
 
 valid:
   MyComponent.vue
@@ -4506,6 +4536,9 @@ valid:
   my-component.vue
   index.vue
   App.vue
+  ClientBox.client.vue
+  ServerTime.server.vue
+  GlobalThing.global.vue
 
 help:
   Rename the file to PascalCase or kebab-case:
@@ -6563,10 +6596,12 @@ docs: docs/content/rules/reference/vue-require-component-is.md
 invalid:
   <component />
   <component></component>
+  <component is="" />
 
 valid:
   <component :is="currentComponent" />
   <component :is="'MyComponent'" />
+  <component is="MyComponent" />
 
 help:
   Why: The <component> element is a dynamic component placeholder. Without is, Vue cannot determine which component to render.

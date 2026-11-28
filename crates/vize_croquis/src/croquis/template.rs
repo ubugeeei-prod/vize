@@ -106,6 +106,12 @@ pub enum ElementIdKind {
     AriaReference,
     /// headers, list, form, popovertarget, anchor
     OtherReference,
+    /// for="..." or :for="..." on a component. The component decides what
+    /// the prop means: Quasar's `<QInput for>` renders it as its control's
+    /// `id`, a label wrapper renders it as a `for` reference. It is neither a
+    /// known definition nor a checked reference, but the ID may exist in the
+    /// rendered DOM.
+    ComponentFor,
 }
 
 impl ElementIdKind {
@@ -117,6 +123,7 @@ impl ElementIdKind {
             Self::For => "for",
             Self::AriaReference => "aria-reference",
             Self::OtherReference => "other-reference",
+            Self::ComponentFor => "component-for",
         }
     }
 
@@ -129,7 +136,13 @@ impl ElementIdKind {
     /// Check if this is an ID reference.
     #[inline]
     pub const fn is_reference(&self) -> bool {
-        !self.is_definition()
+        matches!(self, Self::For | Self::AriaReference | Self::OtherReference)
+    }
+
+    /// Check if the rendered DOM may hold an element with this ID.
+    #[inline]
+    pub const fn may_define(&self) -> bool {
+        matches!(self, Self::Id | Self::ComponentFor)
     }
 }
 
