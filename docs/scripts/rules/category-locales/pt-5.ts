@@ -174,8 +174,13 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     "`defineExpose()` roda depois de um `await` de nível superior, quando não há instância de componente atual, então nada é exposto.",
     "`defineExpose()` roda antes do primeiro `await`, enquanto a instância do componente ainda é a atual.",
   ],
+  "script/no-template-ref-outside-instance": [
+    "Proibir useTemplateRef() onde nenhuma instância de componente o executa",
+    "`focus()` só roda como handler de clique do botão, e o callback de `setTimeout` roda depois que o setup terminou. Nenhum dos dois tem uma instância de componente atual, então as refs que criam nunca são preenchidas.",
+    "`useTemplateRef('input')` roda uma única vez no setup. O handler de clique e o callback de `onMounted` apenas leem `input.value`.",
+  ],
   "script/no-lifecycle-after-await": [
-    "Proibir hooks de ciclo de vida registrados após um await em setup()",
+    "Proibir hooks de ciclo de vida e useTemplateRef() após um await em setup()",
     "`setup()` chama `onMounted()` depois de `await loadData()`; sem instância de componente atual nesse ponto, o hook nunca é registrado.",
     "`onMounted()` é registrado antes do primeiro `await`, enquanto `setup()` ainda roda de forma síncrona para o componente.",
   ],

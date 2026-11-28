@@ -19,8 +19,13 @@ export const frenchRules6 = {
     "`defineExpose()` s’exécute après un `await` de premier niveau, alors qu’aucune instance de composant n’est courante ; rien n’est donc exposé.",
     "`defineExpose()` s’exécute avant le premier `await`, tant que l’instance du composant est courante.",
   ],
+  "script/no-template-ref-outside-instance": [
+    "Interdire useTemplateRef() là où aucune instance de composant ne l’exécute",
+    "`focus()` ne s’exécute que comme gestionnaire de clic du bouton, et le callback de `setTimeout` s’exécute une fois setup terminé. Aucun des deux n’a d’instance de composant courante : les refs qu’ils créent ne sont jamais renseignées.",
+    "`useTemplateRef('input')` s’exécute une seule fois dans setup. Le gestionnaire de clic et le callback de `onMounted` se contentent de lire `input.value`.",
+  ],
   "script/no-lifecycle-after-await": [
-    "Interdire l’enregistrement de hooks de cycle de vie après un await dans setup()",
+    "Interdire les hooks de cycle de vie et useTemplateRef() après un await dans setup()",
     "`setup()` appelle `onMounted()` après `await loadData()` ; sans instance de composant courante à ce moment, le hook n’est jamais enregistré.",
     "`onMounted()` est enregistré avant le premier `await`, tant que `setup()` s’exécute de manière synchrone pour le composant.",
   ],

@@ -109,7 +109,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="vue-no-unsupported-features"></span>[`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | Interdit une syntaxe encore non prise en charge sur la version Vue.js configurée. | — |  |
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | Interdire l’enregistrement de composants inutilisés dans les templates. | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | Interdire les propriétés inutilisées définies dans defineProps. | `happy-path` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Signaler les refs de template (ref="x") jamais référencées dans &lt;script&gt;. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Signaler les refs de template (ref="x") qu’aucune liaison de script, aucun useTemplateRef() ni $refs ne lit. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | Interdire les variables, importations et paramètres de script inutilisés. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Interdire les liaisons script setup qui ne sont jamais lues. | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | Interdire les variables inutilisées définies dans les directives v-for et v-slot. | `essential` |  |
@@ -181,7 +181,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Signaler les blocs personnalisés dans les fichiers SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Signaler les directives personnalisées nécessitant un enregistrement. | `nuxt`, `opinionated` |  |
 
-## Règles de type et de script (125)
+## Règles de type et de script (126)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
@@ -214,7 +214,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="script-no-get-current-instance"></span>[`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | Interdire getCurrentInstance() en mode Vapor (renvoie null). | `opinionated` |  |
 | <span id="script-no-import-compiler-macros"></span>[`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | Interdire l’import des macros du compilateur Vue importées automatiquement. | `essential` |  |
 | <span id="script-no-internal-imports"></span>[`script/no-internal-imports`](./reference/script-no-internal-imports.md) | Interdire les imports depuis les modules internes de Vue. | `essential` |  |
-| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Interdire l’enregistrement de hooks de cycle de vie après un await dans setup(). | `essential` |  |
+| <span id="script-no-lifecycle-after-await"></span>[`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | Interdire les hooks de cycle de vie et useTemplateRef() après un await dans setup(). | `essential` |  |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | Interdire de passer plusieurs arguments à un appel de fonction de slot à portée. | `happy-path` |  |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Interdire l’utilisation de nextTick() dans les composants destinés à Vapor. | — |  |
 | <span id="script-no-options-api"></span>[`script/no-options-api`](./reference/script-no-options-api.md) | Interdire les formes de l’Options API en mode Vapor. | `opinionated` |  |
@@ -228,6 +228,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Interdire les références aux variables globales de l’environnement d’exécution qui doivent passer par une couche d’encapsulation typée. | — |  |
 | <span id="script-no-restricted-members"></span>[`script/no-restricted-members`](./reference/script-no-restricted-members.md) | Interdire les accès aux membres object.property configurés par le projet. | — |  |
 | <span id="script-no-side-effects-in-computed-properties"></span>[`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | Interdire les effets de bord dans les getters calculés de l’Options API. | `essential` |  |
+| <span id="script-no-template-ref-outside-instance"></span>[`script/no-template-ref-outside-instance`](./reference/script-no-template-ref-outside-instance.md) | Interdire useTemplateRef() là où aucune instance de composant ne l’exécute. | `essential` |  |
 | <span id="script-no-top-level-ref-in-script"></span>[`script/no-top-level-ref-in-script`](./reference/script-no-top-level-ref-in-script.md) | Interdire ref/reactive au niveau supérieur pour éviter la contamination de l’état entre requêtes. | — |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | Interdire les définitions de composants dans les fonctions setup ou de rendu. | `happy-path` |  |
 | <span id="script-no-unused-emit-declarations"></span>[`script/no-unused-emit-declarations`](./reference/script-no-unused-emit-declarations.md) | Signaler les événements déclarés qui ne sont jamais émis. | `opinionated`, `nuxt` |  |

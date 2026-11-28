@@ -1,11 +1,11 @@
 ---
 title: "script/no-lifecycle-after-await"
-description: "Disallow lifecycle hooks registered after an await in setup()."
+description: "Disallow lifecycle hooks and useTemplateRef() after an await in setup()."
 ---
 
 # `script/no-lifecycle-after-await`
 
-Disallow lifecycle hooks registered after an await in setup().
+Disallow lifecycle hooks and useTemplateRef() after an await in setup().
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |

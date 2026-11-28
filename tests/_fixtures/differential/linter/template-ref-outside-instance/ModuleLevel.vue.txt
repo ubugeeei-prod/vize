@@ -1,0 +1,13 @@
+<script lang="ts">
+import { useTemplateRef } from 'vue'
+
+export const shared = useTemplateRef<HTMLDivElement>('el')
+</script>
+
+<script setup lang="ts">
+const el = useTemplateRef<HTMLDivElement>('el')
+</script>
+
+<template>
+  <div ref="el">x</div>
+</template>

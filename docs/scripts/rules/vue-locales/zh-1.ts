@@ -100,7 +100,7 @@ export const chineseVue1: Record<string, readonly [purpose: string, bad: string,
     "模板引用了两个已声明的 props。",
   ],
   "vue/no-unused-refs": [
-    '报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）',
+    '报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板 ref（ref="x"）',
     "模板声明了名为 unused 的 ref，但脚本中没有对应的引用绑定。",
     "模板 ref inputEl 在 script setup 中具有同名的 ref 绑定。",
   ],

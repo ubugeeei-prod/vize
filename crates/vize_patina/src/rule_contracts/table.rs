@@ -50,6 +50,9 @@ const SCRIPT: Domain =
 const SCRIPT_TEMPLATE: Domain = Domain::new(
     "script bindings and the template expressions that read or reassign them; unresolved syntax is outside",
 );
+const TEMPLATE_REF_OWNERS: Domain = Domain::new(
+    "Vue's useTemplateRef calls in script blocks and modules, placed by the code that runs them: module evaluation, callbacks of timers, watch, nextTick, promise reactions and DOM listeners, and setup-local functions only those or template v-on handlers use; code whose caller the script cannot determine is outside",
+);
 const STYLE: Domain = Domain::new(
     "the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand",
 );
@@ -190,6 +193,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/no-restricted-globals", Exact, SCRIPT, Error),
     row!("script/no-restricted-members", Exact, SCRIPT, Error),
     row!("script/no-side-effects-in-computed-properties", Complete, OPTIONS, Error),
+    row!("script/no-template-ref-outside-instance", Complete, TEMPLATE_REF_OWNERS, Error),
     row!("script/no-top-level-ref-in-script", Exact, SCRIPT, Error),
     row!("script/no-unstable-nested-components", Complete, BINDINGS, Warning),
     row!("script/no-unused-emit-declarations", Complete, MACROS, Warning),

@@ -122,7 +122,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
     "自動的に使える Vue コンパイラーマクロの import を検出します。",
   "script/no-internal-imports": "Vue 内部モジュールからの import を検出します。",
   "script/no-lifecycle-after-await":
-    "setup() 内で await の後にライフサイクルフックを登録することを禁止します。",
+    "setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止します。",
   "script/no-multiple-slot-args": "scoped slot 関数に複数の引数を渡す箇所を検出します。",
   "script/no-next-tick": "Vapor 向けコンポーネントの nextTick() 使用を検出します。",
   "script/no-options-api": "Vapor で Options API を使用する箇所を検出します。",
@@ -139,6 +139,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-restricted-members": "設定で禁止した object.property へのアクセスを検出します。",
   "script/no-side-effects-in-computed-properties":
     "Options API の computed getter 内の副作用を検出します。",
+  "script/no-template-ref-outside-instance":
+    "コンポーネントのインスタンスがない場所での useTemplateRef() 呼び出しを禁止します。",
   "script/no-top-level-ref-in-script":
     "通常の script のトップレベルで、リクエスト間に共有される状態を作る箇所を検出します。",
   "script/no-unstable-nested-components":
@@ -309,7 +311,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-unsandboxed-iframe": "iframe に sandbox 属性を指定します。",
   "vue/no-unused-components": "登録しているのにテンプレートで使わないコンポーネントを検出します。",
   "vue/no-unused-properties": "defineProps に宣言しているのに使わない prop を検出します。",
-  "vue/no-unused-refs": "テンプレートに宣言しているのに参照しない ref を検出します。",
+  "vue/no-unused-refs":
+    "テンプレートに宣言しているのに、script の変数、useTemplateRef()、$refs のどれからも読まない ref を検出します。",
   "vue/no-unused-script-vars":
     "スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。",
   "vue/no-unused-setup-bindings": "script setup に宣言しているのに読み取らない変数を検出します。",

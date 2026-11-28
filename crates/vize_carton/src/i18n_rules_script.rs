@@ -162,9 +162,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/no-lifecycle-after-await.description",
-        "Disallow lifecycle hooks registered after an await in setup()",
-        "setup() 内で await の後にライフサイクルフックを登録することを禁止する",
-        "禁止在 setup() 中 await 之后注册生命周期钩子",
+        "Disallow lifecycle hooks and useTemplateRef() after an await in setup()",
+        "setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止する",
+        "禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()",
     ),
     (
         "script/no-multiple-slot-args.description",

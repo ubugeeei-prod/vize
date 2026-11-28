@@ -1,11 +1,11 @@
 ---
 title: "script/no-lifecycle-after-await"
-description: "禁止在 setup() 中 await 之后注册生命周期钩子。"
+description: "禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()。"
 ---
 
 # `script/no-lifecycle-after-await`
 
-禁止在 setup() 中 await 之后注册生命周期钩子。
+禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |

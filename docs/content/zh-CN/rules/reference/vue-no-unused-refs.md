@@ -1,11 +1,11 @@
 ---
 title: "vue/no-unused-refs"
-description: "报告从未在 &lt;script&gt; 中引用的模板 ref（ref=\"x\"）。"
+description: "报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板 ref（ref=\"x\"）。"
 ---
 
 # `vue/no-unused-refs`
 
-报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。
+报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板 ref（ref="x"）。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |

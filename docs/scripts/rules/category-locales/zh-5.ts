@@ -174,8 +174,13 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     "`defineExpose()` 在顶层 `await` 之后执行，此时没有当前组件实例，因此不会暴露任何内容。",
     "`defineExpose()` 在第一个 `await` 之前执行，此时组件实例仍是当前实例。",
   ],
+  "script/no-template-ref-outside-instance": [
+    "禁止在没有组件实例运行的位置调用 useTemplateRef()",
+    "`focus()` 只作为按钮的点击处理函数运行，`setTimeout` 的回调在 setup 返回之后才运行。两者都没有当前组件实例，因此它们创建的 ref 永远不会被设置。",
+    "`useTemplateRef('input')` 只在 setup 中调用一次。点击处理函数和 `onMounted` 回调只读取 `input.value`。",
+  ],
   "script/no-lifecycle-after-await": [
-    "禁止在 setup() 中 await 之后注册生命周期钩子",
+    "禁止在 setup() 中 await 之后注册生命周期钩子或调用 useTemplateRef()",
     "`setup()` 在 `await loadData()` 之后调用 `onMounted()`；此时没有当前组件实例，钩子不会被注册。",
     "`onMounted()` 在第一个 `await` 之前注册，此时 `setup()` 仍在为组件同步执行。",
   ],
