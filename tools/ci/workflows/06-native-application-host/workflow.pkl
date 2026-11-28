@@ -6,6 +6,13 @@ on {
   pull_request {
     paths = new Listing {
       "npm/native-host-fixture/**"
+      "npm/native/**"
+      "npm/marquette/**"
+      "crates/vize_atelier_sfc/**"
+      "crates/vize_atelier_core/**"
+      "crates/vize_atelier_dom/**"
+      "pnpm-lock.yaml"
+      "pnpm-workspace.yaml"
       "tools/ci/workflows/06-native-application-host/**"
       ".github/workflows/06-native-application-host.yml"
     }
@@ -45,6 +52,75 @@ jobs {
           name = "native-application-sdk-${{ github.sha }}"
           path = "${{ runner.temp }}/native-application-sdk.json"
           `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+  `native-application` {
+    name = "Compiled SFC native application"
+    needs = "target-sdk"
+    `runs-on` = ci.macos
+    `timeout-minutes` = 55
+    env {
+      CARGO_BUILD_JOBS = "8"
+      CARGO_INCREMENTAL = "0"
+      VIZE_NATIVE_BUILD_RECEIPT = "${{ runner.temp }}/native-first-host-compiler.json"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with { toolchain = "stable" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "native-application-host"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Install the frozen native application graph"
+        run = "node tools/support/github/vp-install.ts --filter './npm/native-host-fixture...'"
+      }
+      new Dynamic {
+        name = "Build and identify the actual source compiler"
+        run = "node npm/native-host-fixture/scripts/build-compiler.ts"
+      }
+      new Dynamic {
+        name = "Build the portable application contract"
+        run = "vp run --filter './npm/marquette' build"
+      }
+      new Dynamic {
+        name = "Check the native application adapter types"
+        run = "vp run --filter './npm/native-host-fixture' check:types"
+      }
+      new Dynamic {
+        name = "Compile canonical SFCs and verify native tree interactions"
+        run = "vp run --filter './npm/native-host-fixture' test"
+      }
+      new Dynamic {
+        name = "Verify packet admission and real simulator interactions"
+        run = "node npm/native-host-fixture/scripts/qualify-host.ts"
+      }
+      new Dynamic {
+        name = "Retain first-host qualification artifacts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-application-host-${{ github.sha }}"
+          path = """
+          ${{ runner.temp }}/native-first-host-compiler.json
+          ${{ runner.temp }}/vize-native-first-host-*/qualification.json
+          ${{ runner.temp }}/vize-native-first-host-*/*.log
+          ${{ runner.temp }}/vize-native-first-host-*/*.xcresult
+          npm/native-host-fixture/.build/application-build.json
+          npm/native-host-fixture/ios/Resources/application.js
+          """
+          `include-hidden-files` = true
+          `if-no-files-found` = "warn"
+          `compression-level` = 1
         }
       }
     }

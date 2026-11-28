@@ -1,0 +1,214 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+
+/* Begin PBXBuildFile section */
+        A40000000000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000001; };
+        A40000000000000000000002 /* NativeBridgePacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000002; };
+        A40000000000000000000003 /* NativeHostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000003; };
+        A40000000000000000000004 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000005; };
+        A40000000000000000000005 /* application.js in Resources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000006; };
+        A40000000000000000000006 /* NativeHostInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000007; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+        A60000000000000000000002 = {
+            isa = PBXContainerItemProxy;
+            containerPortal = A00000000000000000000001;
+            proxyType = 1;
+            remoteGlobalIDString = A10000000000000000000001;
+            remoteInfo = VizeNativeHostFixture;
+        };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+        A30000000000000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+        A30000000000000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeBridgePacket.swift; sourceTree = "<group>"; };
+        A30000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHostViewController.swift; sourceTree = "<group>"; };
+        A30000000000000000000004 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+        A30000000000000000000005 = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+        A30000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = application.js; sourceTree = "<group>"; };
+        A30000000000000000000007 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHostInteractionTests.swift; sourceTree = "<group>"; };
+        A30000000000000000000008 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VizeNativeHostFixture.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        A30000000000000000000009 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VizeNativeHostFixtureUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+        A50000000000000000000002 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+        A50000000000000000000005 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+        A20000000000000000000001 = {
+            isa = PBXGroup;
+            children = (A20000000000000000000002, A20000000000000000000003, A20000000000000000000004, A30000000000000000000004, A20000000000000000000005);
+            sourceTree = "<group>";
+        };
+        A20000000000000000000002 = {isa = PBXGroup; children = (A30000000000000000000001, A30000000000000000000002, A30000000000000000000003); path = Sources; sourceTree = "<group>"; };
+        A20000000000000000000003 = {isa = PBXGroup; children = (A30000000000000000000005, A30000000000000000000006); path = Resources; sourceTree = "<group>"; };
+        A20000000000000000000004 = {isa = PBXGroup; children = (A30000000000000000000007); path = UITests; sourceTree = "<group>"; };
+        A20000000000000000000005 = {isa = PBXGroup; children = (A30000000000000000000008, A30000000000000000000009); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+        A10000000000000000000001 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A70000000000000000000002;
+            buildPhases = (A50000000000000000000001, A50000000000000000000002, A50000000000000000000003);
+            buildRules = ();
+            dependencies = ();
+            name = VizeNativeHostFixture;
+            productName = VizeNativeHostFixture;
+            productReference = A30000000000000000000008;
+            productType = "com.apple.product-type.application";
+        };
+        A10000000000000000000002 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A70000000000000000000003;
+            buildPhases = (A50000000000000000000004, A50000000000000000000005, A50000000000000000000006);
+            buildRules = ();
+            dependencies = (A60000000000000000000001);
+            name = VizeNativeHostFixtureUITests;
+            productName = VizeNativeHostFixtureUITests;
+            productReference = A30000000000000000000009;
+            productType = "com.apple.product-type.bundle.ui-testing";
+        };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+        A00000000000000000000001 = {
+            isa = PBXProject;
+            attributes = {
+                BuildIndependentTargetsInParallel = YES;
+                LastSwiftUpdateCheck = 1600;
+                LastUpgradeCheck = 1600;
+                TargetAttributes = {
+                    A10000000000000000000001 = {CreatedOnToolsVersion = 16.0; };
+                    A10000000000000000000002 = {CreatedOnToolsVersion = 16.0; TestTargetID = A10000000000000000000001; };
+                };
+            };
+            buildConfigurationList = A70000000000000000000001;
+            compatibilityVersion = "Xcode 14.0";
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (en, Base);
+            mainGroup = A20000000000000000000001;
+            productRefGroup = A20000000000000000000005;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (A10000000000000000000001, A10000000000000000000002);
+        };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+        A50000000000000000000003 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000004, A40000000000000000000005); runOnlyForDeploymentPostprocessing = 0; };
+        A50000000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+        A50000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000001, A40000000000000000000002, A40000000000000000000003); runOnlyForDeploymentPostprocessing = 0; };
+        A50000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000006); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+        A60000000000000000000001 = {isa = PBXTargetDependency; target = A10000000000000000000001; targetProxy = A60000000000000000000002; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+        A80000000000000000000001 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CLANG_ENABLE_MODULES = YES;
+                DEBUG_INFORMATION_FORMAT = dwarf;
+                ENABLE_TESTABILITY = YES;
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+                ONLY_ACTIVE_ARCH = YES;
+                SDKROOT = iphoneos;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+                SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Debug;
+        };
+        A80000000000000000000002 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CLANG_ENABLE_MODULES = YES;
+                DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+                ENABLE_USER_SCRIPT_SANDBOXING = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+                SDKROOT = iphoneos;
+                SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+                SWIFT_COMPILATION_MODE = wholemodule;
+                SWIFT_OPTIMIZATION_LEVEL = "-O";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = 1;
+            };
+            name = Release;
+        };
+        A80000000000000000000003 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+                PRODUCT_BUNDLE_IDENTIFIER = dev.vize.native-host-fixture;
+                PRODUCT_MODULE_NAME = VizeNativeHostFixture;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+            };
+            name = Debug;
+        };
+        A80000000000000000000004 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+                PRODUCT_BUNDLE_IDENTIFIER = dev.vize.native-host-fixture;
+                PRODUCT_MODULE_NAME = VizeNativeHostFixture;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+            };
+            name = Release;
+        };
+        A80000000000000000000005 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = YES;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+                PRODUCT_BUNDLE_IDENTIFIER = dev.vize.native-host-fixtureUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                TEST_TARGET_NAME = VizeNativeHostFixture;
+            };
+            name = Debug;
+        };
+        A80000000000000000000006 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = YES;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+                PRODUCT_BUNDLE_IDENTIFIER = dev.vize.native-host-fixtureUITests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                TEST_TARGET_NAME = VizeNativeHostFixture;
+            };
+            name = Release;
+        };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+        A70000000000000000000001 = {isa = XCConfigurationList; buildConfigurations = (A80000000000000000000001, A80000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A70000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (A80000000000000000000003, A80000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A70000000000000000000003 = {isa = XCConfigurationList; buildConfigurations = (A80000000000000000000005, A80000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+    };
+    rootObject = A00000000000000000000001;
+}
