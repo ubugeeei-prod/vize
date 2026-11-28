@@ -66,8 +66,8 @@ fn original_js_ts_empty_default_spans_comments_directives_and_layout_stay_bound(
         }
     }
     if cfg!(target_pointer_width = "64") {
-        equal(core::mem::size_of::<vize_l2::file::ScriptUnit>(), 48)?;
-        equal(core::mem::align_of::<vize_l2::file::ScriptUnit>(), 8)?;
+        equal(core::mem::size_of::<vize_l2::ir::ScriptUnit>(), 48)?;
+        equal(core::mem::align_of::<vize_l2::ir::ScriptUnit>(), 8)?;
     }
     Ok(())
 }

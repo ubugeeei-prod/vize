@@ -3,7 +3,7 @@ use oxc_ast::ast::{Statement, TSType};
 use oxc_parser::ParseOptions;
 use oxc_span::GetSpan;
 use vize_l0::{Span, String};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::ProgramInput;
 
 #[test]
@@ -123,7 +123,7 @@ fn actual_script_definition_and_javascript_profiles_never_promote_keyword_return
         assert_eq!(file.bindings().count(), 0);
         assert_eq!(
             file.issues(),
-            &[vize_l2::file::L2IrIssue {
+            &[vize_l2::ir::L2IrIssue {
                 unit: file.units()[0].id,
                 span: Span::new(0, source.len() as u32),
                 kind: L2IrIssueKind::InvalidProfile,
@@ -138,7 +138,7 @@ fn actual_script_definition_and_javascript_profiles_never_promote_keyword_return
     assert_eq!(file.bindings().count(), 0);
     assert_eq!(
         file.issues(),
-        &[vize_l2::file::L2IrIssue {
+        &[vize_l2::ir::L2IrIssue {
             unit: file.units()[0].id,
             span: Span::new(0, ambient.len() as u32),
             kind: L2IrIssueKind::InvalidProfile,

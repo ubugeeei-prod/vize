@@ -1,6 +1,6 @@
 //! Preserve old inputs as complete neutral positives before backend qualification.
 use super::{Allocator, Lang, file};
-use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{DeclarationKind, Namespace, ReferenceTarget};
 
 #[test]
 fn all_old_checker_required_named_export_inputs_keep_complete_original_function_rows() {

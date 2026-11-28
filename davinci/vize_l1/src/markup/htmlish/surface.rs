@@ -6,7 +6,7 @@
 //! tokens, [`ElementClose::Missing`], [`SurfaceChild::Unexpected`] — are
 //! the crate-level hole policy's clauses 1 and 2 (see the crate docs).
 
-pub(crate) use tag_facts::{HeaderAnalysis, TagKindInfo};
+pub(crate) use tag_analysis::{HeaderAnalysis, TagKindInfo};
 use vize_l0::{Box, Vec};
 
 /// Whether a token's syntax is present in the source or a typed hole.
@@ -313,4 +313,4 @@ const _: () = {
     assert!(size_of::<SurfaceTree<'_>>() == 40);
 };
 
-mod tag_facts;
+mod tag_analysis;

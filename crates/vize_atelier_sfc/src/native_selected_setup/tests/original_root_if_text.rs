@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{NativeL2IrConditionalState, NativeL2IrInterpolationState},
+    ir::{NativeL2IrConditionalState, NativeL2IrInterpolationState},
     op::Op,
     resolution::Usage,
 };

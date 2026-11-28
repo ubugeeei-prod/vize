@@ -4,7 +4,7 @@
 use super::{Vue2Access, Vue2Error, Vue2ErrorKind};
 use crate::expr::{EmitError, ResolvedExpressions};
 use vize_l0::{FxHashSet, Span, String, cstr};
-use vize_l2::{artifact::L2Template, expr::ExprRef, op::Op, walk::NodeRef};
+use vize_l2::{expr::ExprRef, op::Op, template::L2Template, walk::NodeRef};
 
 pub(super) struct Names {
     pub(super) receiver: String,

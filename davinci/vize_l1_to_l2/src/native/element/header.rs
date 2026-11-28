@@ -207,8 +207,8 @@ mod tests {
     use vize_l0::{Allocator, SourceRoot, cstr};
     use vize_l1::embed::Lang;
     use vize_l1::markup::SurfaceChild;
-    use vize_l2::artifact::Builder;
     use vize_l2::op::{Namespace, Op};
+    use vize_l2::template::Builder;
 
     fn context<'component, 'a>(
         a: &'a Allocator,

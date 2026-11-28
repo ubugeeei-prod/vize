@@ -6,7 +6,7 @@
 
 use vize_l0::Span;
 
-use crate::artifact::L2TemplateParts;
+use crate::template::L2TemplateParts;
 
 /// How a component's render code runs. The execution model is semantics, not
 /// only a target: it fixes whether a value computed before the render stays

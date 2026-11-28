@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::{DeclarationKind, InitializerKind};
+use vize_l2::ir::{DeclarationKind, InitializerKind};
 
 #[test]
 fn actual_strict_binding_names_and_escaped_aliases_refuse_all_declaration_kinds()

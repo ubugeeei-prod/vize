@@ -12,8 +12,8 @@ use oxc_ast::ast::{
 };
 use oxc_span::GetSpan;
 use vize_l0::{Box, Vec};
-use vize_l2::artifact::OpFamily;
 use vize_l2::op::{Attribute, BindingContract, BindingOp, DynamicName, ModelOp};
+use vize_l2::template::OpFamily;
 
 use super::attributes::{Owner, Props};
 use super::directives::ArraySpelling;

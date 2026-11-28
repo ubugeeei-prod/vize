@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{Namespace, ReferenceTarget};
+use vize_l2::ir::{Namespace, ReferenceTarget};
 use vize_l2::lang::js::JsxL2IrProducer;
 use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind as Kind, build_jsx_decisions};
 use vize_l4::jsx::{JsxEmitErrorKind as Error, emit_js_module};

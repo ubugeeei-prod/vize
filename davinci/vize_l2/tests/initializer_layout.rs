@@ -1,7 +1,7 @@
 //! Original field types/order, independent of the new enum's unit variants.
 use vize_l0::{Span, String};
 use vize_l2::{
-    file::{Declaration, DeclarationKind, InitializerKind, Namespace, ScopeId, ScriptUnitId},
+    ir::{Declaration, DeclarationKind, InitializerKind, Namespace, ScopeId, ScriptUnitId},
     resolution::BindingId,
 };
 

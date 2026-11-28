@@ -7,7 +7,7 @@ use oxc_ast::ast::Expression;
 use vize_l0::id::NodeId;
 use vize_l2::{
     expr::JsExpr,
-    file::{DeclarationKind, Namespace},
+    ir::{DeclarationKind, Namespace},
     lang::js::NativeSelectedSetup,
     resolution::Usage,
 };

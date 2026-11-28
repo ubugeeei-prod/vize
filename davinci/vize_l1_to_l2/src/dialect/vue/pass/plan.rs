@@ -4,7 +4,7 @@
 use vize_l0::pass::{PassDesc, Pipeline};
 
 use crate::lower::LegacyCaps;
-use vize_l2::artifact::LoweringFeatures;
+use vize_l2::template::LoweringFeatures;
 
 use super::{L2_STAGE, cfg, hoist, legacy, vmodel, vslot};
 
@@ -191,7 +191,7 @@ mod tests {
     };
     use crate::lower::LegacyCaps;
     use crate::pass::{TRANSFORM, TRANSFORM_PASSES, TransformProfile, cfg, hoist, legacy, vmodel};
-    use vize_l2::artifact::{LoweringFeatures, OpFamily};
+    use vize_l2::template::{LoweringFeatures, OpFamily};
 
     /// The profile every emitter runs under: neither optional analysis.
     const EMIT: TransformProfile = TransformProfile::DEFAULT

@@ -4,9 +4,9 @@ use super::{SsrAnalysis, SsrL2IrAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
-    artifact::L2Template,
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeTemplateL2Ir, NativeTemplateView},
+    template::L2Template,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,7 +23,7 @@ pub enum SsrTemplateBuildError {
 ///
 /// A complete neutral File cannot mint original-template output authority:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l3::decision::ssr::build_template_ssr_decisions;
 /// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_ssr_decisions(l2ir); }
 /// ```
@@ -103,7 +103,7 @@ pub fn build_template_ssr_decisions<'owner, 'arena>(
     let file = view.file().ok_or(SsrTemplateBuildError::Decision(
         DecisionBuildError::IncompleteFile,
     ))?;
-    let analysis = super::file::build_original_file_decisions(file)
+    let analysis = super::l2ir::build_original_file_decisions(file)
         .map_err(SsrTemplateBuildError::Decision)?;
     Ok(TemplateSsrAnalysis { view, analysis })
 }

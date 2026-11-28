@@ -3,9 +3,9 @@
 use super::{SsrAnalysis, SsrL2IrAnalysis, SsrTemplateBuildError};
 use crate::decision::DecisionTables;
 use vize_l2::{
-    artifact::L2Template,
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeScopedTemplateView, NativeTemplateL2Ir},
+    template::L2Template,
 };
 
 /// Original style/parser/selected-File authority cannot be replaced by neutral
@@ -69,7 +69,7 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
 pub fn build_scoped_template_ssr_decisions<'owner, 'arena>(
     view: NativeScopedTemplateView<'owner, 'arena>,
 ) -> Result<TemplateScopedSsrAnalysis<'owner, 'arena>, SsrTemplateBuildError> {
-    let analysis = super::file::build_original_file_decisions(view.l2ir())
+    let analysis = super::l2ir::build_original_file_decisions(view.l2ir())
         .map_err(SsrTemplateBuildError::Decision)?;
     Ok(TemplateScopedSsrAnalysis { view, analysis })
 }

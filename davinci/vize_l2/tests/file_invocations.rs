@@ -2,7 +2,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{L2IrIssueKind, ScopeId, ScriptUnit, ScriptUnitId};
+use vize_l2::ir::{L2IrIssueKind, ScopeId, ScriptUnit, ScriptUnitId};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, L2IrProducer, ProgramInput,
     ProgramScope, StatementEvent,

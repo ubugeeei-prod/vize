@@ -15,7 +15,7 @@
 
 use vize_atelier_core::lane::ScriptTables;
 use vize_atelier_core::options::BindingMetadata;
-use vize_l4::targets::dom::artifact::{BindingTable, ReactiveRead};
+use vize_l4::targets::dom::template::{BindingTable, ReactiveRead};
 
 use crate::options::DomCompilerOptions;
 
@@ -66,7 +66,7 @@ mod tests {
     use super::{projectable, reactive_reads};
     use vize_atelier_core::lane::{ReactiveSource, ScriptTables};
     use vize_atelier_core::options::{BindingMetadata, BindingType};
-    use vize_l4::targets::dom::artifact::{BindingTable, ReactiveRead};
+    use vize_l4::targets::dom::template::{BindingTable, ReactiveRead};
 
     #[test]
     fn reactive_reads_follow_the_last_source() {

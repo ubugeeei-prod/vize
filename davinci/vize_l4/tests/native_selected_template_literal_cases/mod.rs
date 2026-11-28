@@ -4,7 +4,7 @@ use super::{check, equal};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::SurfaceChild;
 use vize_l2::{
-    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeTemplateL2Ir, op::Op,
+    expr::ExprRef, ir::NativeL2IrInterpolationState, lang::js::NativeTemplateL2Ir, op::Op,
 };
 use vize_l3::decision::template::TemplateDomAnalysis;
 use vize_l4::write::EmitDocument;

@@ -1,7 +1,7 @@
 use super::*;
 use oxc_parser::ParseOptions;
 use vize_l1::embed::Lang;
-use vize_l2::file::{DeclarationKind, InitializerKind, Namespace};
+use vize_l2::ir::{DeclarationKind, InitializerKind, Namespace};
 
 #[test]
 fn original_ts_module_primitives_keep_profile_body_source_kind_and_declaration_order()

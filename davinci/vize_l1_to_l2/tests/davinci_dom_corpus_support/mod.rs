@@ -25,7 +25,7 @@ use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options}
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::Allocator;
 use vize_l1_to_l2::LegacyCaps;
-use vize_l4::targets::dom::artifact::{
+use vize_l4::targets::dom::template::{
     DomEmitMode, DomEmitOptions, EmitError, emit_dom_source_patch_facts_observed_with_options,
 };
 

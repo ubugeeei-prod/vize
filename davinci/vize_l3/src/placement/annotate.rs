@@ -8,7 +8,7 @@
 
 use alloc::vec::Vec;
 
-use super::facts::{Index, contains};
+use super::analysis::{Index, contains};
 use super::{Placement, PlacementRecord, PlacementSet};
 use crate::op::{L3Ir, OpId, OpKind, RegionId};
 

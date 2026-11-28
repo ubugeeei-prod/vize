@@ -4,7 +4,7 @@ use super::{DomBuilder, DomExpressionAnalysis};
 use crate::decision::dom::{DomUnsupported, for_head::DomL2IrForHead, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::{BindingRef, L2Ir, ScopeId},
+    ir::{BindingRef, L2Ir, ScopeId},
     op::OriginalForOp,
     resolution::ForAliasDeclaration,
     scope::{ScopeBinding, ScopeOrigin},

@@ -1,8 +1,8 @@
 //! Original syntax and completed File facts owned with same-walk JSX structure.
 
 use super::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
-use crate::artifact::L2TemplateError;
-use crate::file::{L2Ir, RejectedL2Ir};
+use crate::ir::{L2Ir, RejectedL2Ir};
+use crate::template::L2TemplateError;
 use alloc::boxed::Box;
 use oxc_parser::ProgramObservation;
 use vize_l0::{Allocator, SourceBlock};

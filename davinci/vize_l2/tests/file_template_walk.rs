@@ -1,10 +1,10 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::artifact::{ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
-use vize_l2::file::{Declaration, L2IrIssueKind, TemplatePolicy, TemplateScope};
+use vize_l2::ir::{Declaration, L2IrIssueKind, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
+use vize_l2::template::{ComponentFactory, L2TemplateError};
 
 #[derive(Clone, Copy)]
 struct Values;

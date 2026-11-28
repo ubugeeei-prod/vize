@@ -1,6 +1,6 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
 use vize_l2::{
-    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeInterpolationInput,
+    expr::ExprRef, ir::NativeL2IrInterpolationState, lang::js::NativeInterpolationInput,
 };
 use vize_l3::decision::{
     dom::{DomChild, DomDependency, DomRootKind},

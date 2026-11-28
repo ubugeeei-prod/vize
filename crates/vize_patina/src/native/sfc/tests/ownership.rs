@@ -8,7 +8,7 @@ use crate::{
 use std::sync::atomic::{AtomicBool, Ordering};
 use vize_l0::Allocator;
 use vize_l2::{
-    file::vue::ExposureIssueKind,
+    ir::vue::ExposureIssueKind,
     lang::js::{SetupIssue, SetupIssueKind},
 };
 
@@ -115,11 +115,11 @@ fn normally_owned_program_and_file_origin_survive_owner_move_before_a_short_rebo
             1,
             "text",
             span(SOURCE, "text"),
-            vize_l2::file::DeclarationKind::Const,
-            vize_l2::file::InitializerKind::PrimitiveLiteral,
+            vize_l2::ir::DeclarationKind::Const,
+            vize_l2::ir::InitializerKind::PrimitiveLiteral,
             None,
             None,
-            vize_l2::file::Namespace::Value,
+            vize_l2::ir::Namespace::Value,
             true
         )]
     );

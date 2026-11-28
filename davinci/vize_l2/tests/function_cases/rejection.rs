@@ -2,7 +2,7 @@ use super::{finish, parse};
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, String};
-use vize_l2::file::{L2IrIssueKind, ReferenceTarget};
+use vize_l2::ir::{L2IrIssueKind, ReferenceTarget};
 use vize_l2::lang::js::ProgramInput;
 
 #[test]

@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::Span;
 use vize_l0::pass::{Remark, RemarkKind, RemarkSink, observer::RemarkArgValue};
 use vize_l1_to_l2::Lowered;
-use vize_l2::analysis::{static_facts, template, template_complexity::ComplexityAnalysis};
+use vize_l2::analysis::{static_analysis, template, template_complexity::ComplexityAnalysis};
 use vize_l2::walk::{NodeRef, PageWalk, visit_nodes};
 
 type Row = (
@@ -41,7 +41,7 @@ pub(super) fn check(lowered: &Lowered<'_>, complexity: &ComplexityAnalysis) {
     let mut shared_trace = original_trace.clone();
     let (mut original_remarks, mut shared_remarks) = (Rows::default(), Rows::default());
     let expected =
-        static_facts::run_remarked(root, total, &mut original_trace, &mut original_remarks);
+        static_analysis::run_remarked(root, total, &mut original_trace, &mut original_remarks);
     let joint = template::run(root, total, &mut shared_trace, &mut shared_remarks);
     assert_eq!(
         expected.sorted_entries(),

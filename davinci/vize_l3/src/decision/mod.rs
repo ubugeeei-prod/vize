@@ -9,7 +9,7 @@
 use alloc::vec::Vec;
 
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::artifact::L2Template;
+use vize_l2::template::L2Template;
 
 use crate::placement::Placement;
 
@@ -37,7 +37,7 @@ use policy::TargetPolicy;
 ///
 /// Arbitrary complete tables cannot claim an owner's identity:
 /// ```compile_fail,E0451
-/// use vize_l2::artifact::L2Template;
+/// use vize_l2::template::L2Template;
 /// use vize_l3::decision::{DecisionTables, DecisionAnalysis};
 /// fn forge<'o, 'a>(
 ///     artifact: &'o L2Template<'a>,
@@ -56,7 +56,7 @@ use policy::TargetPolicy;
 /// ```
 /// Unsealing the owner cannot invalidate live decisions:
 /// ```compile_fail,E0505
-/// use vize_l2::artifact::L2Template;
+/// use vize_l2::template::L2Template;
 /// use vize_l3::decision::{build_decisions, policy::TargetPolicy};
 /// fn unseal(artifact: L2Template<'_>) {
 ///     let analysis = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();

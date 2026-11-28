@@ -11,7 +11,7 @@ use vize_l0::{Allocator, SourceRoot, pass::NoRemarks};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower_source_block;
 use vize_l2::{
-    analysis::{static_facts, template, template_complexity},
+    analysis::{static_analysis, template, template_complexity},
     provenance::NoProvenance,
 };
 
@@ -49,7 +49,7 @@ fn main() {
         let count = lowered.op_count;
         let original = measure(|| {
             black_box((
-                static_facts::run(root, count, &mut NoProvenance),
+                static_analysis::run(root, count, &mut NoProvenance),
                 template_complexity::run(root, count),
             ));
         })

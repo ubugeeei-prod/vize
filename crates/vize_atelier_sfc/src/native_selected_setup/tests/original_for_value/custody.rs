@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::NativeL2IrInterpolationState;
+use vize_l2::ir::NativeL2IrInterpolationState;
 
 const SOURCE: &str = "<script setup>let count=2</script><template><i v-for='count in count'>{{count}}</i></template>";
 

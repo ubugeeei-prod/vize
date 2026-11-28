@@ -6,14 +6,14 @@
 //! borrowed handles or visitors over existing rows: no query parses, indexes
 //! or allocates, and a refusal is a typed error, never a name fallback.
 
-use crate::file::L2Ir;
+use crate::ir::L2Ir;
 
 mod position;
 mod template;
 
-pub use crate::file::BindingRef;
+pub use crate::ir::BindingRef;
 /// Vocabulary a question or an answer names: lookup namespaces and refusals.
-pub use crate::file::{L2IrIssue, L2IrIssueKind, Namespace, TemplateIssue};
+pub use crate::ir::{L2IrIssue, L2IrIssueKind, Namespace, TemplateIssue};
 pub use position::{PositionQueryError, ReferenceRef, ScopeRef};
 pub use template::{
     HandlerLocalRef, TemplateQueryError, TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
@@ -24,7 +24,7 @@ pub use template::{
 /// Handles borrow the File, not the model, so they outlive a temporary
 /// model but never the File:
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, query::Model};
+/// use vize_l2::{ir::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
 ///     let binding = Model::new(&l2ir).binding_at_offset(offset).unwrap().unwrap();
 ///     drop(l2ir);

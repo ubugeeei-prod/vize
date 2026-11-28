@@ -18,23 +18,23 @@ use crate::expr::{AccessProvider, EmitError as ExpressionError, ResolvedExpressi
 use crate::runtime::{Runtime, Vocabulary, vocabulary};
 use crate::write::{LinkSink, Writer};
 
-pub mod artifact;
 mod children;
 mod conditional;
 mod element;
 mod expression;
-mod file;
 mod for_head;
 mod handler;
+mod l2ir;
 mod model;
 mod output;
+pub mod template;
 #[cfg(test)]
 mod tests;
 mod vue;
 mod write;
 
 use expression::{BareExpressions, ExpressionWriter};
-pub use file::{emit_file, emit_template};
+pub use l2ir::{emit_file, emit_template};
 pub use output::{
     TemplateDomOutput, TemplateDomOutputError, TemplateDomOutputFailure, emit_template_output,
 };

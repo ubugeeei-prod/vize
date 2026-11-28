@@ -16,7 +16,7 @@ use vize_l2::scope::{ScopeAnalysis, ScopeTag};
 use super::super::walk::PageWalk;
 use super::spell::spelling;
 use super::{MISPLACED_MESSAGE, SlotAnalysis, SlotName, SlotParams, group};
-use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
+use vize_l2::analysis::fragment_analysis::{BranchFragments, LoopFragment};
 
 /// The pass's channels: the read-only scope table, the unified output
 /// channels, and the pass state.
@@ -257,7 +257,9 @@ fn visit<'a>(
                 },
             }
         }
-        Op::Text(text) if vize_l2::analysis::slot_facts::legacy_slot_filler_text(text.content) => {
+        Op::Text(text)
+            if vize_l2::analysis::slot_analysis::legacy_slot_filler_text(text.content) =>
+        {
             ChildView {
                 id,
                 span: text.span,

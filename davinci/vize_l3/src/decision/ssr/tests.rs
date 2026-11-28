@@ -2,10 +2,10 @@ use super::{SsrPart, SsrUnsupported, build_ssr_file_decisions};
 use crate::decision::{DecisionBuildError, build_decisions, policy::TargetPolicy};
 use vize_l0::{Allocator, Span, Vec, id::NodeId};
 use vize_l2::{
-    artifact::{Builder, ComponentFactory},
-    file::{TemplatePolicy, TemplateScope},
+    ir::{TemplatePolicy, TemplateScope},
     lang::js::L2IrProducer,
     op::Namespace,
+    template::{Builder, ComponentFactory},
 };
 
 #[test]
@@ -146,7 +146,7 @@ fn file_entry_refuses_interrupted_template_and_keeps_sole_owner() {
     #[derive(Clone, Copy)]
     struct Visible;
     impl TemplatePolicy for Visible {
-        fn visible(self, _: &vize_l2::file::Declaration) -> bool {
+        fn visible(self, _: &vize_l2::ir::Declaration) -> bool {
             false
         }
     }

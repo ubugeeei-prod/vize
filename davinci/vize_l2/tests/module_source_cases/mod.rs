@@ -1,7 +1,7 @@
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock};
-use vize_l2::file::L2Ir;
+use vize_l2::ir::L2Ir;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 mod coverage;

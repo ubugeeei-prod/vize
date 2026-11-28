@@ -6,7 +6,7 @@
 //! different access rules.
 
 use super::setup::{Bindings, SetupBinding};
-use crate::file::{ScopeId, ScriptUnit};
+use crate::ir::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 

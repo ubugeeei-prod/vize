@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::container::vue::DescriptorOptions;
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::file::vue::VueExposure;
+use vize_l2::ir::vue::VueExposure;
 use vize_l3::decision::dom::vue::build_vue_render_decisions;
 use vize_l4::{
     module::assemble_template,

@@ -10,7 +10,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]

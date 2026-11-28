@@ -1,6 +1,6 @@
 use super::{Allocator, Parser, SourceType, finish, finish_block};
 use vize_l0::{SourceRoot, cstr};
-use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{DeclarationKind, Namespace, ReferenceTarget};
 
 #[test]
 fn every_old_required_named_export_source_survives_as_complete_original_positive() {

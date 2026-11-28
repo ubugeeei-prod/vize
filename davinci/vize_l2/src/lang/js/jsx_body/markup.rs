@@ -4,8 +4,8 @@
 //! This first static HTML family grants analysis authority, not JSX module output.
 
 use super::{JsxL2Ir, JsxL2IrError, JsxL2IrProducer, RejectedJsxL2Ir};
-use crate::artifact::L2TemplateError;
-use crate::file::L2Ir;
+use crate::ir::L2Ir;
+use crate::template::L2TemplateError;
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Span, profile};
 

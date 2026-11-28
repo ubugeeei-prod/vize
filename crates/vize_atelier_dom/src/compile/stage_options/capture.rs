@@ -7,7 +7,7 @@ use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateS
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_l0::dump::capture::CaptureSink;
 use vize_l0::{Allocator, profile, profiler::active_profiler_is_enabled};
-use vize_l4::targets::dom::artifact::{DomEmitOptions, EmitError};
+use vize_l4::targets::dom::template::{DomEmitOptions, EmitError};
 
 pub(in crate::compile) struct SlotEmitPolicy {
     pub(in crate::compile) strict_slot_params: bool,
@@ -95,7 +95,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     pre_s2_walks: Option<WalkCounts>,
     policy: SlotEmitPolicy,
     capture: &mut C,
-    preflight: &mut Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
+    preflight: &mut Option<&mut dyn vize_l4::targets::dom::template::SurfacePreflight>,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let SlotEmitPolicy {
         strict_slot_params,
@@ -105,7 +105,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     if let Some(preflight) = preflight.as_deref_mut() {
         let observe = active_profiler_is_enabled();
         let observed =
-            vize_l4::targets::dom::artifact::emit_dom_source_with_preflight_environment_and_syntax(
+            vize_l4::targets::dom::template::emit_dom_source_with_preflight_environment_and_syntax(
                 allocator,
                 source,
                 super::dom_compat_caps(dialect, options.prefix_identifiers),
@@ -151,7 +151,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     let caps = super::dom_compat_caps(dialect, options.prefix_identifiers);
     let emit = if active_profiler_is_enabled() {
         let observed =
-            vize_l4::targets::dom::artifact::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
+            vize_l4::targets::dom::template::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
                 allocator,
                 source,
                 caps,
@@ -165,7 +165,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         super::record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        vize_l4::targets::dom::artifact::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
+        vize_l4::targets::dom::template::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,

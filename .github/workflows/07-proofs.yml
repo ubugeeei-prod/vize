@@ -21,8 +21,8 @@ on:
       - davinci/vize_l0/src/js_string_kani.rs
       - davinci/vize_l0/tests/emitted_string_literals.rs
       - tests/formal/string-literal/**
-      - davinci/vize_l2/src/analysis/text_facts.rs
-      - davinci/vize_l2/src/analysis/text_facts/kani.rs
+      - davinci/vize_l2/src/analysis/text_analysis.rs
+      - davinci/vize_l2/src/analysis/text_analysis/kani.rs
       - davinci/vize_l0/src/allocator.rs
       - davinci/vize_l0/src/allocator/kani.rs
       - davinci/vize_l0/src/profiler/allocation.rs

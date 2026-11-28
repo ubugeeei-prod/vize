@@ -6,8 +6,8 @@ use vize_l1::embed::prepare_attribute_value;
 use vize_l1::framework::vue::version::v2::surface::RetainedTextChildren;
 use vize_l1::markup::{Element, ElementClose};
 use vize_l2::{
-    artifact::RegionBuilder,
     op::{Attribute, Namespace},
+    template::RegionBuilder,
 };
 
 impl<'a> Context<'_, 'a> {

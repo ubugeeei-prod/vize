@@ -10,7 +10,7 @@
 //! namespace algorithm the way the shipped compiler-dom logic does.
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::artifact::OpFamily;
+use vize_l2::template::OpFamily;
 
 use vize_l0::{Box, String, Vec, cstr, is_platform_tag};
 use vize_l1::markup::Element;

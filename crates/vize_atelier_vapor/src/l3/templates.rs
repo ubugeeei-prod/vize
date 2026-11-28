@@ -5,7 +5,7 @@
 //! stay legacy.
 
 use vize_carton::{Allocator, Span};
-use vize_l2::analysis::fragment_facts::FragmentKey;
+use vize_l2::analysis::fragment_analysis::FragmentKey;
 use vize_l3::op::{L3Ir, OpId, OpKind};
 
 use super::{LegacyReason, native::validate::reference, retained::Retained};

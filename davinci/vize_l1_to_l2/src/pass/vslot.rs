@@ -96,7 +96,7 @@ mod spell;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
-use vize_l2::artifact::L2TemplateParts;
+use vize_l2::template::L2TemplateParts;
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "v-slot";
@@ -129,7 +129,7 @@ pub const RULE_DEFAULT_NAME: &str = "normalize.v-slot.default-name";
 /// The rule under which the implicit default group is invented.
 pub const RULE_IMPLICIT_DEFAULT: &str = "normalize.v-slot.implicit-default";
 
-pub use vize_l2::analysis::slot_facts::{
+pub use vize_l2::analysis::slot_analysis::{
     SlotAnalysis, SlotBound, SlotCarrier, SlotGroup, SlotName, SlotParams,
 };
 

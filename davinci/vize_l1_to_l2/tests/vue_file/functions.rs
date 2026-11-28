@@ -2,7 +2,7 @@ use super::support::{construct, script};
 use vize_l0::Allocator;
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer, VueScriptRole};
-use vize_l2::file::{DeclarationKind, Namespace};
+use vize_l2::ir::{DeclarationKind, Namespace};
 use vize_l2::lang::js::ProgramInput;
 
 #[test]

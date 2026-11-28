@@ -233,7 +233,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
     assert_eq!(
         native.holes[0].kind,
         vize_l1_to_l2::native::NativeHoleKind::Construction(
-            vize_l2::artifact::L2TemplateError::InvalidSpan {
+            vize_l2::template::L2TemplateError::InvalidSpan {
                 node: None,
                 span: expression_span,
             }
@@ -256,7 +256,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
     assert_eq!(file.template_issues()[0].span, expression_span);
     assert_eq!(
         file.template_issues()[0].kind,
-        vize_l2::file::L2IrIssueKind::UnsupportedSyntax
+        vize_l2::ir::L2IrIssueKind::UnsupportedSyntax
     );
     assert!(core::ptr::eq(
         native.component.block().root_source(),

@@ -1,0 +1,120 @@
+//! One original root input, its real Model callback and normally closed owner.
+
+use super::super::model::ObservedModel;
+use super::{NativeVisibility, header};
+use crate::ir::region::L2IrRegion;
+use crate::ir::{NativeL2IrModelKind, NativeL2IrModelState, TemplateBody, TemplateChildRegion};
+use crate::lang::js::NativeTemplateIssueKind as Kind;
+use crate::op::Namespace;
+use crate::template::RegionBuilder;
+use core::ops::DerefMut;
+use vize_l0::{Span, id::NodeId};
+use vize_l1::markup::{ElementClose, ElementView, SelectedTemplateComponent};
+
+pub(super) fn construct<'a: 'b, 'b, R>(
+    original: ElementView<'_, 'a>,
+    selected: &SelectedTemplateComponent<'a>,
+    span: Span,
+    header: header::Header<'a>,
+    observed: ObservedModel,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
+    let result = region.with_walk(span, |file| {
+        if original.parent_element().is_some()
+            || original.ordinal() != 0
+            || selected.children().len() != 1
+            || original.surface().tag() != "input"
+            || !matches!(&original.surface().close, ElementClose::NotExpected)
+            || original.children().len() != 0
+            || header.for_head.is_some()
+            || header.conditional.is_some()
+            || !header.handlers.is_empty()
+        {
+            return Err(Kind::UnsupportedChild);
+        }
+        let kind = if header.attributes.is_empty() {
+            NativeL2IrModelKind::Text
+        } else {
+            let record = file
+                .facts
+                .native_models()
+                .get(observed.index)
+                .ok_or(Kind::InvalidEvent)?;
+            let operand = record.input().operand();
+            if operand.trim_span().is_some()
+                || operand.lazy_span().is_some()
+                || operand.number_span().is_some()
+                || !file.prepared_checkbox_type(
+                    &header.values,
+                    header.attributes.as_slice(),
+                    selected,
+                    &original,
+                )
+            {
+                return Err(Kind::UnsupportedChild);
+            }
+            NativeL2IrModelKind::Checkbox
+        };
+        let header = header.resolve_handlers(file)?;
+        let mut model_result = Err(Kind::IncompleteChildren);
+        let (element, allocation) = file
+            .native_element_body(
+                original.surface().tag(),
+                Namespace::Html,
+                header.attributes,
+                span,
+                ModelBody {
+                    index: observed.index,
+                    kind,
+                    result: &mut model_result,
+                },
+            )
+            .map_err(Kind::Artifact)?;
+        let model = model_result?;
+        let pointer = allocation.pointer();
+        file.attach_attribute_values(header.values, element, allocation)?;
+        let record = file
+            .facts
+            .native_models_mut()
+            .get_mut(observed.index)
+            .ok_or(Kind::InvalidEvent)?;
+        record.element = Some((element, pointer));
+        record.kind = Some(kind);
+        record.state = NativeL2IrModelState::Admitted(model);
+        #[cfg(test)]
+        super::super::model::tests::after_close();
+        Ok(element)
+    });
+    if let Err(kind) = result {
+        region
+            .facts
+            .native_models_mut()
+            .get_mut(observed.index)
+            .ok_or(Kind::InvalidEvent)?
+            .state = NativeL2IrModelState::Refused(kind);
+    }
+    result
+}
+
+struct ModelBody<'result> {
+    index: usize,
+    kind: NativeL2IrModelKind,
+    result: &'result mut Result<NodeId, Kind>,
+}
+
+impl<'a> TemplateBody<'a, NativeVisibility> for ModelBody<'_> {
+    fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, NativeVisibility>, _: NodeId)
+    where
+        'a: 'b,
+        'b: 'r,
+    {
+        *self.result = region.inner.attach_model(self.index, self.kind);
+        #[cfg(test)]
+        if self.result.is_ok() {
+            super::super::model::tests::after_body();
+        }
+    }
+}

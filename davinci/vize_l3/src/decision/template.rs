@@ -10,9 +10,9 @@ use super::{
 };
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::L2Template,
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeTemplateL2Ir, NativeTemplateView},
+    template::L2Template,
 };
 
 /// Decisions retain the moved, non-cloneable lower completion view.
@@ -53,7 +53,7 @@ use vize_l2::{
 /// ```
 /// A complete neutral File is not a template completion capability:
 /// ```compile_fail
-/// use vize_l2::file::L2Ir;
+/// use vize_l2::ir::L2Ir;
 /// use vize_l3::decision::template::build_template_dom_decisions;
 /// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_dom_decisions(l2ir); }
 /// ```
@@ -134,7 +134,7 @@ pub fn build_template_dom_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
 ) -> Result<TemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    let analysis = super::dom::file::build_original_file_decisions(file)?;
+    let analysis = super::dom::l2ir::build_original_file_decisions(file)?;
     Ok(TemplateDomAnalysis { view, analysis })
 }
 

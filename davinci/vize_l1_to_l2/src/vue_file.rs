@@ -2,9 +2,9 @@
 
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, Span};
-use vize_l2::artifact::L2TemplateError;
-use vize_l2::file::{BindingRef, L2Ir, RejectedL2Ir, ScriptUnitId};
+use vize_l2::ir::{BindingRef, L2Ir, RejectedL2Ir, ScriptUnitId};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
+use vize_l2::template::L2TemplateError;
 
 mod ordinary;
 mod policy;
@@ -128,9 +128,9 @@ impl<'a> VueL2IrProducer<'a> {
         self.template_started = true;
         let policy = Visibility::new(self.ordinary, self.setup);
         let selection = if self.setup.is_some() {
-            vize_l2::file::TemplateScope::LastUnit
+            vize_l2::ir::TemplateScope::LastUnit
         } else {
-            vize_l2::file::TemplateScope::Root
+            vize_l2::ir::TemplateScope::Root
         };
         match self.producer.template_region(selection, policy) {
             Ok(region) => Ok(VueL2IrRegion::new(region, profile)),

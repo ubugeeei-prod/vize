@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l2::{
-    file::L2IrIssueKind,
+    ir::L2IrIssueKind,
     query::{Model, PositionQueryError},
     resolution::Usage,
 };

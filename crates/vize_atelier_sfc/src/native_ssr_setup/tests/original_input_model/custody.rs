@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeL2IrModelState},
+    ir::{DeclarationKind, InitializerKind, Namespace, NativeL2IrModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };

@@ -3,7 +3,7 @@
 use super::{DomError, DomErrorKind};
 use crate::write::{LinkSink, Writer};
 use vize_l0::{Span, id::NodeId};
-use vize_l2::{file::L2Ir, op::OnOp};
+use vize_l2::{ir::L2Ir, op::OnOp};
 use vize_l3::decision::dom::{DomAnalysis, PropertyRole};
 
 pub(super) fn write<L: LinkSink>(

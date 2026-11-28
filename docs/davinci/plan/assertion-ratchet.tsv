@@ -447,6 +447,6 @@ davinci/vize_l1_to_l2/src/native/pattern/tests.rs	4
 davinci/vize_l4/src/module/runtime_tests.rs	3
 davinci/vize_l4/src/module/tests.rs	7
 davinci/vize_l4/src/runtime/tests.rs	2
-davinci/vize_l4/src/targets/dom/artifact/patch/tests.rs	1
-davinci/vize_l4/src/targets/dom/artifact/prefix/shorthand_scope.rs	3
+davinci/vize_l4/src/targets/dom/template/patch/tests.rs	1
+davinci/vize_l4/src/targets/dom/template/prefix/shorthand_scope.rs	3
 davinci/vize_l4/src/targets/dom/tests.rs	2

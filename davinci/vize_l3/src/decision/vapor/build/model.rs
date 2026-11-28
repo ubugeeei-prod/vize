@@ -4,7 +4,7 @@ use super::VaporBuilder;
 use crate::decision::vapor::{VaporPart, VaporUnsupported, model};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::NativeL2IrModelState,
+    ir::NativeL2IrModelState,
     op::{BindingOp, ElementOp, ModelOp},
 };
 

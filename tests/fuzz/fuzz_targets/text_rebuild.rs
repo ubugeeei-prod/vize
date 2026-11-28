@@ -1,6 +1,6 @@
 #![no_main]
 
-// Differential target for `vize_l2::analysis::text_facts::rebuild_source`,
+// Differential target for `vize_l2::analysis::text_analysis::rebuild_source`,
 // which copies the parts into the string's spare capacity under `unsafe`.
 // The input is split on `\n` into parts; a part's first byte picks its kind
 // (`$` dynamic, `!` raw-HTML dynamic, otherwise static) and the rest is its
@@ -11,7 +11,7 @@
 // fixtures by `tools/ci/commands/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_l0::{Span, String};
-use vize_l2::analysis::text_facts::{TextPart, rebuild_source};
+use vize_l2::analysis::text_analysis::{TextPart, rebuild_source};
 
 fn oracle(parts: &[TextPart]) -> String {
     let mut out = String::default();

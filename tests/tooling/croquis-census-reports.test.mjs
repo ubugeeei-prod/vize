@@ -20,7 +20,7 @@ function analysis(grep, resolved = 0, nonProduct = 0) {
     crate: "vize_l2",
     product,
     sites,
-    files: new Set(["davinci/vize_l2/src/file.rs"]),
+    files: new Set(["davinci/vize_l2/src/ir.rs"]),
   });
   return {
     rows: new Map(resolved ? [["resolved", row("Span", resolved)]] : []),

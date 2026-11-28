@@ -90,8 +90,8 @@ test("dialect modules, test code and module declarations are exempt; code is not
   assert.equal(isCoreFile("vize_l3/src/dialect/vue2.rs"), false);
   assert.equal(isCoreFile("vize_l4/src/targets/vue2/emit.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/decision/tests.rs"), false);
-  assert.equal(isCoreFile("vize_l2/src/file/region/native/for_tests.rs"), false);
-  assert.equal(isCoreFile("vize_l2/src/file/tests/scope.rs"), false);
+  assert.equal(isCoreFile("vize_l2/src/ir/region/native/for_tests.rs"), false);
+  assert.equal(isCoreFile("vize_l2/src/ir/tests/scope.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/decision.rs"), true);
   assert.equal(isCoreFile("vize_l4/src/targets/ts/vue.rs"), true);
   assert.equal(referencesDialect("pub mod dialect;\nmod lang;\n"), false);
@@ -163,7 +163,7 @@ test("each level has one registry and policy consumers do not rematch variants",
     "vize_l1/src/container/vue/descriptor/vue1/view.rs",
     "vize_l1/src/container/vue/descriptor/vue2/view.rs",
     "vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
-    "vize_l2/src/lang/js/file/native/scoped.rs",
+    "vize_l2/src/lang/js/ir/native/scoped.rs",
     "vize_l4/src/framework/vue.rs",
   ];
   for (const relative of consumers) {

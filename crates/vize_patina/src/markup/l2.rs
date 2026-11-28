@@ -104,7 +104,7 @@ impl<'a> L2Markup<'a> {
     /// View a sealed L2 artifact of markup embedded in a script module (a
     /// TSRX region). Like a JSX root it has no L1 surface; spans address the
     /// whole module source.
-    pub fn from_artifact(artifact: &'a vize_l2::artifact::L2Template<'a>) -> Self {
+    pub fn from_artifact(artifact: &'a vize_l2::template::L2Template<'a>) -> Self {
         Self {
             root: artifact.root(),
             source: artifact.source(),
@@ -144,7 +144,7 @@ impl<'a> L2Markup<'a> {
     pub(super) fn static_part_text(&self, text: &'a str) -> &'a str {
         match self.allocator {
             Some(allocator) if text.contains('&') => allocator
-                .alloc_str(vize_l4::targets::dom::artifact::decode_html_entities(text).as_str()),
+                .alloc_str(vize_l4::targets::dom::template::decode_html_entities(text).as_str()),
             _ => text,
         }
     }
@@ -154,7 +154,7 @@ impl<'a> L2Markup<'a> {
     pub(super) fn decode_attribute(&self, value: &'a str) -> &'a str {
         match self.allocator {
             Some(allocator) if value.contains('&') => allocator.alloc_str(
-                vize_l4::targets::dom::artifact::decode_html_attribute_entities(value).as_str(),
+                vize_l4::targets::dom::template::decode_html_attribute_entities(value).as_str(),
             ),
             _ => value,
         }

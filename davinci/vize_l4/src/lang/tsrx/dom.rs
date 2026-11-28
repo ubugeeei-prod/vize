@@ -21,7 +21,7 @@ use super::component::{self, Component, Form};
 use super::names::{Names, Use};
 use super::props::{Options, Props};
 use super::{EmitIssue, Failure};
-use crate::targets::dom::artifact::{
+use crate::targets::dom::template::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, RuntimeHelpers, emit_dom_with_options,
 };
 

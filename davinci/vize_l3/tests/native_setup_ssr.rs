@@ -4,7 +4,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
-use vize_l2::{file::DeclarationKind, resolution::Usage};
+use vize_l2::{ir::DeclarationKind, resolution::Usage};
 use vize_l3::decision::ssr::{
     SsrPart, SsrSetupReadKind, SsrUnsupported, build_selected_setup_ssr_decisions,
 };

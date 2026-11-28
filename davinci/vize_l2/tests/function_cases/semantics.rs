@@ -2,7 +2,7 @@ use super::{finish, finish_block, parse};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{DeclarationKind, Namespace, ReferenceTarget};
 
 #[test]
 fn authentic_function_scope_resolves_parameters_forward_closures_and_recursion_once() {

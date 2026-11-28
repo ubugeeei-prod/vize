@@ -20,7 +20,7 @@ use super::{
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::{artifact::L2Template, file::L2Ir, lang::js::NativeSelectedSetup};
+use vize_l2::{ir::L2Ir, lang::js::NativeSelectedSetup, template::L2Template};
 
 /// Compute conservative shared facts for every canonical L2 node.
 ///

@@ -9,12 +9,12 @@
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Box, Vec};
-use vize_l2::artifact::{LoweringFeatures, OpFamily};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     Attribute, BindOp, BindingOp, DynamicName, InterpolationOp, OnOp, Op, Region, TextOp,
 };
 use vize_l2::scope::{ScopeAnalysis, ScopeTag};
+use vize_l2::template::{LoweringFeatures, OpFamily};
 use vize_relief::{ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 use crate::Lowerer;

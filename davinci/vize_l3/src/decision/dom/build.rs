@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
     expr::ExprRef,
-    file::L2Ir,
+    ir::L2Ir,
     op::{Namespace, Op},
     walk::NodeRef,
 };
@@ -18,9 +18,9 @@ use vize_l2::{
 mod binding;
 mod control;
 mod dependencies;
-mod file;
 mod for_head;
 mod handler;
+mod l2ir;
 mod model;
 use super::vue::policy::FileReads;
 

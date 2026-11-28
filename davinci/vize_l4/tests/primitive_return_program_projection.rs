@@ -10,7 +10,7 @@ use vize_l1::embed::{
 };
 use vize_l2::query::Model;
 use vize_l2::{
-    file::{DeclarationKind, Namespace},
+    ir::{DeclarationKind, Namespace},
     lang::js::{JsxL2IrProducer, L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l4::targets::ts::{

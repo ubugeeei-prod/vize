@@ -16,7 +16,7 @@ use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::lower_preserving_comments;
-use vize_l2::analysis::text_facts::TextParts;
+use vize_l2::analysis::text_analysis::TextParts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
 use vize_l2::expr::ExprRef;
 

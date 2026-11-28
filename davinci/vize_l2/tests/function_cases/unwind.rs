@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{DeclarationKind, L2IrIssueKind, ScopeId, ScriptUnit};
+use vize_l2::ir::{DeclarationKind, L2IrIssueKind, ScopeId, ScriptUnit};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
     StatementEvent,

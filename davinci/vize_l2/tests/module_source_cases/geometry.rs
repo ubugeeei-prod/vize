@@ -2,7 +2,7 @@ use super::{lower, moved, observe};
 use oxc_ast::ast::{Statement, StringLiteral};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::Namespace;
+use vize_l2::ir::Namespace;
 use vize_l2::lang::js::{ModuleSourceKind, ProgramInput};
 
 #[test]

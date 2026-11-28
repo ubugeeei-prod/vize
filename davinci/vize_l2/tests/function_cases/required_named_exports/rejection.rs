@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::query::{Model, PositionQueryError};
 
 #[test]

@@ -1,7 +1,7 @@
 //! Only the named exact original class header becomes normally complete.
 use super::{Allocator, check, equal, owner};
 use vize_l0::Span;
-use vize_l2::{file::NativeL2IrAttributeValueState, op::Op};
+use vize_l2::{ir::NativeL2IrAttributeValueState, op::Op};
 
 pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'static str> {
     equal(

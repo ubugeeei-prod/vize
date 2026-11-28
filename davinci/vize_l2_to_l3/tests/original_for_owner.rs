@@ -22,7 +22,7 @@ use vize_l1::{
 };
 use vize_l2::{
     dump::{Op as DumpOp, Page},
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::{Op, OriginalForOp},
 };

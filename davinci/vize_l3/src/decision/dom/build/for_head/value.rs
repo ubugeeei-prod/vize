@@ -4,7 +4,7 @@ use super::super::{DomBuilder, DomExpressionAnalysis};
 use crate::decision::dom::vue::{VueReadKind, policy::FileReads};
 use vize_l2::{
     expr::JsExpr,
-    file::{BindingRef, L2IrResolution},
+    ir::{BindingRef, L2IrResolution},
     op::Op,
     resolution::{ForAliasRole, Occurrence, Usage},
 };
@@ -36,7 +36,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
             return None;
         };
         if !core::ptr::eq(original_occurrence, occurrence)
-            || !crate::decision::dom::file::matches_expression(resolution, expression)
+            || !crate::decision::dom::l2ir::matches_expression(resolution, expression)
         {
             return None;
         }
@@ -107,7 +107,7 @@ mod tests {
     };
     use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
     use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
-    use vize_l2::{file::DeclarationKind, lang::js::NativeSelectedSetup};
+    use vize_l2::{ir::DeclarationKind, lang::js::NativeSelectedSetup};
 
     struct Reads<'v, 'o, 'a>(&'v NativeSelectedSetup<'o, 'a>);
     impl<'o, 'a> FileReads<'o, 'a> for Reads<'_, 'o, 'a> {
@@ -171,7 +171,7 @@ mod tests {
         let [record] = file.native_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::ir::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let resolution = file.expression(node).unwrap();
@@ -279,7 +279,7 @@ mod tests {
         let [record] = file.native_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::ir::NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let head = file.for_head_for(original).unwrap();

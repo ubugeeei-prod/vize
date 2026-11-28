@@ -1,13 +1,13 @@
 //! Whole original handler facts joined at the actual canonical On event.
 
-use vize_l2::{file::L2IrHandler, op::OnOp, resolution::HandlerResolution};
+use vize_l2::{ir::L2IrHandler, op::OnOp, resolution::HandlerResolution};
 
 /// A private same-File, same-allocation join, never a numeric lookup receipt.
 /// This retains complete handler facts; it does not classify Vue handler
 /// reference versus inline syntax or authorize runtime spelling.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::L2IrHandler, op::OnOp};
+/// use vize_l2::{ir::L2IrHandler, op::OnOp};
 /// use vize_l3::decision::dom::DomL2IrHandler;
 /// fn forge<'f,'a>(handler: L2IrHandler<'f,'a>, on: &'f OnOp<'a>) {
 ///     let _ = DomL2IrHandler { handler, on };

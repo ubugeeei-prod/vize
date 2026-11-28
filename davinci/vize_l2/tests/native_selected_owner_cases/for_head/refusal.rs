@@ -1,7 +1,7 @@
 use super::*;
 use vize_l1::embed::syntax::{ForHeadPart, ForRefusal};
 use vize_l2::{
-    file::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
+    ir::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
     resolution::{ForResolutionErrorKind, ResolutionErrorKind},
 };
 

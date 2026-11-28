@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::file::{DeclarationKind, InitializerKind, L2IrIssueKind, Namespace};
+use vize_l2::ir::{DeclarationKind, InitializerKind, L2IrIssueKind, Namespace};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]

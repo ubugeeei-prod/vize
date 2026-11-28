@@ -70,7 +70,7 @@ fn attribute(attr: &Attribute<'_>) -> WireAttribute {
     WireAttribute {
         name: attr.name.to_owned(),
         value: attr.value.map(|value| {
-            vize_l4::targets::dom::artifact::decode_html_attribute_entities(value).to_string()
+            vize_l4::targets::dom::template::decode_html_attribute_entities(value).to_string()
         }),
     }
 }

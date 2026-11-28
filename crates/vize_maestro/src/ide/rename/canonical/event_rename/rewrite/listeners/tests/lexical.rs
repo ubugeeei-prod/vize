@@ -1,7 +1,7 @@
 //! Exercise the same public rename path on files whose handlers are lexical closures.
 use super::*;
 use vize_l1_to_l2::native_file::lower_sfc_with_lexical_initializers;
-use vize_l2::file::{DeclarationKind, InitializerKind};
+use vize_l2::ir::{DeclarationKind, InitializerKind};
 
 #[test]
 #[ignore = "complete edits and resident per-file measurements on original Vue callers"]

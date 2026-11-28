@@ -35,11 +35,11 @@ use vize_l0::dialect::JsxSemantics;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
-use vize_l2::artifact::{L2TemplateParts, LoweringFeatures, OpFamily};
 use vize_l2::component::{ComponentDef, Exec, RenderScope};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Region;
 use vize_l2::scope::{ScopeAnalysis, ScopeTag};
+use vize_l2::template::{L2TemplateParts, LoweringFeatures, OpFamily};
 
 /// How deeply a dialect interprets JavaScript around JSX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

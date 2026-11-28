@@ -141,7 +141,7 @@ fn refusal_at_the_last_header_never_mints_that_element_or_body() -> Result<(), &
                 let Kind::Handler { span, kind } = refusal.kind else {
                     return Err("precise event refusal");
                 };
-                equal(kind, vize_l2::file::L2IrIssueKind::UnresolvedReference)?;
+                equal(kind, vize_l2::ir::L2IrIssueKind::UnresolvedReference)?;
                 equal(span.slice(&source), "handler")?;
                 equal(refusal.span, span)?;
             } else {

@@ -135,9 +135,9 @@ mod tests {
     use alloc::vec::Vec as Owned;
     use vize_l0::{Allocator, Box, Span, Vec, id::NodeId};
     use vize_l2::{
-        artifact::{L2Template, L2TemplateParts},
         expr::{ExprRef, JsExpr},
         op::{ElementOp, IfBranch, IfOp, Namespace, Op, Region},
+        template::{L2Template, L2TemplateParts},
         walk::{NodeEvent, NodeRef},
     };
 

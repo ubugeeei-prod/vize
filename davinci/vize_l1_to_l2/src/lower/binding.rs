@@ -19,7 +19,7 @@
 //! DOM realization (P2-11).
 
 use alloc::vec::Vec as StdVec;
-use vize_l2::artifact::OpFamily;
+use vize_l2::template::OpFamily;
 
 use vize_l0::{Box, Span, String, Vec, cstr};
 

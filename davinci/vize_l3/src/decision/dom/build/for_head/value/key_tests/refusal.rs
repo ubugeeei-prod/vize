@@ -87,7 +87,7 @@ fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_earliest_original_r
             .or_else(|| owner.rejected_file().map(|file| file.rejected_for_heads()))
             .unwrap();
         let operand = match (rejected, syntax_refusal) {
-            ([vize_l2::file::RejectedL2IrFor::Syntax(input)], Some(expected)) => {
+            ([vize_l2::ir::RejectedL2IrFor::Syntax(input)], Some(expected)) => {
                 assert_eq!(input.kind, expected, "{aliases}");
                 assert_eq!(input.span, input.operand().value_span());
                 assert_eq!(input.operand().syntax().for_refusal(), Some(expected));
@@ -95,7 +95,7 @@ fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_earliest_original_r
                 assert!(input.operand().syntax().collection().unwrap().is_ok());
                 input.operand()
             }
-            ([vize_l2::file::RejectedL2IrFor::Resolution { input, error }], None) => {
+            ([vize_l2::ir::RejectedL2IrFor::Resolution { input, error }], None) => {
                 assert_eq!(error.part, vize_l1::embed::syntax::ForHeadPart::Aliases);
                 assert_eq!(
                     error.kind,

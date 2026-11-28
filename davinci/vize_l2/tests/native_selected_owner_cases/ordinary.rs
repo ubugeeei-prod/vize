@@ -1,6 +1,6 @@
 use super::{Allocator, Kind, check, descriptor, equal, kind, owner, syntax};
 use vize_l1::markup::TemplateGrammar;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 
 #[test]
 fn original_empty_default_js_and_ts_reach_the_selected_template_with_zero_bindings()

@@ -248,12 +248,12 @@ fn scripts_require_the_exact_descriptor_role_original_source_and_language() {
     let other = Parsed::new(&arena, &copy).unwrap();
     let foreign = other.setup.as_ref().unwrap().admitted_program().unwrap();
     assert!(
-        matches!(VueL2IrProducer::scripts(&arena, view, None, Some(foreign), ALL), Err(VueProgramError::Program(e)) if e.kind == crate::file::L2IrIssueKind::InvalidSource)
+        matches!(VueL2IrProducer::scripts(&arena, view, None, Some(foreign), ALL), Err(VueProgramError::Program(e)) if e.kind == crate::ir::L2IrIssueKind::InvalidSource)
     );
     let wrong = oxc_parser::Parser::new(&arena, setup().source(), oxc_span::SourceType::mjs())
         .parse_observed();
     assert!(
-        matches!(VueL2IrProducer::scripts(&arena, view, None, wrong.admitted(), ALL), Err(VueProgramError::Program(e)) if e.kind == crate::file::L2IrIssueKind::InvalidProfile)
+        matches!(VueL2IrProducer::scripts(&arena, view, None, wrong.admitted(), ALL), Err(VueProgramError::Program(e)) if e.kind == crate::ir::L2IrIssueKind::InvalidProfile)
     );
 }
 
@@ -285,7 +285,7 @@ fn a_refused_destructure_does_not_publish_partial_contracts() {
             .l2ir()
             .issues()
             .iter()
-            .any(|issue| issue.kind == crate::file::L2IrIssueKind::UnsupportedSyntax)
+            .any(|issue| issue.kind == crate::ir::L2IrIssueKind::UnsupportedSyntax)
     );
     assert_eq!(owner.model().contract(), Err(VueQueryError::IncompleteFile));
 }

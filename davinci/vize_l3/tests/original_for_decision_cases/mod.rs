@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::{file::Namespace, op::BindingOp, resolution::HandlerBindingRef};
+use vize_l2::{ir::Namespace, op::BindingOp, resolution::HandlerBindingRef};
 use vize_l3::decision::DecisionBuildError;
 
 #[test]

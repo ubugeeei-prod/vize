@@ -6,7 +6,7 @@ use super::{finish, finish_block};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, cstr};
-use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{DeclarationKind, Namespace, ReferenceTarget};
 use vize_l2::lang::js::JsxL2IrProducer;
 use vize_l2::query::Model;
 

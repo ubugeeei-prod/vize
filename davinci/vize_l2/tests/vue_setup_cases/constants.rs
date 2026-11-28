@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::{DeclarationKind, InitializerKind};
+use vize_l2::ir::{DeclarationKind, InitializerKind};
 
 #[test]
 fn genuine_const_primitives_keep_original_declaration_kinds_and_order() -> Result<(), String> {

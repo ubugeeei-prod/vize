@@ -6,7 +6,7 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as Lower;
 use vize_l2::{
-    file::{L2IrIssueKind, RejectedL2IrHandler},
+    ir::{L2IrIssueKind, RejectedL2IrHandler},
     lang::js::{NativeSetupIssueKind, NativeTemplateIssueKind as Template},
     op::Op,
 };

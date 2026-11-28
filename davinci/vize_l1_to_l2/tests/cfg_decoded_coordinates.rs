@@ -6,9 +6,9 @@ use vize_l1_to_l2::{lower_source_block, native::NativeComponent};
 use vize_l2::analysis::template_complexity::{
     self, ComplexityAnalysis, Contribution, DecisionKind,
 };
-use vize_l2::artifact::Builder;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
+use vize_l2::template::Builder;
 
 fn span(source: &str, text: &str) -> Span {
     let start = source.find(text).unwrap() as u32;

@@ -18,7 +18,7 @@ use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options};
 use vize_l0::Allocator;
 use vize_l1_to_l2::LegacyCaps;
-use vize_l4::targets::dom::artifact::{
+use vize_l4::targets::dom::template::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, EmitError, UnsupportedReason as Reason,
     emit_dom_source_with_options,
 };

@@ -8,8 +8,8 @@ use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, Span, diag::Diagnostic};
 use vize_l1::embed::{Lang, SourceError, syntax::EmbedSyntax};
 use vize_l1::markup::{ComponentParse, ComponentSourceError};
-use vize_l2::artifact::ComponentFactory;
 use vize_l2::op::Namespace;
+use vize_l2::template::ComponentFactory;
 
 /// A native parser's complete carrier paired with its exact checked source.
 /// Private fields prevent pairing a foreign or modified carrier with a block.

@@ -13,7 +13,7 @@ use vize_l1::{
     },
     markup::SurfaceParseOptions,
 };
-use vize_l2::file::{
+use vize_l2::ir::{
     L2Ir,
     vue::{ExposureIssue, VueExposure},
 };

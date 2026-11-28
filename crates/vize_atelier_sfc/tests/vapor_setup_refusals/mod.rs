@@ -85,7 +85,7 @@ fn complete_original_control_and_handler_files_remain_vapor_target_refusals() {
 #[test]
 fn original_numeric_for_keeps_its_precise_source_refusal_before_vapor() {
     use vize_l1::embed::syntax::ForRefusal;
-    use vize_l2::file::RejectedL2IrFor;
+    use vize_l2::ir::RejectedL2IrFor;
     let arena = Allocator::default();
     let source = "<script setup>let count=1</script><template><div v-for='item in 2'/></template>";
     let compilation = compile_native_vapor_setup_sfc(&arena, source, Default::default());

@@ -38,7 +38,7 @@ void test("every new original scoped dependency selects both source proofs even 
 void test("SSR input classification stays precise and affected changes select both runtime proofs", () => {
   for (const path of [
     "davinci/vize_l1_to_l2/src/native_file/selected.rs",
-    "davinci/vize_l2/src/lang/js/file/native/scoped.rs",
+    "davinci/vize_l2/src/lang/js/ir/native/scoped.rs",
     "davinci/vize_l3/src/decision/ssr/scoped.rs",
     "davinci/vize_l4/src/targets/ssr.rs",
     "crates/vize_atelier_sfc/src/native_ssr.rs",

@@ -11,7 +11,7 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::lang::js::ProgramInput;
-use vize_l2::{artifact::Builder, expr::ExprRef, file::L2IrIssueKind, op::Op};
+use vize_l2::{expr::ExprRef, ir::L2IrIssueKind, op::Op, template::Builder};
 
 mod admission;
 

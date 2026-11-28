@@ -12,17 +12,17 @@ use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
 use vize_l1_to_l2::pass::{SlotAnalysis, SlotCarrier, SlotGroup, SlotName, SlotParams};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
-use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
-use vize_l2::analysis::pass_facts::L2Analyses;
-use vize_l2::analysis::text_facts::TextParts;
-use vize_l2::artifact::L2TemplateParts;
+use vize_l2::analysis::fragment_analysis::{FragmentKey, LoopFragment};
+use vize_l2::analysis::pass_analysis::L2Analyses;
+use vize_l2::analysis::text_analysis::TextParts;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, HostFor,
     IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, Op, Region, TextOp,
 };
 use vize_l2::scope::ScopeOrigin;
-use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason as Reason, emit_dom};
+use vize_l2::template::L2TemplateParts;
+use vize_l4::targets::dom::template::{EmitError, UnsupportedReason as Reason, emit_dom};
 
 type Factory = for<'a> fn(&'a Allocator) -> (Lowered<'a>, L2Analyses);
 
@@ -362,7 +362,7 @@ fn sp() -> Span {
 fn composed_analysis_visits_the_host_empty_arm_at_its_enclosing_depth() {
     use vize_l0::pass::NoRemarks;
     use vize_l2::analysis::{
-        static_facts::StaticLevel, template, template_complexity::DecisionKind,
+        static_analysis::StaticLevel, template, template_complexity::DecisionKind,
     };
     use vize_l2::provenance::NoProvenance;
 

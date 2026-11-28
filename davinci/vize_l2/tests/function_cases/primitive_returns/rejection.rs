@@ -1,6 +1,6 @@
 use super::*;
 use vize_l0::Span;
-use vize_l2::file::{L2IrIssue, L2IrIssueKind};
+use vize_l2::ir::{L2IrIssue, L2IrIssueKind};
 
 #[test]
 fn every_non_keyword_return_retains_the_original_whole_function_partial_issue() {

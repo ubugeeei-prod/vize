@@ -3,7 +3,7 @@ mod dom_file_support;
 
 use dom_file_support::{construct, script};
 use vize_l0::Allocator;
-use vize_l2::file::TemplateScope;
+use vize_l2::ir::TemplateScope;
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l3::decision::dom::{DomDependency, DomUnsupported, ValueKind};
 use vize_l3::decision::{DecisionBuildError, build_dom_file_decisions, policy::TargetPolicy};

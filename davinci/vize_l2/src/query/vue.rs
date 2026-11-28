@@ -2,7 +2,6 @@
 //! bindings, component contracts or instance options without a second AST walk.
 
 use super::{BindingRef, Model};
-use crate::file::{L2Ir, Namespace, ScopeId, ScriptUnitId};
 pub use crate::framework::vue::{
     CallContract, ComponentContract, ComponentOptions, ComponentShape, ContractSource, Emit,
     EmitsContract, MacroCall, MacroKind, ModelContract, ModelName, OptionKey, OptionMember,
@@ -10,6 +9,7 @@ pub use crate::framework::vue::{
     ReactiveSource, SetupAnalysisIncomplete, SetupBinding, SetupBindingKind, SlotsContract,
 };
 use crate::framework::vue::{OptionsAnalysis, OrdinaryAnalysis, SetupAnalysis};
+use crate::ir::{L2Ir, Namespace, ScopeId, ScriptUnitId};
 use alloc::boxed::Box;
 use core::ops::Deref;
 use vize_l0::Span;

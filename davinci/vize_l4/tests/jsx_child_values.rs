@@ -4,10 +4,10 @@
 
 use vize_l0::{Allocator, Span, Vec};
 use vize_l2::{
-    artifact::{Builder, L2Template},
     expr::{ExprRef, JsExpr},
     op::{Namespace, Op},
     resolution::{BindingId, BindingLookup, resolve_expression},
+    template::{Builder, L2Template},
 };
 use vize_l3::decision::{build_dom_decisions, dom::ContextOnly};
 use vize_l4::{

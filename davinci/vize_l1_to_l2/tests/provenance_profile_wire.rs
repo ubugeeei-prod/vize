@@ -7,7 +7,7 @@ use vize_l0::profiler::global_profiler;
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower;
 use vize_l2::provenance::ProvenanceRecord;
-use vize_l4::targets::dom::artifact::emit_dom_source;
+use vize_l4::targets::dom::template::emit_dom_source;
 
 const PREFIX: &str = "l1_to_l2.provenance.";
 const OLD_KEYS: [&str; 10] = [

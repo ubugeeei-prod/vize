@@ -20,7 +20,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::L2Ir,
+    ir::L2Ir,
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 

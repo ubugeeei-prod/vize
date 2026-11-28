@@ -1,6 +1,6 @@
 //! Whole original root If observations, with explicit target mode and no guessed goldens.
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeL2IrConditionalState, op::Op};
+use vize_l2::{expr::ExprRef, ir::NativeL2IrConditionalState, op::Op};
 
 #[test]
 fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<(), String> {

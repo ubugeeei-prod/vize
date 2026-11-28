@@ -24,8 +24,8 @@ on {
       "tests/formal/string-literal/**"
       // Unsafe islands (docs/davinci/decisions/2026-11-24-unsafe-model-checking.md):
       // each kernel and the harness module next to it.
-      "davinci/vize_l2/src/analysis/text_facts.rs"
-      "davinci/vize_l2/src/analysis/text_facts/kani.rs"
+      "davinci/vize_l2/src/analysis/text_analysis.rs"
+      "davinci/vize_l2/src/analysis/text_analysis/kani.rs"
       "davinci/vize_l0/src/allocator.rs"
       "davinci/vize_l0/src/allocator/kani.rs"
       "davinci/vize_l0/src/profiler/allocation.rs"

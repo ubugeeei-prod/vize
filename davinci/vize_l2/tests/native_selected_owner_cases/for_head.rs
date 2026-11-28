@@ -1,6 +1,6 @@
 use super::{Allocator, Kind, check, descriptor, equal, owner, syntax};
 use vize_l2::{
-    file::Namespace,
+    ir::Namespace,
     lang::js::NativeTemplateL2Ir,
     op::{BindingOp, Op},
     resolution::{ForAliasRole, HandlerBindingRef, Usage},

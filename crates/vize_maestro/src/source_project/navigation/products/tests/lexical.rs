@@ -6,7 +6,7 @@ use oxc_span::{SourceType, Span};
 use tower_lsp::lsp_types::Range;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind},
+    ir::{DeclarationKind, InitializerKind},
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 

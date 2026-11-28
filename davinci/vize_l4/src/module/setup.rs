@@ -2,7 +2,7 @@
 
 use crate::write::{LinkSink, Writer};
 use vize_l0::{SourceBlock, Span};
-use vize_l2::file::{BindingRef, DeclarationKind};
+use vize_l2::ir::{BindingRef, DeclarationKind};
 use vize_l2::lang::js::{NativeSelectedSetup, SetupAnnotation, VueSetup};
 
 mod segments;

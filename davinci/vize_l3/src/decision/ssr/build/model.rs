@@ -4,7 +4,7 @@ use super::super::{SsrUnsupported, model};
 use super::SsrBuilder;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::NativeL2IrModelState,
+    ir::NativeL2IrModelState,
     op::{BindingOp, ModelOp},
 };
 

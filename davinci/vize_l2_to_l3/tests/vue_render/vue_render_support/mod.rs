@@ -13,10 +13,10 @@ use vize_l1::embed::{
 };
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::{
-    artifact::{ComponentBody, ComponentFactory},
     expr::{JsExpr, js::JsCoordinates},
-    file::{Declaration, L2Ir, TemplatePolicy, TemplateScope, vue::VueExposure},
+    ir::{Declaration, L2Ir, TemplatePolicy, TemplateScope, vue::VueExposure},
     lang::js::{L2IrProducer, ProgramInput, ProgramScope},
+    template::{ComponentBody, ComponentFactory},
 };
 
 #[derive(Clone, Copy)]

@@ -1,8 +1,8 @@
 use core::cell::Cell;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    artifact::{ComponentBody, ComponentFactory},
     expr::JsExpr,
+    template::{ComponentBody, ComponentFactory},
 };
 
 pub struct Properties<'borrow, 'arena> {

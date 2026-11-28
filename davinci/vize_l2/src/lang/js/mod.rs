@@ -3,31 +3,31 @@
 mod conditional;
 mod model;
 pub use model::{NativeModelInput, NativeModelInputError};
-pub(crate) mod file;
+pub(crate) mod ir;
 pub use conditional::{NativeConditionalInput, NativeConditionalInputError};
 mod for_head;
 mod handler;
 pub mod interpolation;
-pub use crate::file::region::native::NativeTemplateWalk;
-pub use file::native::{
+pub use crate::ir::region::native::NativeTemplateWalk;
+pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
+pub use interpolation::{
+    NativeInterpolationInput, NativeInterpolationInputError, NativeInterpolationInputView,
+};
+pub use ir::native::{
     NativeScopedTemplateIssue, NativeScopedTemplateIssueKind, NativeScopedTemplateView,
     NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateIssue,
     NativeTemplateIssueKind, NativeTemplateL2Ir, NativeTemplateOwner, NativeTemplateView,
     RejectedNativeTemplateOwner,
 };
-pub use file::observer::{
+pub use ir::observer::{
     CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
-pub use file::ordinary::{OrdinaryEmptyScript, OrdinaryIssue, OrdinaryIssueKind, VueOrdinaryEmpty};
-pub use file::setup::{SetupAnnotation, SetupIssue, SetupIssueKind, SetupPrimitiveType, VueSetup};
-pub use file::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
-pub use file::{
+pub use ir::ordinary::{OrdinaryEmptyScript, OrdinaryIssue, OrdinaryIssueKind, VueOrdinaryEmpty};
+pub use ir::setup::{SetupAnnotation, SetupIssue, SetupIssueKind, SetupPrimitiveType, VueSetup};
+pub use ir::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
+pub use ir::{
     ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
     OriginalModuleSources,
-};
-pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
-pub use interpolation::{
-    NativeInterpolationInput, NativeInterpolationInputError, NativeInterpolationInputView,
 };
 
 mod jsx_body;

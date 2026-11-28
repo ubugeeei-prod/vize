@@ -3,9 +3,9 @@ use crate::native::{NativeComponent, NativeHoleKind};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{Allocator, SourceRoot, String, id::NodeId};
 use vize_l1::embed::Lang;
-use vize_l2::artifact::{Builder, L2TemplateError};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
+use vize_l2::template::{Builder, L2TemplateError};
 
 extern crate std;
 mod factory;

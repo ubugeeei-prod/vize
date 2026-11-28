@@ -8,14 +8,14 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::artifact::ComponentFactory;
 use vize_l2::expr::JsExpr;
-use vize_l2::file::{Declaration, ScriptUnit, TemplatePolicy, TemplateScope};
+use vize_l2::ir::{Declaration, ScriptUnit, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
     StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
+use vize_l2::template::ComponentFactory;
 
 static ENABLED: AtomicBool = AtomicBool::new(false);
 static ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);

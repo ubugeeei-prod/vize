@@ -7,7 +7,7 @@ use crate::{
 };
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{NativeL2IrModelKind, NativeL2IrModelState},
+    ir::{NativeL2IrModelKind, NativeL2IrModelState},
     op::ElementOp,
 };
 use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrL2IrModel};

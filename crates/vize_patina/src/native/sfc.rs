@@ -9,9 +9,9 @@ use vize_l1::{
     markup::ComponentSourceError,
 };
 use vize_l2::{
-    artifact::L2TemplateError,
-    file::L2IrIssue,
+    ir::L2IrIssue,
     lang::js::{ProgramInputError, SetupIssue},
+    template::L2TemplateError,
 };
 
 mod context;

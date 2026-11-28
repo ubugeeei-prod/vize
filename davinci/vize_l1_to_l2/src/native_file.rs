@@ -33,7 +33,7 @@ pub use template::{NativeTemplateObservation, NativeTemplateOutcome};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeSfcIssueKind {
     Descriptor,
-    FileConstruction(vize_l2::artifact::L2TemplateError),
+    FileConstruction(vize_l2::template::L2TemplateError),
     ScriptSource(vize_l1::embed::SourceError),
     ScriptSyntax(Option<vize_l1::embed::syntax::EmbedHole>),
     /// Structural role presence is not upstream's effective script selection.

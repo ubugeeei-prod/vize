@@ -10,10 +10,10 @@ touch crates/vize_atelier_core/src/codegen/element/block.rs \
   crates/vize_atelier_core/src/codegen/slots/detect.rs \
   crates/vize_atelier_core/src/codegen/slots/generate.rs \
   crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
-  davinci/vize_l4/src/targets/dom/artifact/fragment.rs \
-  davinci/vize_l4/src/targets/dom/artifact/vnode.rs \
-  davinci/vize_l4/src/targets/dom/artifact/component.rs \
-  davinci/vize_l4/src/targets/dom/artifact/component/children_arg.rs \
-  davinci/vize_l4/src/targets/dom/artifact/slots.rs
+  davinci/vize_l4/src/targets/dom/template/fragment.rs \
+  davinci/vize_l4/src/targets/dom/template/vnode.rs \
+  davinci/vize_l4/src/targets/dom/template/component.rs \
+  davinci/vize_l4/src/targets/dom/template/component/children_arg.rs \
+  davinci/vize_l4/src/targets/dom/template/slots.rs
 cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
 NODE_ENV=development vp node --test tests/tooling/runtime-patch-flags.test.ts

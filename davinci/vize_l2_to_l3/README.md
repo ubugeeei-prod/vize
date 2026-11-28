@@ -4,7 +4,7 @@
 program shape and exports the shared static/dynamic partition facts computed
 during that lowering.
 
-`build_decisions(&vize_l2::artifact::L2Template, TargetPolicy)` re-exports the
+`build_decisions(&vize_l2::template::L2Template, TargetPolicy)` re-exports the
 sole producer in `vize_l3::decision`. It returns `NativeAnalysis`, retaining
 the exact sealed owner with read-only conservative static, output-binding
 and control-containment tables. It constructs no flat program or extra

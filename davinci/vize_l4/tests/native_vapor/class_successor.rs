@@ -2,8 +2,8 @@
 use serde_json::{Value, json};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::AttributeValueOperand;
-use vize_l2::file::L2Ir;
-use vize_l2::{file::NativeL2IrAttributeValueState, lang::js::NativeTemplateL2Ir, op::Op};
+use vize_l2::ir::L2Ir;
+use vize_l2::{ir::NativeL2IrAttributeValueState, lang::js::NativeTemplateL2Ir, op::Op};
 use vize_l3::decision::vapor::build_template_vapor_decisions;
 use vize_l4::{
     targets::vapor::emit_template,

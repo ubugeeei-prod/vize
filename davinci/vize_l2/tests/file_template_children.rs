@@ -1,19 +1,19 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span, id::NodeId};
-use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
-use vize_l2::file::{
+use vize_l2::ir::{
     Declaration, L2IrIssueKind, TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateScope,
 };
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::op::Namespace;
+use vize_l2::template::{ComponentBody, ComponentFactory, L2TemplateError};
 
 #[derive(Clone, Copy)]
 struct Values;
 impl TemplatePolicy for Values {
     fn visible(self, declaration: &Declaration) -> bool {
-        declaration.namespace == vize_l2::file::Namespace::Value
+        declaration.namespace == vize_l2::ir::Namespace::Value
     }
 }
 fn attributes<'a>(arena: &'a Allocator) -> vize_l0::Vec<'a, vize_l2::op::Attribute<'a>> {
@@ -155,7 +155,7 @@ fn nested_concrete_children_keep_short_stack_capture_and_real_scope_ast_associat
         .lookup(
             file.units()[0].scope,
             "value",
-            vize_l2::file::Namespace::Value,
+            vize_l2::ir::Namespace::Value,
         )
         .unwrap();
     assert_eq!(table.occurrences()[0].binding, binding.id());

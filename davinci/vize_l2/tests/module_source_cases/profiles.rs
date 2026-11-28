@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{
     L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
 };

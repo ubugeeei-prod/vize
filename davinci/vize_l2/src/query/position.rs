@@ -4,7 +4,7 @@
 //! indexing or allocation. Template occurrence tables are a separate family.
 
 use super::Model;
-use crate::file::{
+use crate::ir::{
     BindingRef, L2Ir, Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptUnit,
 };
 use vize_l0::Span;
@@ -22,13 +22,13 @@ pub enum PositionQueryError {
 /// An original use row and its actual File owner stay borrowed together.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, query::ReferenceRef};
+/// use vize_l2::{ir::L2Ir, query::ReferenceRef};
 /// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ReferenceRef<'f, 'a>) {
 ///     let _ = ReferenceRef { l2ir, reference: row.reference() };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, query::Model};
+/// use vize_l2::{ir::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
 ///     let row = Model::new(&l2ir).reference_at_offset(offset).unwrap().unwrap();
 ///     drop(l2ir);
@@ -65,7 +65,7 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
 /// A recorded scope with lookup constrained to the same completed File.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, query::ScopeRef};
+/// use vize_l2::{ir::L2Ir, query::ScopeRef};
 /// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ScopeRef<'f, 'a>) {
 ///     let _ = ScopeRef { l2ir, scope: row.scope() };
 /// }

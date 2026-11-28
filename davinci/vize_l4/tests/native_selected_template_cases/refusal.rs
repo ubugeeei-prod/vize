@@ -1,7 +1,7 @@
 use crate::{check, completed, equal, owner};
 use vize_l0::{Allocator, Span};
 use vize_l2::{
-    file::{L2IrIssueKind, RejectedL2IrHandler},
+    ir::{L2IrIssueKind, RejectedL2IrHandler},
     lang::js::NativeTemplateIssueKind as Kind,
     op::Op,
     resolution::ResolutionErrorKind,

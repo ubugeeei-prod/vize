@@ -1,7 +1,7 @@
 use super::{Allocator, Kind, check, descriptor, equal, owner, selected, syntax};
 use vize_l0::Span;
 use vize_l2::{
-    file::{L2IrIssueKind, RejectedL2IrHandler},
+    ir::{L2IrIssueKind, RejectedL2IrHandler},
     op::{BindingOp, OnHandlerRef, Op},
     resolution::HandlerBindingRef,
 };

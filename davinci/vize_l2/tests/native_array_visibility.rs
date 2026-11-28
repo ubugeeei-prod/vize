@@ -12,8 +12,8 @@ mod cases {
         },
         markup::{SelectedTemplateComponent, SurfaceParseOptions},
     };
-    use vize_l2::file::L2IrIssueKind;
-    use vize_l2::file::NativeL2IrInterpolationState;
+    use vize_l2::ir::L2IrIssueKind;
+    use vize_l2::ir::NativeL2IrInterpolationState;
     use vize_l2::lang::js::{
         NativeInterpolationInput, NativeSetupIssueKind, NativeTemplateIssueKind,
         NativeTemplateOwner,

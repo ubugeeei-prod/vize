@@ -1,6 +1,6 @@
 //! Complete independent stable-list modules; no native oracle regeneration.
 use super::*;
-use vize_l2::{file::DeclarationKind, op::Op, resolution::Usage};
+use vize_l2::{ir::DeclarationKind, op::Op, resolution::Usage};
 use vize_l3::decision::dom::{DomChild, DomChildren, DomDependency};
 pub(super) mod fixture;
 mod refusal;

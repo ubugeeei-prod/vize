@@ -19,12 +19,12 @@ use oxc_ast::ast::{
 };
 use oxc_span::GetSpan;
 use vize_l0::{Box, Span, String, Vec};
-use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindingOp, DynamicName, ElementOp, Namespace, Op, Region, SlotContentOp, SlotsObjectOp,
 };
 use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
+use vize_l2::template::OpFamily;
 
 use super::attributes::Owner;
 use super::children::{contains_jsx, element, push_children};

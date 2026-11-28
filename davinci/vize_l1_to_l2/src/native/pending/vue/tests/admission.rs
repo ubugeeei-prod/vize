@@ -77,7 +77,7 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
         assert_eq!(
             pending.construct_vue_file_in(&mut region),
             Err(NativeVueConstructionError::Artifact(
-                vize_l2::artifact::L2TemplateError::InvalidSpan { node: None, span }
+                vize_l2::template::L2TemplateError::InvalidSpan { node: None, span }
             ))
         );
     }
@@ -93,10 +93,10 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
     assert_eq!(file.artifact().node_count(), 0);
     assert_eq!(
         file.template_issues(),
-        &[vize_l2::file::TemplateIssue {
+        &[vize_l2::ir::TemplateIssue {
             node: None,
             span,
-            kind: vize_l2::file::L2IrIssueKind::ActiveTemplateWalk
+            kind: vize_l2::ir::L2IrIssueKind::ActiveTemplateWalk
         }]
     );
 }

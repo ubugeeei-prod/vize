@@ -4,10 +4,10 @@ use super::{SsrAnalysis, SsrTemplateBuildError};
 use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::L2Template,
-    file::{BindingRef, L2Ir, L2IrResolution},
+    ir::{BindingRef, L2Ir, L2IrResolution},
     lang::js::{NativeSelectedSetup, NativeTemplateL2Ir, NativeTemplateView},
     resolution::Occurrence,
+    template::L2Template,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

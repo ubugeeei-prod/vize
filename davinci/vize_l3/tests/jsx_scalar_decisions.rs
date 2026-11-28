@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::ReferenceTarget;
+use vize_l2::ir::ReferenceTarget;
 use vize_l2::lang::js::{JsxL2Ir, JsxL2IrProducer};
 use vize_l3::jsx::{JsxDecisionKind as Decision, JsxIssueKind as Issue, build_jsx_decisions};
 

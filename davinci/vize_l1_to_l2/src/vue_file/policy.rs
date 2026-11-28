@@ -2,7 +2,7 @@
 use super::{VueDeclaration, VueL2IrIssue, VueL2IrIssueKind, VueScriptReceipt, VueScriptRole};
 use alloc::vec::Vec;
 use oxc_ast::ast::Statement;
-use vize_l2::file::{Declaration, Namespace, ScopeId, ScriptUnit, ScriptUnitId, TemplatePolicy};
+use vize_l2::ir::{Declaration, Namespace, ScopeId, ScriptUnit, ScriptUnitId, TemplatePolicy};
 use vize_l2::lang::js::{CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, StatementEvent};
 use vize_l2::resolution::ResolutionErrorKind;
 

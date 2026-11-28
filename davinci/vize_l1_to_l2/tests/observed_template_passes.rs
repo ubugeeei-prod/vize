@@ -19,7 +19,7 @@ use vize_l1_to_l2::{
     pass::{cfg, hoist, template},
 };
 use vize_l2::{
-    analysis::{static_facts::StaticAnalysis, template_complexity::ComplexityAnalysis},
+    analysis::{static_analysis::StaticAnalysis, template_complexity::ComplexityAnalysis},
     walk::{NodeRef, PageWalk, visit_nodes},
 };
 

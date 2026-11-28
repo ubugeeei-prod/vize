@@ -247,7 +247,7 @@ fn equal_local_ids_and_source_bytes_do_not_authorize_foreign_setup_bindings() {
     assert!(!own.same_owner(foreign));
     assert_eq!(
         a.setup().binding(foreign).err().unwrap().kind,
-        vize_l2::file::vue::ExposureIssueKind::ForeignBinding
+        vize_l2::ir::vue::ExposureIssueKind::ForeignBinding
     );
     assert!(a.setup().binding(own).is_ok());
 }

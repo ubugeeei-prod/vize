@@ -116,7 +116,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
                 "{id}: actual root scope"
             );
             require!(
-                declaration.initializer == vize_l2::file::InitializerKind::PrimitiveLiteral,
+                declaration.initializer == vize_l2::ir::InitializerKind::PrimitiveLiteral,
                 "{id}: actual primitive initializer"
             );
             let immutable = fixture
@@ -124,7 +124,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
                 .and_then(Value::as_array)
                 .ok_or("immutable bindings")?;
             require!(
-                (declaration.kind == vize_l2::file::DeclarationKind::Const)
+                (declaration.kind == vize_l2::ir::DeclarationKind::Const)
                     == immutable.contains(name),
                 "{id}: original immutable class"
             );

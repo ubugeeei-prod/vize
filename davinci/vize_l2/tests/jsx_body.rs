@@ -11,7 +11,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use support::file_jsx as fixture;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{L2IrIssueKind, Namespace, ReferenceTarget};
+use vize_l2::ir::{L2IrIssueKind, Namespace, ReferenceTarget};
 use vize_l2::lang::js::{JsxL2Ir, JsxL2IrError, JsxL2IrProducer};
 use vize_l2::resolution::{SyntaxKind, Usage};
 

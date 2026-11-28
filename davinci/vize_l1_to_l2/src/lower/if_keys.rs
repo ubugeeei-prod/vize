@@ -10,11 +10,11 @@ use vize_l2::provenance::ProvenanceSink;
 use vize_l0::id::NodeId;
 use vize_l0::{String, cstr};
 
-pub(crate) use vize_l2::analysis::if_facts::take_carrier_key;
-pub use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfAnalysis};
+pub(crate) use vize_l2::analysis::if_analysis::take_carrier_key;
+pub use vize_l2::analysis::if_analysis::{BranchKey, BranchKeyKind, IfAnalysis};
 
 use super::cx::Cx;
-use vize_l2::analysis::fragment_facts::FragmentKey;
+use vize_l2::analysis::fragment_analysis::FragmentKey;
 
 /// The duplicate-key message, byte-identical to relief's
 /// `ErrorCode::VIfSameKey` text so the two channels never drift on

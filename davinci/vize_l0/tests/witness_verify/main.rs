@@ -11,9 +11,9 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod facts;
+mod analysis;
 
-use facts::{
+use analysis::{
     CHECKS, Hidden, Lengths, REGISTRY, RepeatedWord, Repeats, Sentence, Words, repeated_words,
 };
 use vize_l0::analysis::{Analysis, AnalysisError, AnalysisManager, Demand};

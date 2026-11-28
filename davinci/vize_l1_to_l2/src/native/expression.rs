@@ -8,9 +8,9 @@ use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{Embed, EmbedSource, Grammar, Shape};
 use vize_l1::markup::Interpolation;
-use vize_l2::artifact::L2TemplateError;
 use vize_l2::expr::JsExpr;
 use vize_l2::expr::js::JsCoordinateError;
+use vize_l2::template::L2TemplateError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeExpressionError {

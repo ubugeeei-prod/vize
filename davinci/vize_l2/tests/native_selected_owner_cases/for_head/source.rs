@@ -1,6 +1,6 @@
 use super::*;
 use vize_l0::Span;
-use vize_l2::file::{L2IrIssueKind, RejectedL2IrFor};
+use vize_l2::ir::{L2IrIssueKind, RejectedL2IrFor};
 
 #[test]
 fn unicode_alias_and_collection_ranges_keep_both_original_intrinsic_profiles()

@@ -6,7 +6,7 @@ use super::{
     block_on, cached, location, uri,
 };
 use vize_l0::Span;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 
 const SOURCE: &str = "import View from 'dep';\nimport UI from 'ui';\nconst value=1;\nconst props={};\nconst tree=<View prop={value} {...props}><UI.Button>{value}</UI.Button><div value='value'/></View>;\nvalue;";
 

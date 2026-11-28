@@ -2,7 +2,7 @@ use super::*;
 use oxc_ast::ast::{Declaration, Statement};
 use oxc_parser::ParseOptions;
 use vize_l0::{Span, String};
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 use vize_l2::lang::js::{JsxL2IrProducer, ProgramInput};
 use vize_l2::query::Model;
 

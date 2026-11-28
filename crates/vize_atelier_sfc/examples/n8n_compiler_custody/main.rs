@@ -20,7 +20,7 @@ use vize_atelier_sfc::{
 mod native;
 
 use vize_l0::Allocator;
-use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::template::{DomEmitMode, DomEmitOptions};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().skip(1).collect::<Vec<_>>();

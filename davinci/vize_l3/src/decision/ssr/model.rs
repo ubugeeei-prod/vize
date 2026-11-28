@@ -3,7 +3,7 @@
 use super::{SelectedSetupSsrAnalysis, SsrSetupAccess, SsrSetupExpression, SsrUnsupported};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
+    ir::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
     lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,

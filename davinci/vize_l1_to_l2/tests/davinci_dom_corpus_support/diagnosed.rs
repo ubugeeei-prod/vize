@@ -8,7 +8,7 @@ use vize_l0::{
     pass::BudgetObserver,
 };
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
-use vize_l4::targets::dom::artifact::{DomEmitOptions, emit_dom_with_options};
+use vize_l4::targets::dom::template::{DomEmitOptions, emit_dom_with_options};
 
 const ORIGINAL: &str = include_str!(concat!(
     "../../../../tests/_fixtures/differential/compiler/n8n-if-key-regression/",

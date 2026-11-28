@@ -1,6 +1,6 @@
 use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::{NativeSfcIssueKind, lower_sfc_native};
-use vize_l2::file::vue::VueExposure;
+use vize_l2::ir::vue::VueExposure;
 use vize_l3::decision::dom::{DomUnsupported, vue::build_vue_render_decisions};
 use vize_l4::{
     targets::dom::{DomErrorKind, emit_vue},

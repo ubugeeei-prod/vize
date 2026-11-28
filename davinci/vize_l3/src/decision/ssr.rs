@@ -9,14 +9,14 @@ use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 
 pub(super) mod build;
-mod file;
+mod l2ir;
 mod model;
 mod scoped;
 mod setup;
 mod template;
 #[cfg(test)]
 mod tests;
-pub use file::{SsrL2IrAnalysis, build_ssr_file_decisions};
+pub use l2ir::{SsrL2IrAnalysis, build_ssr_file_decisions};
 pub use model::SsrL2IrModel;
 pub use scoped::{TemplateScopedSsrAnalysis, build_scoped_template_ssr_decisions};
 use setup::SsrSetupAccess;

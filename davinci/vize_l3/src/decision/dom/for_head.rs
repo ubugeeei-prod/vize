@@ -2,7 +2,7 @@
 
 use super::vue::VueRenderRead;
 use vize_l2::{
-    file::{BindingRef, L2IrForHead},
+    ir::{BindingRef, L2IrForHead},
     op::OriginalForOp,
     resolution::ForResolution,
     scope::ScopeAnalysis,
@@ -14,7 +14,7 @@ use vize_l2::{
 ///
 /// Caller-written combinations cannot mint this receipt:
 /// ```compile_fail
-/// use vize_l2::{file::{BindingRef, L2IrForHead}, op::OriginalForOp, resolution::ForResolution};
+/// use vize_l2::{ir::{BindingRef, L2IrForHead}, op::OriginalForOp, resolution::ForResolution};
 /// use vize_l3::decision::dom::DomL2IrForHead;
 /// fn forge<'f, 'a>(head: L2IrForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
 ///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>,
@@ -28,7 +28,7 @@ use vize_l2::{
 /// ```
 /// The actual owner must remain live:
 /// ```compile_fail
-/// use vize_l2::{file::L2Ir, op::Op};
+/// use vize_l2::{ir::L2Ir, op::Op};
 /// use vize_l3::decision::build_dom_file_decisions;
 /// fn discard(l2ir: L2Ir<'_>) {
 ///     let analysis = build_dom_file_decisions(&l2ir).unwrap();

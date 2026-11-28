@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::L2IrIssueKind;
+use vize_l2::ir::L2IrIssueKind;
 
 #[test]
 fn duplicate_original_for_headers_never_mint_and_keep_every_already_observed_owner()

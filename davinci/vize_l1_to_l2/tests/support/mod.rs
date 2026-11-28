@@ -95,7 +95,7 @@ pub fn with_transformed<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l2::analysis::pass_facts::L2Analyses,
+        &vize_l2::analysis::pass_analysis::L2Analyses,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -105,7 +105,7 @@ pub fn with_transformed<R>(
 /// The assembled DOM render module for `source` after the L2 transform.
 pub fn assembled_dom(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
-        match vize_l4::targets::dom::artifact::emit_dom(lowered, facts) {
+        match vize_l4::targets::dom::template::emit_dom(lowered, facts) {
             Ok(emitted) => emitted.assembled(),
             Err(error) => panic!("emit refused {source:?}: {error:?}"),
         }
@@ -119,7 +119,7 @@ pub fn with_transformed_caps<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l2::analysis::pass_facts::L2Analyses,
+        &vize_l2::analysis::pass_analysis::L2Analyses,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {

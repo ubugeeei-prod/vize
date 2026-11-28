@@ -4,10 +4,10 @@ use super::{
     DomBinding, DomBuilder, DomDependency, DomExpressionAnalysis, DomUnsupported, PropertyRole,
     ValueKind,
 };
-use crate::decision::dom::{file::DomL2IrExpression, vue::policy::FileReads};
+use crate::decision::dom::{l2ir::DomL2IrExpression, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::L2IrResolution,
+    ir::L2IrResolution,
     op::{BindingOp, ModelOp, Op},
 };
 
@@ -29,8 +29,8 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
             .native_model(node)
             .and_then(|original| original.kind())
         {
-            Some(vize_l2::file::NativeL2IrModelKind::Text) => DomDependency::TextModel,
-            Some(vize_l2::file::NativeL2IrModelKind::Checkbox) => DomDependency::CheckboxModel,
+            Some(vize_l2::ir::NativeL2IrModelKind::Text) => DomDependency::TextModel,
+            Some(vize_l2::ir::NativeL2IrModelKind::Checkbox) => DomDependency::CheckboxModel,
             None => {
                 self.reject(node, model.span, DomUnsupported::FileBinding);
                 return;

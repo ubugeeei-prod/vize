@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 use support::with_transformed_caps;
 use vize_l0::Allocator;
 use vize_l1_to_l2::LegacyCaps;
-use vize_l4::targets::dom::artifact::{
+use vize_l4::targets::dom::template::{
     EmitError, UnsupportedReason as Reason, UnsupportedRefusal, emit_dom, emit_dom_source,
 };
 

@@ -17,7 +17,7 @@
 
 use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Element;
-use vize_l2::artifact::OpFamily;
+use vize_l2::template::OpFamily;
 
 use vize_l2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 use vize_l2::provenance::ProvenanceSink;

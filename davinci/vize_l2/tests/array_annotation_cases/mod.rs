@@ -1,7 +1,7 @@
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, String, cstr};
-use vize_l2::file::{InitializerKind, L2Ir, L2IrIssueKind, Namespace, ScriptUnit};
+use vize_l2::ir::{InitializerKind, L2Ir, L2IrIssueKind, Namespace, ScriptUnit};
 use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::query::PositionQueryError;
 

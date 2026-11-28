@@ -5,9 +5,9 @@ use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, Targ
 use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::L2Template,
-    file::{BindingRef, L2Ir, L2IrResolution, vue::VueExposure},
+    ir::{BindingRef, L2Ir, L2IrResolution, vue::VueExposure},
     resolution::Occurrence,
+    template::L2Template,
 };
 
 pub(in crate::decision) mod policy;
@@ -28,7 +28,7 @@ pub enum VueReadKind {
 /// One read retains the exact original resolver occurrence, including duplicates.
 /// A public kind does not authorize an externally paired occurrence/binding:
 /// ```compile_fail
-/// use vize_l2::{file::BindingRef, resolution::Occurrence};
+/// use vize_l2::{ir::BindingRef, resolution::Occurrence};
 /// use vize_l3::decision::dom::vue::{VueReadKind, VueRenderRead};
 /// fn forge<'o, 'a>(occurrence: &'o Occurrence<'a>, binding: BindingRef<'o, 'a>) {
 ///     let _ = VueRenderRead { occurrence, binding, kind: VueReadKind::ForValue };
@@ -107,7 +107,7 @@ impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
 /// ```
 /// A live result keeps the authentic membership owner borrowed:
 /// ```compile_fail
-/// use vize_l2::file::vue::VueExposure;
+/// use vize_l2::ir::vue::VueExposure;
 /// use vize_l3::decision::dom::vue::build_vue_render_decisions;
 /// fn discard(exposure: VueExposure<'_, '_, '_, '_>) {
 ///     let result = build_vue_render_decisions(&exposure).unwrap();

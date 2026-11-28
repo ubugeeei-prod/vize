@@ -1,7 +1,7 @@
 use super::{BuildResult, JsxDecisionKind as Decision, JsxIssue, JsxIssueKind as Issue};
 use super::{JsxAnalysis, RejectedJsxAnalysis};
 use alloc::{boxed::Box, vec::Vec};
-use vize_l2::file::{Namespace, ReferenceTarget};
+use vize_l2::ir::{Namespace, ReferenceTarget};
 use vize_l2::lang::js::{JsxL2Ir, JsxNode};
 use vize_l2::resolution::{SyntaxKind as Syntax, Usage};
 

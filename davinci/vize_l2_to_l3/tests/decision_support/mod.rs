@@ -1,6 +1,5 @@
 use vize_l0::{Allocator, Box, Span, Vec, id::NodeId};
 use vize_l2::{
-    artifact::{L2Template, L2TemplateParts},
     expr::{ExprRef, OpaqueExpr, OpaqueReason},
     op::{
         BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp,
@@ -9,6 +8,7 @@ use vize_l2::{
         VueTextOp,
     },
     scope::{ScopeAnalysis, ScopeTag},
+    template::{L2Template, L2TemplateParts},
 };
 
 pub const SPAN: Span = Span::new(0, 1);

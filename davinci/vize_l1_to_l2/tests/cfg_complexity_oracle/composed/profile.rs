@@ -3,7 +3,7 @@ use vize_l0::{Allocator, SourceRoot, pass::NoRemarks};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower_source_block;
 use vize_l2::{
-    analysis::{static_facts, template, template_complexity},
+    analysis::{static_analysis, template, template_complexity},
     provenance::NoProvenance,
 };
 
@@ -54,7 +54,7 @@ fn paired_template_observations() {
         let expected = template_complexity::run(region,count);
         super::check(&lowered, &expected);
         let quiet = || {
-            black_box((static_facts::run(black_box(region),count,&mut NoProvenance),template_complexity::run(black_box(region),count)));
+            black_box((static_analysis::run(black_box(region),count,&mut NoProvenance),template_complexity::run(black_box(region),count)));
         };
         let jointly = || {
             black_box(template::run(black_box(region),count,&mut NoProvenance,&mut NoRemarks));
@@ -62,7 +62,7 @@ fn paired_template_observations() {
         samples(label,count,reps,quiet,jointly);
         let observed = || {
             let (mut trace,mut rows)=(Vec::new(),super::Rows::default());
-            black_box((static_facts::run_remarked(black_box(region),count,&mut trace,&mut rows),template_complexity::run(black_box(region),count),trace,rows));
+            black_box((static_analysis::run_remarked(black_box(region),count,&mut trace,&mut rows),template_complexity::run(black_box(region),count),trace,rows));
         };
         let jointly_observed = || {
             let (mut trace,mut rows)=(Vec::new(),super::Rows::default());
@@ -92,7 +92,7 @@ fn paired_owner_queries() {
         );
         let region = &lowered.artifact.root;
         let count = lowered.op_count;
-        let old = static_facts::run(region, count, &mut NoProvenance);
+        let old = static_analysis::run(region, count, &mut NoProvenance);
         let new = template::run(region, count, &mut NoProvenance, &mut NoRemarks).static_facts;
         let ids: Vec<_> = (0..count)
             .filter_map(vize_l0::id::NodeId::from_index)

@@ -89,7 +89,7 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
                     );
                     assert!(matches!(
                         record.state(),
-                        vize_l2::file::NativeL2IrAttributeValueState::Attached { .. }
+                        vize_l2::ir::NativeL2IrAttributeValueState::Attached { .. }
                     ));
                 }
             }

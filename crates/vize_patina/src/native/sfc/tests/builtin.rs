@@ -80,7 +80,7 @@ fn provided_builtin_refuses_same_buffer_foreign_setup_before_empty_output() {
 #[test]
 fn actual_call_initializers_keep_full_original_warnings_and_exact_whole_setup_refusal() {
     use vize_l2::{
-        file::vue::ExposureIssueKind,
+        ir::vue::ExposureIssueKind,
         lang::js::{SetupIssue, SetupIssueKind},
     };
     for callee in ["ref", "shallowRef"] {

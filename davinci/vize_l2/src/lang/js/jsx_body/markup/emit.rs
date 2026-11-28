@@ -1,9 +1,9 @@
 use super::prepare::children;
 use crate::{
-    artifact::{L2TemplateError, RegionBuilder},
     lang::js::jsx_body::records::Record,
     op::{Attribute, Namespace},
     resolution::SyntaxKind as Syntax,
+    template::{L2TemplateError, RegionBuilder},
 };
 use vize_l0::Vec;
 
