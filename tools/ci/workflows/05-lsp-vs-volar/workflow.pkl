@@ -110,7 +110,10 @@ jobs {
         with {
           `persist-credentials` = false
           ref = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
-          `sparse-checkout` = "tools/benchmarks/scripts"
+          `sparse-checkout` = """
+            tools/benchmarks/scripts
+            tools/support/compat/fixtures
+            """
         }
       }
       new Dynamic {

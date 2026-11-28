@@ -30,6 +30,7 @@ import {
 } from "./typecheck-package-manager.ts";
 import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.ts";
 import { typecheckUnitTsconfigs } from "./typecheck-targets.ts";
+import { prepareTypecheckInputOverlays } from "./typecheck-input-overlays.ts";
 
 export { installArguments } from "./typecheck-package-manager.ts";
 
@@ -244,6 +245,12 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
   if (command == null) return null;
   const commands = baselinePrepareCommands(command);
   if (commands == null) throw new Error("baseline prepare must be a command or a list of them");
+  const inputOverlays = prepareTypecheckInputOverlays(
+    repoRoot,
+    fixtureRoot,
+    project.revision,
+    project.typecheckPerformance.baseline?.inputOverlays,
+  );
   const startedAt = Date.now();
   let stdout = "";
   let stderr = "";
@@ -266,6 +273,7 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
   if (project.id === "misskey") validateMisskeyBuildOutputs(fixtureRoot);
   return {
     command,
+    ...(inputOverlays.length > 0 ? { inputOverlays } : {}),
     durationMs,
     exitCode: 0,
     stdoutSha256: sha256(stdout),
