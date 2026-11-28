@@ -33,6 +33,8 @@ pub use language_code::*;
 #[cfg(feature = "napi")]
 mod lint;
 mod lint_fix;
+#[cfg(any(test, feature = "napi"))]
+mod nuxt_template;
 #[cfg(feature = "napi")]
 mod plugin;
 #[cfg(feature = "napi")]
@@ -117,6 +119,8 @@ pub use inspector::*;
 pub use jsx::*;
 #[cfg(feature = "napi")]
 pub use lint::*;
+#[cfg(feature = "napi")]
+pub use nuxt_template::*;
 #[cfg(feature = "napi")]
 pub use plugin::*;
 #[cfg(feature = "napi")]
