@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { ref, shallowRef } from '@common/vueTools'
+const list = ref<HTMLElement | null>(null)
+const data = shallowRef([])
+</script>
+<template><ul ref="list">{{ data }}</ul></template>

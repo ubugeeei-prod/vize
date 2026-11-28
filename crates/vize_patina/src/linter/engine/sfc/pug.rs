@@ -148,6 +148,7 @@ impl Linter {
                 self,
                 descriptor,
                 &scripts,
+                filename,
                 &mut result,
                 None,
             );

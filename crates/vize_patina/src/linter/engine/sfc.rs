@@ -44,6 +44,7 @@ impl Linter {
                             self,
                             input.descriptor,
                             scripts,
+                            input.filename,
                             &mut script_result,
                             valid_template.then_some((input.l2, input.template.loc.start as u32)),
                             Some(ctx),
@@ -67,6 +68,7 @@ impl Linter {
                 self,
                 descriptor,
                 scripts,
+                filename,
                 &mut result,
                 None,
             );

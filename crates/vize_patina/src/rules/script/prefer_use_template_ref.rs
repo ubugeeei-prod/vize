@@ -30,9 +30,13 @@
 //!
 //! The callee is Vue's `ref` / `shallowRef` under any local name or through a
 //! Vue namespace, and the call may sit inside parentheses or a TypeScript
-//! wrapper (`as Ref<T>`, `!`). A ref whose `.value` the script assigns is
+//! wrapper (`as Ref<T>`, `!`). A callee imported from another module is Vue's
+//! when that module re-exports it: a package whose published entry re-exports
+//! Vue's runtime, or a project module whose re-export chain reaches Vue (see
+//! [`reexports`]). A ref whose own binding has its `.value` assigned is
 //! skipped: `useTemplateRef` returns a readonly ref, so the suggestion would
-//! break the write. The suggested replacement keeps the declaration keyword
+//! break the write. A nested binding with the same name writes its own value
+//! and does not count. The suggested replacement keeps the declaration keyword
 //! and the authored element type without `| null`.
 //!
 //! ## Examples
@@ -64,15 +68,15 @@
 //! ```
 
 use oxc_ast::ast::{
-    BindingPattern, Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey,
-    Statement, VariableDeclaration,
+    BindingPattern, Expression, ImportDeclarationSpecifier, ObjectExpression, ObjectPropertyKind,
+    Program, PropertyKey, Statement, VariableDeclaration,
 };
 use oxc_ast_visit::{Visit, walk::walk_object_expression};
 
-use declarations::{RefCallees, ValueWrites};
-use oxc_semantic::SemanticBuilder;
+use declarations::{Callee, RefCallees, ValueWrites, WrittenBindings};
+use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::Span;
-use vize_l0::{CompactString, cstr};
+use vize_l0::{CompactString, FxHashSet, cstr};
 
 use super::vue_object::VueObjects;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
@@ -80,6 +84,9 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 
 mod declarations;
 mod native;
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod reexport_tests;
+mod reexports;
 mod template_refs;
 #[cfg(test)]
 mod tests;
@@ -150,13 +157,13 @@ impl ScriptRule for PreferUseTemplateRef {
         }
         let mut collector = DeclarationCollector {
             callees: &callees,
+            template_ref_names: &template_ref_names,
             source,
             declarations: Vec::new(),
         };
-        if sfc.is_script_setup {
-            collector.collect(&program.body);
-        } else {
-            let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        let options_semantic = (!sfc.is_script_setup)
+            .then(|| SemanticBuilder::new().with_build_nodes(true).build(program));
+        if let Some(built) = &options_semantic {
             let objects = VueObjects::collect(
                 program,
                 source,
@@ -168,6 +175,8 @@ impl ScriptRule for PreferUseTemplateRef {
                 objects: &objects,
             };
             setup.visit_program(program);
+        } else {
+            collector.collect(&program.body);
         }
 
         let mut declarations = collector.declarations;
@@ -179,12 +188,77 @@ impl ScriptRule for PreferUseTemplateRef {
         // keeps its `ref()`.
         let mut writes = ValueWrites::default();
         writes.visit_program(program);
+        let owned_semantic;
+        let written = if declarations
+            .iter()
+            .any(|declaration| writes.names.contains(&declaration.name))
+        {
+            let scoping: &Scoping = match (&options_semantic, sfc.semantic_of(program)) {
+                (Some(built), _) => built.semantic.scoping(),
+                (None, Some(shared)) => shared.semantic.scoping(),
+                (None, None) => {
+                    owned_semantic = SemanticBuilder::new().build(program);
+                    owned_semantic.semantic.scoping()
+                }
+            };
+            Some(WrittenBindings::collect(program, scoping, &writes.names))
+        } else {
+            None
+        };
         for declaration in declarations {
-            if !writes.names.contains(&declaration.name) {
-                report(&declaration, offset, result);
+            if written.as_ref().is_some_and(|written| {
+                written.contains(&declaration.name, declaration.binding_span)
+            }) {
+                continue;
+            }
+            let callee = match &declaration.callee {
+                Callee::Vue(callee) => Some(*callee),
+                Callee::Imported { local, member } => imported_factory(
+                    program,
+                    sfc,
+                    local.as_str(),
+                    member.as_ref().map(CompactString::as_str),
+                ),
+            };
+            if let Some(callee) = callee {
+                report(&declaration, callee, offset, result);
             }
         }
     }
+}
+
+/// The Vue factory a callee imported from another module (`local`, or
+/// `local.member` through a namespace import) re-exports.
+fn imported_factory(
+    program: &Program<'_>,
+    sfc: SfcScriptContext<'_>,
+    local: &str,
+    member: Option<&str>,
+) -> Option<&'static str> {
+    let file = sfc.importing_file?;
+    let import = core::iter::once(program)
+        .chain(sfc.sibling_program)
+        .flat_map(|program| &program.body)
+        .find_map(|statement| match statement {
+            Statement::ImportDeclaration(import) if !import.import_kind.is_type() => import
+                .specifiers
+                .iter()
+                .flatten()
+                .find(|specifier| specifier.local().name == local)
+                .map(|specifier| (import.source.value.as_str(), specifier)),
+            _ => None,
+        });
+    let (source, specifier) = import?;
+    let export = match (specifier, member) {
+        (ImportDeclarationSpecifier::ImportSpecifier(specifier), None)
+            if !specifier.import_kind.is_type() =>
+        {
+            specifier.imported.name().as_str()
+        }
+        (ImportDeclarationSpecifier::ImportNamespaceSpecifier(_), Some(member)) => member,
+        _ => return None,
+    };
+    reexports::imported_factory(file, source, export)
 }
 
 /// A `const <name> = ref(...)` / `shallowRef(...)` declaration that could be a
@@ -192,8 +266,11 @@ impl ScriptRule for PreferUseTemplateRef {
 /// upstream, which reports the `CallExpression`).
 struct RefDeclaration {
     name: CompactString,
-    /// `"ref"` or `"shallowRef"`, echoed in the diagnostic message.
-    callee: &'static str,
+    /// The declared binding, which a `.value` write must reach to keep the ref.
+    binding_span: Span,
+    /// `ref` / `shallowRef`, echoed in the diagnostic message, or an import
+    /// whose module decides it.
+    callee: Callee<CompactString>,
     span: Span,
     /// The declaration keyword, kept by the suggested replacement.
     keyword: &'static str,
@@ -214,6 +291,7 @@ struct RefDeclaration {
 /// deliberate superset in the "patina reports more" direction.
 struct DeclarationCollector<'c, 's> {
     callees: &'c RefCallees,
+    template_ref_names: &'c FxHashSet<CompactString>,
     source: &'s str,
     declarations: Vec<RefDeclaration>,
 }
@@ -245,9 +323,17 @@ impl DeclarationCollector<'_, '_> {
             let Some(callee) = self.callees.factory(&call.callee) else {
                 continue;
             };
+            // Most imported calls are not factories: keep only those a
+            // template ref pairs with before resolving their module.
+            if matches!(callee, Callee::Imported { .. })
+                && !self.template_ref_names.contains(id.name.as_str())
+            {
+                continue;
+            }
             self.declarations.push(RefDeclaration {
                 name: CompactString::new(id.name.as_str()),
-                callee,
+                binding_span: id.span,
+                callee: callee.owned(),
                 span: call.span,
                 keyword: declaration.kind.as_str(),
                 type_argument: declarations::template_ref_type_argument(call, self.source),
@@ -306,11 +392,15 @@ fn property_key_is_setup(key: &PropertyKey<'_>) -> bool {
     }
 }
 
-fn report(declaration: &RefDeclaration, offset: usize, result: &mut ScriptLintResult) {
+fn report(
+    declaration: &RefDeclaration,
+    callee: &'static str,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
     let start = offset as u32 + declaration.span.start;
     let end = offset as u32 + declaration.span.end;
     let name = declaration.name.as_str();
-    let callee = declaration.callee;
     let keyword = declaration.keyword;
     result.add_diagnostic(
         LintDiagnostic::warn(

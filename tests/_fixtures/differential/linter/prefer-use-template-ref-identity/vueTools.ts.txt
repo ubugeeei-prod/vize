@@ -1,0 +1,6 @@
+import { ref, shallowRef, type Ref } from 'vue'
+
+export const markRawList = <T extends unknown[]>(list: T): T => list
+
+export { ref, shallowRef }
+export type { Ref }

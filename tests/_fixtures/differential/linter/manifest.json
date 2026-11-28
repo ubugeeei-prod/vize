@@ -25548,6 +25548,58 @@
       }
     },
     {
+      "id": "linter/prefer-use-template-ref-identity",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "prefer-use-template-ref-identity",
+        "files": [
+          {
+            "path": "AliasedReexport.vue.txt",
+            "role": "tsconfig-alias-module-reexport",
+            "sha256": "10f3aaa7f984de6407feb5aab49dc46c96c4d5cba1bea835beacc73c80976ae1"
+          },
+          {
+            "path": "PackageReexport.vue.txt",
+            "role": "package-entry-reexport",
+            "sha256": "608d18894b0f717fdb071aa217dc0c9fbc98609b580c34f97f228aee145c312c"
+          },
+          {
+            "path": "ShadowedValueWrite.vue.txt",
+            "role": "shadowing-binding-value-write",
+            "sha256": "9175a6c587d0f689dbb97b43ae455b643306a6ec1ca3874c4daedd5fbce89a92"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "tsconfig-paths",
+            "sha256": "8858e9230353773da45b8079a216a7d65bab289ac313af93b591796987a4a47a"
+          },
+          {
+            "path": "vueTools.ts.txt",
+            "role": "module-reexporting-vue-factories",
+            "sha256": "a81852f8643602ef0f2d5a839c1ba7a13ec222ca3d7dfc74be7b6ead9d22e1c0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/prop-name-casing-options-6097",
       "state": "active",
       "targets": [

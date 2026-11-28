@@ -123,6 +123,19 @@ pub struct SfcScriptContext<'a> {
     /// The `<script setup generic="...">` attribute: type parameters whose
     /// constraints and defaults can name an import.
     pub(crate) setup_generic: Option<&'a str>,
+    /// The SFC file the script blocks import from. `None` outside the SFC
+    /// pass, so a rule that follows an import into another module keeps its
+    /// single-file answer there.
+    pub(crate) importing_file: Option<ImportingFile<'a>>,
+}
+
+/// Where an SFC's imports resolve from: its filename and the run's disk view.
+#[derive(Clone, Copy)]
+pub(crate) struct ImportingFile<'a> {
+    pub(crate) filename: &'a str,
+    /// The run's shared view, when the linter holds one. Without it a caller
+    /// resolves through a fresh view of its own.
+    pub(crate) sources: Option<&'a crate::linter::run_type_sources::RunTypeSources>,
 }
 
 impl<'a> SfcScriptContext<'a> {
