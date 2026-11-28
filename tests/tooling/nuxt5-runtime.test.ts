@@ -160,7 +160,8 @@ void test("the additional Node 26 consumer follows the unchanged source pack and
     ],
     [
       "Verify real JavaScript Nuxt and Vite workspace products",
-      'vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"',
+      "vp env exec node tools/ci/lib/scripts/temp-leak-gate.ts --label nuxt-vite-workspace -- \\\n" +
+        '  node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"\n',
     ],
   ]) {
     const original = step(name);

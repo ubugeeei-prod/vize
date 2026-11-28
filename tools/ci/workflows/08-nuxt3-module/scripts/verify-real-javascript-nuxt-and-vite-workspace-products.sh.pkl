@@ -4,6 +4,7 @@ interpreter = "bash"
 
 commands {
   #"""
-  vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+  vp env exec node tools/ci/lib/scripts/temp-leak-gate.ts --label nuxt-vite-workspace -- \
+    node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
   """#
 }
