@@ -3,14 +3,14 @@
 //! This module handles transforming TypeScript code to JavaScript using OXC.
 
 use oxc_allocator::Allocator;
-use oxc_codegen::{Codegen, CodegenOptions};
+use oxc_codegen::{Codegen, CodegenOptions, IndentChar};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_transformer::{JsxOptions, TransformOptions, Transformer, TypeScriptOptions};
 use vize_carton::{String, ToCompactString, profile};
 
-use crate::module_map::{Runs, replace_traced, reprint_points};
+use crate::module_map::{Runs, reprint_points};
 
 /// Transform TypeScript code to JavaScript using OXC
 pub fn transform_typescript_to_js(code: &str) -> String {
@@ -18,34 +18,39 @@ pub fn transform_typescript_to_js(code: &str) -> String {
 }
 
 /// [`transform_typescript_to_js`] with the provenance of the JavaScript in
-/// `code` (Davinci P3-9): the tokens oxc's codegen re-printed, through the
-/// tab expansion. The JavaScript is byte-identical to the untraced call's.
+/// `code` (Davinci P3-9): the tokens oxc's codegen re-printed. The
+/// JavaScript is byte-identical to the untraced call's.
 pub(crate) fn transform_typescript_to_js_traced(code: &str) -> (String, Runs) {
     let (js, runs) = strip_typescript(code, true);
     (js, runs.unwrap_or_else(|| Runs::identity(code.len())))
 }
 
-/// Print `program` as JavaScript with its tabs expanded, plus the printed
+/// Print `program` as JavaScript indented by two spaces, plus the printed
 /// text's provenance in `source` when `trace` asks for it.
+///
+/// oxc indents with the spaces itself. Every tab the output holds is then
+/// authored: inside a string, template or regular expression literal, or a
+/// comment, whose bytes stay as written.
 pub(super) fn print_javascript(
     program: &oxc_ast::ast::Program<'_>,
     source: &str,
     trace: bool,
 ) -> (String, Option<Runs>) {
-    if !trace {
-        let code = Codegen::new().build(program).code;
-        return (code.replace('\t', "  ").into(), None);
-    }
-    let options = CodegenOptions {
-        source_map_path: Some(std::path::PathBuf::from("module.ts")),
+    let mut options = CodegenOptions {
+        indent_char: IndentChar::Space,
+        indent_width: 2,
         ..CodegenOptions::default()
     };
+    if !trace {
+        let code = Codegen::new().with_options(options).build(program).code;
+        return (code.into(), None);
+    }
+    options.source_map_path = Some(std::path::PathBuf::from("module.ts"));
     let printed = Codegen::new().with_options(options).build(program);
-    let (expanded, tab_runs) = replace_traced(&printed.code, "\t", "  ");
     let runs = printed
         .map
-        .map(|map| tab_runs.compose(&reprint_points(&map, &printed.code, source)));
-    (expanded, Some(runs.unwrap_or_default()))
+        .map(|map| reprint_points(&map, &printed.code, source));
+    (printed.code.into(), Some(runs.unwrap_or_default()))
 }
 
 /// The JavaScript for `code` and, when `trace` is set and the code was
@@ -110,8 +115,7 @@ fn strip_typescript(code: &str, trace: bool) -> (String, Option<Runs>) {
         return (code.to_compact_string(), None);
     }
 
-    // Generate JavaScript code
-    // Replace tabs with 2 spaces for consistent indentation
+    // Generate JavaScript code, indented by two spaces
     profile!(
         "atelier.script.ts.codegen",
         print_javascript(&program, code, trace)

@@ -1,0 +1,26 @@
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent, unref as _unref } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<div${_ssrRenderAttrs(_attrs)}>`)
+  _push(_ssrRenderComponent(_unref($props["myIcon"]), null, null, _parent))
+  _push(_ssrRenderComponent(_resolveComponent("Icon"), null, null, _parent))
+  _push(`</div>`)
+}
+
+export default {
+  __name: 'Layout',
+  props: {
+    myIcon: { type: null, required: true },
+    icon: { type: null, required: true }
+  },
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+return {}
+}
+
+}

@@ -1,0 +1,2 @@
+const A = () => <input v-model={state?.val} />;
+const B = () => <Comp v-model={[model?.value, "title"]} />;
