@@ -1,0 +1,12 @@
+<script setup>
+import { ref } from 'vue'
+const first = ref(true)
+let seenByFirst = null
+let seenBySecond = null
+function setFirst(node) { seenByFirst = node }
+function setSecond(node) { seenBySecond = node }
+function toggle() { first.value = false }
+function referencedText() { return `${seenByFirst?.textContent ?? 'null'}|${seenBySecond?.textContent ?? 'null'}` }
+defineExpose({ toggle, referencedText })
+</script>
+<template><p :ref="first ? setFirst : setSecond">target</p></template>

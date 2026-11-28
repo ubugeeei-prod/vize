@@ -253,6 +253,11 @@ pub(super) fn transform_template_ref<'a>(
         return;
     };
 
+    if !value.is_static {
+        push_bound_template_ref(ctx, el, element_id, block, value);
+        return;
+    }
+
     block
         .operation
         .push(OperationNode::SetTemplateRef(SetTemplateRefIRNode {
@@ -260,6 +265,49 @@ pub(super) fn transform_template_ref<'a>(
             value,
             ref_for: ctx.for_depth > 0 || has_static_ref_for(el),
         }));
+}
+
+/// A `:ref` binding. One that can change value (`:ref="on ? 'a' : 'b'"`, a
+/// function ref replaced at runtime) is set inside a render effect, so the
+/// runtime setter moves it from the old key to the new one, as Vue's
+/// `transformTemplateRef` registers it. A literal one is set once.
+#[inline(never)]
+fn push_bound_template_ref<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    element_id: usize,
+    block: &mut BlockIRNode<'a>,
+    value: Box<'a, SimpleExpressionNode<'a>>,
+) {
+    let constant = is_constant_ref(value.content);
+    let operation = OperationNode::SetTemplateRef(SetTemplateRefIRNode {
+        element: element_id,
+        value,
+        ref_for: ctx.for_depth > 0 || has_static_ref_for(el),
+    });
+    if constant {
+        block.operation.push(operation);
+    } else {
+        ctx.push_dynamic_operation(block, operation);
+    }
+}
+
+/// `@vue/compiler-vapor`'s `isConstantExpression` for a ref value: a literal
+/// whose value cannot change between renders.
+fn is_constant_ref(content: &str) -> bool {
+    let text = content.trim();
+    if matches!(text, "true" | "false" | "null" | "undefined" | "this") {
+        return true;
+    }
+    match text.as_bytes() {
+        [b'0'..=b'9' | b'.' | b'-' | b'+', ..] => text.parse::<f64>().is_ok(),
+        [quote @ (b'"' | b'\'' | b'`'), body @ .., last] if last == quote => {
+            !body.contains(quote)
+                && !body.contains(&b'\\')
+                && !(*quote == b'`' && body.contains(&b'$'))
+        }
+        _ => false,
+    }
 }
 
 fn extract_template_ref_value<'a>(
@@ -296,6 +344,7 @@ fn extract_template_ref_value<'a>(
 
 /// `ref_for` written as an attribute, or as the constant-true binding JSX
 /// lowers a bare `ref_for` to.
+#[inline(always)]
 fn has_static_ref_for(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| match prop {
         PropNode::Attribute(attr) => attr.name == "ref_for",

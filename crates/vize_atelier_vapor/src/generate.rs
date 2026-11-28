@@ -275,13 +275,13 @@ fn maybe_generate_text_ref(ctx: &mut GenerateContext, op: &OperationNode<'_>) {
     {
         ctx.use_helper("txt");
         let var_name = ctx.next_text_node(set_text.element);
-        let mut line = String::with_capacity(32);
-        line.push_str("const ");
-        line.push_str(&var_name);
-        line.push_str(" = _txt(n");
-        line.push_str(&set_text.element.to_compact_string());
-        line.push(')');
-        ctx.push_line(&line);
+        // Appended straight to the inlined output buffer: no line is built.
+        ctx.push_indent();
+        ctx.push("const ");
+        ctx.push(&var_name);
+        ctx.push(" = _txt(n");
+        ctx.push(&set_text.element.to_compact_string());
+        ctx.push(")\n");
     }
 }
 
