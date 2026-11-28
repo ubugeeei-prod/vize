@@ -22,6 +22,14 @@ on:
         description: Exact head commit (40 hex characters)
         required: true
         type: string
+      runner:
+        description: Linux runner size for the exact same measurement
+        required: false
+        default: blacksmith-32vcpu-ubuntu-2404
+        type: choice
+        options:
+          - blacksmith-32vcpu-ubuntu-2404
+          - blacksmith-16vcpu-ubuntu-2404
       twins:
         description: Also build and measure an independent A/A twin of each side
         required: false
@@ -30,7 +38,7 @@ on:
 
 permissions: { contents: read }
 concurrency:
-  group: shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  group: shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
   cancel-in-progress: false
 env:
   CARGO_INCREMENTAL: "0"
@@ -43,7 +51,7 @@ env:
 jobs:
   measure:
     name: Release-profile instructions and sizes
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
     timeout-minutes: 360
     steps:
       - name: Check out the workflow's scripts
