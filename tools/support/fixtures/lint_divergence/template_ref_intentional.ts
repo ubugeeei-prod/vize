@@ -12,6 +12,31 @@ interface Node {
   [key: string]: unknown;
 }
 const requireFromTests = createRequire(new URL("../../../../tests/package.json", import.meta.url));
+const requireFromBench = createRequire(
+  new URL("../../../benchmarks/scripts/package.json", import.meta.url),
+);
+interface Compiler {
+  parse(source: string): {
+    errors: unknown[];
+    descriptor: {
+      scriptSetup: {
+        content: string;
+        lang?: string;
+        loc: { start: { offset: number } };
+      } | null;
+    };
+  };
+  babelParse(source: string, options: { sourceType: string; plugins: string[] }): { program: Node };
+}
+function compiler(): Compiler {
+  // Both execution scopes already pin compiler-sfc to the same catalog entry.
+  // Unit checks install tests; corpus qualification installs benchmark tools.
+  try {
+    return requireFromBench("@vue/compiler-sfc") as Compiler;
+  } catch {
+    return requireFromTests("@vue/compiler-sfc") as Compiler;
+  }
+}
 
 function node(value: unknown): Node | null {
   return typeof value === "object" &&
@@ -82,26 +107,12 @@ export function mutableTemplateRefReason(finding: Finding, source: string): stri
   const end = offset(source, finding.endLine, finding.endColumn);
   if (start === null || end === null) return null;
   try {
-    const sfc = requireFromTests("@vue/compiler-sfc") as {
-      parse(source: string): {
-        errors: unknown[];
-        descriptor: {
-          scriptSetup: {
-            content: string;
-            lang?: string;
-            loc: { start: { offset: number } };
-          } | null;
-        };
-      };
-    };
+    const sfc = compiler();
     const parsed = sfc.parse(source),
       script = parsed.descriptor.scriptSetup;
     if (parsed.errors.length || script === null) return null;
-    const parser = requireFromTests("@babel/parser") as {
-      parse(source: string, options: { sourceType: string; plugins: string[] }): { program: Node };
-    };
     const plugins = script.lang?.endsWith("x") ? ["typescript", "jsx"] : ["typescript"];
-    const program = parser.parse(script.content, { sourceType: "module", plugins }).program;
+    const program = sfc.babelParse(script.content, { sourceType: "module", plugins }).program;
     const declarations = (Array.isArray(program.body) ? program.body : [])
       .map(node)
       .filter(
