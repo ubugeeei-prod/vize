@@ -157,7 +157,33 @@ def make_function(source: str, name: str) -> str:
         before = "\n    visitor.call_expression(it);"
     source = source[:closing] + after + source[closing:]
     source = source[:opening + 1] + before + source[opening + 1:]
+    words = [word for word, _, _ in tokens(source)]
+    for argument in ("visitor", "it", "flags"):
+        if words.count(argument) == 1:
+            source = re.sub(rf"\b{argument}\b", "_" + argument, source)
     return source
+
+
+def chunk_source(chunk):
+    """Name every imported item, following the workspace lint contract."""
+    body = "\n".join(text for _, text in chunk)
+    parsed = [word for word, _, _ in tokens(body)]
+    identifiers = {word for at, word in enumerate(parsed)
+                   if word[0].isupper() and parsed[max(0, at - 2):at] != [":", ":"]}
+    ast = identifiers - {"ArenaVec", "LentNodes", "ScopeFlags", "V", "Some", "None", "Option"}
+    ast.update(re.findall(r"\b(match_\w+)!", body))
+    defined = {name for name, _ in chunk}
+    called = set(re.findall(r"\b(walk_\w+)\(", body)) - defined
+    imports = ["use super::super::LentNodes;"]
+    if called:
+        imports.append("use super::{" + ", ".join(sorted(called)) + "};")
+    if "ArenaVec" in identifiers:
+        imports.append("use oxc_allocator::ArenaVec;")
+    if ast:
+        imports.append("use oxc_ast::ast::{" + ", ".join(sorted(ast)) + "};")
+    if "ScopeFlags" in identifiers:
+        imports.append("use oxc_syntax::scope::ScopeFlags;")
+    return "// Generated from OXC's pinned immutable walk; see mod.rs for provenance.\n" + "\n".join(imports) + "\n\n" + body, called
 
 
 def main():
@@ -204,7 +230,7 @@ def main():
     if calls != expected:
         raise SystemExit(f"unexpected residual visitor hooks: {calls}")
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    header = "// Generated from OXC's pinned immutable walk; see mod.rs for provenance.\nuse super::*;\n\n"
+    header = "// Generated from OXC's pinned immutable walk; see mod.rs for provenance.\n"
     chunks, chunk = [], []
     for name, body in functions:
         if chunk and len((header + "\n".join(text for _, text in chunk) + body).splitlines()) > 450:
@@ -213,9 +239,15 @@ def main():
         chunk.append((name, body))
     if chunk:
         chunks.append(chunk)
+    called = {"walk_program", "walk_expression", "walk_jsx_expression_container"}
     for index, chunk in enumerate(chunks, 1):
-        (args.output_dir / f"part_{index:02}.rs").write_text(header + "\n".join(body for name, body in chunk))
-    declarations = "\n".join(f"mod part_{index:02};\npub(super) use part_{index:02}::*;" for index in range(1, len(chunks) + 1))
+        contents, external = chunk_source(chunk)
+        called.update(external)
+        (args.output_dir / f"part_{index:02}.rs").write_text(contents)
+    declarations = "\n".join(
+        f"mod part_{index:02};\npub(super) use part_{index:02}::{{" +
+        ", ".join(name for name, _ in chunk if name in called) + "};"
+        for index, chunk in enumerate(chunks, 1))
     root = f'''//! Private lifetime-carrying immutable AST traversal.
 //!
 //! Adapted from OXC {REVISION}, `{SOURCE_PATH}`.
@@ -227,20 +259,6 @@ def main():
 //!
 //! OXC copyright (c) 2024-present VoidZero Inc. & Contributors; (c) 2023
 //! Boshen. The complete MIT license is in the adjacent LICENSE file.
-
-#![allow(
-    unused_variables,
-    unused_imports,
-    clippy::match_same_arms,
-    clippy::semicolon_if_nothing_returned,
-    clippy::needless_pass_by_ref_mut,
-    clippy::trivially_copy_pass_by_ref,
-)]
-
-use super::LentNodes;
-use oxc_allocator::ArenaVec;
-use oxc_ast::ast::*;
-use oxc_syntax::scope::ScopeFlags;
 
 {declarations}
 '''

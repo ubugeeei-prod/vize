@@ -1,5 +1,29 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
+use super::super::LentNodes;
+use super::{
+    walk_array_pattern, walk_assignment_target, walk_binding_identifier, walk_binding_properties,
+    walk_binding_rest_element, walk_call_expression, walk_class, walk_expression, walk_expressions,
+    walk_function, walk_identifier_reference, walk_label_identifier, walk_member_expression,
+    walk_module_declaration, walk_property_key, walk_span, walk_statements, walk_string_literal,
+    walk_switch_cases, walk_ts_enum_declaration, walk_ts_global_declaration,
+    walk_ts_import_equals_declaration, walk_ts_interface_declaration, walk_ts_module_declaration,
+    walk_ts_non_null_expression, walk_ts_type_alias_declaration, walk_ts_type_annotation,
+    walk_variable_declarators,
+};
+use oxc_ast::ast::{
+    AssignmentPattern, AssignmentTargetMaybeDefault, AssignmentTargetProperty,
+    AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty,
+    AssignmentTargetWithDefault, AwaitExpression, BindingPattern, BlockStatement, BreakStatement,
+    CatchClause, CatchParameter, ChainElement, ChainExpression, ContinueStatement,
+    DebuggerStatement, Declaration, Directive, DoWhileStatement, EmptyStatement,
+    ExpressionStatement, ForInStatement, ForOfStatement, ForStatement, ForStatementInit,
+    ForStatementLeft, Hashbang, IfStatement, LabeledStatement, ObjectPattern,
+    ParenthesizedExpression, ReturnStatement, SequenceExpression, Statement, Super, SwitchCase,
+    SwitchStatement, ThrowStatement, TryStatement, VariableDeclaration, VariableDeclarator,
+    WhileStatement, WithStatement, match_assignment_target, match_declaration, match_expression,
+    match_member_expression, match_module_declaration,
+};
+use oxc_syntax::scope::ScopeFlags;
 
 #[inline]
 pub(crate) fn walk_assignment_target_maybe_default<'a, V: LentNodes<'a>>(

@@ -1,17 +1,31 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
-
-#[inline]
-pub(crate) fn walk_ts_import_type_qualifier<'a, V: LentNodes<'a>>(
-    visitor: &mut V,
-    it: &'a TSImportTypeQualifier<'a>,
-) {
-    // No `AstKind` for this type
-    match it {
-        TSImportTypeQualifier::Identifier(it) => walk_identifier_name(visitor, it),
-        TSImportTypeQualifier::QualifiedName(it) => walk_ts_import_type_qualified_name(visitor, it),
-    }
-}
+use super::super::LentNodes;
+use super::{
+    walk_array_expression_element, walk_assignment_target_property, walk_binding_identifier,
+    walk_binding_property, walk_class_element, walk_directive, walk_export_specifier,
+    walk_expression, walk_formal_parameter, walk_formal_parameters, walk_identifier_name,
+    walk_identifier_reference, walk_import_attribute, walk_import_declaration_specifier,
+    walk_jsx_attribute_item, walk_jsx_child, walk_object_property_kind, walk_spread_element,
+    walk_statement, walk_string_literal, walk_switch_case, walk_template_element,
+    walk_ts_class_implements, walk_ts_enum_member, walk_ts_import_type_qualifier,
+    walk_ts_interface_heritage, walk_ts_qualified_name, walk_ts_signature, walk_ts_this_parameter,
+    walk_ts_tuple_element, walk_ts_type, walk_ts_type_annotation, walk_ts_type_parameter,
+    walk_ts_type_parameter_declaration, walk_ts_type_parameter_instantiation,
+    walk_variable_declarator,
+};
+use oxc_allocator::ArenaVec;
+use oxc_ast::ast::{
+    Argument, ArrayExpressionElement, AssignmentTargetProperty, BindingProperty, ClassElement,
+    Decorator, Directive, ExportSpecifier, Expression, FormalParameter, ImportAttribute,
+    ImportDeclarationSpecifier, JSDocNonNullableType, JSDocNullableType, JSDocUnknownType,
+    JSXAttributeItem, JSXChild, ObjectPropertyKind, Span, Statement, SwitchCase, TSAsExpression,
+    TSClassImplements, TSConstructorType, TSEnumMember, TSExportAssignment,
+    TSExternalModuleReference, TSFunctionType, TSImportEqualsDeclaration,
+    TSImportTypeQualifiedName, TSInstantiationExpression, TSInterfaceHeritage, TSMappedType,
+    TSModuleReference, TSNamespaceExportDeclaration, TSNonNullExpression, TSSatisfiesExpression,
+    TSSignature, TSTemplateLiteralType, TSTupleElement, TSType, TSTypeAssertion, TSTypeParameter,
+    TemplateElement, VariableDeclarator,
+};
 
 #[inline]
 pub(crate) fn walk_ts_import_type_qualified_name<'a, V: LentNodes<'a>>(
@@ -209,7 +223,7 @@ pub(crate) fn walk_js_doc_unknown_type<'a, V: LentNodes<'a>>(
 }
 
 #[inline]
-pub(crate) fn walk_span<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a Span) {
+pub(crate) fn walk_span<'a, V: LentNodes<'a>>(_visitor: &mut V, _it: &'a Span) {
     // No `AstKind` for this type
 }
 
@@ -467,5 +481,15 @@ pub(crate) fn walk_ts_interface_heritages<'a, V: LentNodes<'a>>(
 ) {
     for el in it {
         walk_ts_interface_heritage(visitor, el);
+    }
+}
+
+#[inline]
+pub(crate) fn walk_ts_signatures<'a, V: LentNodes<'a>>(
+    visitor: &mut V,
+    it: &'a ArenaVec<'a, TSSignature<'a>>,
+) {
+    for el in it {
+        walk_ts_signature(visitor, el);
     }
 }

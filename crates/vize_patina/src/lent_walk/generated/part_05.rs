@@ -1,18 +1,25 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
-
-#[inline]
-pub(crate) fn walk_ts_tuple_element<'a, V: LentNodes<'a>>(
-    visitor: &mut V,
-    it: &'a TSTupleElement<'a>,
-) {
-    // No `AstKind` for this type
-    match it {
-        TSTupleElement::TSOptionalType(it) => walk_ts_optional_type(visitor, it),
-        TSTupleElement::TSRestType(it) => walk_ts_rest_type(visitor, it),
-        match_ts_type!(TSTupleElement) => walk_ts_type(visitor, it.to_ts_type()),
-    }
-}
+use super::super::LentNodes;
+use super::{
+    walk_binding_identifier, walk_directives, walk_expression, walk_formal_parameters,
+    walk_identifier_name, walk_identifier_reference, walk_object_expression, walk_property_key,
+    walk_span, walk_statements, walk_string_literal, walk_this_expression,
+    walk_ts_import_type_qualified_name, walk_ts_index_signature_names, walk_ts_interface_heritages,
+    walk_ts_signatures, walk_ts_this_parameter, walk_ts_type, walk_ts_type_annotation,
+    walk_ts_type_parameters, walk_ts_types,
+};
+use oxc_ast::ast::{
+    TSAnyKeyword, TSBigIntKeyword, TSBooleanKeyword, TSCallSignatureDeclaration, TSClassImplements,
+    TSConstructSignatureDeclaration, TSGlobalDeclaration, TSImportType, TSImportTypeQualifier,
+    TSIndexSignature, TSIndexSignatureName, TSInferType, TSInterfaceBody, TSInterfaceDeclaration,
+    TSInterfaceHeritage, TSIntrinsicKeyword, TSMethodSignature, TSModuleBlock, TSModuleDeclaration,
+    TSModuleDeclarationBody, TSModuleDeclarationName, TSNeverKeyword, TSNullKeyword,
+    TSNumberKeyword, TSObjectKeyword, TSPropertySignature, TSQualifiedName, TSSignature,
+    TSStringKeyword, TSSymbolKeyword, TSThisType, TSTypeAliasDeclaration, TSTypeLiteral,
+    TSTypeName, TSTypeParameter, TSTypeParameterDeclaration, TSTypeParameterInstantiation,
+    TSTypePredicate, TSTypePredicateName, TSTypeQuery, TSTypeQueryExprName, TSTypeReference,
+    TSUndefinedKeyword, TSUnknownKeyword, TSVoidKeyword, match_ts_type_name,
+};
 
 #[inline]
 pub(crate) fn walk_ts_any_keyword<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a TSAnyKeyword) {
@@ -464,5 +471,17 @@ pub(crate) fn walk_ts_import_type<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a
     }
     if let Some(type_arguments) = &it.type_arguments {
         walk_ts_type_parameter_instantiation(visitor, type_arguments);
+    }
+}
+
+#[inline]
+pub(crate) fn walk_ts_import_type_qualifier<'a, V: LentNodes<'a>>(
+    visitor: &mut V,
+    it: &'a TSImportTypeQualifier<'a>,
+) {
+    // No `AstKind` for this type
+    match it {
+        TSImportTypeQualifier::Identifier(it) => walk_identifier_name(visitor, it),
+        TSImportTypeQualifier::QualifiedName(it) => walk_ts_import_type_qualified_name(visitor, it),
     }
 }

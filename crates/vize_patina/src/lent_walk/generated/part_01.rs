@@ -1,5 +1,30 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
+use super::super::LentNodes;
+use super::{
+    walk_arguments, walk_array_expression_elements, walk_arrow_function_expression,
+    walk_assignment_target_maybe_default, walk_assignment_target_properties, walk_await_expression,
+    walk_big_int_literal, walk_boolean_literal, walk_chain_expression, walk_class, walk_directives,
+    walk_expressions, walk_function, walk_hashbang, walk_import_expression, walk_jsx_element,
+    walk_jsx_fragment, walk_null_literal, walk_numeric_literal, walk_object_property_kinds,
+    walk_parenthesized_expression, walk_private_identifier, walk_reg_exp_literal,
+    walk_sequence_expression, walk_span, walk_statements, walk_string_literal, walk_super,
+    walk_template_elements, walk_ts_as_expression, walk_ts_instantiation_expression,
+    walk_ts_non_null_expression, walk_ts_satisfies_expression, walk_ts_type_assertion,
+    walk_ts_type_parameter_instantiation, walk_v8_intrinsic_expression, walk_yield_expression,
+};
+use oxc_ast::ast::{
+    Argument, ArrayAssignmentTarget, ArrayExpression, ArrayExpressionElement, AssignmentExpression,
+    AssignmentTarget, AssignmentTargetPattern, AssignmentTargetRest, BinaryExpression,
+    BindingIdentifier, CallExpression, ComputedMemberExpression, ConditionalExpression, Elision,
+    Expression, IdentifierName, IdentifierReference, ImportMeta, LabelIdentifier,
+    LogicalExpression, MemberExpression, NewExpression, NewTarget, ObjectAssignmentTarget,
+    ObjectExpression, ObjectProperty, ObjectPropertyKind, PrivateFieldExpression,
+    PrivateInExpression, Program, PropertyKey, SimpleAssignmentTarget, SpreadElement,
+    StaticMemberExpression, TaggedTemplateExpression, TemplateElement, TemplateLiteral,
+    ThisExpression, UnaryExpression, UpdateExpression, match_assignment_target_pattern,
+    match_expression, match_member_expression, match_simple_assignment_target,
+};
+use oxc_syntax::scope::ScopeFlags;
 
 #[inline]
 pub(crate) fn walk_program<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a Program<'a>) {

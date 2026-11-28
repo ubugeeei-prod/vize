@@ -1,5 +1,27 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
+use super::super::LentNodes;
+use super::{
+    walk_arguments, walk_binding_identifier, walk_binding_pattern, walk_class_elements,
+    walk_declaration, walk_decorators, walk_directives, walk_export_specifiers, walk_expression,
+    walk_formal_parameter_list, walk_identifier_name, walk_identifier_reference,
+    walk_import_attributes, walk_import_declaration_specifiers, walk_property_key, walk_span,
+    walk_statements, walk_string_literal, walk_ts_class_implements_list, walk_ts_export_assignment,
+    walk_ts_index_signature, walk_ts_interface_declaration, walk_ts_namespace_export_declaration,
+    walk_ts_this_parameter, walk_ts_type_annotation, walk_ts_type_parameter_declaration,
+    walk_ts_type_parameter_instantiation,
+};
+use oxc_ast::ast::{
+    AccessorProperty, ArrayPattern, ArrowFunctionExpression, BindingProperty, BindingRestElement,
+    BooleanLiteral, Class, ClassBody, ClassElement, ExportAllDeclaration, ExportDefaultDeclaration,
+    ExportDefaultDeclarationKind, ExportNamedDeclaration, ExportSpecifier, FormalParameter,
+    FormalParameterRest, FormalParameters, Function, FunctionBody, ImportAttribute,
+    ImportAttributeKey, ImportDeclaration, ImportDeclarationSpecifier, ImportDefaultSpecifier,
+    ImportExpression, ImportNamespaceSpecifier, ImportSpecifier, MethodDefinition,
+    MethodDefinitionKind, ModuleDeclaration, ModuleExportName, NullLiteral, NumericLiteral,
+    PrivateIdentifier, PropertyDefinition, StaticBlock, V8IntrinsicExpression, WithClause,
+    YieldExpression, match_expression,
+};
+use oxc_syntax::scope::ScopeFlags;
 
 #[inline]
 pub(crate) fn walk_binding_property<'a, V: LentNodes<'a>>(
@@ -34,7 +56,7 @@ pub(crate) fn walk_binding_rest_element<'a, V: LentNodes<'a>>(
 pub(crate) fn walk_function<'a, V: LentNodes<'a>>(
     visitor: &mut V,
     it: &'a Function<'a>,
-    flags: ScopeFlags,
+    _flags: ScopeFlags,
 ) {
     walk_span(visitor, &it.span);
     if let Some(id) = &it.id {

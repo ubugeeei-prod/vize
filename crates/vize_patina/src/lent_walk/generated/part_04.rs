@@ -1,5 +1,30 @@
 // Generated from OXC's pinned immutable walk; see mod.rs for provenance.
-use super::*;
+use super::super::LentNodes;
+use super::{
+    walk_binding_identifier, walk_boolean_literal, walk_expression, walk_identifier_name,
+    walk_identifier_reference, walk_js_doc_non_nullable_type, walk_js_doc_nullable_type,
+    walk_js_doc_unknown_type, walk_jsx_attribute_items, walk_jsx_children, walk_numeric_literal,
+    walk_span, walk_template_literal, walk_this_expression, walk_ts_any_keyword,
+    walk_ts_big_int_keyword, walk_ts_boolean_keyword, walk_ts_constructor_type,
+    walk_ts_enum_members, walk_ts_function_type, walk_ts_import_type, walk_ts_infer_type,
+    walk_ts_intrinsic_keyword, walk_ts_mapped_type, walk_ts_never_keyword, walk_ts_null_keyword,
+    walk_ts_number_keyword, walk_ts_object_keyword, walk_ts_string_keyword, walk_ts_symbol_keyword,
+    walk_ts_template_literal_type, walk_ts_this_type, walk_ts_tuple_elements, walk_ts_type_literal,
+    walk_ts_type_parameter_instantiation, walk_ts_type_predicate, walk_ts_type_query,
+    walk_ts_type_reference, walk_ts_types, walk_ts_undefined_keyword, walk_ts_unknown_keyword,
+    walk_ts_void_keyword, walk_unary_expression,
+};
+use oxc_ast::ast::{
+    BigIntLiteral, JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild,
+    JSXClosingElement, JSXClosingFragment, JSXElement, JSXElementName, JSXEmptyExpression,
+    JSXExpression, JSXExpressionContainer, JSXFragment, JSXIdentifier, JSXMemberExpression,
+    JSXMemberExpressionObject, JSXNamespacedName, JSXOpeningElement, JSXOpeningFragment,
+    JSXSpreadAttribute, JSXSpreadChild, JSXText, RegExpLiteral, StringLiteral, TSArrayType,
+    TSConditionalType, TSEnumBody, TSEnumDeclaration, TSEnumMember, TSEnumMemberName,
+    TSIndexedAccessType, TSIntersectionType, TSLiteral, TSLiteralType, TSNamedTupleMember,
+    TSOptionalType, TSParenthesizedType, TSRestType, TSThisParameter, TSTupleElement, TSTupleType,
+    TSType, TSTypeAnnotation, TSTypeOperator, TSUnionType, match_expression, match_ts_type,
+};
 
 #[inline]
 pub(crate) fn walk_string_literal<'a, V: LentNodes<'a>>(
@@ -474,4 +499,17 @@ pub(crate) fn walk_ts_optional_type<'a, V: LentNodes<'a>>(
 pub(crate) fn walk_ts_rest_type<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a TSRestType<'a>) {
     walk_span(visitor, &it.span);
     walk_ts_type(visitor, &it.type_annotation);
+}
+
+#[inline]
+pub(crate) fn walk_ts_tuple_element<'a, V: LentNodes<'a>>(
+    visitor: &mut V,
+    it: &'a TSTupleElement<'a>,
+) {
+    // No `AstKind` for this type
+    match it {
+        TSTupleElement::TSOptionalType(it) => walk_ts_optional_type(visitor, it),
+        TSTupleElement::TSRestType(it) => walk_ts_rest_type(visitor, it),
+        match_ts_type!(TSTupleElement) => walk_ts_type(visitor, it.to_ts_type()),
+    }
 }
