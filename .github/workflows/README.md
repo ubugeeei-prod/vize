@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 16        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 13        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 19        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 20        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 4         |
@@ -102,17 +102,18 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.06 | Benchmark - Fresco dimensions          | [`03-fresco-layout.yml`](./03-fresco-layout.yml)                   |
 | 03.07 | Benchmark - Level memory               | [`03-level-memory.yml`](./03-level-memory.yml)                     |
 | 03.08 | Davinci resource budgets               | [`03-lsp-resources.yml`](./03-lsp-resources.yml)                   |
-| 03.09 | Benchmark - Source comparison          | [`03-source-comparison.yml`](./03-source-comparison.yml)           |
-| 03.10 | Benchmark - Tool comparison            | [`03-tool-comparison.yml`](./03-tool-comparison.yml)               |
-| 03.11 | Type-check cold pair                   | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)           |
-| 03.12 | Type-check profile                     | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)           |
-| 03.13 | Type-check scaling                     | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)           |
-| 03.14 | Typecheck vs vue-tsc                   | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml)     |
-| 03.15 | Benchmark - Vite client Vue resolution | [`03-vite-client-resolution.yml`](./03-vite-client-resolution.yml) |
-| 03.16 | Benchmark - VS Code startup            | [`03-vscode-startup.yml`](./03-vscode-startup.yml)                 |
-| 03.17 | Vue Benchmarks Replay                  | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)                 |
-| 03.18 | Level instruction counts               | [`level-instruction-counts.yml`](./level-instruction-counts.yml)   |
-| 03.19 | Shipped release-profile measure        | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
+| 03.09 | Shipped CLI Nuxt consumer              | [`03-shipped-cli-nuxt.yml`](./03-shipped-cli-nuxt.yml)             |
+| 03.10 | Benchmark - Source comparison          | [`03-source-comparison.yml`](./03-source-comparison.yml)           |
+| 03.11 | Benchmark - Tool comparison            | [`03-tool-comparison.yml`](./03-tool-comparison.yml)               |
+| 03.12 | Type-check cold pair                   | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)           |
+| 03.13 | Type-check profile                     | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)           |
+| 03.14 | Type-check scaling                     | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)           |
+| 03.15 | Typecheck vs vue-tsc                   | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml)     |
+| 03.16 | Benchmark - Vite client Vue resolution | [`03-vite-client-resolution.yml`](./03-vite-client-resolution.yml) |
+| 03.17 | Benchmark - VS Code startup            | [`03-vscode-startup.yml`](./03-vscode-startup.yml)                 |
+| 03.18 | Vue Benchmarks Replay                  | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)                 |
+| 03.19 | Level instruction counts               | [`level-instruction-counts.yml`](./level-instruction-counts.yml)   |
+| 03.20 | Shipped release-profile measure        | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
 
 ## 04 Type checking and content mapping
 

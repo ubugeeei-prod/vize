@@ -1,0 +1,92 @@
+{
+  "schema": "vize.shipped-cli.nuxt.retained-campaign.v1",
+  "scope": "Original production campaign retained; head97c is disqualified for performance acceptance. Offline verification and report publication only; no CLI execution.",
+  "archiveSha256": "26dae2fb07c55bead0d54571934459c4ed2145953b595dc7237d38ef7094dfa5",
+  "outputSha256": "122910dd95ab6cbb7de97d9b5eb2a97066b4f0ff06a876bb92462432f1a419af",
+  "executionSha": "2226bce077c142fa932632936be6b80d6ee81114",
+  "publicationFailure": "ReferenceError: join is not defined, after all four warmups, 32 measurements, and before/after input checks had completed.",
+  "run": {
+    "id": 46128822125,
+    "path": ".github/workflows/03-shipped-cli-nuxt.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "failure",
+    "head_sha": "45e22eecbd0b36c2163e41683450daf627f71ff7",
+    "run_attempt": 1,
+    "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/46128822125",
+    "head_branch": "p1/qualification-20261128",
+    "created_at": "2026-11-28T09:05:31Z",
+    "updated_at": "2026-11-28T09:23:50Z"
+  },
+  "artifact": {
+    "id": 15256773914,
+    "name": "shipped-cli-nuxt-46128822125",
+    "size_in_bytes": 355353,
+    "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/15256773914",
+    "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/15256773914/zip",
+    "expired": false,
+    "created_at": "2026-11-28T09:23:46Z",
+    "expires_at": "2026-12-28T09:23:45Z",
+    "updated_at": "2026-11-28T09:23:46Z",
+    "digest": "sha256:26dae2fb07c55bead0d54571934459c4ed2145953b595dc7237d38ef7094dfa5",
+    "workflow_run": {
+      "id": 46128822125,
+      "repository_id": 1123610216,
+      "head_repository_id": 1123610216,
+      "head_branch": "p1/qualification-20261128",
+      "head_sha": "45e22eecbd0b36c2163e41683450daf627f71ff7"
+    }
+  },
+  "receipt": {
+    "schema": "vize.shipped-cli.nuxt.receipt.v1",
+    "scope": "Linux production CLI qualification of the frozen Nuxt scale consumer; equivalent platform workload, not identical Darwin execution",
+    "capturedAt": "2026-11-28",
+    "originalProject": "/private/tmp/vize-p1-nuxt-scale-consumer",
+    "originalDependencies": "/private/tmp/vize-p1-nuxt-final-consumer",
+    "snapshotSha256": "23fd62a5c0f1b6ab2b5a33ffdbf86e8df021e6ba91961854600a3885facf01e8",
+    "snapshotJsonSha256": "bdb4f31bddc6edaf6cbbc7f6b2e4a8856e2702964ac294d58f719d5335368c14",
+    "lockSha256": "f3935d1ce5c56fcac2997db7e31015fb7e1c87ac6efea17b1f3052fd57f4e103",
+    "packageSha256": "1641cb2899bebe3949ba2a41befaef2fef70203c655a3ff32fa6848c0fa3068e",
+    "fixtureFileCount": 1043,
+    "sfcCount": 1002,
+    "reportedFileCount": 1003,
+    "programInputCount": 1107,
+    "generatedGlobalScaleComponents": 1000,
+    "runtime": {
+      "node": "26.13.1",
+      "nuxt": "4.7.0",
+      "vue": "3.5.46",
+      "vue-router": "5.3.1",
+      "typescript": "6.0.3",
+      "@types/node": "26.6.11",
+      "nativeTypeScript": "7.0.2"
+    },
+    "producer": {
+      "repository": "ubugeeei-prod/vize",
+      "runId": 46121566596,
+      "driverSha": "632dddab5c6e08ccef72110c6b63db7aa71c2714",
+      "workflow": ".github/workflows/shipped-profile-measure.yml",
+      "artifactId": 15256126634,
+      "artifactName": "release-measure-46121566596",
+      "artifactSha256": "fa2e0882ef9313fee74081689b92204ea870d8b01001abe4facb1db3a62d79c2",
+      "baseSha": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+      "headSha": "97cbd672a507a55a16e1d9855d9a86202106f562",
+      "sourceDateEpoch": "1795849088",
+      "target": "x86_64-unknown-linux-gnu.2.17",
+      "cli": {
+        "base": {
+          "sha256": "458e84f2d087394f39e2abbbcab4cff6f4cf49935f775e92efec9a017449c638",
+          "sizeBytes": 67121624
+        },
+        "head": {
+          "sha256": "92a39e44a545a74bd7e5a87aaf513ffcdc76977b3789eb0597b52638e772a0b4",
+          "sizeBytes": 67224600
+        }
+      }
+    }
+  },
+  "receiptSha256": "7f6dac93302f105b2c4f714ceb21d37a3082db3e32610ca662ceb18d263aad96",
+  "archiveFileCount": 128,
+  "nodeSha256": "d931c649850ffa7155b8ceffb400dc916ef325866e509cc52ae36e33e8fbb9a9",
+  "nativeTypeScriptSha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+}

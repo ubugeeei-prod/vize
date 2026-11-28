@@ -1,0 +1,16 @@
+{
+  "name": "vize-p1-nuxt-final-consumer",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vizejs/nuxt": "0.810.0",
+    "nuxt": "4.7.0",
+    "typescript": "6.0.3",
+    "vue": "3.5.46",
+    "vue-router": "5.3.1",
+    "vue-tsc": "3.3.14"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.11"
+  }
+}
