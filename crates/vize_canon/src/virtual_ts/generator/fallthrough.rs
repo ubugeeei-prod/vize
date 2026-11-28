@@ -1,12 +1,18 @@
 use vize_carton::{String, camelize, capitalize, cstr, is_native_tag};
 use vize_relief::{ElementNode, ExpressionNode, IfNode, PropNode, RootNode, TemplateChildNode};
 
+use crate::virtual_ts::component_reference::resolves_before_setup_bindings;
+
 enum FallthroughRootTarget {
     Native(FallthroughRoot),
     /// A component root, by its authored tag. Whether that tag resolves to a
     /// setup binding (and so to a typed fallthrough surface) is decided when
     /// the type is rendered, not while walking the template.
     Component(FallthroughRoot),
+    /// A root Vue's compiler resolves before setup bindings: the dynamic
+    /// `<component is>` and the built-in components. No binding spelled like
+    /// its tag owns it, so its surface stays open.
+    Builtin,
 }
 
 /// The element the fallthrough attributes land on.
@@ -80,6 +86,9 @@ fn collect_explicit_attrs_targets_from_child(
 }
 
 fn element_fallthrough_target(element: &ElementNode<'_>) -> FallthroughRootTarget {
+    if resolves_before_setup_bindings(element) {
+        return FallthroughRootTarget::Builtin;
+    }
     let root = FallthroughRoot {
         tag: String::from(element.tag),
         start: element.loc.span.start,

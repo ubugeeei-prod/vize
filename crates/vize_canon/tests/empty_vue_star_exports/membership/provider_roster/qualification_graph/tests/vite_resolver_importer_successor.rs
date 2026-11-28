@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn resolver_importer_successor_reuses_the_exact_current_graph_predecessor() {
-    let lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+    let lock = crate::package_task_history::current_lock_before_parser_free_builders().into_bytes();
     let package = fs::read(support::repository().join("package.json")).unwrap();
     let previous_lock =
         crate::package_task_history::before_vite_resolver_importer("pnpm-lock.yaml", &lock)

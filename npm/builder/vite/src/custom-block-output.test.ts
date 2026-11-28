@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import type { CompiledModule, CustomBlockInfo } from "./types.ts";
-import { generateOutputWithMap } from "./utils/index.ts";
+import { generateOutputWithMap } from "../test/shaped-output.ts";
 
 const filePath = "/src/App.vue";
 const component = "const _sfc_main = {\n  name: 'App'\n};\nexport default _sfc_main\n";

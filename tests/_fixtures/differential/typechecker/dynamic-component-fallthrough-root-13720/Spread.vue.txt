@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Foo from "./Foo.vue";
+
+const baz = { bar: "baz" };
+</script>
+
+<template>
+  <Foo class="qux" :="baz" />
+</template>

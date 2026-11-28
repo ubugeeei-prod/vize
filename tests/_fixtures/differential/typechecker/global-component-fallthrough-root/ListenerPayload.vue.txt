@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Bar from "./Bar.vue";
+</script>
+
+<template>
+  <Bar @keydown="(event) => event.nope" />
+</template>

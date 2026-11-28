@@ -121,7 +121,7 @@ pub struct Linter {
     pub(crate) type_aware_tsconfig: Option<PathBuf>,
     /// One disk view for imported macro types, shared by every file this
     /// linter lints. `None` gives each file a fresh view.
-    pub(crate) type_sources: Option<super::run_type_sources::RunTypeSources>,
+    pub(crate) type_sources: Option<TypeSources>,
 }
 
 impl Linter {
@@ -242,8 +242,24 @@ impl Linter {
     /// Relative filenames name files under the working directory at this call.
     #[inline]
     pub fn with_run_scoped_type_sources(mut self) -> Self {
-        self.type_sources = Some(super::run_type_sources::RunTypeSources::for_current_dir());
+        self.type_sources = Some(TypeSources::Owned(Box::new(
+            super::run_type_sources::RunTypeSources::for_current_dir(),
+        )));
         self
+    }
+
+    /// [`Self::with_run_scoped_type_sources`] with a view other linters of the
+    /// same run share, for hosts that create a linter per file.
+    #[inline]
+    pub fn with_shared_type_sources(mut self, sources: &'static SharedTypeSources) -> Self {
+        self.type_sources = Some(TypeSources::Shared(&sources.0));
+        self
+    }
+
+    /// The disk view imported macro types resolve against, when shared.
+    #[inline]
+    pub(crate) fn run_type_sources(&self) -> Option<&super::run_type_sources::RunTypeSources> {
+        self.type_sources.as_ref().map(TypeSources::get)
     }
 
     /// Where an SFC's imported macro types resolve, when a rule needs them.
@@ -253,7 +269,21 @@ impl Linter {
         filename: &'a str,
     ) -> Option<super::engine::MacroTypeResolution<'a>> {
         self.has_resolved_macro_type_demand()
-            .then(|| super::engine::MacroTypeResolution::new(self.type_sources.as_ref(), filename))
+            .then(|| super::engine::MacroTypeResolution::new(self.run_type_sources(), filename))
+    }
+
+    /// [`Self::macro_type_resolution`] for an SFC whose script setup may declare
+    /// typed macros. Resolving reads the project's tsconfig and the script's
+    /// imports from disk, and only typed macros contribute to the result; a
+    /// rule that needs the world anyway still builds it on demand.
+    #[inline]
+    pub(crate) fn sfc_macro_type_resolution<'a>(
+        &'a self,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        filename: &'a str,
+    ) -> Option<super::engine::MacroTypeResolution<'a>> {
+        self.macro_type_resolution(filename)
+            .filter(|_| descriptor_may_have_typed_macros(descriptor))
     }
 
     /// Get the current locale.
@@ -394,4 +424,47 @@ impl Default for Linter {
 
 pub(super) fn is_type_rule(rule_name: &str) -> bool {
     rule_name.starts_with("type/")
+}
+
+/// Whether the script setup may declare a typed `defineProps`, `defineEmits`,
+/// `defineSlots` or `defineModel`, the macros whose types resolve across files.
+pub(crate) fn descriptor_may_have_typed_macros(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> bool {
+    descriptor.script_setup.as_ref().is_some_and(|block| {
+        let source = block.content.as_ref();
+        source.contains('<')
+            && ["defineProps", "defineEmits", "defineSlots", "defineModel"]
+                .iter()
+                .any(|name| source.contains(name))
+    })
+}
+
+/// A linter's disk view for imported macro types: its own, or one its run shares.
+pub(crate) enum TypeSources {
+    Owned(Box<super::run_type_sources::RunTypeSources>),
+    Shared(&'static super::run_type_sources::RunTypeSources),
+}
+
+impl TypeSources {
+    fn get(&self) -> &super::run_type_sources::RunTypeSources {
+        match self {
+            Self::Owned(sources) => sources,
+            Self::Shared(sources) => sources,
+        }
+    }
+}
+
+/// One run's disk view for imported macro types, for the linters of that run
+/// to share. While it lives it holds the process-wide type-resolution batch
+/// open, so it is only for hosts whose sources do not change while it lives:
+/// one kept in a `static` needs a process that ends with its run.
+pub struct SharedTypeSources(super::run_type_sources::RunTypeSources);
+
+impl SharedTypeSources {
+    /// A view whose relative filenames name files under the current working
+    /// directory.
+    pub fn for_current_dir() -> Self {
+        Self(super::run_type_sources::RunTypeSources::for_current_dir())
+    }
 }

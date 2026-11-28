@@ -193,7 +193,7 @@ function restoreQueueOnlyInstructionCeilings(job: Job) {
   job.if = String(job.if).replace(pullRequest, "");
 }
 
-test("maximum non-release runners preserve every original job contract", () => {
+test("the reviewed frontend runner transition preserves every original job contract", () => {
   let selectedJobs = 0,
     protectedJobs = 0,
     restoredHostedJobs = 0;
@@ -455,11 +455,11 @@ test("helper ABI inversion rejects missing, duplicate, moved and unknown step ch
   }
 });
 
-test("all check-js event classes use the maximum non-release runner", () => {
-  const check = workflows.find((entry) => entry.specification.name === "check");
-  const selector = check?.after.jobs["check-js"]?.["runs-on"];
-  assert(selector);
-  assert.equal(selector, maximumRunner);
+test("current check-js event classes use the available validation runner", () => {
+  const live = parse(
+    fs.readFileSync(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
+  ) as Workflow;
+  assert.equal(live.jobs["check-js"]?.["runs-on"], "blacksmith-16vcpu-ubuntu-2404");
 });
 
 test("test report inversions reject any other change to the report or tooling jobs", () => {

@@ -4,13 +4,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { VizePluginState } from "./state.ts";
-import { getBoundaryPlaceholderCode } from "./load.ts";
-import { loadHook } from "./load.ts";
-import { normalizeVueServerRendererImport } from "./load.ts";
-import { transformHook } from "./load.ts";
+import { getBoundaryPlaceholderCode, loadHook } from "./load.ts";
+import { normalizeVueServerRendererImport, transformHook } from "./load.ts";
 import { rewriteImportMetaGlobBase } from "../transform.ts";
 import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
 import { loadSfcModule, transformCachedSfcModule } from "../test/sfc-module.ts";
+import { shapedCache } from "../../test/shaped-output.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,7 +82,7 @@ const grouped = import.meta.glob(["/src/demos/*.vue", "/shared/*.vue"]);`,
 
 const realPath = "/src/Hmr.vue";
 const hmrState: VizePluginState = {
-  cache: new Map([
+  cache: shapedCache([
     [
       realPath,
       {
@@ -333,7 +332,7 @@ assert.match(
 const inlinePath = "/src/InlineHmr.vue";
 const inlineState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       inlinePath,
       {
@@ -370,7 +369,7 @@ const globRoot = createTempRoot("glob-base");
 const globPath = path.join(globRoot, "src", "App.vue");
 const globState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       globPath,
       {
@@ -415,7 +414,7 @@ assert.doesNotMatch(
 const envPath = "/src/Environment.vue";
 const environmentState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       envPath,
       {
@@ -426,7 +425,7 @@ const environmentState: VizePluginState = {
       },
     ],
   ]),
-  ssrCache: new Map([
+  ssrCache: shapedCache([
     [
       envPath,
       {
@@ -505,7 +504,7 @@ assert.match(
 const cssPath = "/src/SsrStyles.vue";
 const cssState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       cssPath,
       {
@@ -517,7 +516,7 @@ const cssState: VizePluginState = {
       },
     ],
   ]),
-  ssrCache: new Map([
+  ssrCache: shapedCache([
     [
       cssPath,
       {
@@ -559,7 +558,7 @@ assert.doesNotMatch(
 const cssModulePath = "/src/ModuleButton.vue";
 const cssModuleState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       cssModulePath,
       {
@@ -620,7 +619,7 @@ assert.equal(
 const applyCssPath = "/src/ApplyStyles.vue";
 const applyCssState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       applyCssPath,
       {
@@ -694,7 +693,7 @@ assert.equal(
 const nestedCssPath = "/src/NestedStyles.vue";
 const nestedCssState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       nestedCssPath,
       {
@@ -757,7 +756,7 @@ assert.doesNotMatch(nestedCssVirtualLoad.code, /:deep/);
 const scssPath = "/src/MkSuperMenu.vue";
 const scssState: VizePluginState = {
   ...hmrState,
-  cache: new Map([
+  cache: shapedCache([
     [
       scssPath,
       {

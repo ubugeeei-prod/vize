@@ -412,7 +412,7 @@ watch(
 );
 
 const vaporTemplateRefSetter = _createTemplateRefSetter()
-const __returned__ = { vaporTemplateRefSetter, codeToThemedHtmlLines, renderCodeLines, watch, latestRenderId, lineNumbersEl, render, useTemplateRef, props, renderLineNumbers, highlight, renderWhenReady, normalizePlainHtmlLines, codeContentEl }
+const __returned__ = { vaporTemplateRefSetter, codeToThemedHtmlLines, renderCodeLines, watch, get latestRenderId() { return latestRenderId }, set latestRenderId(v) { latestRenderId = v }, lineNumbersEl, render, useTemplateRef, props, renderLineNumbers, highlight, renderWhenReady, normalizePlainHtmlLines, codeContentEl }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 const __instance = _getCurrentInstance()
 const __ctx = _proxyRefs(__returned__)
@@ -679,7 +679,7 @@ __expose({
 })
 
 const vaporTemplateRefSetter = _createTemplateRefSetter()
-const __returned__ = { vaporTemplateRefSetter, applyHighlights, scopeDecorationIds, inject, watch, configureMonaco, _injectedTheme, emit, mountEditor, useTemplateRef, getScopeDecorationClass, applyDiagnostics, getOverviewRulerColor, applyScopeDecorations, monaco, shallowRef, editorInstance, getScopeDecorationHoverMessage, props, onUnmounted, setValue, offsetToPosition, containerRef, addVueCommentAction, resolvedTheme, highlightDecorationIds }
+const __returned__ = { vaporTemplateRefSetter, applyHighlights, get scopeDecorationIds() { return scopeDecorationIds }, set scopeDecorationIds(v) { scopeDecorationIds = v }, inject, watch, configureMonaco, _injectedTheme, emit, mountEditor, useTemplateRef, getScopeDecorationClass, applyDiagnostics, getOverviewRulerColor, applyScopeDecorations, monaco, shallowRef, editorInstance, getScopeDecorationHoverMessage, props, onUnmounted, setValue, offsetToPosition, containerRef, addVueCommentAction, resolvedTheme, get highlightDecorationIds() { return highlightDecorationIds }, set highlightDecorationIds(v) { highlightDecorationIds = v } }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 const __instance = _getCurrentInstance()
 const __ctx = _proxyRefs(__returned__)
@@ -1822,7 +1822,7 @@ onUnmounted(() => {
   disposeHoverProvider();
 });
 
-const __returned__ = { filteredRules, severityOverrides, disposeHoverProvider, watch, isCategoryFullyEnabled, warningCount, useLocale, getWasm, lintResult, isCategoryPartiallyEnabled, lintFn, lintTimer, MonacoEditor, enabledRules, lint, editorRef, categories, diagnostics, theme, props, registerHoverProvider, computed, pollInterval, searchQuery, LINT_PRESET, inject, currentLocale, loadLocaleConfig, toggleCategory, initializeRuleState, mdiAlert, _injectedTheme, activeTab, locales, toggleRule, hasCompilerInitialized, tryInitialize, mdiCheckCircle, rules, useLinting, applyPreset, source, selectedPreset, getSeverityIcon, setLocale, loadRuleConfig, error, ref, selectedCategory, enabledRuleCount, onUnmounted, mdiCheck, errorCount, formatHelp, disableAllRules, enableAllRules, onMounted, loadRules, useRuleManagement, lintTime }
+const __returned__ = { filteredRules, severityOverrides, disposeHoverProvider, watch, isCategoryFullyEnabled, warningCount, useLocale, getWasm, lintResult, isCategoryPartiallyEnabled, get lintFn() { return lintFn }, set lintFn(v) { lintFn = v }, get lintTimer() { return lintTimer }, set lintTimer(v) { lintTimer = v }, MonacoEditor, enabledRules, lint, editorRef, categories, diagnostics, theme, props, registerHoverProvider, computed, get pollInterval() { return pollInterval }, set pollInterval(v) { pollInterval = v }, searchQuery, LINT_PRESET, inject, currentLocale, loadLocaleConfig, toggleCategory, initializeRuleState, mdiAlert, _injectedTheme, activeTab, locales, toggleRule, get hasCompilerInitialized() { return hasCompilerInitialized }, set hasCompilerInitialized(v) { hasCompilerInitialized = v }, tryInitialize, mdiCheckCircle, rules, useLinting, applyPreset, source, selectedPreset, getSeverityIcon, setLocale, loadRuleConfig, error, ref, selectedCategory, enabledRuleCount, onUnmounted, mdiCheck, errorCount, formatHelp, disableAllRules, enableAllRules, onMounted, loadRules, useRuleManagement, lintTime }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 const __instance = _getCurrentInstance()
 const __ctx = _proxyRefs(__returned__)

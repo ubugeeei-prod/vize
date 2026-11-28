@@ -84,7 +84,7 @@ a reviewed update to the executable verdict inventory.
 | `events/prevent-modifier`                        | divergent  | Vize ignores the underscore `prevent` modifier                                  |
 | `directives/custom-modifiers`                    | divergent  | Vize passes no custom directive modifiers                                       |
 | `directives/v-once`                              | divergent  | Vize keeps updating a `v-once` subtree                                          |
-| `props/ref-callback`                             | divergent  | Vize throws on a function `ref`                                                 |
+| `props/ref-callback`                             | equivalent | the function ref runs on mount and the element stays live                       |
 | `options/on-object-value`                        | equivalent | value-sensitive pair agrees                                                     |
 | `options/transform-on-value`                     | equivalent | value-sensitive pair agrees                                                     |
 | `options/merge-props-class-value`                | equivalent | value-sensitive pair agrees                                                     |
@@ -98,8 +98,8 @@ a reviewed update to the executable verdict inventory.
 | `props/spread-then-static-value`                 | equivalent | value-sensitive pair agrees                                                     |
 | `props/on-merge-value`                           | equivalent | value-sensitive pair agrees                                                     |
 | `props/key-value`                                | equivalent | value-sensitive pair agrees                                                     |
-| `props/ref-value`                                | divergent  | value-sensitive pair records a divergence                                       |
-| `props/ref-in-for-value`                         | divergent  | value-sensitive pair records a divergence                                       |
+| `props/ref-value`                                | equivalent | value-sensitive pair matches vue-jsx-vapor                                      |
+| `props/ref-in-for-value`                         | divergent  | vue-jsx-vapor leaves a whitespace anchor text after the list                    |
 | `events/plain-value`                             | equivalent | value-sensitive pair agrees                                                     |
 | `events/capture-value`                           | divergent  | value-sensitive pair records a divergence                                       |
 | `events/once-value`                              | divergent  | value-sensitive pair records a divergence                                       |
@@ -135,7 +135,7 @@ a reviewed update to the executable verdict inventory.
 | `optimize/style-only-value`                      | equivalent | value-sensitive pair agrees                                                     |
 | `optimize/class-and-props-value`                 | equivalent | value-sensitive pair agrees                                                     |
 | `optimize/spread-value`                          | divergent  | value-sensitive pair records a divergence                                       |
-| `optimize/ref-value`                             | divergent  | value-sensitive pair records a divergence                                       |
+| `optimize/ref-value`                             | equivalent | value-sensitive pair matches vue-jsx-vapor                                      |
 | `optimize/key-value`                             | equivalent | value-sensitive pair agrees                                                     |
 | `optimize/event-value`                           | equivalent | value-sensitive pair agrees                                                     |
 | `optimize/v-model-input-value`                   | equivalent | value-sensitive pair agrees                                                     |

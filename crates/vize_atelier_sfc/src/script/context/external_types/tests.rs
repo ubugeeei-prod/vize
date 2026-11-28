@@ -1,6 +1,7 @@
 use super::resolution::{resolve_at_src_alias, resolve_import_path};
 use std::path::{Path, PathBuf};
 
+mod bindings;
 mod differential;
 mod reference;
 mod referenced;

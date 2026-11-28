@@ -277,7 +277,7 @@ fn transform_slot_outlet_child<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     let name = get_slot_outlet_name(ctx, el);
-    let props = get_slot_outlet_props(ctx, el);
+    let (props, has_ref) = get_slot_outlet_props(ctx, el);
     let fallback = lower_fallback(ctx, el);
     block
         .operation
@@ -290,6 +290,9 @@ fn transform_slot_outlet_child<'a>(
             parent: Some(parent_id),
             anchor: Some(anchor),
         }));
+    if has_ref {
+        transform_template_ref(ctx, el, element_id, block);
+    }
 }
 
 fn transform_existing_element<'a>(

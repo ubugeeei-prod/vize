@@ -86,14 +86,14 @@ jobs:
   level-dependency-direction:
     uses: ./.github/workflows/07-level-dependencies.yml
   nix-flake:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 60
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/check-nix
   fmt-rust:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -102,7 +102,7 @@ jobs:
       - name: Format Rust
         run: cargo fmt --all -- --check
   check-js:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 15
     permissions: { contents: read, actions: read }
     env:
@@ -148,7 +148,7 @@ jobs:
     name: cargo-semver-checks (${{ matrix.crate }})
     # Check published APIs before tag promotion and when resuming an exact release tag.
     if: ${{ github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')) }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions: { contents: read }
     # Keep this list in sync with crates published by tools/support/release/publish_crates.
@@ -198,7 +198,7 @@ jobs:
         run: node tools/ci/commands/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan
-    runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -247,7 +247,7 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs.sh"
   node-engine-compat:
     needs: iteration-plan
-    runs-on: ${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -296,7 +296,7 @@ jobs:
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: . "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs-2.sh"
   check-vize-apps:
-    runs-on: ${{ needs.iteration-plan.outputs.apps == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.iteration-plan.outputs.apps == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     needs: iteration-plan
     timeout-minutes: 20
     env:
@@ -311,7 +311,7 @@ jobs:
         if: ${{ needs.iteration-plan.outputs.apps != 'true' }}
         run: . "${{ env.VIZE_CI_FILES }}/report-unaffected-applications.sh"
   vue-parity:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     env:
@@ -338,7 +338,7 @@ jobs:
       compare-rust-test-profile: ${{ inputs.compare-rust-test-profile == true }}
   full-js-report:
     name: full-js-report
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     # Whole callee success retains all four original full-product dependencies.
@@ -348,7 +348,7 @@ jobs:
       - uses: ./.github/actions/report-full-js-qualification
         with: { needs-json: "${{ toJSON(needs) }}" }
   coverage:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     steps:
@@ -369,7 +369,7 @@ jobs:
       - name: Coverage report
         run: node tools/ci/commands/github/write-coverage-summary.ts
   source-coverage:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 50
     # Keep daily and ordinary manual measurement; immutable release qualification
     # retains all correctness jobs without repeating the instrumented trend run.

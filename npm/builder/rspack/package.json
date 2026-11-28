@@ -77,7 +77,6 @@
   "dependencies": {
     "@vizejs/native": "workspace:*",
     "diff": "9.0.0",
-    "oxc-parser": "catalog:oxc",
     "oxc-transform": "catalog:oxc",
     "webpack-sources": "3.7.0"
   },
@@ -88,6 +87,7 @@
     "@types/node": "catalog:typescript",
     "@vizejs/builder-shared": "workspace:*",
     "css-loader": "7.1.5",
+    "oxc-parser": "catalog:oxc",
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
