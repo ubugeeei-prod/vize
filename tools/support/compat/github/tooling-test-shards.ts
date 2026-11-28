@@ -228,10 +228,21 @@ export function toolingShards(plan: ToolingShardPlan) {
   }
 }
 
+// A shard runs its files one at a time (run-tooling-tests.mjs), so it leaves a
+// large runner mostly idle. Only a shard that builds the native addon compiles
+// Rust; it keeps the source validation pool, and every other shard takes the
+// smallest Blacksmith class.
+export const TOOLING_NATIVE_SHARD_RUNNER = "blacksmith-16vcpu-ubuntu-2404";
+export const TOOLING_SHARD_RUNNER = "blacksmith-4vcpu-ubuntu-2404";
+
 export function toolingShardMatrix(plan: ToolingShardPlan) {
   const shards = toolingShards(plan);
+  const native = new Set(plan.nativeBuildTests ?? []);
   return {
     include: shards.map(({ files }, index) => {
+      const runner = files.some((file) => native.has(file))
+        ? TOOLING_NATIVE_SHARD_RUNNER
+        : TOOLING_SHARD_RUNNER;
       // Name the worker after its costliest actual file. Display labels never
       // participate in packing or in the numeric coordinates used by workers.
       const primary = files
@@ -246,7 +257,7 @@ export function toolingShardMatrix(plan: ToolingShardPlan) {
         : plan.leadSteps?.length
           ? "runtime captures"
           : "no selected test files";
-      return { index: index + 1, total: shards.length, name };
+      return { index: index + 1, total: shards.length, name, runner };
     }),
   };
 }

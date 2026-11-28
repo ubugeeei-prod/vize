@@ -117,7 +117,7 @@ jobs:
     name: Affected tooling (${{ matrix.name }})
     needs: [pr-source-plan, affected-tooling-cli]
     if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
-    runs-on: blacksmith-16vcpu-ubuntu-2404
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     strategy:
       fail-fast: false

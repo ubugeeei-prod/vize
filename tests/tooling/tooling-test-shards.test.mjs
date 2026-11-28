@@ -19,6 +19,8 @@ import {
   selectToolingShard,
   toolingLeadSteps,
   toolingShardMatrix,
+  TOOLING_NATIVE_SHARD_RUNNER,
+  TOOLING_SHARD_RUNNER,
   toolingShardNativeBuildRequired,
   toolingShards,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
@@ -144,7 +146,18 @@ void test("only shards that own a native runtime consumer build the addon", () =
       .sort(),
     [...nativeBuildTests].sort(),
   );
+  // Only the shards that build the addon keep the validation pool.
+  for (const entry of matrix)
+    assert.equal(
+      entry.runner,
+      toolingShardNativeBuildRequired(input, `${entry.index}/${entry.total}`)
+        ? TOOLING_NATIVE_SHARD_RUNNER
+        : TOOLING_SHARD_RUNNER,
+    );
   const plain = plan(files);
+  assert.ok(
+    toolingShardMatrix(plain).include.every(({ runner }) => runner === TOOLING_SHARD_RUNNER),
+  );
   const first = toolingShardMatrix(plain).include[0];
   assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
   // One more unmeasured native consumer than a single runner's budget holds.
