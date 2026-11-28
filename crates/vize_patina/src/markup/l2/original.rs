@@ -1,6 +1,6 @@
 //! Original syntax capability of a source-factory JSX root.
 
-use super::{L2Markup, L2Origin};
+use super::{L2Markup, L2Origin, texts};
 use vize_atelier_jsx::{SyntaxRoot, l2::JsxL2Root};
 
 impl<'a> L2Markup<'a> {
