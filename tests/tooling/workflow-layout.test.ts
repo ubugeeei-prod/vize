@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { parse } from "yaml";
+import { parse, parseDocument } from "yaml";
 import {
   validateAutomationSteps,
   automationProgramReferences,
@@ -96,6 +96,25 @@ function workflowRunnerLabels(
       (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
     );
     if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
+    if (file === "shipped-profile-measure.yml" && id === "measure") {
+      assert.equal(typeof value["runs-on"], "string");
+      assert.match(
+        value["runs-on"] as string,
+        /^\$\{\{\s*inputs\.runner\s*\|\|\s*'blacksmith-32vcpu-ubuntu-2404'\s*\}\}$/u,
+      );
+      const on = workflow.on;
+      assert.ok(isRecord(on) && isRecord(on.workflow_dispatch));
+      const inputs = on.workflow_dispatch.inputs;
+      assert.ok(isRecord(inputs) && isRecord(inputs.runner));
+      assert.equal(inputs.runner.type, "choice");
+      assert.equal(inputs.runner.required, false);
+      assert.equal(inputs.runner.default, "blacksmith-32vcpu-ubuntu-2404");
+      assert.deepEqual(inputs.runner.options, [
+        "blacksmith-32vcpu-ubuntu-2404",
+        "blacksmith-16vcpu-ubuntu-2404",
+      ]);
+      return [];
+    }
     if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
@@ -196,6 +215,34 @@ test("the validation pool accepts only exact reviewed source job selectors", () 
     ])
       assert.throws(() => assert.deepEqual(workflowRunnerLabels(source!, [], filename), []));
   }
+});
+
+test("release measurement retains its default and restricts the explicit worker choice", () => {
+  const file = "shipped-profile-measure.yml";
+  const source = readRepoFile(`.github/workflows/${file}`);
+  assert.deepEqual(workflowRunnerLabels(source, [], file), []);
+  const whitespace = parseDocument(source);
+  whitespace.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{  inputs.runner  ||  'blacksmith-32vcpu-ubuntu-2404'  }}",
+  );
+  assert.deepEqual(workflowRunnerLabels(whitespace.toString(), [], file), []);
+  const changedRunner = parseDocument(source);
+  changedRunner.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{ inputs.unreviewed || 'blacksmith-32vcpu-ubuntu-2404' }}",
+  );
+  const changedDefault = parseDocument(source);
+  changedDefault.setIn(
+    ["on", "workflow_dispatch", "inputs", "runner", "default"],
+    "blacksmith-16vcpu-ubuntu-2404",
+  );
+  for (const changed of [
+    source.replace("blacksmith-16vcpu-ubuntu-2404", "unreviewed-runner"),
+    changedDefault.toString(),
+    changedRunner.toString(),
+  ])
+    assert.throws(() => workflowRunnerLabels(changed, [], file));
 });
 
 test("the line-start proof requires its Linux ARM64 runner", () => {

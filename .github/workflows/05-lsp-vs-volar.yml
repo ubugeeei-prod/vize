@@ -107,7 +107,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          sparse-checkout: tools/benchmarks/scripts
+          sparse-checkout: "tools/benchmarks/scripts\ntools/support/compat/fixtures"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       # One job per fixture, except that the fixtures of one size curve run

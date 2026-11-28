@@ -1,0 +1,2398 @@
+type User {
+  """UID of the user"""
+  uid: ID!
+
+  """Name of the user (if fetched)"""
+  displayName: String
+
+  """Email of the user"""
+  email: String
+
+  """URL to the profile photo of the user (if fetched)"""
+  photoURL: String
+
+  """Flag to determine if user is an Admin or not"""
+  isAdmin: Boolean!
+
+  """Date when the user last logged in"""
+  lastLoggedOn: DateTime
+
+  """Date when the user last interacted with the app"""
+  lastActiveOn: DateTime
+
+  """Date when the user account was created"""
+  createdOn: DateTime!
+
+  """Stringified current REST session for logged-in User"""
+  currentRESTSession: String
+
+  """Stringified current GraphQL session for logged-in User"""
+  currentGQLSession: String
+
+  """Returns a list of users personal environments"""
+  environments: [UserEnvironment!]!
+
+  """Returns the users global environments"""
+  globalEnvironments: UserEnvironment!
+
+  """Returns a users REST history"""
+  RESTHistory(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserHistory!]!
+
+  """Returns a users GraphQL history"""
+  GQLHistory(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserHistory!]!
+
+  """Returns user settings"""
+  settings: UserSettings!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserDeletionResult {
+  """UID of the user"""
+  userUID: ID!
+
+  """Flag to determine if user deletion was successful or not"""
+  isDeleted: Boolean!
+
+  """Error message if user deletion was not successful"""
+  errorMessage: String
+}
+
+type Team {
+  """ID of the team"""
+  id: ID!
+
+  """Displayed name of the team"""
+  name: String!
+
+  """Returns the list of members of a team"""
+  members(
+    """The ID of the last returned team member entry (used for pagination)"""
+    cursor: ID
+  ): [TeamMember!]!
+
+  """Returns the list of members of a team"""
+  teamMembers: [TeamMember!]!
+
+  """The role of the current user in the team"""
+  myRole: TeamAccessRole
+
+  """The number of users with the OWNER role in the team"""
+  ownersCount: Int!
+
+  """The number of users with the EDITOR role in the team"""
+  editorsCount: Int!
+
+  """The number of users with the VIEWER role in the team"""
+  viewersCount: Int!
+
+  """Get all the active invites in the team"""
+  teamInvitations: [TeamInvitation!]!
+
+  """Returns all Team Environments for the given Team"""
+  teamEnvironments: [TeamEnvironment!]!
+}
+
+enum TeamAccessRole {
+  OWNER
+  VIEWER
+  EDITOR
+}
+
+type TeamMember {
+  """Membership ID of the Team Member"""
+  membershipID: ID!
+
+  """Role of the given team member in the given team"""
+  role: TeamAccessRole!
+  user: User!
+}
+
+type InfraConfig {
+  """Infra Config Name"""
+  name: String!
+
+  """Infra Config Value"""
+  value: String!
+}
+
+type UserSettings {
+  """ID of the User Setting"""
+  id: ID!
+
+  """ID of the user this setting belongs to"""
+  userUid: ID!
+
+  """Stringified JSON settings object"""
+  properties: String!
+
+  """Last updated on"""
+  updatedOn: DateTime!
+}
+
+type UserEnvironment {
+  """ID of the User Environment"""
+  id: ID!
+
+  """ID of the user this environment belongs to"""
+  userUid: ID!
+
+  """Name of the environment"""
+  name: String
+
+  """All variables present in the environment"""
+  variables: String!
+
+  """Flag to indicate the environment is global or not"""
+  isGlobal: Boolean!
+}
+
+type UserRequest {
+  """ID of the user request"""
+  id: ID!
+
+  """ID of the parent collection ID"""
+  collectionID: ID!
+
+  """Title of the user request"""
+  title: String!
+
+  """Content/Body of the user request"""
+  request: String!
+
+  """Type (GRAPHQL/REST) of the user request"""
+  type: ReqType!
+
+  """Date of the user request creation"""
+  createdOn: DateTime!
+
+  """Returns the user of the user request"""
+  user: User!
+}
+
+enum ReqType {
+  REST
+  GQL
+}
+
+type UserRequestReorderData {
+  """User request being moved"""
+  request: UserRequest!
+
+  """User request succeeding the request being moved in its new position"""
+  nextRequest: UserRequest
+}
+
+type UserCollection {
+  """ID of the user collection"""
+  id: ID!
+
+  """Displayed title of the user collection"""
+  title: String!
+
+  """JSON string representing the collection data"""
+  data: String
+
+  """Type of the user collection"""
+  type: ReqType!
+
+  """User the collection belongs to"""
+  user: User!
+
+  """Parent user collection (null if root)"""
+  parent: UserCollection
+
+  """List of children REST user collection"""
+  childrenREST(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserCollection!]!
+
+  """List of children GraphQL user collection"""
+  childrenGQL(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserCollection!]!
+
+  """Returns user requests of a user collection"""
+  requests(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserRequest!]!
+}
+
+type UserCollectionReorderData {
+  """User Collection being moved"""
+  userCollection: UserCollection!
+
+  """
+  User Collection succeeding the collection being moved in its new position
+  """
+  nextUserCollection: UserCollection
+}
+
+type UserCollectionRemovedData {
+  """ID of User Collection being removed"""
+  id: ID!
+
+  """Type of the user collection"""
+  type: ReqType!
+}
+
+type UserCollectionExportJSONData {
+  """Stringified contents of the collection"""
+  exportedCollection: ID!
+
+  """Type of the user collection"""
+  collectionType: ReqType!
+}
+
+type UserCollectionDuplicatedData {
+  """ID of the user collection"""
+  id: ID!
+
+  """Displayed title of the user collection"""
+  title: String!
+
+  """JSON string representing the collection data"""
+  data: String
+
+  """Type of the user collection"""
+  type: ReqType!
+
+  """Parent ID of the duplicated User Collection"""
+  parentID: String
+
+  """User ID of the duplicated User Collection"""
+  userID: String!
+
+  """Child collections of the duplicated User Collection"""
+  childCollections: String!
+
+  """Requests of the duplicated User Collection"""
+  requests: [UserRequest!]!
+}
+
+type UserHistory {
+  """ID of the user request in history"""
+  id: ID!
+
+  """ID of the user this history belongs to"""
+  userUid: ID!
+
+  """Type of the request in the history"""
+  reqType: ReqType!
+
+  """JSON string representing the request data"""
+  request: String!
+
+  """JSON string representing the response meta-data"""
+  responseMetadata: String!
+
+  """If the request in the history starred"""
+  isStarred: Boolean!
+
+  """Timestamp of when the request was executed or history was created"""
+  executedOn: DateTime!
+}
+
+type UserHistoryDeletedManyData {
+  """Number of user histories deleted"""
+  count: Int!
+
+  """Type of the request in the history"""
+  reqType: ReqType!
+}
+
+type TeamEnvironment {
+  """ID of the Team Environment"""
+  id: ID!
+
+  """ID of the team this environment belongs to"""
+  teamID: ID!
+
+  """Name of the environment"""
+  name: String!
+
+  """All variables present in the environment"""
+  variables: String!
+}
+
+type TeamCollection {
+  """ID of the collection"""
+  id: ID!
+
+  """Displayed title of the collection"""
+  title: String!
+
+  """JSON string representing the collection data"""
+  data: String
+
+  """ID of the collection"""
+  parentID: ID
+
+  """Team the collection belongs to"""
+  team: Team!
+
+  """Return the parent Team Collection (null if root )"""
+  parent: TeamCollection
+
+  """List of children Team Collections"""
+  children(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [TeamCollection!]!
+}
+
+type CollectionReorderData {
+  """Team Collection being moved"""
+  collection: TeamCollection!
+
+  """
+  Team Collection succeeding the collection being moved in its new position
+  """
+  nextCollection: TeamCollection
+}
+
+type TeamRequest {
+  """ID of the request"""
+  id: ID!
+
+  """ID of the collection the request belongs to."""
+  collectionID: ID!
+
+  """ID of the team the request belongs to."""
+  teamID: ID!
+
+  """JSON string representing the request data"""
+  request: String!
+
+  """Displayed title of the request"""
+  title: String!
+
+  """Team the request belongs to"""
+  team: Team!
+
+  """Collection the request belongs to"""
+  collection: TeamCollection!
+}
+
+type RequestReorderData {
+  """Team Request being moved"""
+  request: TeamRequest!
+
+  """Team Request succeeding the request being moved in its new position"""
+  nextRequest: TeamRequest
+}
+
+type TeamInvitation {
+  """ID of the invite"""
+  id: ID!
+
+  """ID of the team the invite is to"""
+  teamID: ID!
+
+  """UID of the creator of the invite"""
+  creatorUid: ID!
+
+  """Email of the invitee"""
+  inviteeEmail: String!
+
+  """The role that will be given to the invitee"""
+  inviteeRole: TeamAccessRole!
+
+  """Get the team associated to the invite"""
+  team: Team!
+
+  """Get the creator of the invite"""
+  creator: User!
+}
+
+type Admin {
+  """UID of the user"""
+  uid: ID!
+
+  """Name of the user (if fetched)"""
+  displayName: String
+
+  """Email of the user"""
+  email: String
+
+  """URL to the profile photo of the user (if fetched)"""
+  photoURL: String
+
+  """Date when the user last logged in"""
+  lastLoggedOn: DateTime
+
+  """Date when the user last interacted with the app"""
+  lastActiveOn: DateTime
+
+  """Date when the user account was created"""
+  createdOn: DateTime!
+}
+
+type InvitedUser {
+  """Admin UID"""
+  adminUid: ID!
+
+  """Admin email"""
+  adminEmail: String!
+
+  """Invitee email"""
+  inviteeEmail: String!
+
+  """Date when the user invitation was sent"""
+  invitedOn: DateTime!
+}
+
+type Infra {
+  """Admin who executed the action"""
+  executedBy: Admin!
+
+  """Returns a list of all admin users in infra"""
+  admins: [User!]!
+
+  """Returns a user info by UID"""
+  userInfo(
+    """The user UID"""
+    userUid: ID!
+  ): User!
+
+  """Returns a list of all the users in infra"""
+  allUsers(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [User!]! @deprecated(reason: "Use allUsersV2 instead")
+
+  """Returns a list of all the users in infra"""
+  allUsersV2(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Search on users displayName or email"""
+    searchString: String
+  ): [User!]!
+
+  """Returns a list of all the invited users"""
+  invitedUsers(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [InvitedUser!]!
+
+  """Returns a list of all the teams in the infra"""
+  allTeams(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [Team!]! @deprecated(reason: "Use allTeamsV2 instead")
+
+  """Returns a list of all the teams in the infra"""
+  allTeamsV2(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Search on team name or ID"""
+    searchString: String
+  ): [Team!]!
+
+  """Returns a team info by ID when requested by Admin"""
+  teamInfo(
+    """Team ID for which info to fetch"""
+    teamID: ID!
+  ): Team!
+
+  """Return count of all the members in a team"""
+  membersCountInTeam(
+    """Team ID for which team members to fetch"""
+    teamID: ID!
+  ): Int!
+
+  """Return count of all the stored collections in a team"""
+  collectionCountInTeam(
+    """Team ID for which team members to fetch"""
+    teamID: ID!
+  ): Int!
+
+  """Return count of all the stored requests in a team"""
+  requestCountInTeam(
+    """Team ID for which team members to fetch"""
+    teamID: ID!
+  ): Int!
+
+  """Return count of all the stored environments in a team"""
+  environmentCountInTeam(
+    """Team ID for which team members to fetch"""
+    teamID: ID!
+  ): Int!
+
+  """Return all the pending invitations in a team"""
+  pendingInvitationCountInTeam(
+    """Team ID for which team members to fetch"""
+    teamID: ID!
+  ): [TeamInvitation!]!
+
+  """Return total number of Users in organization"""
+  usersCount: Int!
+
+  """Return total number of Teams in organization"""
+  teamsCount: Int!
+
+  """Return total number of Team Collections in organization"""
+  teamCollectionsCount: Int!
+
+  """Return total number of Team Requests in organization"""
+  teamRequestsCount: Int!
+
+  """Returns a list of all the shortcodes in the infra"""
+  allShortcodes(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Users email to filter shortcodes by"""
+    userEmail: String
+  ): [ShortcodeWithUserEmail!]!
+}
+
+type Shortcode {
+  """The 12 digit alphanumeric code"""
+  id: ID!
+
+  """JSON string representing the request data"""
+  request: String!
+
+  """JSON string representing the properties for an embed"""
+  properties: String
+
+  """Timestamp of when the Shortcode was created"""
+  createdOn: DateTime!
+}
+
+type ShortcodeCreator {
+  """Uid of user who created the shortcode"""
+  uid: String!
+
+  """Email of user who created the shortcode"""
+  email: String!
+}
+
+type ShortcodeWithUserEmail {
+  """The 12 digit alphanumeric code"""
+  id: ID!
+
+  """JSON string representing the request data"""
+  request: String!
+
+  """JSON string representing the properties for an embed"""
+  properties: String
+
+  """Timestamp of when the Shortcode was created"""
+  createdOn: DateTime!
+
+  """Details of user who created the shortcode"""
+  creator: ShortcodeCreator
+}
+
+type InfraToken {
+  """ID of the infra token"""
+  id: ID!
+
+  """Label of the infra token"""
+  label: String!
+
+  """Date when the infra token was created"""
+  createdOn: DateTime!
+
+  """Date when the infra token expires"""
+  expiresOn: DateTime
+
+  """Date when the infra token was last used"""
+  lastUsedOn: DateTime!
+}
+
+type CreateInfraTokenResponse {
+  """The infra token"""
+  token: String!
+
+  """Infra token info"""
+  info: InfraToken!
+}
+
+type UserCollectionSortData {
+  """ID of the parent collection"""
+  parentCollectionID: ID
+
+  """Sorting option"""
+  sortOption: SortOptions!
+}
+
+enum SortOptions {
+  TITLE_ASC
+  TITLE_DESC
+}
+
+type MockServer {
+  """ID of the mock server"""
+  id: ID!
+
+  """Name of the mock server"""
+  name: String!
+
+  """Subdomain for the mock server (e.g., mock-1234)"""
+  subdomain: String!
+
+  """
+  Server URL for the mock server using subdomain pattern (e.g., https://1234.mock.backend-hoppscotch.io)
+  """
+  serverUrlDomainBased: String
+
+  """
+  Server URL for the mock server using path pattern (e.g., https://backend.hoppscotch.io/mock/1234)
+  """
+  serverUrlPathBased: String!
+
+  """Type of workspace: USER or TEAM"""
+  workspaceType: WorkspaceType!
+
+  """ID of the workspace (user or team) to associate with the mock server"""
+  workspaceID: String
+
+  """Delay in milliseconds before responding"""
+  delayInMs: Int!
+
+  """Whether the mock server is active"""
+  isActive: Boolean!
+
+  """Whether the mock server is publicly accessible"""
+  isPublic: Boolean!
+
+  """Date and time when the mock server was created"""
+  createdOn: DateTime!
+
+  """Date and time when the mock server was last updated"""
+  updatedOn: DateTime!
+
+  """Returns the creator of the mock server"""
+  creator: User
+
+  """Returns the collection of the mock server"""
+  collection: MockServerCollection
+}
+
+enum WorkspaceType {
+  USER
+  TEAM
+}
+
+type MockServerCollection {
+  """ID of the collection"""
+  id: ID!
+
+  """Title of the collection"""
+  title: String!
+}
+
+type MockServerLog {
+  """ID of the log entry"""
+  id: ID!
+
+  """ID of the mock server"""
+  mockServerID: ID!
+
+  """HTTP method of the request"""
+  requestMethod: String!
+
+  """Path of the request"""
+  requestPath: String!
+
+  """Request headers as JSON string"""
+  requestHeaders: String!
+
+  """Request body as JSON string"""
+  requestBody: String
+
+  """Request query parameters as JSON string"""
+  requestQuery: String
+
+  """HTTP status code of the response"""
+  responseStatus: Int!
+
+  """Response headers as JSON string"""
+  responseHeaders: String!
+
+  """Response body as JSON string"""
+  responseBody: String
+
+  """Response time in milliseconds"""
+  responseTime: Int!
+
+  """IP address of the requester"""
+  ipAddress: String
+
+  """User agent of the requester"""
+  userAgent: String
+
+  """Date and time when the request was executed"""
+  executedAt: DateTime!
+}
+
+type PublishedDocsVersion {
+  """ID of the published document version"""
+  id: ID!
+
+  """Slug of the published document"""
+  slug: String!
+
+  """Version string"""
+  version: String!
+
+  """Title of the API documentation"""
+  title: String!
+
+  """Indicates if the documentation is set to auto-sync"""
+  autoSync: Boolean!
+
+  """URL where the published API documentation can be accessed"""
+  url: String!
+}
+
+type PublishedDocs {
+  """ID of the published API documentation"""
+  id: ID!
+
+  """Slug of the published API documentation (unique with version)"""
+  slug: ID!
+
+  """Title of the published API documentation"""
+  title: String!
+
+  """URL where the published API documentation can be accessed"""
+  url: String!
+
+  """Version of the published API documentation"""
+  version: String!
+
+  """Indicates if the documentation is set to auto-sync"""
+  autoSync: Boolean!
+
+  """Document tree structure associated with the documentation"""
+  documentTree: String!
+
+  """Type of workspace associated with the published documentation"""
+  workspaceType: String!
+
+  """
+  Workspace ID (of team/user ID) associated with the published documentation
+  """
+  workspaceID: String!
+
+  """Metadata of the documentation"""
+  metadata: String!
+
+  """Name of the environment associated with the documentation"""
+  environmentName: String
+
+  """
+  Stringified JSON of the environment variables associated with the documentation
+  """
+  environmentVariables: String
+
+  """Timestamp when the documentation was created"""
+  createdOn: DateTime!
+
+  """Timestamp when the documentation was last updated"""
+  updatedOn: DateTime!
+
+  """All available versions of this published documentation"""
+  versions: [PublishedDocsVersion!]
+
+  """Returns the creator of the published document"""
+  creator: User
+
+  """Returns the collection of the published document"""
+  collection: PublishedDocsCollection!
+}
+
+type PublishedDocsCollection {
+  """ID of the collection"""
+  id: ID!
+
+  """Title of the collection"""
+  title: String!
+}
+
+type Query {
+  """Fetch details of the Infrastructure"""
+  infra: Infra!
+
+  """Retrieve configuration details for the instance"""
+  infraConfigs(
+    """Configs to fetch"""
+    configNames: [InfraConfigEnum!]!
+  ): [InfraConfig!]!
+
+  """Allowed Auth Provider list"""
+  allowedAuthProviders: [String!]!
+
+  """Gives details of the admin executing this query"""
+  admin: Admin!
+
+  """Resolves and returns a shortcode data"""
+  shortcode(
+    """The shortcode to resolve"""
+    code: ID!
+  ): Shortcode
+
+  """List all shortcodes the current user has generated"""
+  myShortcodes(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [Shortcode!]!
+
+  """List of teams that the executing user belongs to."""
+  myTeams(
+    """The ID of the last returned team entry (used for pagination)"""
+    cursor: ID
+  ): [Team!]!
+
+  """Returns the detail of the team with the given ID"""
+  team(
+    """ID of the team to check"""
+    teamID: ID!
+  ): Team
+
+  """Returns the list of teams a user is a member of (admin-only)"""
+  teamsOfUserByAdmin(
+    """UID of the user to fetch teams for"""
+    userUid: ID!
+
+    """The ID of the last returned team entry (used for pagination)"""
+    cursor: ID
+
+    """Number of teams to return per page"""
+    take: Int = 10
+  ): [Team!]!
+
+  """
+  Returns the JSON string giving the collections and their contents of the team
+  """
+  exportCollectionsToJSON(
+    """ID of the team"""
+    teamID: ID!
+  ): String!
+
+  """Returns a JSON string of all the contents of a Team Collection"""
+  exportCollectionToJSON(
+    """ID of the team"""
+    teamID: ID!
+
+    """ID of the collection"""
+    collectionID: ID!
+  ): String!
+
+  """Returns the collections of a team"""
+  rootCollectionsOfTeam(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """ID of the team"""
+    teamID: ID!
+  ): [TeamCollection!]!
+
+  """Get a Team Collection with ID or null (if not exists)"""
+  collection(
+    """ID of the collection"""
+    collectionID: ID!
+  ): TeamCollection
+
+  """Gets the Team Invitation with the given ID, or null if not exists"""
+  teamInvitation(
+    """ID of the Team Invitation to lookup"""
+    inviteID: ID!
+  ): TeamInvitation!
+
+  """Search the team for a specific request with title"""
+  searchForRequest(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """ID of the team to look in"""
+    teamID: ID!
+
+    """The title to search for"""
+    searchTerm: String!
+  ): [TeamRequest!]!
+
+  """Gives a request with the given ID or null (if not exists)"""
+  request(
+    """ID of the request"""
+    requestID: ID!
+  ): TeamRequest
+
+  """Gives a paginated list of requests in the collection"""
+  requestsInCollection(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """ID of the collection to look in"""
+    collectionID: ID!
+  ): [TeamRequest!]!
+
+  """
+  Gives details of the user executing this query (pass Authorization 'Bearer' header)
+  """
+  me: User!
+
+  """Get the root REST user collections for a user"""
+  rootRESTUserCollections(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserCollection!]!
+
+  """Get the root GraphQL user collections for a user"""
+  rootGQLUserCollections(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [UserCollection!]!
+
+  """Get user collection with ID"""
+  userCollection(
+    """ID of the user collection"""
+    userCollectionID: ID!
+  ): UserCollection!
+
+  """
+  Returns the JSON string giving the collections and their contents of a user
+  """
+  exportUserCollectionsToJSON(
+    """ID of the user collection"""
+    collectionID: ID = null
+
+    """Type of the user collection"""
+    collectionType: ReqType!
+  ): UserCollectionExportJSONData!
+
+  """Returns a JSON string of all the contents of a User Collection"""
+  exportUserCollectionToJSON(
+    """ID of the user collection"""
+    collectionID: ID!
+  ): String!
+
+  """Get REST user requests"""
+  userRESTRequests(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Collection ID of the user request"""
+    collectionID: ID
+  ): [UserRequest!]!
+
+  """Get GraphQL user requests"""
+  userGQLRequests(
+    """Cursor for pagination, ID of the last item in the list"""
+    cursor: ID
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Collection ID of the user request"""
+    collectionID: ID
+  ): [UserRequest!]!
+
+  """Get a user request by ID"""
+  userRequest(
+    """ID of the user request"""
+    id: ID!
+  ): UserRequest!
+
+  """Check if the SMTP is enabled or not"""
+  isSMTPEnabled: Boolean!
+
+  """Check if user history is enabled or not"""
+  isUserHistoryEnabled: InfraConfig!
+
+  """Get the proxy app URL"""
+  proxyAppUrl: InfraConfig!
+
+  """Get list of infra tokens"""
+  infraTokens(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [InfraToken!]!
+
+  """Get all mock servers for the authenticated user"""
+  myMockServers(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [MockServer!]!
+
+  """Get all mock servers for a specific team"""
+  teamMockServers(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """Id of the team to add to"""
+    teamID: ID!
+  ): [MockServer!]!
+
+  """Get a specific mock server by ID"""
+  mockServer(
+    """Id of the mock server to retrieve"""
+    id: ID!
+  ): MockServer!
+
+  """
+  Get logs for a specific mock server with pagination, sorted by execution time (most recent first)
+  """
+  mockServerLogs(
+    """ID of the mock server"""
+    mockServerID: ID!
+
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [MockServerLog!]!
+
+  """Get a published document by ID"""
+  publishedDoc(
+    """Id of the published document to fetch"""
+    id: ID!
+  ): PublishedDocs!
+
+  """Get all published documents of a user"""
+  userPublishedDocsList(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+  ): [PublishedDocs!]!
+
+  """Get all published documents"""
+  teamPublishedDocsList(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to fetch"""
+    take: Int = 10
+
+    """ID of the team"""
+    teamID: ID!
+
+    """Id of the collection to add to"""
+    collectionID: ID
+  ): [PublishedDocs!]!
+}
+
+enum InfraConfigEnum {
+  ONBOARDING_COMPLETED
+  ONBOARDING_RECOVERY_TOKEN
+  JWT_SECRET
+  SESSION_SECRET
+  SESSION_COOKIE_NAME
+  TOKEN_SALT_COMPLEXITY
+  MAGIC_LINK_TOKEN_VALIDITY
+  REFRESH_TOKEN_VALIDITY
+  ACCESS_TOKEN_VALIDITY
+  ALLOW_SECURE_COOKIES
+  RATE_LIMIT_TTL
+  RATE_LIMIT_MAX
+  MAILER_SMTP_ENABLE
+  MAILER_USE_CUSTOM_CONFIGS
+  MAILER_SMTP_URL
+  MAILER_ADDRESS_FROM
+  MAILER_SMTP_HOST
+  MAILER_SMTP_PORT
+  MAILER_SMTP_SECURE
+  MAILER_SMTP_USER
+  MAILER_SMTP_PASSWORD
+  MAILER_TLS_REJECT_UNAUTHORIZED
+  MAILER_SMTP_IGNORE_TLS
+  MAILER_SMTP_AUTH_TYPE
+  MAILER_SMTP_OAUTH2_USER
+  MAILER_SMTP_OAUTH2_CLIENT_ID
+  MAILER_SMTP_OAUTH2_CLIENT_SECRET
+  MAILER_SMTP_OAUTH2_REFRESH_TOKEN
+  MAILER_SMTP_OAUTH2_ACCESS_URL
+  GOOGLE_CLIENT_ID
+  GOOGLE_CLIENT_SECRET
+  GOOGLE_CALLBACK_URL
+  GOOGLE_SCOPE
+  GITHUB_CLIENT_ID
+  GITHUB_CLIENT_SECRET
+  GITHUB_CALLBACK_URL
+  GITHUB_SCOPE
+  MICROSOFT_CLIENT_ID
+  MICROSOFT_CLIENT_SECRET
+  MICROSOFT_CALLBACK_URL
+  MICROSOFT_SCOPE
+  MICROSOFT_TENANT
+  VITE_ALLOWED_AUTH_PROVIDERS
+  PROXY_APP_URL
+  ALLOW_ANALYTICS_COLLECTION
+  ANALYTICS_USER_ID
+  IS_FIRST_TIME_INFRA_SETUP
+  USER_HISTORY_STORE_ENABLED
+  MOCK_SERVER_WILDCARD_DOMAIN
+}
+
+type Mutation {
+  """Update Infra Configs"""
+  updateInfraConfigs(
+    """InfraConfigs to update"""
+    infraConfigs: [InfraConfigArgs!]!
+  ): [InfraConfig!]!
+
+  """Enable or disable analytics collection"""
+  toggleAnalyticsCollection(
+    """Toggle analytics collection"""
+    status: ServiceStatus!
+  ): Boolean!
+
+  """Reset Infra Configs with default values (.env)"""
+  resetInfraConfigs: Boolean!
+
+  """Enable or Disable SSO for login/signup"""
+  enableAndDisableSSO(
+    """SSO provider and status"""
+    providerInfo: [EnableAndDisableSSOArgs!]!
+  ): Boolean!
+
+  """Enable or Disable SMTP for sending emails"""
+  toggleSMTP(
+    """Toggle SMTP"""
+    status: ServiceStatus!
+  ): Boolean!
+
+  """Enable or Disable User History Storing in DB"""
+  toggleUserHistoryStore(
+    """Toggle User History Store"""
+    status: ServiceStatus!
+  ): Boolean!
+
+  """Invite a user to the infra using email"""
+  inviteNewUser(
+    """invitee email"""
+    inviteeEmail: String!
+  ): InvitedUser!
+
+  """Revoke a user invites by invitee emails"""
+  revokeUserInvitationsByAdmin(
+    """Invitee Emails"""
+    inviteeEmails: [String!]!
+  ): Boolean!
+
+  """Delete an user account from infra"""
+  removeUserByAdmin(
+    """users UID"""
+    userUID: ID!
+  ): Boolean! @deprecated(reason: "Use removeUsersByAdmin instead")
+
+  """Delete user accounts from infra"""
+  removeUsersByAdmin(
+    """users UID"""
+    userUIDs: [ID!]!
+  ): [UserDeletionResult!]!
+
+  """Make user an admin"""
+  makeUserAdmin(
+    """users UID"""
+    userUID: ID!
+  ): Boolean! @deprecated(reason: "Use makeUsersAdmin instead")
+
+  """Make users an admin"""
+  makeUsersAdmin(
+    """users UID"""
+    userUIDs: [ID!]!
+  ): Boolean!
+
+  """Update user display name"""
+  updateUserDisplayNameByAdmin(
+    """users UID"""
+    userUID: ID!
+
+    """users display name"""
+    displayName: String!
+  ): Boolean!
+
+  """Remove user as admin"""
+  removeUserAsAdmin(
+    """users UID"""
+    userUID: ID!
+  ): Boolean! @deprecated(reason: "Use demoteUsersByAdmin instead")
+
+  """Remove users as admin"""
+  demoteUsersByAdmin(
+    """users UID"""
+    userUIDs: [ID!]!
+  ): Boolean!
+
+  """Create a new team by providing the user uid to nominate as Team owner"""
+  createTeamByAdmin(
+    """users uid to make team owner"""
+    userUid: ID!
+
+    """Displayed name of the team"""
+    name: String!
+  ): Team!
+
+  """Change the role of a user in a team"""
+  changeUserRoleInTeamByAdmin(
+    """users UID"""
+    userUID: ID!
+
+    """team ID"""
+    teamID: ID!
+
+    """updated team role"""
+    newRole: TeamAccessRole!
+  ): TeamMember!
+
+  """Remove the user from a team"""
+  removeUserFromTeamByAdmin(
+    """users UID"""
+    userUid: ID!
+
+    """team ID"""
+    teamID: ID!
+  ): Boolean!
+
+  """Add a user to a team with email and team member role"""
+  addUserToTeamByAdmin(
+    """team ID"""
+    teamID: ID!
+
+    """The role of the user to add in the team"""
+    role: TeamAccessRole!
+
+    """Email of the user to add to team"""
+    userEmail: String!
+  ): TeamMember!
+
+  """Change a team name"""
+  renameTeamByAdmin(
+    """ID of the team"""
+    teamID: ID!
+
+    """The updated name of the team"""
+    newName: String!
+  ): Team!
+
+  """Delete a team"""
+  deleteTeamByAdmin(
+    """ID of the team"""
+    teamID: ID!
+  ): Boolean!
+
+  """Revoke a team Invite by Invite ID"""
+  revokeTeamInviteByAdmin(
+    """Team Invite ID"""
+    inviteID: ID!
+  ): Boolean!
+
+  """Revoke Shortcode by ID"""
+  revokeShortcodeByAdmin(
+    """The shortcode to delete"""
+    code: ID!
+  ): Boolean!
+
+  """Revoke all User History"""
+  revokeAllUserHistoryByAdmin: Boolean!
+
+  """Create a shortcode for the given request."""
+  createShortcode(
+    """JSON string of the request object"""
+    request: String!
+
+    """JSON string of the properties of the embed"""
+    properties: String
+  ): Shortcode!
+
+  """Update a user generated Shortcode"""
+  updateEmbedProperties(
+    """The Shortcode to update"""
+    code: ID!
+
+    """JSON string of the properties of the embed"""
+    properties: String!
+  ): Shortcode!
+
+  """Revoke a user generated shortcode"""
+  revokeShortcode(
+    """The shortcode to remove"""
+    code: ID!
+  ): Boolean!
+
+  """Creates a team owned by the executing user"""
+  createTeam(
+    """Displayed name of the team"""
+    name: String!
+  ): Team!
+
+  """Leaves a team the executing user is a part of"""
+  leaveTeam(
+    """ID of the Team to leave"""
+    teamID: ID!
+  ): Boolean!
+
+  """Removes the team member from the team"""
+  removeTeamMember(
+    """ID of the Team to remove user from"""
+    teamID: ID!
+
+    """ID of the user to remove from the given team"""
+    userUid: ID!
+  ): Boolean!
+
+  """Renames a team"""
+  renameTeam(
+    """ID of the team"""
+    teamID: ID!
+
+    """The updated name of the team"""
+    newName: String!
+  ): Team!
+
+  """Deletes the team"""
+  deleteTeam(
+    """ID of the team"""
+    teamID: ID!
+  ): Boolean!
+
+  """Update role of a team member the executing user owns"""
+  updateTeamAccessRole(
+    """ID of the affected team"""
+    teamID: ID!
+
+    """UID of the affected user"""
+    userUid: ID!
+
+    """Updated role value"""
+    newRole: TeamAccessRole!
+  ): TeamMember!
+
+  """
+  Creates a collection at the root of the team hierarchy (no parent collection)
+  """
+  createRootCollection(
+    """ID of the team"""
+    teamID: ID!
+
+    """Title of the new collection"""
+    title: String!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): TeamCollection!
+
+  """Import collections from JSON string to the specified Team"""
+  importCollectionsFromJSON(
+    """Id of the team to add to"""
+    teamID: ID!
+
+    """JSON string to import"""
+    jsonString: String!
+
+    """
+    ID to the collection to which to import to (null if to import to the root of team)
+    """
+    parentCollectionID: ID
+  ): Boolean!
+
+  """Create a collection that has a parent collection"""
+  createChildCollection(
+    """ID of the parent to the new collection"""
+    collectionID: ID!
+
+    """Title of the new collection"""
+    childTitle: String!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): TeamCollection!
+
+  """Rename a collection"""
+  renameCollection(
+    """ID of the collection"""
+    collectionID: ID!
+
+    """The updated title of the collection"""
+    newTitle: String!
+  ): TeamCollection! @deprecated(reason: "Switch to updateTeamCollection mutation instead")
+
+  """Delete a collection"""
+  deleteCollection(
+    """ID of the collection"""
+    collectionID: ID!
+  ): Boolean!
+
+  """Move a collection into a new parent collection or the root of the team"""
+  moveCollection(
+    """ID of the parent to the new collection"""
+    parentCollectionID: ID
+
+    """ID of the collection"""
+    collectionID: ID!
+  ): TeamCollection!
+
+  """Update the order of collections"""
+  updateCollectionOrder(
+    """ID of the collection"""
+    collectionID: ID!
+
+    """
+    ID of the collection that comes after the updated collection in its new position
+    """
+    destCollID: ID
+  ): Boolean!
+
+  """Update Team Collection details"""
+  updateTeamCollection(
+    """ID of the collection"""
+    collectionID: ID!
+
+    """The updated title of the collection"""
+    newTitle: String
+
+    """JSON string representing the collection data"""
+    data: String
+  ): TeamCollection!
+
+  """Duplicate a Team Collection"""
+  duplicateTeamCollection(
+    """ID of the collection"""
+    collectionID: String!
+  ): Boolean!
+
+  """Create a new Team Environment for given Team ID"""
+  createTeamEnvironment(
+    """Name of the Team Environment"""
+    name: String!
+
+    """ID of the Team"""
+    teamID: ID!
+
+    """JSON string of the variables object"""
+    variables: String!
+  ): TeamEnvironment!
+
+  """Delete a Team Environment for given Team ID"""
+  deleteTeamEnvironment(
+    """ID of the Team Environment"""
+    id: ID!
+  ): Boolean!
+
+  """
+  Add/Edit a single environment variable or variables to a Team Environment
+  """
+  updateTeamEnvironment(
+    """ID of the Team Environment"""
+    id: ID!
+
+    """Name of the Team Environment"""
+    name: String!
+
+    """JSON string of the variables object"""
+    variables: String!
+  ): TeamEnvironment!
+
+  """Delete all variables from a Team Environment"""
+  deleteAllVariablesFromTeamEnvironment(
+    """ID of the Team Environment"""
+    id: ID!
+  ): TeamEnvironment!
+
+  """Create a duplicate of an existing environment"""
+  createDuplicateEnvironment(
+    """ID of the Team Environment"""
+    id: ID!
+  ): TeamEnvironment!
+
+  """Creates a Team Invitation"""
+  createTeamInvitation(
+    """ID of the Team ID to invite from"""
+    teamID: ID!
+
+    """Email of the user to invite"""
+    inviteeEmail: String!
+
+    """Role to be given to the user"""
+    inviteeRole: TeamAccessRole!
+  ): TeamInvitation!
+
+  """Revokes an invitation and deletes it"""
+  revokeTeamInvitation(
+    """ID of the invite to revoke"""
+    inviteID: ID!
+  ): Boolean!
+
+  """Accept an Invitation"""
+  acceptTeamInvitation(
+    """ID of the Invite to accept"""
+    inviteID: ID!
+  ): TeamMember!
+
+  """Create a team request in the given collection."""
+  createRequestInCollection(
+    """ID of the collection"""
+    collectionID: ID!
+
+    """The request data (stringified JSON of Hoppscotch request object)"""
+    data: CreateTeamRequestInput!
+  ): TeamRequest!
+
+  """Update a request with the given ID"""
+  updateRequest(
+    """ID of the request"""
+    requestID: ID!
+
+    """
+    The updated request data (stringified JSON of Hoppscotch request object)
+    """
+    data: UpdateTeamRequestInput!
+  ): TeamRequest!
+
+  """Delete a request with the given ID"""
+  deleteRequest(
+    """ID of the request"""
+    requestID: ID!
+  ): Boolean!
+
+  """Update the order of requests in the lookup table"""
+  updateLookUpRequestOrder(
+    """ID of the collection"""
+    collectionID: ID!
+
+    """
+    ID of the request that comes after the updated request in its new position
+    """
+    nextRequestID: ID
+
+    """ID of the request to move"""
+    requestID: ID!
+  ): Boolean!
+
+  """Move a request to the given collection"""
+  moveRequest(
+    """ID of the collection, the request belong to"""
+    srcCollID: ID
+
+    """ID of the request to move"""
+    requestID: ID!
+
+    """ID of the collection, where the request is moving to"""
+    destCollID: ID!
+
+    """
+    ID of the request that comes after the updated request in its new position
+    """
+    nextRequestID: ID
+  ): TeamRequest!
+
+  """Update user sessions"""
+  updateUserSessions(
+    """JSON string of the saved REST/GQL session"""
+    currentSession: String!
+
+    """Type of the session"""
+    sessionType: SessionType!
+  ): User!
+
+  """Update a users display name"""
+  updateDisplayName(
+    """New name of user"""
+    updatedDisplayName: String!
+  ): User!
+
+  """Delete an user account"""
+  deleteUser: Boolean!
+
+  """Create a new personal user environment for given user uid"""
+  createUserEnvironment(
+    """Name of the User Environment, if global send an empty string"""
+    name: String!
+
+    """JSON string of the variables object"""
+    variables: String!
+  ): UserEnvironment!
+
+  """Create a new global user environment for given user uid"""
+  createUserGlobalEnvironment(
+    """JSON string of the variables object"""
+    variables: String!
+  ): UserEnvironment!
+
+  """Updates a users personal or global environment"""
+  updateUserEnvironment(
+    """ID of the user environment"""
+    id: ID!
+
+    """Name of the User Environment, if global send an empty string"""
+    name: String!
+
+    """JSON string of the variables object"""
+    variables: String!
+  ): UserEnvironment!
+
+  """Deletes a users personal environment"""
+  deleteUserEnvironment(
+    """ID of the user environment"""
+    id: ID!
+  ): Boolean!
+
+  """Deletes all of users personal environments"""
+  deleteUserEnvironments: Int!
+
+  """Deletes all variables inside a users global environment"""
+  clearGlobalEnvironments(
+    """ID of the users global environment"""
+    id: ID!
+  ): UserEnvironment!
+
+  """Adds a new REST/GQL request to user history"""
+  createUserHistory(
+    """JSON string of the request data"""
+    reqData: String!
+
+    """JSON string of the response metadata"""
+    resMetadata: String!
+
+    """Request type, REST or GQL"""
+    reqType: ReqType!
+  ): UserHistory!
+
+  """Stars/Unstars a REST/GQL request in user history"""
+  toggleHistoryStarStatus(
+    """ID of User History"""
+    id: ID!
+  ): UserHistory!
+
+  """Removes a REST/GQL request from user history"""
+  removeRequestFromHistory(
+    """ID of User History"""
+    id: ID!
+  ): UserHistory!
+
+  """Deletes all REST/GQL history for a user based on Request type"""
+  deleteAllUserHistory(
+    """Request type, REST or GQL"""
+    reqType: ReqType!
+  ): UserHistoryDeletedManyData!
+
+  """Creates root REST user collection(no parent user collection)"""
+  createRESTRootUserCollection(
+    """Title of the new user collection"""
+    title: String!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): UserCollection!
+
+  """Creates root GraphQL user collection(no parent user collection)"""
+  createGQLRootUserCollection(
+    """Title of the new user collection"""
+    title: String!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): UserCollection!
+
+  """Creates a new child GraphQL user collection"""
+  createGQLChildUserCollection(
+    """Title of the new user collection"""
+    title: String!
+
+    """ID of the parent to the new user collection"""
+    parentUserCollectionID: ID!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): UserCollection!
+
+  """Creates a new child REST user collection"""
+  createRESTChildUserCollection(
+    """Title of the new user collection"""
+    title: String!
+
+    """ID of the parent to the new user collection"""
+    parentUserCollectionID: ID!
+
+    """JSON string representing the collection data"""
+    data: String
+  ): UserCollection!
+
+  """Rename a user collection"""
+  renameUserCollection(
+    """ID of the user collection"""
+    userCollectionID: ID!
+
+    """The updated title of the user collection"""
+    newTitle: String!
+  ): UserCollection!
+
+  """Delete a user collection"""
+  deleteUserCollection(
+    """ID of the user collection"""
+    userCollectionID: ID!
+  ): Boolean!
+
+  """Move user collection into new parent or root"""
+  moveUserCollection(
+    """ID of the parent to the new collection"""
+    destCollectionID: ID
+
+    """ID of the collection"""
+    userCollectionID: ID!
+  ): UserCollection!
+
+  """
+  Update the order of UserCollections inside parent collection or in root
+  """
+  updateUserCollectionOrder(
+    """ID of collection being moved"""
+    collectionID: ID!
+
+    """ID of collection being moved"""
+    nextCollectionID: ID
+  ): Boolean!
+
+  """Import collections from JSON string to the specified Team"""
+  importUserCollectionsFromJSON(
+    """JSON string to import"""
+    jsonString: String!
+
+    """Type of UserCollection"""
+    reqType: ReqType!
+
+    """
+    ID to the collection to which to import into (null if to import into the root of the user)
+    """
+    parentCollectionID: ID
+  ): UserCollectionExportJSONData!
+
+  """Update a UserCollection"""
+  updateUserCollection(
+    """ID of the user collection"""
+    userCollectionID: ID!
+
+    """The updated title of the user collection"""
+    newTitle: String
+
+    """JSON string representing the collection data"""
+    data: String
+  ): UserCollection!
+
+  """Duplicate a User Collection"""
+  duplicateUserCollection(
+    """ID of the collection"""
+    collectionID: String!
+
+    """Type of UserCollection"""
+    reqType: ReqType!
+  ): UserCollectionExportJSONData!
+
+  """Create a new user REST request"""
+  createRESTUserRequest(
+    """Collection ID of the user request"""
+    collectionID: ID!
+
+    """Title of the user request"""
+    title: String!
+
+    """content/body of the user request"""
+    request: String!
+  ): UserRequest!
+
+  """Create a new user GraphQL request"""
+  createGQLUserRequest(
+    """Collection ID of the user request"""
+    collectionID: ID!
+
+    """Title of the user request"""
+    title: String!
+
+    """content/body of the user request"""
+    request: String!
+  ): UserRequest!
+
+  """Update a user REST request"""
+  updateRESTUserRequest(
+    """ID of the user request"""
+    id: ID!
+
+    """Title of the user request"""
+    title: String
+
+    """content/body of the user request"""
+    request: String
+  ): UserRequest!
+
+  """Update a user GraphQL request"""
+  updateGQLUserRequest(
+    """ID of the user request"""
+    id: ID!
+
+    """Title of the user request"""
+    title: String
+
+    """content/body of the user request"""
+    request: String
+  ): UserRequest!
+
+  """Delete a user request"""
+  deleteUserRequest(
+    """ID of the user request"""
+    id: ID!
+  ): Boolean!
+
+  """Move and re-order of a user request within same or across collection"""
+  moveUserRequest(
+    """ID of the collection, where the request is belongs to"""
+    sourceCollectionID: ID!
+
+    """ID of the request being moved"""
+    requestID: ID!
+
+    """ID of the collection, where the request is moving to"""
+    destinationCollectionID: ID!
+
+    """
+    ID of the request that comes after the updated request in its new position
+    """
+    nextRequestID: ID
+  ): UserRequest!
+
+  """Creates a new user setting"""
+  createUserSettings(
+    """Stringified JSON settings object"""
+    properties: String!
+  ): UserSettings!
+
+  """Update user setting for a given user"""
+  updateUserSettings(
+    """Stringified JSON settings object"""
+    properties: String!
+  ): UserSettings!
+
+  """Create a new infra token"""
+  createInfraToken(
+    """Label of the token"""
+    label: String!
+
+    """Number of days the token is valid for"""
+    expiryInDays: Int
+  ): CreateInfraTokenResponse!
+
+  """Revoke an infra token"""
+  revokeInfraToken(
+    """ID of the infra token"""
+    id: ID!
+  ): Boolean!
+
+  """Sort user collections"""
+  sortUserCollections(
+    """ID of the parent collection"""
+    parentCollectionID: ID
+
+    """Sorting option"""
+    sortOption: SortOptions!
+  ): Boolean!
+
+  """Sort team collections"""
+  sortTeamCollections(
+    """ID of the team"""
+    teamID: ID!
+
+    """ID of the parent collection"""
+    parentCollectionID: ID
+
+    """Sorting option"""
+    sortOption: SortOptions!
+  ): Boolean!
+
+  """Create a new mock server"""
+  createMockServer(input: CreateMockServerInput!): MockServer!
+
+  """Update a mock server"""
+  updateMockServer(
+    """ID of the mock server"""
+    id: ID!
+    input: UpdateMockServerInput!
+  ): MockServer!
+
+  """Delete a mock server"""
+  deleteMockServer(
+    """ID of the mock server"""
+    id: ID!
+  ): Boolean!
+
+  """Delete a mock server log by log ID"""
+  deleteMockServerLog(
+    """Id of the log to delete"""
+    logID: ID!
+  ): Boolean!
+
+  """Create a new published document"""
+  createPublishedDoc(
+    """Arguments for creating a published document"""
+    args: CreatePublishedDocsArgs!
+  ): PublishedDocs!
+
+  """Update an existing published document"""
+  updatePublishedDoc(
+    """ID of the published document to update"""
+    id: ID!
+
+    """Arguments for updating a published document"""
+    args: UpdatePublishedDocsArgs!
+  ): PublishedDocs!
+
+  """Delete a published document by ID"""
+  deletePublishedDoc(
+    """ID of the published document to delete"""
+    id: ID!
+  ): Boolean!
+}
+
+input InfraConfigArgs {
+  """Infra Config Name"""
+  name: InfraConfigEnum!
+
+  """Infra Config Value"""
+  value: String!
+}
+
+enum ServiceStatus {
+  ENABLE
+  DISABLE
+}
+
+input EnableAndDisableSSOArgs {
+  """Auth Provider"""
+  provider: AuthProvider!
+
+  """Auth Provider Status"""
+  status: ServiceStatus!
+}
+
+enum AuthProvider {
+  GOOGLE
+  GITHUB
+  MICROSOFT
+  EMAIL
+}
+
+input CreateTeamRequestInput {
+  """ID of the team the collection belongs to"""
+  teamID: ID!
+
+  """JSON string representing the request data"""
+  request: String!
+
+  """Displayed title of the request"""
+  title: String!
+}
+
+input UpdateTeamRequestInput {
+  """JSON string representing the request data"""
+  request: String
+
+  """Displayed title of the request"""
+  title: String
+}
+
+enum SessionType {
+  REST
+  GQL
+}
+
+input CreateMockServerInput {
+  """Name of the mock server"""
+  name: String!
+
+  """ID of the (team or user) collection to associate with the mock server"""
+  collectionID: String
+
+  """
+  Whether to auto-create a collection for the mock server if collectionID is not provided
+  """
+  autoCreateCollection: Boolean
+
+  """
+  Whether to auto-create request examples in the collection for the mock server
+  """
+  autoCreateRequestExample: Boolean
+
+  """Type of workspace: USER or TEAM"""
+  workspaceType: WorkspaceType!
+
+  """ID of the workspace (user or team) to associate with the mock server"""
+  workspaceID: String
+
+  """Delay in milliseconds before responding"""
+  delayInMs: Int = 0
+
+  """
+  Whether the mock server is publicly accessible (defaults to false/private if omitted)
+  """
+  isPublic: Boolean
+}
+
+input UpdateMockServerInput {
+  """Name of the mock server"""
+  name: String
+
+  """Delay in milliseconds before responding"""
+  delayInMs: Int
+
+  """Whether the mock server is active"""
+  isActive: Boolean
+
+  """Whether the mock server is publicly accessible"""
+  isPublic: Boolean
+}
+
+input CreatePublishedDocsArgs {
+  """Title of the published document"""
+  title: String!
+
+  """Version of the published document"""
+  version: String!
+
+  """Whether the published document should auto-sync with the source"""
+  autoSync: Boolean!
+
+  """Type of the workspace (e.g., personal, team)"""
+  workspaceType: WorkspaceType!
+
+  """ID of the workspace"""
+  workspaceID: String!
+
+  """ID of the source (personal/team) collection from which to publish"""
+  collectionID: String!
+
+  """Metadata associated with the published document"""
+  metadata: String!
+
+  """ID of the environment to associate with the published document"""
+  environmentID: String
+}
+
+input UpdatePublishedDocsArgs {
+  """Title of the published document"""
+  title: String
+
+  """Version of the published document"""
+  version: String
+
+  """Whether the published document should auto-sync with the source"""
+  autoSync: Boolean
+
+  """Metadata associated with the published document"""
+  metadata: String
+
+  """
+  ID of the environment to associate with the published document. Pass null to remove the environment.
+  """
+  environmentID: String
+}
+
+type Subscription {
+  """Listen for User Invitation"""
+  userInvited: InvitedUser!
+
+  """Listen for shortcode creation"""
+  myShortcodesCreated: Shortcode!
+
+  """Listen for Shortcode updates"""
+  myShortcodesUpdated: Shortcode!
+
+  """Listen for shortcode deletion"""
+  myShortcodesRevoked: Shortcode!
+
+  """
+  Listen to when a new team member being added to the team. The emitted value is the new team member added.
+  """
+  teamMemberAdded(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamMember!
+
+  """
+  Listen to when a team member status has been updated. The emitted value is the new team member status
+  """
+  teamMemberUpdated(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamMember!
+
+  """
+  Listen to when a team member has been removed. The emitted value is the uid of the user removed
+  """
+  teamMemberRemoved(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): ID!
+
+  """
+  Listen to when a collection has been added to a team. The emitted value is the team added
+  """
+  teamCollectionAdded(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamCollection!
+
+  """Listen to when a collection has been updated."""
+  teamCollectionUpdated(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamCollection!
+
+  """Listen to when a collection has been removed"""
+  teamCollectionRemoved(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): ID!
+
+  """Listen to when a collection has been moved"""
+  teamCollectionMoved(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamCollection!
+
+  """Listen to when a collections position has changed"""
+  collectionOrderUpdated(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): CollectionReorderData!
+
+  """Listen for Team Environment Updates"""
+  teamEnvironmentUpdated(
+    """ID of the Team"""
+    teamID: ID!
+  ): TeamEnvironment!
+
+  """Listen for Team Environment Creation Messages"""
+  teamEnvironmentCreated(
+    """ID of the Team"""
+    teamID: ID!
+  ): TeamEnvironment!
+
+  """Listen for Team Environment Deletion Messages"""
+  teamEnvironmentDeleted(
+    """ID of the Team"""
+    teamID: ID!
+  ): TeamEnvironment!
+
+  """Listens to when a Team Invitation is added"""
+  teamInvitationAdded(
+    """ID of the Team to listen to"""
+    teamID: ID!
+  ): TeamInvitation!
+
+  """Listens to when a Team Invitation is removed"""
+  teamInvitationRemoved(
+    """ID of the Team to listen to"""
+    teamID: ID!
+  ): ID!
+
+  """Emits when a new request is added to a team"""
+  teamRequestAdded(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamRequest!
+
+  """Emitted when a request has been updated"""
+  teamRequestUpdated(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamRequest!
+
+  """
+  Emitted when a request has been deleted. Only the id of the request is emitted.
+  """
+  teamRequestDeleted(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): ID!
+
+  """Emitted when a requests position has been changed in its collection"""
+  requestOrderUpdated(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): RequestReorderData!
+
+  """Emitted when a request has been moved from one collection into another"""
+  requestMoved(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): TeamRequest!
+
+  """Listen for user updates"""
+  userUpdated: User!
+
+  """Listen for user deletion"""
+  userDeleted: User!
+
+  """Listen for User Environment Creation"""
+  userEnvironmentCreated: UserEnvironment!
+
+  """Listen for User Environment updates"""
+  userEnvironmentUpdated: UserEnvironment!
+
+  """Listen for User Environment deletion"""
+  userEnvironmentDeleted: UserEnvironment!
+
+  """Listen for User Environment DeleteMany"""
+  userEnvironmentDeleteMany: Int!
+
+  """Listen for User History Creation"""
+  userHistoryCreated: UserHistory!
+
+  """Listen for User History update"""
+  userHistoryUpdated: UserHistory!
+
+  """Listen for User History deletion"""
+  userHistoryDeleted: UserHistory!
+
+  """Listen for User History deleted many"""
+  userHistoryDeletedMany: UserHistoryDeletedManyData!
+
+  """Listen for All User History deleted"""
+  userHistoryAllDeleted: Boolean!
+
+  """Listen for User Collection Creation"""
+  userCollectionCreated: UserCollection!
+
+  """Listen to when a User Collection has been updated."""
+  userCollectionUpdated: UserCollection!
+
+  """Listen to when a User Collection has been deleted"""
+  userCollectionRemoved: UserCollectionRemovedData!
+
+  """Listen to when a User Collection has been moved"""
+  userCollectionMoved: UserCollection!
+
+  """Listen to when a User Collections position has changed"""
+  userCollectionOrderUpdated: UserCollectionReorderData!
+
+  """Listen to when a User Collection has been duplicated"""
+  userCollectionDuplicated: UserCollectionDuplicatedData!
+
+  """Listen for User Request Creation"""
+  userRequestCreated: UserRequest!
+
+  """Listen for User Request Update"""
+  userRequestUpdated: UserRequest!
+
+  """Listen for User Request Deletion"""
+  userRequestDeleted: UserRequest!
+
+  """Listen for User Request Moved"""
+  userRequestMoved: UserRequestReorderData!
+
+  """Listen for user setting creation"""
+  userSettingsCreated: UserSettings!
+
+  """Listen for user setting updates"""
+  userSettingsUpdated: UserSettings!
+
+  """Subscription for infra config update"""
+  infraConfigUpdate(
+    """Infra config key"""
+    configName: InfraConfigEnum!
+  ): String!
+
+  """Listen for User Root Collection Sort Events"""
+  userRootCollectionsSorted: UserCollectionSortData!
+
+  """Listen for User Child Collection Sort Events"""
+  userChildCollectionsSorted: UserCollectionSortData!
+
+  """Listen for Team Root Collection Sort Events"""
+  teamRootCollectionsSorted(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): Boolean!
+
+  """Listen for Team Child Collection Sort Events"""
+  teamChildCollectionsSorted(
+    """ID of the team to listen to"""
+    teamID: ID!
+  ): ID!
+}

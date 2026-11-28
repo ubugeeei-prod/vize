@@ -37,7 +37,6 @@
     "upstream-compiler-vapor": {
       "hydrate": [
         "up.compile.32",
-        "up.compile.7",
         "up.staticTemplate.8",
         "up.transforms.TransformTransition.7",
         "up.transforms.TransformTransition.8",
@@ -91,7 +90,6 @@
         "up.compile.26",
         "up.compile.29",
         "up.compile.32",
-        "up.compile.7",
         "up.transforms.TransformTransition.7",
         "up.transforms.TransformTransition.8",
         "up.transforms.expression.1",

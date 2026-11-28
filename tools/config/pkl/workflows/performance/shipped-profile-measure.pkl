@@ -24,6 +24,13 @@ on {
         required = true
         type = "string"
       }
+      runner {
+        description = "Linux runner size for the exact same measurement"
+        required = false
+        ["default"] = ci.linux
+        type = "choice"
+        options = List(ci.linux, "blacksmith-16vcpu-ubuntu-2404")
+      }
       twins {
         description = "Also build and measure an independent A/A twin of each side"
         required = false
@@ -36,7 +43,7 @@ on {
 
 permissions { contents = "read" }
 concurrency {
-  group = "shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}"
+  group = "shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}"
   `cancel-in-progress` = false
 }
 env {
@@ -51,7 +58,7 @@ env {
 jobs {
   measure {
     name = "Release-profile instructions and sizes"
-    `runs-on` = ci.linux
+    `runs-on` = "${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}"
     `timeout-minutes` = 360
     steps = new Listing {
       ...ci.stageWorkflowScripts("shipped-profile-measure")

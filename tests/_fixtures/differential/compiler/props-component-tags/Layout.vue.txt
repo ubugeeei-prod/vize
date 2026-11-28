@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const { myIcon, icon: Icon } = defineProps<{ myIcon: any; icon: any }>()
+</script>
+
+<template>
+  <div>
+    <my-icon />
+    <Icon />
+  </div>
+</template>

@@ -139,7 +139,9 @@ impl<'a> Parser<'a> {
             }
 
             let frozen = has_v_pre || inherited_v_pre;
-            self.record_frozen_element(element.loc.span, frozen);
+            if frozen {
+                self.freeze_element(&mut element);
+            }
 
             let html_non_void_self_closing =
                 current.is_self_closing && self.is_invalid_html_self_closing(&element, frozen);

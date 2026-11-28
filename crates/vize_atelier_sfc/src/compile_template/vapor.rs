@@ -13,7 +13,7 @@ use crate::{
     compile_template::{
         TemplateBlockCompileContext, TemplateBlockCompileResult, recoverable_template_warnings,
     },
-    types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
+    types::{BindingMetadata, BindingType, SfcError, SfcTemplateBlock, TemplateCompileOptions},
 };
 
 /// Compile template block using Vapor mode
@@ -209,12 +209,13 @@ fn rewrite_bound_component_resolution(
 
     let (declaration, resolve_call) = trimmed.split_once(" = _resolveComponent(\"")?;
     let (tag, _) = resolve_call.split_once("\")")?;
-    let binding_name = resolve_component_binding_name(bindings, tag)?;
+    let (binding_name, is_prop) = resolve_component_binding_name(bindings, tag)?;
 
     let indent_len = line.len().saturating_sub(trimmed.len());
     let binding_expr = {
-        let mut expr = String::with_capacity(binding_name.len() + 5);
-        expr.push_str("_ctx.");
+        let mut expr = String::with_capacity(binding_name.len() + 7);
+        // A prop is read off the render function's `$props`, as Vue does.
+        expr.push_str(if is_prop { "$props." } else { "_ctx." });
         expr.push_str(&binding_name);
         expr
     };
@@ -227,32 +228,45 @@ fn rewrite_bound_component_resolution(
     Some(rewritten)
 }
 
-fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<String> {
+/// The binding a component tag names and whether it is a prop, as Vue's
+/// `resolveSetupReference` finds it: setup bindings first, then a prop. A
+/// renamed props destructure (`{ icon: Icon }`) is not a setup reference.
+fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<(String, bool)> {
     let resolve_base = |name: &str| {
-        if bindings.bindings.contains_key(name) {
-            return Some(name.to_compact_string());
+        let mut prop = None;
+        let mut candidate = |candidate: &str| match bindings.bindings.get(candidate) {
+            Some(BindingType::Props) => {
+                if prop.is_none() {
+                    prop = Some(candidate.to_compact_string());
+                }
+                None
+            }
+            Some(BindingType::PropsAliased) | None => None,
+            Some(_) => Some(candidate.to_compact_string()),
+        };
+        if let Some(binding) = candidate(name) {
+            return Some((binding, false));
         }
 
         let camel = camelize_component_name(name);
-        if bindings.bindings.contains_key(camel.as_str()) {
-            return Some(camel);
+        if let Some(binding) = candidate(camel.as_str()) {
+            return Some((binding, false));
         }
 
-        let pascal = capitalize_component_name(camel.as_str());
-        if bindings.bindings.contains_key(pascal.as_str()) {
-            return Some(pascal);
+        if let Some(binding) = candidate(capitalize_component_name(camel.as_str()).as_str()) {
+            return Some((binding, false));
         }
 
-        None
+        prop.map(|binding| (binding, true))
     };
 
     if let Some((base, suffix)) = tag.split_once('.') {
-        let resolved_base = resolve_base(base)?;
+        let (resolved_base, is_prop) = resolve_base(base)?;
         let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
         resolved.push_str(resolved_base.as_str());
         resolved.push('.');
         resolved.push_str(suffix);
-        return Some(resolved);
+        return Some((resolved, is_prop));
     }
 
     resolve_base(tag)

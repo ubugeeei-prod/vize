@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const rows = { a: { k: { x: 1 } } } as Record<string, any>
+</script>
+
+<template>
+  <div v-pre><div><Child :x="1">{{ x }}</Child><slot name="s">f</slot></div></div>
+  <div v-for="(row, { k }) in rows"><input v-model="k.x" /></div>
+</template>

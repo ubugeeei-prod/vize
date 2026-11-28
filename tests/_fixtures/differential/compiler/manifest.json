@@ -2892,6 +2892,61 @@
       }
     },
     {
+      "id": "compiler/sfc/props-component-tags",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "props-component-tags",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "a8c27c57683900ff068ce09b9f8eab5b4548e9039e9a7b11175d046590b473bb",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "props-component-tags/module.expected.txt",
+        "sha256": "31c8a215dd0791d6b678f35872dd987d40ea27806e9ec8b81836767a5d40efd9",
+        "source": "crates/vize_atelier_sfc/tests/props_component_tags.rs:the_ssr_module_matches_its_pinned_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins a script-setup prop used as a component tag read through $props (Vue 3.6 resolveSetupReference emits _unref($props[\"myIcon\"])) and a renamed props destructure resolved as an asset, without native parity credit. The DOM and Vapor lanes compile the same input in the Rust test."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/qualification-20261105",
       "state": "active",
       "targets": [
@@ -6241,6 +6296,61 @@
       }
     },
     {
+      "id": "compiler/sfc/typescript-literal-tabs",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "typescript-literal-tabs",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "b5d3afb0dab0fb750498e8ef85cb54efcb9f2b3cee9adac91ea62d0e06c443c8",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "typescript-literal-tabs/module.expected.txt",
+        "sha256": "d11de1fd9cdc57ed0049342735fba981f3b309394d8041a9e9f3a015b592dec9",
+        "source": "crates/vize_atelier_sfc/tests/typescript_literal_tabs.rs:the_ssr_module_matches_its_pinned_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins TypeScript erasure keeping authored tabs inside string, template and regular expression literals and comments, without native parity credit. The DOM lane and its source map are checked in the Rust test."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/unclosed-interactive-witness-12803",
       "state": "active",
       "targets": [
@@ -6450,6 +6560,61 @@
             "dialects": [
               "vue3-sfc",
               "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/v-pre-component-tags-and-v-for-key-pattern",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "v-pre-component-tags-and-v-for-key-pattern",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9435217aa068bc2d93da603995c96314975504d2d13fa2996f984b8c18cd856a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "v-pre-component-tags-and-v-for-key-pattern/module.expected.txt",
+        "sha256": "12e96a1abe08fced5f5fc1cb1e7d65c951d55a3aababb84599c1fe04c905f192",
+        "source": "crates/vize_atelier_sfc/tests/v_pre_and_v_for_key_pattern.rs:ssr_module_matches_the_pinned_differential_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins a v-pre subtree whose component and slot spellings stay markup and a destructured v-for key read through by v-model (Vue 3.5 emits the same markup) without native parity credit. The DOM and SSR rejection of v-model on a destructured key or index name is checked in the Rust API tests."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
@@ -7235,6 +7400,33 @@
         "path": "jsx-v-model-array-shapes-13167/modules.expected.json",
         "sha256": "6bd5f5389c1e627bc9e9fa7f635a0c4acc62d649b2b192272c7196627451e91f",
         "source": "Source-built vize_atelier_jsx compile_jsx with the #13167 fix: a v-model array element outside `[value, argument?, modifiers?]` and a modifier that is not a string literal are error diagnostics on every target instead of a model that binds part of the array. The issue reproduction is the entry; the reference was reviewed against the issue."
+      }
+    },
+    {
+      "id": "compiler/jsx/v-model-optional-chain",
+      "state": "active",
+      "adapter": "compiler-jsx-entry-source-v1",
+      "compat": "native",
+      "targets": [
+        "vdom",
+        "vapor",
+        "vdom-ssr",
+        "vapor-ssr"
+      ],
+      "inputs": {
+        "root": "jsx-v-model-optional-chain",
+        "files": [
+          {
+            "path": "App.tsx.txt",
+            "role": "entry",
+            "sha256": "3e80cb789086e709b76a34c6f8c561e3ffc44310ed9f81b0b4c86d14dbbd6d56"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-v-model-optional-chain/modules.expected.json",
+        "sha256": "edd19b1ac7b7f56935d3dfa2ffe8e4a5e61f894b7ff4bfdd82af752e78735c5c",
+        "source": "Source-built vize_atelier_jsx compile_jsx: an optional-chain v-model target (`state?.val`) cannot be assigned to, so it is an error diagnostic on every target instead of a backend failure with no render code. @vue/babel-plugin-jsx and Vue templates emit `state?.val = $event`, which does not parse. The issue reproduction is the entry; the reference was reviewed against the issue."
       }
     }
   ]

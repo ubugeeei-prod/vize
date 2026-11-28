@@ -133,6 +133,7 @@ test("Hoppscotch baseline keeps nested builds on the pinned package manager", ()
     ?.typecheckPerformance?.baseline?.prepare;
 
   assert.deepEqual(prepare, [
+    ["pnpm", "--filter", "@hoppscotch/common", "run", "gql-codegen"],
     ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
     ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
     ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],

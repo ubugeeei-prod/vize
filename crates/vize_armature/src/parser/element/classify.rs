@@ -15,10 +15,18 @@ impl<'a> Parser<'a> {
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_l0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
-            && !(self.frozen_elements.is_some()
-                && frozen
+            && !(frozen
+                && self.literal_v_pre_tags()
                 && !vize_l0::is_platform_tag(element.tag)
                 && self.is_component(element))
+    }
+
+    /// Whether a tag in a `v-pre` subtree stays the plain element Vue's
+    /// compiler keeps it as: for the compiler lanes (which configure
+    /// `is_native_tag`) and the frozen-element custody parse. Other callers
+    /// keep classifying such a tag as authored.
+    pub(in crate::parser) fn literal_v_pre_tags(&self) -> bool {
+        self.frozen_elements.is_some() || self.options.is_native_tag.is_some()
     }
 
     /// Determine element type (element, component, slot, template)
