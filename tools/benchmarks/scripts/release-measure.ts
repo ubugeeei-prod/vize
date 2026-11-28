@@ -17,10 +17,8 @@
  * release codegen (fat LTO, one codegen unit) with Cargo's profile environment
  * variables, so no temporary branch has to edit `Cargo.toml`. The binaries
  * whose bytes ship are built with `--release`.
- *
- * Usage (Actions; see .github/workflows/shipped-profile-measure.yml):
- *   node tools/benchmarks/scripts/release-measure.ts --base <dir> --head <dir> --out <dir> [--no-twins]
- *   node tools/benchmarks/scripts/release-measure.ts --report <out-dir>
+ * Usage: node tools/benchmarks/scripts/release-measure.ts --base <dir> --head <dir> --out <dir> [--no-twins]
+ * Report: node tools/benchmarks/scripts/release-measure.ts --report <out-dir>
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
