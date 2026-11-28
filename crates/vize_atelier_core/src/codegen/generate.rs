@@ -14,7 +14,10 @@ use crate::{
 pub(super) use collect_helpers::collect_hoist_helpers;
 use static_vnode::generate_static_element_to_bytes;
 
-use super::{context::CodegenContext, helpers::escape_js_string};
+use super::{
+    context::CodegenContext,
+    helpers::{escape_js_string, name_needs_escape, push_escaped_name},
+};
 use vize_l0::String;
 use vize_l0::ToCompactString;
 use vize_l0::ensure_sufficient_stack;
@@ -76,7 +79,17 @@ fn generate_js_child_node_to_bytes_guarded(
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
-                        ctx.write_key(out, exp.content);
+                        let key = &exp.content;
+                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
+                        if needs_quote && name_needs_escape(key) {
+                            push_escaped_name(out, key);
+                        } else if needs_quote {
+                            out.push('"');
+                            out.push_str(key);
+                            out.push('"');
+                        } else {
+                            out.push_str(key);
+                        }
                         out.push_str(": ");
                     }
                     ExpressionNode::Compound(_) => out.push_str("null: "),
@@ -204,7 +217,17 @@ fn generate_props_expression_to_bytes(
                 // Key - quote if contains special characters like hyphens
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
-                        ctx.write_key(out, exp.content);
+                        let key = &exp.content;
+                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
+                        if needs_quote && name_needs_escape(key) {
+                            push_escaped_name(out, key);
+                        } else if needs_quote {
+                            out.push('"');
+                            out.push_str(key);
+                            out.push('"');
+                        } else {
+                            out.push_str(key);
+                        }
                         out.push_str(": ");
                     }
                     ExpressionNode::Compound(_) => out.push_str("null: "),

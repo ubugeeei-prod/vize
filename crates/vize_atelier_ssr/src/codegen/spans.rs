@@ -10,8 +10,21 @@
 
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_l0::Span;
+use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 use super::{SsrCodegenContext, TemplatePart};
+
+/// Push the string-literal contents of a bound attribute name that needs
+/// escaping, mapped at `start` when there is one.
+#[cold]
+#[inline(never)]
+pub(crate) fn push_escaped_bound_name(piece: &mut EmitDocument, name: &str, start: Option<u32>) {
+    let contents = escaped_name_contents(name);
+    match start {
+        Some(start) => piece.push_mapped(&contents, start),
+        None => piece.push_str(&contents),
+    }
+}
 
 /// What a static part needs to stay inert inside a template literal. The
 /// backslash comes first: patterns are tried in order at each byte.
@@ -94,39 +107,17 @@ impl SsrCodegenContext<'_> {
         self.push_string_part_dynamic_spanned(piece);
     }
 
-    /// The string-literal contents that spell the authored `name`, when they
-    /// differ from `name`. Whether any name of this compile can need escaping
-    /// is decided once, from its source; until a source holds a backslash,
-    /// names are copied as they are.
-    #[inline]
-    pub(crate) fn escaped_name(&mut self, name: &str) -> Option<vize_l0::String> {
-        let escapes = match self.quoted_name_escapes {
-            Some(escapes) => escapes,
-            None => self.scan_source_for_name_escapes(),
-        };
-        if escapes {
-            vize_l0::general::quoted_name::escaped_name_contents(name)
-        } else {
-            None
-        }
-    }
-
-    #[cold]
-    #[inline(never)]
-    fn scan_source_for_name_escapes(&mut self) -> bool {
-        let escapes = vize_l0::general::quoted_name::source_may_need_name_escapes(self.source);
-        self.quoted_name_escapes = Some(escapes);
-        escapes
-    }
-
     /// Push `_ssrRenderAttr("name", exp)` for a statically named `v-bind`.
     pub(crate) fn push_bound_attr_part(&mut self, name: &str, dir: &DirectiveNode<'_>, exp: &str) {
-        let escaped = self.escaped_name(name);
-        let name = escaped.as_deref().unwrap_or(name);
         let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
-        match (&dir.arg, self.spans_enabled()) {
-            (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
-            _ => piece.push_str(name),
+        if name_needs_escape(name) {
+            let start = dir.arg.as_ref().map(|arg| arg.loc().span.start);
+            push_escaped_bound_name(&mut piece, name, start.filter(|_| self.spans_enabled()));
+        } else {
+            match (&dir.arg, self.spans_enabled()) {
+                (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
+                _ => piece.push_str(name),
+            }
         }
         piece.push_str("\", ");
         let span = dir.exp.as_ref().map_or(Span::new(0, 0), |e| e.loc().span);

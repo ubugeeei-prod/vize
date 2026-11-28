@@ -61,17 +61,27 @@ pub(in crate::targets::dom::artifact) fn push_empty_attr_pair(out: &mut String, 
 }
 
 fn push_pair(out: &mut String, name: &str, value: &str) {
-    if is_valid_js_identifier(name) {
-        out.push_str(name);
+    let quoted = !is_valid_js_identifier(name);
+    if quoted && vize_l0::general::quoted_name::name_needs_escape(name) {
+        push_escaped_name(out, name);
     } else {
-        // Hoisted pairs are built without the emit context: a name that
-        // needs quotes is checked by itself.
-        let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
-        out.push('"');
-        out.push_str(contents.as_deref().unwrap_or(name));
-        out.push('"');
+        if quoted {
+            out.push('"');
+        }
+        out.push_str(name);
+        if quoted {
+            out.push('"');
+        }
     }
     out.push_str(": \"");
     out.push_str(escape_js_string(value).as_str());
+    out.push('"');
+}
+
+#[cold]
+#[inline(never)]
+fn push_escaped_name(out: &mut String, name: &str) {
+    out.push('"');
+    out.push_str(vize_l0::general::quoted_name::escaped_name_contents(name).as_str());
     out.push('"');
 }

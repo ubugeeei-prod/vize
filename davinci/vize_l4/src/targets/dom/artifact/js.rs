@@ -157,31 +157,18 @@ pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
 }
 
 impl super::EmitCx<'_> {
-    /// Push an authored name as a double-quoted JavaScript string literal.
-    /// Whether any name of this emit can need escaping is decided once, from
-    /// its source; until a source holds a backslash, names are copied as they
-    /// are.
-    #[inline]
+    /// Push an authored name as a double-quoted JavaScript string literal. A
+    /// name with a backslash is spelled through the string-literal writer;
+    /// every other name is copied as it is.
+    #[inline(always)]
     pub(super) fn push_quoted_name(&mut self, name: &str) {
-        let escapes = match self.quoted_name_escapes {
-            Some(escapes) => escapes,
-            None => self.scan_source_for_name_escapes(),
-        };
-        if escapes {
+        if vize_l0::general::quoted_name::name_needs_escape(name) {
             self.push_escaped_quoted_name(name);
-            return;
+        } else {
+            self.buf.push("\"");
+            self.buf.push(name);
+            self.buf.push("\"");
         }
-        self.buf.push("\"");
-        self.buf.push(name);
-        self.buf.push("\"");
-    }
-
-    #[cold]
-    #[inline(never)]
-    fn scan_source_for_name_escapes(&mut self) -> bool {
-        let escapes = vize_l0::general::quoted_name::source_may_need_name_escapes(self.source);
-        self.quoted_name_escapes = Some(escapes);
-        escapes
     }
 
     #[cold]
@@ -189,7 +176,7 @@ impl super::EmitCx<'_> {
     fn push_escaped_quoted_name(&mut self, name: &str) {
         let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
         self.buf.push("\"");
-        self.buf.push(contents.as_deref().unwrap_or(name));
+        self.buf.push(contents.as_str());
         self.buf.push("\"");
     }
 }

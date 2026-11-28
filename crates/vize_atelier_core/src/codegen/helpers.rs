@@ -8,6 +8,8 @@ use self::escape_gate::byte_may_need_js_escaping;
 use crate::RuntimeHelper;
 use vize_l0::{ToCompactString, general::quoted_name};
 
+pub(super) use quoted_name::name_needs_escape;
+
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
     // Numeric decoding only triggers on `&`; otherwise skip the state machine
@@ -117,6 +119,16 @@ pub fn escape_js_string(s: &str) -> String {
 /// name, an already decoded attribute value): no entity in it is decoded.
 pub(super) fn js_string_contents(name: &str) -> String {
     quoted_name::js_string_contents(name)
+}
+
+/// Append the double-quoted JavaScript string literal of a name that
+/// [`quoted_name::name_needs_escape`].
+#[cold]
+#[inline(never)]
+pub(super) fn push_escaped_name(out: &mut String, name: &str) {
+    out.push('"');
+    out.push_str(&quoted_name::escaped_name_contents(name));
+    out.push('"');
 }
 
 /// Check if a string is a valid JavaScript identifier (doesn't need quoting)

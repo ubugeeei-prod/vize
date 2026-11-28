@@ -18,9 +18,6 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) out: EmitDocument,
     /// The source string node-loc spans index into.
     pub(crate) source: &'a str,
-    /// Whether a quoted name of this compile may need escaping, decided from
-    /// `source` when the first name is quoted.
-    quoted_name_escapes: Option<bool>,
     indent_level: u32,
     pub(crate) element_template_map: &'a FxHashMap<usize, usize>,
     temp_count: usize,
@@ -98,7 +95,6 @@ impl<'a> GenerateContext<'a> {
         Self {
             out: EmitDocument::with_capacity(4096, false),
             source,
-            quoted_name_escapes: None,
             indent_level: 0,
             element_template_map,
             temp_count: 0,
@@ -346,32 +342,5 @@ mod indentation_tests {
                 );
             }
         }
-    }
-}
-
-impl GenerateContext<'_> {
-    /// The string-literal contents that spell the authored `name`, when they
-    /// differ from `name`. Whether any name of this compile can need escaping
-    /// is decided once, from its source; until a source holds a backslash,
-    /// names are copied as they are.
-    #[inline]
-    pub(crate) fn escaped_name(&mut self, name: &str) -> Option<vize_carton::String> {
-        let escapes = match self.quoted_name_escapes {
-            Some(escapes) => escapes,
-            None => self.scan_source_for_name_escapes(),
-        };
-        if escapes {
-            vize_l0::general::quoted_name::escaped_name_contents(name)
-        } else {
-            None
-        }
-    }
-
-    #[cold]
-    #[inline(never)]
-    fn scan_source_for_name_escapes(&mut self) -> bool {
-        let escapes = vize_l0::general::quoted_name::source_may_need_name_escapes(self.source);
-        self.quoted_name_escapes = Some(escapes);
-        escapes
     }
 }

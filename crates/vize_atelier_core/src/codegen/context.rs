@@ -104,9 +104,6 @@ pub struct CodegenContext {
     /// The template source node spans index into (the transformed root's
     /// `source`), used to recover covered text from a `SourceLocation`.
     pub(super) source: String,
-    /// Whether a quoted name of this compile may need escaping, decided
-    /// from `source` when the first name is quoted.
-    pub(super) quoted_name_escapes: core::cell::Cell<Option<bool>>,
 }
 
 /// Byte offsets of the structural sections of a generated render module,

@@ -12,6 +12,7 @@ pub(crate) mod helpers;
 mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
+pub(crate) use spans::push_escaped_bound_name;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
@@ -114,9 +115,6 @@ pub struct SsrCodegenContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
-    /// Whether a quoted name of this compile may need escaping, decided from
-    /// `source` when the first name is quoted.
-    quoted_name_escapes: Option<bool>,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
     /// `_tempN` bindings allocated by merged-props elements.
@@ -162,7 +160,6 @@ impl<'a> SsrCodegenContext<'a> {
             runtime_module_name: String::from("vue"),
             jsx_closure: false,
             source,
-            quoted_name_escapes: None,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
             ssr_helpers: FxHashSet::default(),

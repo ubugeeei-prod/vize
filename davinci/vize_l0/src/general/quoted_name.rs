@@ -4,30 +4,23 @@
 //! argument or modifier, a slot name) is authored text, or is assembled from
 //! authored text and fixed ASCII. The markup lexer ends a name at whitespace
 //! and reports a double quote inside one, so a quoted name can change meaning
-//! only through a backslash. A source without a backslash spells each of its
-//! names as it is: one scan of the source stands for a scan of every name.
+//! only through a backslash. A name without one is written as it is.
 
 use crate::String;
 use crate::js_string::push_js_string_literal;
 
-/// Whether a name taken from `source` may need escaping in a JavaScript
-/// string literal. An empty `source` says nothing about its names, so it may.
-#[inline]
-pub fn source_may_need_name_escapes(source: &str) -> bool {
-    source.is_empty() || memchr::memchr(b'\\', source.as_bytes()).is_some()
+/// Whether `name` must be escaped to be written between double quotes.
+#[inline(always)]
+pub fn name_needs_escape(name: &str) -> bool {
+    name.as_bytes().contains(&b'\\')
 }
 
 /// The contents of the double-quoted JavaScript string literal that spells
-/// `name`, when they differ from `name` itself.
+/// `name`, for a name that [`name_needs_escape`].
 #[cold]
 #[inline(never)]
-pub fn escaped_name_contents(name: &str) -> Option<String> {
-    if memchr::memchr2(b'\\', b'"', name.as_bytes()).is_none()
-        && !name.bytes().any(|byte| byte < 0x20)
-    {
-        return None;
-    }
-    Some(js_string_contents(name))
+pub fn escaped_name_contents(name: &str) -> String {
+    js_string_contents(name)
 }
 
 /// The contents of the double-quoted JavaScript string literal that spells
@@ -42,22 +35,19 @@ pub fn js_string_contents(name: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{escaped_name_contents, source_may_need_name_escapes};
+    use super::{escaped_name_contents, name_needs_escape};
 
     #[test]
-    fn only_a_backslash_marks_a_source() {
-        assert!(!source_may_need_name_escapes(
-            r#"<div data-a="1" :b="c"></div>"#
-        ));
-        assert!(source_may_need_name_escapes(r#"<div :e\f="v"></div>"#));
-        assert!(source_may_need_name_escapes(""));
+    fn only_a_backslash_needs_escaping() {
+        assert!(!name_needs_escape("data-a"));
+        assert!(!name_needs_escape("onUpdate:modelValue"));
+        assert!(name_needs_escape(r"e\f"));
     }
 
     #[test]
     fn escaped_contents_spell_the_name() {
-        assert_eq!(escaped_name_contents("data-a"), None);
-        assert_eq!(escaped_name_contents(r"e\f").as_deref(), Some(r"e\\f"));
-        assert_eq!(escaped_name_contents("a\"b").as_deref(), Some("a\\\"b"));
-        assert_eq!(escaped_name_contents("a\u{1}").as_deref(), Some("a\\u0001"));
+        assert_eq!(escaped_name_contents(r"e\f").as_str(), r"e\\f");
+        assert_eq!(escaped_name_contents("a\\\"b").as_str(), "a\\\\\\\"b");
+        assert_eq!(escaped_name_contents("a\\\u{1}").as_str(), "a\\\\\\u0001");
     }
 }
