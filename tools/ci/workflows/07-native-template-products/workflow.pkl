@@ -1,0 +1,68 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Native template products"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/07-native-template-products.yml"
+      "tools/ci/workflows/07-native-template-products/**"
+      "crates/vize_maestro/src/virtual_code/script_code.rs"
+      "crates/vize_maestro/src/virtual_code/generator/template_products.rs"
+      "crates/vize_maestro/src/virtual_code/generator/template_products/**"
+      "crates/vize_canon/src/projection/native_template.rs"
+      "davinci/vize_l1_to_l2/src/native_file/operands.rs"
+      "davinci/vize_l2/src/query/expression/operand.rs"
+    }
+  }
+  workflow_dispatch {}
+}
+permissions { contents = "read" }
+concurrency {
+  group = "native-template-products-${{ github.event.pull_request.number || github.sha }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `native-template-products` {
+    name = "Native template parity and paired resource measurements"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("07-native-template-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "native-template-products"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Compare complete original products and measure their resources", ci.workflowScript("measure-native-template-products.sh"))
+      new Dynamic {
+        name = "Retain exact-source parity and raw paired measurements"
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "native-template-products-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/native-template-products"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

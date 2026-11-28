@@ -100,11 +100,36 @@ impl ScriptCodeGenerator {
         is_setup: bool,
         bindings: &[String],
     ) -> VirtualDocument {
+        self.generate_source_with_exports(
+            script.content.as_ref(),
+            script.loc.start as u32,
+            is_setup,
+            bindings,
+        )
+    }
+
+    /// Emit the original selected setup block without a compatibility descriptor.
+    #[cfg(feature = "experimental-template-operand-products")]
+    pub(crate) fn generate_original_setup_with_exports(
+        &mut self,
+        script: vize_l0::SourceBlock<'_>,
+        bindings: &[String],
+    ) -> VirtualDocument {
+        self.generate_source_with_exports(script.source(), script.start(), true, bindings)
+    }
+
+    fn generate_source_with_exports(
+        &mut self,
+        content: &str,
+        block_offset: u32,
+        is_setup: bool,
+        bindings: &[String],
+    ) -> VirtualDocument {
         // Reset state
         self.output.clear();
         self.mappings = ProjectionMapping::new();
         self.gen_offset = 0;
-        self.block_offset = script.loc.start as u32;
+        self.block_offset = block_offset;
 
         // Generate header
         if is_setup {
@@ -119,7 +144,6 @@ impl ScriptCodeGenerator {
         let content_gen_start = self.gen_offset;
 
         // Write the script content
-        let content = script.content.as_ref();
         self.write(content);
 
         // Create mapping for content
