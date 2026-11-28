@@ -4,13 +4,40 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { retainMovedAttribution, retainSourceCli } from "./release-measure-attribution.ts";
+import {
+  retainMeasuredProbes,
+  retainMovedAttribution,
+  retainSourceCli,
+} from "./release-measure-attribution.ts";
 import type { Side } from "./release-measure.ts";
 
 const labels = ["base", "head", "base-twin", "head-twin"] as const;
 const sha = (bytes: Uint8Array | string) => createHash("sha256").update(bytes).digest("hex");
 const dump = (id: string, instructions: number) =>
   `version: 1\nevents: Ir\ndesc: Trigger: Client Request: ${id}\ntotals: ${instructions}\n`;
+
+void test("capture rejects missing or foreign images before the next target is built", () => {
+  for (const fault of ["missing", "foreign"] as const) {
+    const root = mkdtempSync(join(tmpdir(), "release-probe-invalid-"));
+    try {
+      const measurement = join(root, "measurement");
+      const probes = join(root, "instruction-probes");
+      mkdirSync(measurement);
+      mkdirSync(probes);
+      writeFileSync(
+        join(measurement, "binaries.json"),
+        JSON.stringify([{ pkg: "p", bench: "b", sha256: sha("expected") }]),
+      );
+      if (fault === "foreign") writeFileSync(join(probes, "probe-00"), "foreign");
+      assert.throws(
+        () => retainMeasuredProbes(measurement, probes, join(root, "retained")),
+        fault === "missing" ? /ENOENT/ : /image digest differs/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
 function capture() {
   const out = mkdtempSync(join(tmpdir(), "release-attribution-"));
   const pair = { baseSha: "a".repeat(40), headSha: "b".repeat(40), sourceDateEpoch: "1700000000" };

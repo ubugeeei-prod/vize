@@ -37,6 +37,23 @@ type RecordRow = {
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const labels: readonly Label[] = ["base", "head", "base-twin", "head-twin"];
 
+/** Copy each measured image while its Cargo target and probe link still exist. */
+export function retainMeasuredProbes(measurement: string, probes: string, destination: string) {
+  const inventory = join(measurement, "binaries.json");
+  if (!existsSync(inventory)) return;
+  const built = JSON.parse(readFileSync(inventory, "utf8")) as Built[];
+  mkdirSync(destination);
+  for (const [index, binary] of built.entries()) {
+    const name = `probe-${String(index).padStart(2, "0")}`;
+    const source = join(probes, name);
+    const target = join(destination, name);
+    // copyFile copies the resolved file, never a link into a target that the
+    // next independent build removes. Check the actual retained bytes now.
+    copyFileSync(source, target);
+    assert.equal(digest(readFileSync(target)), binary.sha256, `${source}: image digest differs`);
+  }
+}
+
 /** Diagnostic evidence only: no measurement, threshold or A/A assertion changes. */
 export function retainMovedAttribution(
   out: string,

@@ -87,7 +87,7 @@ jobs:
       - uses: ./driver/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Test the report renderer
-        run: node --test driver/tools/benchmarks/scripts/release-measure.test.ts
+        run: node --test driver/tools/benchmarks/scripts/release-measure.test.ts driver/tools/benchmarks/scripts/release-measure-attribution.test.ts
       - name: Measure base, head and twins
         env:
           TWINS: ${{ inputs.twins }}
@@ -108,3 +108,11 @@ jobs:
             ${{ runner.temp }}/release-measure/out/*/cli/
           if-no-files-found: warn
           retention-days: 30
+      - name: Retain failed capture diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: failure()
+        with:
+          name: release-measure-failed-captures-${{ github.run_id }}
+          path: ${{ runner.temp }}/release-measure/out/*/*/measurement/
+          if-no-files-found: warn
+          retention-days: 7

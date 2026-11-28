@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -320,23 +322,44 @@ void test("instruction capture preserves the measured executable before cleaning
   const bytes = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0, 255, 13, 10]);
   writeFileSync(image, bytes);
   try {
-    for (const flags of [[], ["--formatter"]]) {
-      const destination = join(root, flags.length ? "formatter" : "stages");
+    for (const [suite, flags] of [
+      ["stages", []],
+      ["formatter", ["--formatter"]],
+      ["sfc", ["--sfc-parsing"]],
+    ] as const) {
+      const destination = join(root, suite);
       collectInstructionSuite("source", root, destination, flags, {}, (_cmd, args) => {
         const directory = args[args.indexOf("--out") + 1];
         mkdirSync(directory, { recursive: true });
         writeFileSync(join(directory, "measurement.json"), "{}\n");
+        writeFileSync(
+          join(directory, "binaries.json"),
+          JSON.stringify(
+            [0, 1, 2].map((index) => ({
+              pkg: "package",
+              bench: `bench-${index}`,
+              sha256: createHash("sha256").update(bytes).digest("hex"),
+            })),
+          ),
+        );
         const probes = join(
           directory,
           "..",
-          flags.length ? "formatter-instruction-probes" : "instruction-probes",
+          suite === "formatter" ? "formatter-instruction-probes" : "instruction-probes",
         );
         mkdirSync(probes);
-        symlinkSync(image, join(probes, "probe-00"));
+        for (const index of [0, 1, 2])
+          symlinkSync(image, join(probes, `probe-${String(index).padStart(2, "0")}`));
       });
-      assert.deepEqual(readFileSync(join(destination, "probes", "probe-00")), bytes);
+      for (const index of [0, 1, 2]) {
+        const file = join(destination, "probes", `probe-${String(index).padStart(2, "0")}`);
+        assert.equal(lstatSync(file).isFile(), true);
+        assert.deepEqual(readFileSync(file), bytes);
+      }
       assert.equal(existsSync(join(root, "instruction-capture")), false);
     }
+    rmSync(image);
+    assert.deepEqual(readFileSync(join(root, "stages", "probes", "probe-02")), bytes);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

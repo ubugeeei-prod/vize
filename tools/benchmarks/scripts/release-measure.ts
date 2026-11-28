@@ -37,7 +37,11 @@ import {
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glibcFloorTarget } from "../../support/github/glibc-floor.ts";
-import { publishMovedAttribution, retainSourceCli } from "./release-measure-attribution.ts";
+import {
+  publishMovedAttribution,
+  retainMeasuredProbes,
+  retainSourceCli,
+} from "./release-measure-attribution.ts";
 
 /** Instruction suites and the instruction-counts.mjs flags that collect them. */
 export const SUITES: ReadonlyArray<readonly [string, readonly string[]]> = [
@@ -277,13 +281,7 @@ export function collectInstructionSuite(
         capture,
         flags.includes("--formatter") ? "formatter-instruction-probes" : "instruction-probes",
       );
-      if (existsSync(probes))
-        cpSync(probes, join(destination, "probes"), {
-          recursive: true,
-          dereference: true,
-          force: false,
-          errorOnExist: true,
-        });
+      retainMeasuredProbes(dir, probes, join(destination, "probes"));
     } catch (error) {
       failures.push(error);
     } finally {

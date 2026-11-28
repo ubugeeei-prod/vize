@@ -105,7 +105,7 @@ jobs {
         uses = "./driver/.github/actions/setup-wild-http-recovery"
         with { `wild-version` = "0.9.0" }
       }
-      ci.command("Test the report renderer", "node --test driver/tools/benchmarks/scripts/release-measure.test.ts")
+      ci.command("Test the report renderer", "node --test driver/tools/benchmarks/scripts/release-measure.test.ts driver/tools/benchmarks/scripts/release-measure-attribution.test.ts")
       new Dynamic {
         name = "Measure base, head and twins"
         env { TWINS = "${{ inputs.twins }}" }
@@ -132,6 +132,17 @@ jobs {
           """
           `if-no-files-found` = "warn"
           `retention-days` = 30
+        }
+      }
+      new Dynamic {
+        name = "Retain failed capture diagnostics"
+        uses = ci.uploadArtifact
+        `if` = "failure()"
+        with {
+          name = "release-measure-failed-captures-${{ github.run_id }}"
+          path = "${{ runner.temp }}/release-measure/out/*/*/measurement/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 7
         }
       }
     }
