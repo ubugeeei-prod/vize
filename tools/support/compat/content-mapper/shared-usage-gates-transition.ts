@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeAuthoredComponentInfer } from "./authored-component-infer-transition.ts";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
+import { beforeGenericConstructorBoundInstance } from "./generic-constructor-bound-instance-transition.ts";
 import { beforeLibraryKebabListeners } from "./library-kebab-listeners-transition.ts";
 
 export const sharedUsageGatesRecord = "tests/_fixtures/tooling/shared-usage-gates.json";
@@ -64,7 +65,10 @@ function load(): Transition {
 
 /** The pre-gate bytes of a recorded producer's current image; older images pass through. */
 export function beforeSharedUsageGates(path: string, current: string): string {
-  current = beforeAuthoredComponentInfer(path, beforeLibraryKebabListeners(path, current));
+  current = beforeAuthoredComponentInfer(
+    path,
+    beforeLibraryKebabListeners(path, beforeGenericConstructorBoundInstance(path, current)),
+  );
   const file = load().files.find((entry) => entry.path === path);
   if (!file) return current;
   const now = identity(current);

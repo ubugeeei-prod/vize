@@ -1,0 +1,29 @@
+<script setup lang="ts">
+type Props<T> = {
+  modelValue?: T;
+  "onUpdate:modelValue"?: (value: T) => void;
+};
+
+const Field = null as unknown as (new () => {
+  $emit: (event: "update:modelValue", value: any) => void;
+}) &
+  (new <T>(props: Props<T>) => { $props: Props<T> });
+const Bare = null as unknown as new <T>(props: Props<T>) => { $props: Props<T> };
+const Fixed = null as unknown as new () => {
+  $props: { modelValue?: number; "onUpdate:modelValue"?: (value: number) => void };
+  $emit: (event: "update:modelValue", value: number) => void;
+};
+
+const selected: string[] = [];
+const accept = (value: string[]) => value.length;
+const count = (value: number) => value;
+</script>
+
+<template>
+  <Field :model-value="selected" @update:model-value="accept($event)" />
+  <Field :model-value="selected" @update:modelValue="accept($event)" />
+  <Field :model-value="selected" @update:model-value="count($event)" />
+  <Field v-if="selected.length" :model-value="selected" @update:model-value="count($event)" />
+  <Bare :model-value="selected" @update:model-value="count($event)" />
+  <Fixed :model-value="1" @update:model-value="accept($event)" />
+</template>

@@ -170,6 +170,7 @@ pub(super) fn generate_inferred_emit_args(
         && entries
             .iter()
             .all(|entry| super::emit_props_gate::is_single_line(entry.value()));
+    let bound = bound_instance::applies(ctx, &usage, has_inference_prop, dynamic_component);
     let (indent, library, component_ref) = (ctx.indent, ctx.library, ctx.component_ref);
     // A vue-tsc library export is called itself, so the bound props
     // instantiate its generics and its `__ctx` carries the listener props.
@@ -223,12 +224,10 @@ pub(super) fn generate_inferred_emit_args(
             "{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\n"
         );
         if gated {
-            super::emit_props_gate::append_guarded_input(
+            bound_instance::append_guarded_input(
+                bound,
                 ts,
-                call_indent,
-                guard,
-                library,
-                component_ref,
+                (call_indent, guard, library, component_ref),
                 (usage_idx, ctx.hoist_shared_preamble),
             );
         } else {
@@ -247,12 +246,10 @@ pub(super) fn generate_inferred_emit_args(
             );
         }
         if gated {
-            super::emit_props_gate::append_gated_call(
+            bound_instance::append_gated_call(
+                bound,
                 ts,
-                indent,
-                library,
-                component_ref,
-                &emit_props,
+                (indent, library, component_ref, &emit_props),
                 (usage_idx, ctx.hoist_shared_preamble),
             );
         } else {
@@ -366,6 +363,9 @@ pub(super) fn generate_inferred_emit_args(
             ctx.indent
         );
     }
+    if first_listener && bound {
+        bound_instance::append_instance(ts, indent, component_ref, usage_idx);
+    }
     let prop_key = ctx.prop_key;
     // A loose static emit has no declared runtime arity. Preserve the normal
     // listener-prop fallback; dynamic targets keep their contextual marker.
@@ -376,9 +376,10 @@ pub(super) fn generate_inferred_emit_args(
     };
     let library_args =
         super::listener_contract::library_listener_args(&emit_props, prop_key, ctx.raw_prop_key);
+    let (open, close) = bound_instance::args_frame(bound, usage_idx, prop_key, ctx.raw_prop_key);
     append!(
         *ts,
-        "{indent}type {inferred_args} = {library} extends true ? {library_args} : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
+        "{indent}type {inferred_args} = {library} extends true ? {library_args} : {open}typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[]{close};\n",
     );
     let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
         let contextless_listener = cstr!(
@@ -489,5 +490,6 @@ fn event_matches_scope(
     exact || event_contains_scope || (scope_in_usage && same_handler)
 }
 
+mod bound_instance;
 #[cfg(test)]
 mod tests;
