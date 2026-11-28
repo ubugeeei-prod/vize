@@ -102,3 +102,26 @@ pub(crate) fn parse_script_text<'a>(
     }
     parsed
 }
+
+/// [`parse_script_text`] for a block authored in `source_type`'s grammar, the
+/// grammar of its `lang`. A `lang="tsx"` block is read as TSX, so its JSX is
+/// never taken for TypeScript; one that parses only without JSX, such as a
+/// `<T>value` assertion, is still read as TypeScript.
+pub(crate) fn parse_script_block<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    source: &'a str,
+    source_type: oxc_span::SourceType,
+) -> oxc_parser::ParserReturn<'a> {
+    let parsed = parse_script_text(allocator, source, source_type);
+    if (parsed.panicked || !parsed.diagnostics.is_empty())
+        && source_type.is_typescript()
+        && source_type.is_jsx()
+    {
+        let typescript =
+            oxc_parser::Parser::new(allocator, source, source_type.with_standard(true)).parse();
+        if !typescript.panicked && typescript.diagnostics.is_empty() {
+            return typescript;
+        }
+    }
+    parsed
+}

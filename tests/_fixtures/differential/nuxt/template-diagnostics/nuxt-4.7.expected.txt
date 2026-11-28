@@ -1,0 +1,15 @@
+NUXT_B4025 14:15 @232 {"tag":"NuxtLink","attribute":"to","to":"/missing"}
+NUXT_B4025 15:16 @280 {"tag":"nuxt-link","attribute":"href","to":"/about?tab=1"}
+NUXT_B4025 18:15 @436 {"tag":"NuxtLink","attribute":"to","to":"/styled"}
+NUXT_B3014 20:7 @507 {"component":"ServerCard","directive":"v-model"}
+NUXT_B3014 21:7 @529 {"component":"ServerCard","directive":"@click.stop"}
+NUXT_B3015 23:7 @582 {"component":"ServerCard","prop":"format","value":"a function"}
+NUXT_B3015 27:7 @671 {"component":"ServerCard","prop":"render","value":"a function"}
+NUXT_B3015 29:18 @713 {"component":"server-card","prop":"kind","value":"a class"}
+NUXT_B3015 29:32 @727 {"component":"server-card","prop":"pick","value":"a function"}
+NUXT_B3015 29:62 @757 {"component":"server-card","prop":"maybe","value":"a function"}
+NUXT_B3015 35:30 @952 {"component":"NuxtIsland name=\"Chart\"","prop":"render","value":"a function"}
+NUXT_B3015 35:30 @952 {"component":"NuxtIsland name=\"Chart\"","prop":"store","value":"a class instance"}
+NUXT_B3015 35:30 @952 {"component":"NuxtIsland name=\"Chart\"","prop":"props","value":"a function"}
+NUXT_B3015 36:18 @1050 {"component":"nuxt-island","prop":"quoted-key","value":"a function"}
+NUXT_B4025 38:22 @1163 {"tag":"NuxtLink","attribute":"to","to":"/ja"}

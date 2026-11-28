@@ -1,0 +1,20 @@
+<script lang="tsx">
+export interface BadgeProps {
+  text: string
+}
+
+export const Badge = (props: BadgeProps) => <b class="badge">{props.text}</b>
+
+export default {
+  inheritAttrs: false,
+}
+</script>
+
+<script setup lang="tsx">
+const label: string = 'hi'
+const node = () => <span><Badge text={label} /></span>
+</script>
+
+<template>
+  <component :is="node" />
+</template>

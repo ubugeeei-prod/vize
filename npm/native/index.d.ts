@@ -1108,6 +1108,50 @@ export declare function normalizeViteVirtualVueModuleId(id: string): string;
  */
 export declare function normalizeVizeConfig(value: unknown): unknown;
 
+/**
+ * Find the constructs Nuxt's template diagnostics check in an SFC.
+ *
+ * `serverTags` names the tags of the app's server components; `<NuxtLink>`
+ * and `<NuxtIsland>` are always checked. An SFC that does not parse, or whose
+ * template is external or not HTML, yields nothing.
+ */
+export declare function nuxtTemplateDiagnostics(
+  source: string,
+  serverTags?: Array<string> | undefined | null,
+): Array<NuxtTemplateFindingNapi>;
+
+/** A template construct Nuxt's template node transform reports. */
+export interface NuxtTemplateFindingNapi {
+  /**
+   * `link` (a static `<NuxtLink>` target), `event` (`v-on`/`v-model` on a
+   * candidate server component), `prop` (an unserializable prop on one) or
+   * `island` (an unserializable `<NuxtIsland>` `props`/`context` entry).
+   */
+  kind: string;
+  /** The element's tag as authored. */
+  tag: string;
+  /** One-based line of the attribute in the SFC. */
+  line: number;
+  /** One-based UTF-16 column of the attribute. */
+  column: number;
+  /** UTF-16 offset of the attribute in the SFC. */
+  offset: number;
+  /** `link`: the attribute holding the target (`to` or `href`). */
+  attribute?: string;
+  /** `link`: the target as written. */
+  to?: string;
+  /** `event`: the directive as authored, e.g. `@click.stop`. */
+  directive?: string;
+  /** `prop`/`island`: the prop or entry name. */
+  prop?: string;
+  /** `prop`/`island`: what the value is (`a function`, `a class`, ...). */
+  value?: string;
+  /** `island`: the static `name` attribute, when it has a value. */
+  islandName?: string;
+  /** `island`: the bound prop (`props` or `context`). */
+  islandProp?: string;
+}
+
 /** Open the proxy-arm handle over one SFC, computing `templateScopes`. */
 export declare function openPluginDocument(
   source: string,

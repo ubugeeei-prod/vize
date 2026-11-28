@@ -3,7 +3,8 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::String;
 use vize_l2::op::Attribute;
 
-use super::super::js::{escape_js_string, is_valid_js_identifier};
+use super::super::js::escape_js_string;
+use vize_l0::general::quoted_name::{KeySpelling, key_spelling};
 
 /// First-occurrence static attrs as a single-line object, matching
 /// hoisted `JsChildNode::Object` emission.
@@ -61,15 +62,28 @@ pub(in crate::targets::dom::template) fn push_empty_attr_pair(out: &mut String, 
 }
 
 fn push_pair(out: &mut String, name: &str, value: &str) {
-    let quoted = !is_valid_js_identifier(name);
-    if quoted {
-        out.push('"');
-    }
-    out.push_str(name);
-    if quoted {
-        out.push('"');
+    let spelling = key_spelling(name);
+    let quoted = spelling != KeySpelling::Bare;
+    if spelling == KeySpelling::Escaped {
+        push_escaped_name(out, name);
+    } else {
+        if quoted {
+            out.push('"');
+        }
+        out.push_str(name);
+        if quoted {
+            out.push('"');
+        }
     }
     out.push_str(": \"");
     out.push_str(escape_js_string(value).as_str());
+    out.push('"');
+}
+
+#[cold]
+#[inline(never)]
+fn push_escaped_name(out: &mut String, name: &str) {
+    out.push('"');
+    out.push_str(vize_l0::general::quoted_name::escaped_name_contents(name).as_str());
     out.push('"');
 }

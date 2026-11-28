@@ -25,6 +25,7 @@ use crate::virtual_ts::{
 
 use super::super::template_record::TemplateRecord;
 use super::push_ts_string_literal;
+use super::script_jsx_refs::ScriptJsxRef;
 use component_targets::{dynamic_component_reference, static_component_is_kind};
 
 /// One registry entry: the authored ref name and the element tag it names.
@@ -104,6 +105,41 @@ pub(super) fn template_ref_registry(
             &mut refs,
         );
     }
+    render(&refs, record)
+}
+
+/// The registry of a component without a template, which renders the JSX of
+/// its script. A render helper of another module can register a ref too, so
+/// the registry stays open: a key it does not list holds `unknown`, Vue's own
+/// untyped result, and is not an error.
+pub(super) fn script_jsx_ref_registry(
+    infer_template_refs: bool,
+    record: &TemplateRecord,
+    script_jsx_refs: &[ScriptJsxRef],
+) -> Option<TemplateRefRegistry> {
+    if !infer_template_refs {
+        return None;
+    }
+    let refs: Vec<RegisteredRef> = script_jsx_refs
+        .iter()
+        .map(|entry| RegisteredRef {
+            name: entry.name.clone(),
+            kind: RegisteredRefKind::Element {
+                tag: entry.tag.clone(),
+                is_svg: entry.is_svg,
+            },
+            in_v_for: entry.in_list,
+        })
+        .collect();
+    let mut registry = render(&refs, record)?;
+    registry.body.push_str(OPEN_KEYS);
+    registry.dollar_body.push_str(OPEN_KEYS);
+    Some(registry)
+}
+
+const OPEN_KEYS: &str = "[key: string]: unknown; ";
+
+fn render(refs: &[RegisteredRef], record: &TemplateRecord) -> Option<TemplateRefRegistry> {
     if refs.is_empty() {
         return None;
     }
@@ -111,7 +147,7 @@ pub(super) fn template_ref_registry(
     // A name registered more than once holds whichever target is mounted, so
     // its type is the union of them, in template order.
     let mut names: Vec<&str> = Vec::new();
-    for entry in &refs {
+    for entry in refs {
         if !names.contains(&entry.name.as_str()) {
             names.push(entry.name.as_str());
         }

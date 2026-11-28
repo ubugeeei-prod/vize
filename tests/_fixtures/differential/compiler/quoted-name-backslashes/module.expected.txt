@@ -1,0 +1,21 @@
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr } from "@vue/server-renderer"
+import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<section${_ssrRenderAttrs(_attrs)}><p c\\d="1"${_ssrRenderAttr("e\\f", _ctx.value)}>text</p>`)
+  _push(_ssrRenderComponent(_resolveComponent("Card"), { "p\\q": "1", "r\\s": _ctx.value, "onT\\u": _ctx.onPick }, {
+    "s\\t": _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`slot`)
+      } else {
+        return [_createTextVNode("slot")]
+      }
+    }),
+    _: 1
+  }, _parent))
+  _push(`</section>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -1,6 +1,7 @@
 //! JS-string escaping and raw expression helpers copied because this crate
 //! cannot depend on `vize_atelier_core`; byte-identical output is the P2-11 bar.
 
+use vize_l0::general::quoted_name::{KeySpelling, key_spelling};
 use vize_l0::{Span, String};
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 
@@ -149,12 +150,61 @@ pub(super) fn escape_js_string(s: &str) -> String {
 }
 
 pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
-    if !is_valid_js_identifier(name) {
-        cx.buf.push("\"");
-        cx.buf.push(name);
-        cx.buf.push("\"");
-    } else {
-        cx.buf.push(name);
+    match key_spelling(name) {
+        KeySpelling::Bare => cx.buf.push(name),
+        KeySpelling::Quoted => {
+            cx.buf.push("\"");
+            cx.buf.push(name);
+            cx.buf.push("\"");
+        }
+        KeySpelling::Escaped => cx.push_escaped_quoted_name(name),
+    }
+}
+
+/// Authored names written between quotes. A name is final text, so a name
+/// with a backslash is spelled through the string-literal writer; every other
+/// name is copied as it is.
+impl super::EmitCx<'_> {
+    /// Push a dynamic prop name as a double-quoted JavaScript string literal.
+    /// The name was already written as a key; see `escape_names`.
+    #[inline(always)]
+    pub(super) fn push_quoted_name(&mut self, name: &str) {
+        if self.escape_names {
+            self.push_checked_quoted_name_cold(name);
+        } else {
+            self.buf.push("\"");
+            self.buf.push(name);
+            self.buf.push("\"");
+        }
+    }
+
+    /// Push a name that no key wrote before (a modifier, a directive
+    /// argument) as a double-quoted JavaScript string literal.
+    #[inline(always)]
+    pub(super) fn push_checked_quoted_name(&mut self, name: &str) {
+        if vize_l0::general::quoted_name::name_needs_escape(name) {
+            self.push_escaped_quoted_name(name);
+        } else {
+            self.buf.push("\"");
+            self.buf.push(name);
+            self.buf.push("\"");
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_checked_quoted_name_cold(&mut self, name: &str) {
+        self.push_checked_quoted_name(name);
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_escaped_quoted_name(&mut self, name: &str) {
+        self.escape_names = true;
+        let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
+        self.buf.push("\"");
+        self.buf.push(contents.as_str());
+        self.buf.push("\"");
     }
 }
 

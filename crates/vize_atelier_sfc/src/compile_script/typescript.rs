@@ -14,14 +14,21 @@ use crate::module_map::{Runs, reprint_points};
 
 /// Transform TypeScript code to JavaScript using OXC
 pub fn transform_typescript_to_js(code: &str) -> String {
-    strip_typescript(code, false).0
+    transform_script_to_js(code, SourceType::ts())
 }
 
-/// [`transform_typescript_to_js`] with the provenance of the JavaScript in
+/// [`transform_typescript_to_js`] for a script authored in `source_type`'s
+/// grammar. A `lang="tsx"` script is read as TSX from the start, so its JSX
+/// is never taken for TypeScript syntax.
+pub(crate) fn transform_script_to_js(code: &str, source_type: SourceType) -> String {
+    strip_typescript(code, source_type, false).0
+}
+
+/// [`transform_script_to_js`] with the provenance of the JavaScript in
 /// `code` (Davinci P3-9): the tokens oxc's codegen re-printed. The
 /// JavaScript is byte-identical to the untraced call's.
-pub(crate) fn transform_typescript_to_js_traced(code: &str) -> (String, Runs) {
-    let (js, runs) = strip_typescript(code, true);
+pub(crate) fn transform_script_to_js_traced(code: &str, source_type: SourceType) -> (String, Runs) {
+    let (js, runs) = strip_typescript(code, source_type, true);
     (js, runs.unwrap_or_else(|| Runs::identity(code.len())))
 }
 
@@ -53,15 +60,15 @@ pub(super) fn print_javascript(
     (printed.code.into(), Some(runs.unwrap_or_default()))
 }
 
-/// The JavaScript for `code` and, when `trace` is set and the code was
-/// re-printed, its provenance in `code`. `None` provenance means `code` came
-/// back unchanged.
-fn strip_typescript(code: &str, trace: bool) -> (String, Option<Runs>) {
+/// The JavaScript for `code`, read in the `source_type` grammar, and, when
+/// `trace` is set and the code was re-printed, its provenance in `code`.
+/// `None` provenance means `code` came back unchanged.
+fn strip_typescript(code: &str, source_type: SourceType, trace: bool) -> (String, Option<Runs>) {
     let allocator = Allocator::default();
     // `lang="tsx"` output keeps its JSX for the bundler's JSX plugin.
     let parse_result = profile!(
         "atelier.script.ts.parse",
-        crate::script::parse_script_text(&allocator, code, SourceType::ts())
+        crate::script::parse_script_block(&allocator, code, source_type)
     );
     let jsx = if parse_result.program.source_type.is_jsx() {
         JsxOptions::disable()

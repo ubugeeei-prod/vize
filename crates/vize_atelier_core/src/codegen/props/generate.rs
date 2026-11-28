@@ -5,10 +5,7 @@ use vize_relief::options::BindingType;
 
 use super::{
     super::expression::generate_expression,
-    super::{
-        context::CodegenContext,
-        helpers::{escape_js_string, is_valid_js_identifier},
-    },
+    super::{context::CodegenContext, helpers::escape_js_string},
     directives::{generate_directive_prop_with_static, is_supported_directive},
     events::{generate_merged_event_handlers, get_von_event_key},
     generate_vbind_object_exp, generate_von_object_exp,
@@ -284,17 +281,10 @@ fn try_generate_static_attrs(
         }
         first = false;
 
-        let needs_quotes = !is_valid_js_identifier(attr.name);
-        if needs_quotes {
-            ctx.push("\"");
-        }
         // Anchor the generated prop key back to the attribute name in source,
         // recording the symbol so it lands in the v3 `names` array. No-op
         // without `source_map`.
-        ctx.push_named(attr.name, attr.name_loc.span, attr.name);
-        if needs_quotes {
-            ctx.push("\"");
-        }
+        ctx.push_named_key(attr.name, attr.name_loc.span, attr.name);
         ctx.push(": ");
         if let Some(value) = &attr.value {
             ctx.push("\"");
@@ -462,17 +452,10 @@ fn generate_props_object_inner(
                         ctx.push("ref_for: true, ");
                     }
                     // Normal attribute output
-                    let needs_quotes = !is_valid_js_identifier(attr.name);
-                    if needs_quotes {
-                        ctx.push("\"");
-                    }
                     // Anchor the generated prop key back to the attribute name in
                     // source, recording the symbol so it lands in the v3 `names`
                     // array. No-op without `source_map`.
-                    ctx.push_named(attr.name, attr.name_loc.span, attr.name);
-                    if needs_quotes {
-                        ctx.push("\"");
-                    }
+                    ctx.push_named_key(attr.name, attr.name_loc.span, attr.name);
                     ctx.push(": ");
                     if let Some(value) = &attr.value {
                         // In inline mode, ref="refName" should reference a mutable/setup-ref

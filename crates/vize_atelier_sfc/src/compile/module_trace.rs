@@ -4,15 +4,14 @@
 //! variants of each pass return byte-identical text, so turning maps on never
 //! changes the module (TS-11).
 
+use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, profile};
 
 use crate::compile_script::artifacts::erase_artifact_macro_statements_traced;
 use crate::compile_script::lazy_hydration::{
     LazyHydrationTransform, transform_lazy_hydration_macros_with_runtime,
 };
-use crate::compile_script::typescript::{
-    transform_typescript_to_js, transform_typescript_to_js_traced,
-};
+use crate::compile_script::typescript::{transform_script_to_js, transform_script_to_js_traced};
 use crate::module_map::{Runs, edit_runs, module_map_value};
 use crate::rewrite_default::rewrite_default_traced;
 use crate::types::{SfcDescriptor, SfcScriptBlock};
@@ -49,16 +48,18 @@ pub(super) fn prepared_script(
 /// render or component metadata must be attached, or when the authored script
 /// has no default export and needs the existing empty-component fallback.
 /// Strip TypeScript when the output is JavaScript, carrying `runs` through.
+/// `source_type` is the block's grammar, so a `lang="tsx"` or `"jsx"` script
+/// is read with its JSX.
 pub(super) fn script_module(
     content: &str,
     runs: Option<Runs>,
-    source_is_ts: bool,
+    source_type: SourceType,
     is_ts: bool,
     requires_generated_component: bool,
 ) -> (String, Option<Runs>, bool) {
     let (rewritten, has_default_export, rewrite_runs) = profile!(
         "atelier.sfc.normal_script.rewrite_default",
-        rewrite_default_traced(content, "_sfc_main", source_is_ts)
+        rewrite_default_traced(content, "_sfc_main", source_type)
     );
     let needs_component_binding = requires_generated_component || !has_default_export;
     let (rewritten, rewrite_runs) = if needs_component_binding {
@@ -67,17 +68,17 @@ pub(super) fn script_module(
         (content.to_compact_string(), Runs::identity(content.len()))
     };
     let runs = runs.map(|runs| rewrite_runs.compose(&runs));
-    if !source_is_ts || is_ts {
+    if !source_type.is_typescript() || is_ts {
         return (rewritten, runs, needs_component_binding);
     }
     let (script, runs) = profile!(
         "atelier.sfc.normal_script.ts_to_js",
         match runs {
             Some(runs) => {
-                let (js, js_runs) = transform_typescript_to_js_traced(&rewritten);
+                let (js, js_runs) = transform_script_to_js_traced(&rewritten, source_type);
                 (js, Some(js_runs.compose(&runs)))
             }
-            None => (transform_typescript_to_js(&rewritten), None),
+            None => (transform_script_to_js(&rewritten, source_type), None),
         }
     );
     (script, runs, needs_component_binding)

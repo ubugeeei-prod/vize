@@ -207,9 +207,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    ctx.push("\"");
-                    ctx.push(prop);
-                    ctx.push("\"");
+                    ctx.push_string_literal(prop);
                 }
                 ctx.push("]");
             }
@@ -387,9 +385,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    ctx.push("\"");
-                    ctx.push(prop);
-                    ctx.push("\"");
+                    ctx.push_string_literal(prop);
                 }
                 ctx.push("]");
             }

@@ -6,7 +6,9 @@ mod escape_gate;
 pub use self::constant_expression::is_constant_simple_expression;
 use self::escape_gate::byte_may_need_js_escaping;
 use crate::RuntimeHelper;
-use vize_l0::{ToCompactString, js_string::push_js_string_literal};
+use vize_l0::{ToCompactString, general::quoted_name, js_string::push_js_string_literal};
+
+pub(super) use quoted_name::{KeySpelling, key_spelling};
 
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
@@ -121,6 +123,16 @@ pub(super) fn js_string_contents(name: &str) -> String {
     // Drop the opening and the closing quote.
     let end = literal.len().saturating_sub(1);
     String::from(literal.get(1..end).unwrap_or(name))
+}
+
+/// Append the double-quoted JavaScript string literal of a key spelled
+/// [`KeySpelling::Escaped`].
+#[cold]
+#[inline(never)]
+pub(super) fn push_escaped_name(out: &mut String, name: &str) {
+    out.push('"');
+    out.push_str(&quoted_name::escaped_name_contents(name));
+    out.push('"');
 }
 
 /// Check if a string is a valid JavaScript identifier (doesn't need quoting)
