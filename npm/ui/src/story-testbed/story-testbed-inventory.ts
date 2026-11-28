@@ -42,12 +42,21 @@ const readyMuseaStories: ReadonlySet<string> = new Set([
   "back-to-top",
   "button",
   "button-group",
+  "chat",
+  "color-wheel",
   "copy-button",
+  "descriptions",
+  "diff-view",
+  "input-group",
   "floating-action-button",
   "fullscreen-button",
   "print-button",
+  "result",
+  "segmented",
   "share-button",
+  "statistic",
   "toolbar",
+  "watermark",
 ]);
 
 function createStoryTestbedEntry(entry: UiFamilyCatalogEntry): UiStoryTestbedEntry {

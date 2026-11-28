@@ -1,13 +1,14 @@
-import { mock } from "node:test";
-const real = await import("oxc-parser");
-let parses = 0;
-mock.module("oxc-parser", {
-  namedExports: {
-    ...real,
-    parseSync: (...args: Parameters<typeof real.parseSync>) => {
-      parses++;
-      return real.parseSync(...args);
-    },
+import { registerHooks } from "node:module";
+// The plugin reads the native module shape and has no JS parser to fall back
+// on: resolving `oxc-parser` from anything this probe loads is a failure.
+let oxcLoads = 0;
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "oxc-parser" || specifier.startsWith("oxc-parser/")) {
+      oxcLoads++;
+      throw new Error(`[probe] ${context.parentURL ?? "entry"} loads ${specifier}`);
+    }
+    return nextResolve(specifier, context);
   },
 });
 const { compileFile } = await import("../src/compiler.ts");
@@ -20,14 +21,16 @@ const cases = {
   templateModule: '<template><p :class="$style.a" /></template><style module>.a{color:red}</style>',
   customElement:
     "<script setup>const n = 1</script><template><p>{{ n }}</p></template><style>.a{color:red}</style>",
+  // JSX stays in the module for the bundler to lower; the shape is still native.
+  jsxModule:
+    '<script setup lang="tsx">const R = () => <b>{1 as number}</b></script><template><p :class="$style.a"><R /></p></template><style module>.a{color:red}</style>',
 };
-const out: Record<string, { parses: number; code: string }> = {};
+const out: Record<string, { oxcLoads: number; shaped: boolean; code: string }> = {};
 for (const [name, source] of Object.entries(cases)) {
   for (const ssr of [false, true]) {
     if (ssr && name === "customElement") continue;
     const file = "/src/" + name + ".vue";
     const compiled = compileFile(file, new Map(), { sourceMap: false, ssr, vapor: false }, source);
-    parses = 0;
     const code = generateOutput(compiled, {
       isProduction: false,
       isDev: false,
@@ -35,7 +38,7 @@ for (const [name, source] of Object.entries(cases)) {
       filePath: file,
       customElement: name === "customElement",
     });
-    out[name + (ssr ? "/ssr" : "")] = { parses, code };
+    out[name + (ssr ? "/ssr" : "")] = { oxcLoads, shaped: !!compiled.moduleShape, code };
   }
 }
 // A module that exports no `_sfc_main` has nothing to attach bindings to.
@@ -49,7 +52,6 @@ const shape = {
   defaultExportEnd: null,
   defaultExportIsSfcMain: false,
 };
-parses = 0;
 const noDefault = generateOutput(
   {
     code: "export const x = 1;\n",
@@ -60,4 +62,4 @@ const noDefault = generateOutput(
   },
   { isProduction: false, isDev: false, filePath: "/src/NoDefault.vue" },
 );
-process.stdout.write(JSON.stringify({ out, noDefault: { parses, code: noDefault } }));
+process.stdout.write(JSON.stringify({ out, noDefault: { oxcLoads, code: noDefault } }));

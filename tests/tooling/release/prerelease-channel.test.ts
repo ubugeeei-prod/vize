@@ -67,5 +67,10 @@ test("the prerelease channel reaches editors and GitHub Release", () => {
     step.uses?.startsWith("softprops/action-gh-release@"),
   );
   assert.equal(create?.with?.prerelease, "${{ needs.version.outputs.prerelease }}");
-  assert.equal(create?.with?.make_latest, "${{ needs.version.outputs.make_latest }}");
+  assert.equal(create?.with?.draft, true);
+  assert.equal(create?.with?.make_latest, "false");
+  const publish = release.jobs["github-release"].steps?.find(
+    (step) => step.env?.RELEASE_MAKE_LATEST != null,
+  );
+  assert.equal(publish?.env?.RELEASE_MAKE_LATEST, "${{ needs.version.outputs.make_latest }}");
 });

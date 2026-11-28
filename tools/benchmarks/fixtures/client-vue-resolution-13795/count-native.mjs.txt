@@ -1,0 +1,18 @@
+// Preload: counts the native compile calls and the files they compile, readable as globalThis.__nativeCompiles
+import { realpathSync } from "node:fs";
+import { createRequire } from "node:module";
+import { join } from "node:path";
+
+const pluginManifest = realpathSync(join(process.cwd(), "node_modules/@vizejs/vite-plugin/package.json"));
+const native = createRequire(pluginManifest)("@vizejs/native");
+const counts = { calls: 0, files: 0 };
+globalThis.__nativeCompiles = counts;
+for (const name of Object.keys(native)) {
+  if (!/^compileSfc/.test(name) || typeof native[name] !== "function") continue;
+  const original = native[name];
+  native[name] = function countedCompile(input, ...rest) {
+    counts.calls++;
+    counts.files += Array.isArray(input) ? input.length : 1;
+    return original.call(this, input, ...rest);
+  };
+}

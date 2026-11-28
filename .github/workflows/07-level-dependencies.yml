@@ -10,7 +10,7 @@ permissions:
 jobs:
   level-dependencies:
     name: Level dependency direction
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 5
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/07-level-dependencies/scripts"

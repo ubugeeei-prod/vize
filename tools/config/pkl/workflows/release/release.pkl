@@ -93,6 +93,7 @@ jobs {
   // never gate the tag, npm or the universal extension.
   `publish-vscode-platforms` = import("../../parts/release/publish-vscode-platforms.pkl")
   `publish-open-vsx-platforms` = import("../../parts/release/publish-open-vsx-platforms.pkl")
+  `release-sbom` = import("../../parts/release/release-sbom.pkl")
   `github-release` = import("../../parts/release/github-release.pkl")
   // Post-publish checks and JSR run in release-verify.yml, so this run, and
   // with it the cadence, ends once every registry has the version.

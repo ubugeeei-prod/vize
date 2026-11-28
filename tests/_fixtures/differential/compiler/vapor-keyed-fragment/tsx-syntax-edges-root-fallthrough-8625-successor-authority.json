@@ -1,7 +1,7 @@
 {
   "issue": "https://github.com/ubugeeei-prod/vize/issues/8625",
   "previousAuthority": "tsx-syntax-edges-reference-authority.json",
-  "previousAuthoritySha256": "f05760dd7585f780564286bde9d5a20e54be3debb8140f8a0a9ab9a4a05ef54e",
+  "previousAuthoritySha256": "fd235c84e0c2393e25a64e24eda696647c13fa21dc37008c875e9bc939c8d42b",
   "previousProducerPath": "tsx-syntax-edges-root-fallthrough-8625.previous-producer.rs.txt",
   "currentProducerPath": "crates/vize_atelier_jsx/tests/adversarial_snapshots.rs",
   "currentProducerSha256": "6445a8c4d74b699721cdf88214bb6c8f2d9215d5c4960fb89547a153a856c941",

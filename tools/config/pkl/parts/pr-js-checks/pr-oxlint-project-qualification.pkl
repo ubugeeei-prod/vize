@@ -2,7 +2,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "PR Oxlint original project qualification"
 `if` = "${{ inputs.run-original-project }}"
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 35
 env {
 
@@ -28,7 +28,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ inputs.run-js }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

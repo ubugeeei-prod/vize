@@ -5,7 +5,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 
 # Toutes les règles de lint
 
-## Règles Vue (170)
+## Règles Vue (171)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | Exige camelCase pour les identifiants des expressions du template. | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Prend en charge les commentaires de contrôle des diagnostics dans `<template>`. | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Imposer PascalCase ou kebab-case aux noms de définition des composants. | `happy-path` |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | Imposer PascalCase ou kebab-case aux noms de fichier des composants. | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | Imposer une casse précise aux noms de composants dans les templates. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | Préfère la notation pointée pour les propriétés statiques. | — |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | Limite les blocs style aux modes autorisés. | — |  |

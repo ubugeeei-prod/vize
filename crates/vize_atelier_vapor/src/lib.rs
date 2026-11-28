@@ -75,6 +75,10 @@ mod tests_svg;
 #[cfg(test)]
 mod tests_template_children;
 #[cfg(test)]
+mod tests_template_refs;
+#[cfg(test)]
+mod tests_v_pre_tags;
+#[cfg(test)]
 mod tests_valueless_attr;
 
 pub use compile::{

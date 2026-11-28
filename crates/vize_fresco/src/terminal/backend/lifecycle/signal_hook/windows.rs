@@ -9,7 +9,7 @@ use windows_sys::Win32::{
     Foundation::{FALSE, TRUE},
     System::Console::{
         CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
-        SetConsoleCtrlHandler,
+        PHANDLER_ROUTINE, SetConsoleCtrlHandler,
     },
 };
 
@@ -35,9 +35,12 @@ pub(super) fn install() -> Result<TerminalSignalHookInstallation, TerminalSignal
         return Ok(TerminalSignalHookInstallation::AlreadyInstalled);
     }
 
-    // SAFETY: `terminal_control_handler` is a static callback with the ABI
-    // required by `SetConsoleCtrlHandler` and remains valid for process life.
-    if unsafe { SetConsoleCtrlHandler(Some(terminal_control_handler), TRUE) } == 0 {
+    let handler: PHANDLER_ROUTINE = Some(terminal_control_handler);
+    // SAFETY: `SetConsoleCtrlHandler` (Win32 consoleapi.h) stores the routine
+    // pointer and calls it later on a system-created thread with one control
+    // code. `terminal_control_handler` has that `extern "system"` signature,
+    // takes no pointers, and is a static function valid for process life.
+    if unsafe { SetConsoleCtrlHandler(handler, TRUE) } == 0 {
         return Err(TerminalSignalHookError::InstallAction {
             signal: CTRL_C_EVENT as i32,
             source: std::io::Error::last_os_error(),
@@ -48,7 +51,9 @@ pub(super) fn install() -> Result<TerminalSignalHookInstallation, TerminalSignal
     Ok(TerminalSignalHookInstallation::Installed)
 }
 
-unsafe extern "system" fn terminal_control_handler(control: u32) -> windows_sys::core::BOOL {
+/// Console-control routine: restore the terminal, then return `FALSE` so the
+/// next routine in the chain (or the default action) runs.
+pub(super) extern "system" fn terminal_control_handler(control: u32) -> windows_sys::core::BOOL {
     if !is_supervised_control(control) {
         return FALSE;
     }

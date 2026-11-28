@@ -218,3 +218,243 @@ fn detects_root_module_declaration_import_manifest() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+/// The stubs that put a type in scope: the fallback aliases of the global
+/// script and the re-export stub of the module file.
+fn type_stubs(options: &VirtualTsOptions) -> Vec<&str> {
+    options
+        .auto_import_stubs
+        .iter()
+        .map(|stub| stub.as_str())
+        .filter(|stub| {
+            stub.starts_with("type ") || stub.starts_with("// @vize-module-augmentation")
+        })
+        .collect()
+}
+
+/// A generated manifest re-exports its auto-imported types from inside a
+/// global augmentation. Every one of them is declared once: a plain type, a
+/// generic type, a renamed export, a package type, and `Ref`, which the
+/// fallback aliases would otherwise declare a second time with one type
+/// parameter instead of two.
+#[test]
+fn reexports_the_types_a_generated_manifest_auto_imports() {
+    let project_root = unique_case_dir("type-reexports");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::create_dir_all(project_root.join("app/composables")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join("app/composables/states.ts"),
+        "export type ColorName = 'pink' | 'blue';\nexport type Box<T> = { value: T };\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/imports.d.ts"),
+        r#"export {}
+declare global {
+  const useColor: typeof import('../../app/composables/states').useColor
+}
+// for type re-export
+declare global {
+  // @ts-ignore
+  export type { ColorName, Box, Box as Crate } from '../../app/composables/states'
+  import('../../app/composables/states')
+  // @ts-ignore
+  export type { PageMeta } from '../../node_modules/nuxt/dist/pages/runtime/composables'
+  import('../../node_modules/nuxt/dist/pages/runtime/composables')
+  // @ts-ignore
+  export type { ComputedRef, InjectionKey, Ref } from 'vue'
+  import('vue')
+}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let root = project_root.to_string_lossy().replace('\\', "/");
+
+    assert_eq!(
+        type_stubs(&options),
+        vec![
+            "type Composer = any;",
+            "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
+            "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
+            "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
+            "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
+            "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
+            "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
+            "type Component = import('vue').Component;",
+            format!(
+                "// @vize-module-augmentation\n\
+                 declare global {{\n  \
+                 export type {{ ColorName, Box, Box as Crate }} from '{root}/app/composables/states'\n  \
+                 import('{root}/app/composables/states')\n  \
+                 export type {{ PageMeta }} from '{root}/node_modules/nuxt/dist/pages/runtime/composables'\n  \
+                 import('{root}/node_modules/nuxt/dist/pages/runtime/composables')\n  \
+                 export type {{ ComputedRef, InjectionKey, Ref }} from 'vue'\n  \
+                 import('vue')\n\
+                 }}\n"
+            )
+            .as_str(),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+/// The program reads every generated declaration except the import manifest
+/// itself, so only the manifest's re-exports become a stub. A manifest
+/// without re-exports leaves every fallback alias in place.
+#[test]
+fn only_an_import_manifest_supplies_type_reexport_stubs() {
+    let project_root = unique_case_dir("type-reexports-manifest-only");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/imports.d.ts"),
+        "export {}\ndeclare global {\n  const useColor: () => string\n}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/shared-imports.d.ts"),
+        r#"export {}
+declare global {
+  // @ts-ignore
+  export type { Ref, SharedUser } from '../../shared/types/user'
+  import('../../shared/types/user')
+}
+"#,
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+
+    assert_eq!(
+        type_stubs(&options),
+        vec![
+            "type Composer = any;",
+            "type Ref<T = any> = import('vue').Ref<T>;",
+            "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
+            "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
+            "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
+            "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
+            "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
+            "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
+            "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
+            "type Component = import('vue').Component;",
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+/// Without generated types the fallback scans the directories Nuxt would.
+/// A type found there is re-exported from its module, generics included,
+/// instead of collapsing to `any`. A type the project exports itself keeps
+/// its declaration over the fallback alias of the same name.
+#[test]
+fn reexports_scanned_source_types_without_a_generated_manifest() {
+    let project_root = unique_case_dir("type-reexports-source-scan");
+    let _ = std::fs::remove_dir_all(&project_root);
+    for dir in ["app/composables", "app/types", "shared/types"] {
+        std::fs::create_dir_all(project_root.join(dir)).unwrap();
+    }
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    std::fs::write(
+        project_root.join("app/composables/states.ts"),
+        "export type ColorName = 'pink' | 'blue';\nexport const useColor = () => 'pink';\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("app/types/box.ts"),
+        "export interface Box<T> { value: T }\ntype Hidden = string;\nexport { type Hidden as Shown };\nexport type Ref = never;\nexport interface Component { custom: string }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("shared/types/user.d.ts"),
+        "export type SharedUser = { id: number };\nexport type Box<T> = T[];\n",
+    )
+    .unwrap();
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let root = project_root.to_string_lossy().replace('\\', "/");
+
+    assert_eq!(
+        type_stubs(&options),
+        vec![
+            "type Composer = any;",
+            "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
+            "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
+            "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
+            "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
+            "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
+            "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
+            "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
+            format!(
+                "// @vize-module-augmentation\n\
+                 declare global {{\n  \
+                 export type {{ Box, Component, Ref, Shown }} from '{root}/app/types/box'\n  \
+                 import('{root}/app/types/box')\n  \
+                 export type {{ ColorName }} from '{root}/app/composables/states'\n  \
+                 import('{root}/app/composables/states')\n  \
+                 export type {{ SharedUser }} from '{root}/shared/types/user'\n  \
+                 import('{root}/shared/types/user')\n\
+                 }}\n"
+            )
+            .as_str(),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+/// Files that share a stem would share the extensionless specifier, which
+/// resolves to `model.ts` for both; each is named by its own path instead,
+/// while a stem only one file has keeps the extensionless form.
+#[test]
+fn scanned_files_sharing_a_stem_are_named_by_their_own_paths() {
+    let project_root = unique_case_dir("type-reexports-shared-stem");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("app/types")).unwrap();
+    std::fs::write(project_root.join("nuxt.config.ts"), "export default {}").unwrap();
+    for (file, source) in [
+        ("model.ts", "export type ModelA = string;\n"),
+        ("model.tsx", "export type ModelB = number;\n"),
+        ("user.ts", "export type User = { id: number };\n"),
+    ] {
+        std::fs::write(project_root.join("app/types").join(file), source).unwrap();
+    }
+
+    let mut options = VirtualTsOptions::default();
+    let _ = detect_nuxt_auto_imports(&mut options, &project_root);
+    let root = project_root.to_string_lossy().replace('\\', "/");
+
+    let reexports = type_stubs(&options)
+        .into_iter()
+        .filter(|stub| stub.starts_with("// @vize-module-augmentation"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        reexports,
+        vec![
+            format!(
+                "// @vize-module-augmentation\n\
+                 declare global {{\n  \
+                 export type {{ ModelA }} from '{root}/app/types/model.ts'\n  \
+                 import('{root}/app/types/model.ts')\n  \
+                 export type {{ ModelB }} from '{root}/app/types/model.tsx'\n  \
+                 import('{root}/app/types/model.tsx')\n  \
+                 export type {{ User }} from '{root}/app/types/user'\n  \
+                 import('{root}/app/types/user')\n\
+                 }}\n"
+            )
+            .as_str(),
+        ]
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

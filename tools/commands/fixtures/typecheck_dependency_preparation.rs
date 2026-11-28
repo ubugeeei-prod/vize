@@ -113,6 +113,8 @@ pub(super) fn read_and_validate_dependency_preparation(
             ));
         }
     }
+    let input_overlays =
+        super::typecheck_input_overlays::validate(root, &fixture_root, project, &artifact)?;
     Ok(json!({
         "schema": "vize.fixtureTypecheckPreparationEvidence",
         "version": 1,
@@ -129,12 +131,16 @@ pub(super) fn read_and_validate_dependency_preparation(
             if value.is_null() {
                 Some(Value::Null)
             } else {
-                Some(json!({
+                let mut observed = json!({
                     "command": value.get("command").cloned().unwrap_or(Value::Null),
                     "exitCode": value.get("exitCode").cloned().unwrap_or(Value::Null),
                     "stdoutSha256": value.get("stdoutSha256").cloned().unwrap_or(Value::Null),
                     "stderrSha256": value.get("stderrSha256").cloned().unwrap_or(Value::Null),
-                }))
+                });
+                if let Some(inputs) = &input_overlays {
+                    observed["inputOverlays"] = json!(inputs);
+                }
+                Some(observed)
             }
         }).unwrap_or(Value::Null),
     }))

@@ -1,0 +1,35 @@
+{
+  "schema": "vize.vueClientResolutionReportInputs.v1",
+  "source": "https://github.com/ubugeeei-prod/vize/issues/13557#issuecomment-7097661469",
+  "reporter": "Q16solver",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": {
+    "vite.config.ts.txt": {
+      "bytes": 3369,
+      "sha256": "ee6bf2569229bd6983e2f362af20bc3e5f25a9c636e929d7c2bb6998960cd0cf"
+    },
+    "generate.mjs.txt": {
+      "bytes": 2716,
+      "sha256": "e3a17ecfdf4892ce1d09160b5428f1a613be63958961beed3e4526d425893df3"
+    },
+    "count-native.mjs.txt": {
+      "bytes": 831,
+      "sha256": "b2befe77d1465363445403faf6c0d35cf19127ffa7a18452c8d6522058e23279"
+    },
+    "tsconfig.json.txt": {
+      "bytes": 133,
+      "sha256": "f669b2786d6071d7ce53cb0046d61d6ac877b530774fcf58c4fe19c4da36e4e1"
+    },
+    "index.html.txt": {
+      "bytes": 113,
+      "sha256": "bea87c52c2bf1e851498ae0daded297b9572be1219985163c861e547a17067f1"
+    }
+  },
+  "commentBodySha256": "c6971b01cfd23e1f423bbff84253b43da3b6b15ec5ef62852da357772d601f8d",
+  "parentIssueSource": "https://github.com/ubugeeei-prod/vize/issues/13557",
+  "parentIssueBodySha256": "8cba9bf505d6942eabb3b86fdda7e0d352fba3af7f2d3ee9a5828b22f3325fae"
+}

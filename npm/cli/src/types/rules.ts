@@ -215,6 +215,7 @@ export const LINT_RULE_NAMES = [
   "vue/camelcase",
   "vue/comment-directive",
   "vue/component-definition-name-casing",
+  "vue/component-file-name-casing",
   "vue/component-name-in-template-casing",
   "vue/dot-notation",
   "vue/enforce-style-attribute",

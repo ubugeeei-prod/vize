@@ -91,6 +91,28 @@ function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8A
 function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
   bytes = dependencyOwnershipPredecessor(file, bytes);
   if (
+    file === "crates/vize_atelier_sfc/src/compile/script_context.rs" &&
+    blob(bytes) === "def91c11cd7e5c5f5c0531f0a0de67db2c300352"
+  ) {
+    // #13847 carries each imported type's owning binding into resolution.
+    // Reconstruct the complete older source for its existing reference law;
+    // this source-only inverse grants no execution or comparison credit.
+    let text = Buffer.from(bytes).toString("utf8");
+    const declaration = "    let mut bindings = Vec::new();\n";
+    const collection = "        bindings.extend(collected.bindings);\n";
+    const current = "context.merge_referenced_declarations(&bindings, &declarations, &texts);";
+    assert.equal(text.split(declaration).length, 2);
+    assert.equal(text.split(collection).length, 3);
+    assert.equal(text.split(current).length, 2);
+    text = text
+      .replace(declaration, "")
+      .replaceAll(collection, "")
+      .replace(current, "context.merge_referenced_declarations(&declarations, &texts);");
+    const reference = Buffer.from(text);
+    assert.equal(blob(reference), "1be40c6336989a2c96ae8f51e4844bbecb2b06e4");
+    return reference;
+  }
+  if (
     file === "crates/vize_vitrine/src/napi/sfc/types/conversions.rs" &&
     blob(bytes) === "c3a1d0e4cfffa709e5512252701cd1385b597d1b"
   ) {

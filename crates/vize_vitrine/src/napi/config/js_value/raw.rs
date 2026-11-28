@@ -1,121 +1,91 @@
 //! Small NAPI helpers used by the config normalizer.
 //!
-//! Keeping the raw calls here lets the normalizer read like config logic while
+//! Keeping the N-API calls here lets the normalizer read like config logic while
 //! still avoiding a JSON conversion boundary. All helpers return `Unknown`
 //! handles that point at values owned by the active JavaScript environment.
-
-use std::ffi::CString;
+//!
+//! Every call goes through napi's safe `Env`, `JsValue` and `JsObjectValue`
+//! methods, which issue the same N-API calls the helpers used to make by hand.
+//! N-API checks each handle's type itself and reports `napi_object_expected` or
+//! `napi_array_expected` for a value of the wrong kind, so viewing a handle
+//! through [`object`] never reads memory as the wrong type.
 
 use napi::{
-    JsValue,
-    bindgen_prelude::{Error, FromNapiValue, Result, Unknown, check_status, sys},
+    Env, JsString, JsStringUtf8, JsValue,
+    bindgen_prelude::{Error, JsObjectValue, Object, Result, Unknown, sys},
 };
 
-#[expect(
-    clippy::disallowed_types,
-    reason = "N-API decodes property names as std `String`s"
-)]
-pub(super) fn enumerable_keys(value: Unknown<'_>) -> Result<Vec<(String, sys::napi_value)>> {
-    let env = value.value().env;
-    let mut keys = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_property_names(env, value.raw(), &mut keys) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    let keys = unsafe { Unknown::from_raw_unchecked(env, keys) };
-    let mut result = Vec::with_capacity(array_len(keys)? as usize);
+/// View a handle as an object so napi's object methods can take it.
+fn object<'js>(value: Unknown<'js>) -> Object<'js> {
+    Object::from_raw(value.value().env, value.raw())
+}
 
-    for index in 0..array_len(keys)? {
-        let key_value = get_element(keys, index)?.raw();
-        // SAFETY: `key_value` is an element of the property-name array N-API
-        // returned for `env`, which holds only strings.
-        let key = unsafe { String::from_napi_value(env, key_value)? };
-        result.push((key, key_value));
+/// One enumerable string key. Its name is decoded only when a caller asks.
+#[derive(Clone, Copy)]
+pub(super) struct PropertyKey<'js>(JsString<'js>);
+
+impl<'js> PropertyKey<'js> {
+    /// The key as a handle for property reads and writes.
+    pub(super) fn handle(self) -> Unknown<'js> {
+        self.0.to_unknown()
+    }
+
+    /// The key's UTF-8 name; `as_str` borrows it.
+    pub(super) fn name(self) -> Result<JsStringUtf8<'js>> {
+        self.0.into_utf8()
+    }
+}
+
+pub(super) fn enumerable_keys(value: Unknown<'_>) -> Result<Vec<PropertyKey<'_>>> {
+    let keys = object(value).get_property_names()?;
+    let mut result = Vec::with_capacity(keys.get_array_length_unchecked()? as usize);
+
+    for index in 0..keys.get_array_length_unchecked()? {
+        // The property-name array N-API returned holds only strings.
+        result.push(PropertyKey(keys.get_element(index)?));
     }
 
     Ok(result)
 }
 
 pub(super) fn create_object(env: sys::napi_env) -> Result<Unknown<'static>> {
-    let mut value = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_create_object(env, &mut value) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, value) })
+    Ok(Object::new(&Env::from_raw(env))?.to_unknown())
 }
 
 pub(super) fn create_array(env: sys::napi_env, len: u32) -> Result<Unknown<'static>> {
-    let mut value = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_create_array_with_length(env, len as usize, &mut value) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, value) })
+    let array = Env::from_raw(env).create_array(len)?.raw();
+    Ok(Object::from_raw(env, array).to_unknown())
 }
 
 pub(super) fn array_len(value: Unknown<'_>) -> Result<u32> {
-    let mut len = 0;
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_array_length(value.value().env, value.raw(), &mut len) })?;
-    Ok(len)
+    object(value).get_array_length_unchecked()
 }
 
 pub(super) fn is_array(value: Unknown<'_>) -> Result<bool> {
-    let mut result = false;
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_is_array(value.value().env, value.raw(), &mut result) })?;
-    Ok(result)
+    value.is_array()
 }
 
 pub(super) fn get_element(value: Unknown<'_>, index: u32) -> Result<Unknown<'_>> {
-    let env = value.value().env;
-    let mut result = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_element(env, value.raw(), index, &mut result) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, result) })
+    object(value).get_element(index)
 }
 
 pub(super) fn set_element(array: Unknown<'_>, index: u32, value: Unknown<'_>) -> Result<()> {
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_set_element(array.value().env, array.raw(), index, value.raw())
-    })
+    object(array).set_element(index, value)
 }
 
 pub(super) fn get_property<'js>(
-    object: Unknown<'js>,
-    key: sys::napi_value,
+    object_value: Unknown<'js>,
+    key: Unknown<'_>,
 ) -> Result<Unknown<'js>> {
-    let env = object.value().env;
-    let mut result = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_property(env, object.raw(), key, &mut result) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, result) })
+    object(object_value).get_property_unchecked(key)
 }
 
 pub(super) fn set_property(
-    object: Unknown<'_>,
-    key: sys::napi_value,
+    object_value: Unknown<'_>,
+    key: Unknown<'_>,
     value: Unknown<'_>,
 ) -> Result<()> {
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_set_property(object.value().env, object.raw(), key, value.raw())
-    })
+    object(object_value).set_property(key, value)
 }
 
 pub(super) fn get_own_named_property<'js>(
@@ -128,78 +98,37 @@ pub(super) fn get_own_named_property<'js>(
     Ok(Some(get_named_property(object, name)?))
 }
 
-pub(super) fn get_named_property<'js>(object: Unknown<'js>, name: &str) -> Result<Unknown<'js>> {
-    let env = object.value().env;
-    let name = CString::new(name)?;
-    let mut result = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_get_named_property(env, object.raw(), name.as_ptr(), &mut result)
-    })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, result) })
+pub(super) fn get_named_property<'js>(
+    object_value: Unknown<'js>,
+    name: &str,
+) -> Result<Unknown<'js>> {
+    object(object_value).get_named_property_unchecked(name)
 }
 
 pub(super) fn set_named_property(
-    object: Unknown<'_>,
+    object_value: Unknown<'_>,
     name: &str,
     value: Unknown<'_>,
 ) -> Result<()> {
-    let name = CString::new(name)?;
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_set_named_property(object.value().env, object.raw(), name.as_ptr(), value.raw())
-    })
+    object(object_value).set_named_property(name, value)
 }
 
-pub(super) fn has_own_property(object: Unknown<'_>, name: &str) -> Result<bool> {
-    let env = object.value().env;
-    let mut result = false;
-    let mut key = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_create_string_utf8(env, name.as_ptr().cast(), name.len() as isize, &mut key)
-    })?;
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_has_own_property(env, object.raw(), key, &mut result) })?;
-    Ok(result)
+pub(super) fn has_own_property(object_value: Unknown<'_>, name: &str) -> Result<bool> {
+    object(object_value).has_own_property(name)
 }
 
 pub(super) fn get_prototype(value: Unknown<'_>) -> Result<Unknown<'_>> {
-    let env = value.value().env;
-    let mut result = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_prototype(env, value.raw(), &mut result) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    Ok(unsafe { Unknown::from_raw_unchecked(env, result) })
+    object(value).get_prototype()
 }
 
 pub(super) fn object_prototype(env: sys::napi_env) -> Result<Unknown<'static>> {
-    let mut global = std::ptr::null_mut();
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe { sys::napi_get_global(env, &mut global) })?;
-    // SAFETY: the handle was just written by a successful N-API call in `env`,
-    // so it is a live value of that environment.
-    let global = unsafe { Unknown::from_raw_unchecked(env, global) };
-    get_named_property(get_named_property(global, "Object")?, "prototype")
+    let global = Env::from_raw(env).get_global()?;
+    let constructor = global.get_named_property_unchecked::<Unknown<'static>>("Object")?;
+    get_named_property(constructor, "prototype")
 }
 
 pub(super) fn strict_equals(left: Unknown<'_>, right: Unknown<'_>) -> Result<bool> {
-    let mut result = false;
-    // SAFETY: `env` is the live environment that owns every handle passed, and
-    // each out-pointer is a local this call writes before it is read.
-    check_status!(unsafe {
-        sys::napi_strict_equals(left.value().env, left.raw(), right.raw(), &mut result)
-    })?;
-    Ok(result)
+    Env::from_raw(left.value().env).strict_equals(left, right)
 }
 
 pub(super) fn invalid_arg(message: &str) -> Error {

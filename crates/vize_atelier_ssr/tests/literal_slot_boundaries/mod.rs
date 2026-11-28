@@ -157,6 +157,44 @@ fn public_dom_and_vapor_preserve_actual_ca_default_modules() {
         "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-default-ca.expected.json"
     ))).expect("eight authentic-ca default public packets");
     assert_eq!(expected.as_array().unwrap().len(), 8);
+    // A `<slot>` that carries or inherits `v-pre` is a plain element, as Vue
+    // keeps it. These six rows supersede the old baseline's slot outlets. The
+    // DOM modules are byte-identical to `@vue/compiler-dom` 3.5.46
+    // (`mode: "module"`, `prefixIdentifiers: true`); the Vapor modules keep
+    // the subtree as one static template. The outlet control row stays the
+    // old baseline's.
+    let literal_slots: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-default-literal-slot.expected.json"
+    ))).expect("six literal v-pre slot packets");
+    let literal_slots = literal_slots.as_array().unwrap();
+    assert_eq!(literal_slots.len(), 6);
+    let expected: Vec<serde_json::Value> = expected
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| {
+            let key = |packet: &serde_json::Value| {
+                (
+                    packet["name"].clone(),
+                    packet["source"].clone(),
+                    packet["kind"].clone(),
+                )
+            };
+            literal_slots
+                .iter()
+                .find(|literal| key(literal) == key(row))
+                .unwrap_or(row)
+                .clone()
+        })
+        .collect();
+    assert_eq!(
+        expected
+            .iter()
+            .filter(|row| row["name"] == "normal-outlet")
+            .count(),
+        2
+    );
     let mut observed = Vec::new();
     for &(name, source, _) in CASES {
         for kind in ["dom", "vapor"] {
@@ -167,7 +205,7 @@ fn public_dom_and_vapor_preserve_actual_ca_default_modules() {
     }
     assert_eq!(
         serde_json::json!(observed),
-        expected,
+        serde_json::json!(expected),
         "whole old/default modules, maps, errors and warnings"
     );
 }

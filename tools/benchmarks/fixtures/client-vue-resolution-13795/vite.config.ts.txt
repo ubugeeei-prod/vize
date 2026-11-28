@@ -1,0 +1,60 @@
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
+import { appendFileSync } from "node:fs";
+import { performance } from "node:perf_hooks";
+import { defineConfig, type Plugin, type PluginOption } from "vite";
+
+// COMPILER=vize | vue picks the SFC compiler. TIMINGS_FILE receives one JSON line per environment and hook: the summed
+// Wall time of every call of that compiler's buildStart, load and transform hooks, which is its whole compile cost
+const compiler = process.env.COMPILER ?? "vize";
+const totals = new Map<string, { calls: number; ms: number }>();
+// Each hot update hook call on its own, with the file it handled
+const hotCalls: { environment: string; plugin: string; file: string; ms: number }[] = [];
+const fileName = (value: unknown) => String((value as { file?: string } | undefined)?.file ?? "").split(/[\\/]/).pop();
+
+const timeHook = (pluginName: string, hookName: string, hook: unknown) => {
+  const handler = typeof hook === "function" ? hook : (hook as { handler?: Function } | undefined)?.handler;
+  if (typeof handler !== "function") return hook;
+  const timed = async function (this: { environment?: { name: string } }, ...args: unknown[]) {
+    const start = performance.now();
+    try {
+      return await handler.apply(this, args);
+    } finally {
+      const key = `${this?.environment?.name ?? "?"}\t${pluginName}\t${hookName}`;
+      const total = totals.get(key) ?? { calls: 0, ms: 0 };
+      total.calls++;
+      total.ms += performance.now() - start;
+      totals.set(key, total);
+      if (/hot/i.test(hookName))
+        hotCalls.push({ environment: this?.environment?.name ?? "?", plugin: pluginName, file: fileName(args[0]), ms: Math.round(performance.now() - start) });
+    }
+  };
+  return typeof hook === "function" ? timed : { ...(hook as object), handler: timed };
+};
+const timePlugins = (option: PluginOption): Plugin[] =>
+  [option].flat(Infinity as 1).filter((plugin): plugin is Plugin => Boolean(plugin) && typeof plugin === "object" && "name" in plugin).map((plugin) => {
+    const wrapped: Plugin = { ...plugin };
+    for (const hookName of ["buildStart", "load", "transform", "hotUpdate", "handleHotUpdate"] as const)
+      if (plugin[hookName]) (wrapped as Record<string, unknown>)[hookName] = timeHook(plugin.name, hookName, plugin[hookName]);
+    return wrapped;
+  });
+process.on("exit", () => {
+  if (!process.env.TIMINGS_FILE) return;
+  for (const call of hotCalls) appendFileSync(process.env.TIMINGS_FILE, `${JSON.stringify({ hotCall: call })}\n`);
+  for (const [key, total] of totals) {
+    const [environment, plugin, hook] = key.split("\t");
+    appendFileSync(process.env.TIMINGS_FILE, `${JSON.stringify({ environment, plugin, hook, calls: total.calls, ms: Math.round(total.ms) })}\n`);
+  }
+});
+
+export default defineConfig({
+  builder: {},
+  environments: {
+    client: { build: { outDir: "dist/client" } },
+    ssr: { build: { outDir: "dist/server", rollupOptions: { input: "src/entry-server.ts" } } },
+    worker: { consumer: "server", build: { outDir: "dist/worker", rollupOptions: { input: "src/worker.ts" } } },
+  },
+  logLevel: "info",
+  // BATCH=<n> sets vize's precompileBatchSize, to see how the native batches scale with their size
+  plugins: timePlugins(compiler === "vue" ? vue() : vize(process.env.BATCH ? { precompileBatchSize: Number(process.env.BATCH) } : {})),
+});

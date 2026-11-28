@@ -82,6 +82,7 @@ import TextInput from "../families/form/input/text-input.vue";
 import SearchField from "../families/form/search-field/search-field.vue";
 import TextareaControl from "../families/form/textarea/textarea-control.vue";
 import { typographyRuntimeFixtures } from "./runtime-conformance-typography-fixtures.ts";
+import { componentRuntimeFixtures } from "./runtime-conformance-components-fixtures.ts";
 import VisuallyHidden from "../families/accessibility/visually-hidden/visually-hidden.vue";
 
 export interface RuntimeFixture {
@@ -104,6 +105,7 @@ const DeterministicIdProbe = defineComponent({
 });
 
 export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
+  ...componentRuntimeFixtures,
   alertRuntimeFixture,
   alertDialogRuntimeFixture,
   badgeRuntimeFixture,

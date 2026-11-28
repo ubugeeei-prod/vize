@@ -1,0 +1,62 @@
+{
+  "schema": "vize.fixtureGeneratedGraphqlSchema.v1",
+  "repository": "https://github.com/hoppscotch/hoppscotch",
+  "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+  "snapshot": {
+    "path": "backend-schema.gql",
+    "bytes": 54729,
+    "sha256": "cf6f69051eb11b7e6031522511b975da9073edc2299b94d5e19c13f72286e142"
+  },
+  "sourceFiles": {
+    "pnpm-lock.yaml": "4ee9aff410f0b8f08acdff0f7e8050a9bf8a5d48f7d57a02048b258cac5ed9ce",
+    "packages/hoppscotch-backend/package.json": "eca0c4d8c9cd206296944d3bc4844ec67e312e555ab13be68d545fdef2293ad4",
+    "packages/hoppscotch-backend/prisma/schema.prisma": "d8fa204a68614a9f5a1879fdb1289a1ccd6969536f9a658251c1f028e366ceed",
+    "packages/hoppscotch-backend/src/gql-schema.ts": "dcf43c89e9a3a214522c0fdfbfd2388bd5067dfaa11a74cea26b3de14c69e51a",
+    "packages/hoppscotch-common/gql-codegen.yml": "81d6657389a48702946916a6630034af3ea0319522132a5fd95936a540453068"
+  },
+  "producer": {
+    "node": "24.14.0",
+    "pnpm": "10.34.2",
+    "prisma": "7.9.0",
+    "commands": [
+      [
+        "pnpm",
+        "--filter",
+        "hoppscotch-backend...",
+        "install",
+        "--ignore-scripts",
+        "--frozen-lockfile"
+      ],
+      [
+        "pnpm",
+        "--filter",
+        "hoppscotch-backend",
+        "exec",
+        "prisma",
+        "generate"
+      ],
+      [
+        "pnpm",
+        "--filter",
+        "hoppscotch-backend",
+        "run",
+        "generate-gql-sdl"
+      ]
+    ],
+    "environment": {
+      "DATABASE_URL": "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+    }
+  },
+  "verification": {
+    "independentSchemaGenerations": 2,
+    "identicalBytes": true,
+    "resolverCount": 27,
+    "commonClientCodegen": "all documents accepted; graphql.ts and backend-schema.json generated",
+    "generatedClientSha256": "bba668a00be774953ecc863a13adea78a744f17965ab46bc8df7ed08f9f9c66a"
+  },
+  "credit": {
+    "semanticQualification": false,
+    "nativeParity": false,
+    "historicalExecution": false
+  }
+}

@@ -1,0 +1,4 @@
+export const generated = {
+  message: "終了を確認するまで保持する",
+  count: 42,
+} as const;

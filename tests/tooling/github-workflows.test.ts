@@ -81,6 +81,59 @@ test("Rust sticky mounts require the backend policy before every provider call",
   assert.ok(policy >= 0 && steps.indexOf(mounts[0]) > policy, "policy must precede mounts");
 });
 
+function workflowMatrixRunners(content: string): string[] {
+  const record = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === "object" && !Array.isArray(value);
+  const leaves = (value: unknown): string[] => {
+    if (Array.isArray(value)) return value.flatMap(leaves);
+    if (record(value)) return Object.values(value).flatMap(leaves);
+    return typeof value === "string" && value.startsWith("${{") ? [] : [String(value)];
+  };
+  const matrixLabels = (value: unknown): string[] => {
+    if (Array.isArray(value)) return value.flatMap(matrixLabels);
+    if (!record(value)) return [];
+    return Object.entries(value).flatMap(([key, child]) =>
+      key === "runner" || key === "host" ? leaves(child) : matrixLabels(child),
+    );
+  };
+  const workflow: unknown = parse(content);
+  if (!record(workflow) || !record(workflow.jobs)) return [];
+  return Object.values(workflow.jobs).flatMap((job) =>
+    record(job) && record(job.strategy) ? matrixLabels(job.strategy.matrix) : [],
+  );
+}
+
+test("matrix runner parsing covers list dimensions and excludes dispatch input descriptions", () => {
+  assert.deepEqual(
+    workflowMatrixRunners(`
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Worker size
+jobs:
+  measure:
+    strategy:
+      matrix:
+        runner:
+          - blacksmith-32vcpu-ubuntu-2404
+          - unreviewed-runner
+        include:
+          - settings: { host: windows-2025 }
+  dynamic:
+    strategy:
+      matrix: \${{ fromJSON(needs.plan.outputs.matrix) }}
+`),
+    ["blacksmith-32vcpu-ubuntu-2404", "unreviewed-runner", "windows-2025"],
+  );
+  assert.deepEqual(
+    workflowMatrixRunners(
+      "jobs:\n  invalid:\n    strategy:\n      matrix:\n        runner: false\n",
+    ),
+    ["false"],
+  );
+});
+
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
   // We use Blacksmith-hosted runners where compatible and intentionally let
   // any matching vCPU SKU pass — bumping vCPU shouldn't need a test change.
@@ -93,12 +146,10 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   // and is asserted shape-by-shape further down.
   const allowedRunnerPattern =
     /^(?:ubuntu-(?:latest|2[24]\.04)(?:-arm)?|blacksmith-\d+vcpu-ubuntu-2[24]04(?:-arm)?|macos-15(?:-intel)?|blacksmith-(?:6|12)vcpu-macos-15|windows-(?:2025(?:-vs2026)?|11-arm)|blacksmith-\d+vcpu-windows-2025)$/;
-  const matrixRunnerPattern = /(?<![\w-])(?:runner|host):\s*([A-Za-z0-9._-]+)/g;
   const violations: string[] = [];
 
   for (const { relativePath, content } of readGithubYamlFiles()) {
-    for (const match of content.matchAll(matrixRunnerPattern)) {
-      const label = match[1];
+    for (const label of workflowMatrixRunners(content)) {
       if (!allowedRunnerPattern.test(label)) {
         violations.push(`${relativePath}: ${label}`);
       }

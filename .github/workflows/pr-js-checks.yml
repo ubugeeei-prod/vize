@@ -25,7 +25,7 @@ jobs:
       # Groups partition `testedPackages`; see
       # tools/config/vite-plus/tested-package-groups.ts.
       matrix: ${{ fromJSON(inputs.js-plan).matrix }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -54,7 +54,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false
@@ -164,7 +164,7 @@ jobs:
   pr-oxlint-project-qualification:
     name: PR Oxlint original project qualification
     if: ${{ inputs.run-original-project }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -193,7 +193,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ inputs.run-js }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false
@@ -266,7 +266,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false
@@ -285,7 +285,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: { surface: [fresco, ui] }
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -316,7 +316,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false

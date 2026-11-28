@@ -54,6 +54,7 @@ jobs {
         name = "Setup deployment validator runtime"
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           cache = false
           `run-install` = false

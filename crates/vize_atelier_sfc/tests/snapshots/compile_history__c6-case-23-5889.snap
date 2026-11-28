@@ -27,7 +27,7 @@ Case {
 }
 Template {
     errors: [],
-    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  \n  return (_openBlock(), _createBlock(_component_MyComp, { \":x\": \"1\" }, {\n    default: _withCtx(() => [\n      _createTextVNode(\"c\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"MyComp\", { \":x\": \"1\" }, \"c\"))\n}",
     map: None,
 }

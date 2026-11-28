@@ -1,0 +1,13 @@
+<script lang="ts">
+export default {
+  mounted() {
+    this.$refs.box.focus()
+    this.$refs['box'].scrollIntoView()
+  },
+}
+</script>
+
+<template>
+  <div ref="box" @click="$refs.box.blur()">{{ $refs['box'] }}</div>
+  <input ref="other" title="box" />
+</template>

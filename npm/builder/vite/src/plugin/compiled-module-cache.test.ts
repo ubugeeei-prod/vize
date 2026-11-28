@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { FilesystemEpoch } from "./filesystem-epoch.ts";
 
 import type { CompiledModule } from "../types.ts";
 import { CompiledModuleCache, ownersOfDependency } from "./compiled-module-cache.ts";
@@ -165,3 +166,50 @@ function scanOwners(
 }
 
 console.log("compiled-module-cache tests passed");
+
+{
+  // A large list can arrive after ordinary files have already been evicted.
+  // Promotion preserves their snapshots and replacement order; clear restores
+  // the direct path for the next ordinary compilation.
+  const cache = new CompiledModuleCache(new FilesystemEpoch());
+  const inputs = Array.from({ length: 32 }, (_, index) => `/src/transition-${index}.ts`);
+  cache.set("/src/Before.vue", compiled([inputs[0]]));
+  cache.evict("/src/Before.vue");
+  cache.set("/src/First.vue", compiled(inputs));
+  cache.set("/src/Second.vue", compiled(inputs.slice()));
+  assert.deepEqual(cache.ownersOf(inputs[0]), [
+    "/src/Before.vue",
+    "/src/First.vue",
+    "/src/Second.vue",
+  ]);
+  cache.set("/src/Before.vue", compiled([inputs[0]]));
+  assert.deepEqual(cache.ownersOf(inputs[0]), [
+    "/src/First.vue",
+    "/src/Second.vue",
+    "/src/Before.vue",
+  ]);
+  cache.clear();
+  cache.set("/src/After.vue", compiled([inputs[0]]));
+  assert.deepEqual(cache.ownersOf(inputs[0]), ["/src/After.vue"]);
+}
+
+{
+  // Large lists keep HMR ownership across eviction, then replace and remove it.
+  const epoch = new FilesystemEpoch();
+  const cache = new CompiledModuleCache(epoch);
+  const inputs = Array.from({ length: 32 }, (_, index) => `/src/shared-${index}.ts`);
+  cache.set("/src/First.vue", compiled(inputs));
+  cache.set("/src/Second.vue", compiled(inputs.slice()));
+  cache.evict("/src/First.vue");
+  assert.deepEqual(cache.ownersOf(inputs[0]), ["/src/First.vue", "/src/Second.vue"]);
+  epoch.advance();
+  cache.set("/src/Second.vue", compiled(["/src/changed.ts"]));
+  assert.deepEqual(cache.ownersOf(inputs[0]), ["/src/First.vue"]);
+  cache.set("/src/First.vue", compiled(inputs.slice()));
+  cache.evict("/src/First.vue");
+  cache.delete("/src/First.vue");
+  assert.deepEqual(cache.ownersOf(inputs[0]), []);
+  assert.deepEqual(cache.ownersOf("/src/changed.ts"), ["/src/Second.vue"]);
+  cache.clear();
+  assert.deepEqual(cache.ownersOf("/src/changed.ts"), []);
+}

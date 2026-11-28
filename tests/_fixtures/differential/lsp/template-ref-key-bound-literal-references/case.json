@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/template-ref-key-bound-literal-references",
+  "provenance": {
+    "fixCommit": "7b56c699fefb018e351e4ac63d936897bcf27b8d",
+    "witnessPath": "crates/vize_maestro/src/ide/template_ref/keys/wire_tests.rs",
+    "witnessTest": "pinned_fixtures_answer_over_the_wire",
+    "inputOrigin": "repository-authored script setup SFC: useTemplateRef('box') with a static ref=\"box\" and a bound :ref=\"'box'\", beside an unrelated title=\"box\"",
+    "contractOrigin": "complete ordered references from the bound literal and from the call argument: the call, the static ref and the bound literal, never the unrelated attribute"
+  },
+  "files": [
+    {
+      "runtimePath": "App.vue",
+      "source": "App.vue.txt",
+      "sha256": "cb16ea5d161bbc05bd530a8d1a03132baf784705bd3ee725eb30b1220600dc91"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "method": "textDocument/references",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "d0823938c0516b285c810d7e44e84ee98bedc909f62b65e82392200861729e13"
+  },
+  "scope": "standard legacy references only; production stdio replay required; no native provider credit"
+}

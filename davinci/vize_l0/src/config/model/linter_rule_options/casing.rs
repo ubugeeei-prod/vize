@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::ConfigLintRuleOptions;
 use super::multi_word_component_names::deserialize_unique_ignores;
 
 /// Options for `vue/component-name-in-template-casing`.
@@ -56,4 +57,46 @@ pub enum CustomEventNameCasing {
     Lowercase,
     #[serde(rename = "kebab-case")]
     KebabCase,
+}
+
+/// Casing required of a component definition's `name` by
+/// `vue/component-definition-name-casing`, written as eslint-plugin-vue's
+/// direct option: `"PascalCase"` (the default) or `"kebab-case"`.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ComponentDefinitionNameCasingStyle {
+    #[default]
+    #[serde(rename = "PascalCase")]
+    PascalCase,
+    #[serde(rename = "kebab-case")]
+    KebabCase,
+}
+
+impl ConfigLintRuleOptions {
+    /// Configured casing for `vue/component-definition-name-casing`.
+    pub fn component_definition_name_casing(&self) -> Option<ComponentDefinitionNameCasingStyle> {
+        self.component_definition_name_casing
+    }
+
+    /// Configured casing for `vue/component-name-in-template-casing`.
+    #[inline]
+    pub fn component_name_in_template_casing(&self) -> Option<TemplateComponentNameCasing> {
+        self.component_name_in_template_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
+
+    /// Authored registration scope for component tag casing.
+    pub fn component_name_in_template_casing_options(
+        &self,
+    ) -> Option<&ComponentNameInTemplateCasingOptions> {
+        self.component_name_in_template_casing.as_ref()
+    }
+
+    /// Configured casing for `script/custom-event-name-casing`.
+    #[inline]
+    pub fn custom_event_name_casing(&self) -> Option<CustomEventNameCasing> {
+        self.custom_event_name_casing
+            .as_ref()
+            .map(|options| options.casing)
+    }
 }

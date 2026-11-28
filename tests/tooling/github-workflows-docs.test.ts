@@ -1,5 +1,9 @@
 import { readToolingProgram } from "./support/program-path.ts";
-import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
+import {
+  automationShellPath,
+  readAutomationPrograms,
+  workflowProgram,
+} from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -136,13 +140,17 @@ test("full Docs checks real preview resources before building and retains the ra
   );
   assert(steps.indexOf(readiness) < steps.indexOf(namedStep(job, "Build docs")));
   assert.match(readiness.run!, /vp node docs\/scripts\/ensure-browser\.ts/);
+  assert.match(readiness.run!, /let evidence = "docs-render-evidence\/resource-readiness"/);
+  assert.match(readiness.run!, /let log = \$"\$evidence\/tests\.tap"/);
+  // `|&` sends the TAP run's stderr into the retained log too.
   assert.match(
     readiness.run!,
-    /node --test --test-reporter=tap tests\/tooling\/docs-preview-readiness-browser\.test\.ts/,
+    /node --test --test-reporter=tap tests\/tooling\/docs-preview-readiness-browser\.test\.ts \|& tee \$log/,
   );
-  assert.match(readiness.run!, /\| tee docs-render-evidence\/resource-readiness\/tests\.tap/);
-  assert.match(readiness.run!, /node tools\/support\/github\/docs-preview-readiness\.ts/);
-  assert.match(readiness.run!, /docs-render-evidence\/resource-readiness/);
+  assert.match(
+    readiness.run!,
+    /node tools\/support\/github\/docs-preview-readiness\.ts \$log \$evidence/,
+  );
   assert.match(
     readRepoFile("tools", "support", "github", "docs-preview-readiness.ts"),
     /"receipt\.json"/,
@@ -152,8 +160,13 @@ test("full Docs checks real preview resources before building and retains the ra
   assert.equal(
     reading.run,
     [
-      'ja_reading_routes=$(node "$VIZE_CI_FILES/verify-rendered-navigation-and-japanese-reading-paths.ts")',
-      'node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"',
+      "# Verify the rendered navigation and the Japanese editorial pages on their reading routes.",
+      "use $bin::{node}",
+      "use std::path::from_source",
+      "",
+      'let ja_reading_routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")',
+      "",
+      "node docs/scripts/verify-navigation-render.ts --routes $ja_reading_routes",
       "node docs/scripts/verify-ja-editorial-render.ts",
       "",
     ].join("\n"),
@@ -235,12 +248,10 @@ test("Docs resource fixture preserves Node exit failure even after a passing TAP
     writeFileSync(join(bin, "node"), readToolingProgram("commands/github-workflows-docs/node.sh"), {
       mode: 0o755,
     });
-    const script = join(temporary, "step.sh");
     const marker = join(temporary, "unexpected-receipt");
-    writeFileSync(script, step.run!);
-    // Execute the actual YAML body without supplying shell failure options:
-    // the workflow must preserve the producer's status through tee itself.
-    const result = spawnSync("bash", [script], {
+    // Execute the step's committed build: the program must keep the producer's
+    // status through tee itself.
+    const result = spawnSync("sh", [automationShellPath(step.run!)], {
       cwd: temporary,
       env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, READINESS_CONTROL_MARKER: marker },
       encoding: "utf8",

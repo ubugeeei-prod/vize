@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 200 件、意図的な差異 2 件、未実装 54 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 201 件、意図的な差異 1 件、未実装 54 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -21,7 +21,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 
 リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存のパッケージスクリプトと名前が衝突する場合は `vp run vize:lint` です。明示したタスクの設定が優先されます。
 
-`vue/component-definition-name-casing` には意図的な適用範囲の差があります。Vize は SFC のファイル名を検査し、ESLint はコンポーネントの定義名を検査します。この差を以下にも残しています。
+`vue/component-definition-name-casing` は ESLint と同じくコンポーネントの定義名を検査します。Vize の SFC ファイル名の検査は別のルール `vue/component-file-name-casing` で、ESLint に対応するルールはありません。
 
 `vue/comment-directive` の行は ESLint ルールの移行状況であり、Vize で明示的に有効化する未使用コメント報告の対応状況ではありません。ネイティブの検査は `reportUnusedDisableDirectives` で有効にできます。[使われていない抑制コメント](../guide/lint-execution.md#unused-disable-directives)を参照してください。この限定した検査は、ESLint ルールとの完全な互換性を保証しません。
 
@@ -46,7 +46,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/comma-style` | — | 未実装 |
 | `vue/comment-directive` | [`vue/comment-directive`](./reference/vue-comment-directive.md) | 対応付け |
 | `vue/component-api-style` | — | 未実装 |
-| `vue/component-definition-name-casing` | — | 意図的な差異 |
+| `vue/component-definition-name-casing` | [`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 対応付け |
 | `vue/component-name-in-template-casing` | [`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | 対応付け |
 | `vue/component-options-name-casing` | [`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | 対応付け |
 | `vue/custom-event-name-casing` | [`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | 対応付け |

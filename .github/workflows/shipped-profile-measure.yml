@@ -22,6 +22,14 @@ on:
         description: Exact head commit (40 hex characters)
         required: true
         type: string
+      runner:
+        description: Linux runner size for the exact same measurement
+        required: false
+        default: blacksmith-32vcpu-ubuntu-2404
+        type: choice
+        options:
+          - blacksmith-32vcpu-ubuntu-2404
+          - blacksmith-16vcpu-ubuntu-2404
       twins:
         description: Also build and measure an independent A/A twin of each side
         required: false
@@ -30,7 +38,7 @@ on:
 
 permissions: { contents: read }
 concurrency:
-  group: shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  group: shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
   cancel-in-progress: false
 env:
   CARGO_INCREMENTAL: "0"
@@ -43,7 +51,7 @@ env:
 jobs:
   measure:
     name: Release-profile instructions and sizes
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
     timeout-minutes: 360
     steps:
       - name: Check out the workflow's scripts
@@ -66,7 +74,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { path: head, ref: "${{ inputs.head_sha }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: driver/package.json, run-install: false }
+        with: { version: 1.8.0, node-version-file: driver/package.json, run-install: false }
       - name: Validate the source pair
         run: node driver/tools/benchmarks/scripts/release-measure.ts --validate-inputs
       - uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2

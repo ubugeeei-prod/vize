@@ -35,6 +35,11 @@ impl CodegenContext {
             return false;
         };
 
+        if binding.binding_type == BindingType::Props {
+            self.push_prop_component_tag(binding);
+            return true;
+        }
+
         let needs_unref = self.options.inline
             && matches!(
                 binding.binding_type,
@@ -63,6 +68,28 @@ impl CodegenContext {
             self.push(suffix.as_str());
         }
         true
+    }
+
+    /// A prop used as a tag reads the props object (`__props` in the inlined
+    /// render function, `$props` otherwise) through `_unref`, as Vue does.
+    /// Out of line: an ordinary tag never takes this path.
+    #[cold]
+    #[inline(never)]
+    fn push_prop_component_tag(&mut self, binding: ComponentBinding) {
+        self.use_helper(RuntimeHelper::Unref);
+        self.push(self.helper(RuntimeHelper::Unref));
+        self.push(if self.options.inline {
+            "(__props[\""
+        } else {
+            "($props[\""
+        });
+        let escaped = super::helpers::escape_js_string(binding.name.as_str());
+        self.push(escaped.as_str());
+        self.push("\"])");
+        if let Some(suffix) = binding.suffix {
+            self.push(".");
+            self.push(suffix.as_str());
+        }
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
@@ -107,7 +134,10 @@ impl CodegenContext {
         };
 
         if let Some((base, suffix)) = component.split_once('.') {
-            let (name, binding_type) = resolve_base(base)?;
+            let (mut name, mut binding_type) = resolve_base(base)?;
+            if binding_type == BindingType::PropsAliased {
+                (name, binding_type) = first_prop_spelling(metadata, base)?;
+            }
             return Some(ComponentBinding {
                 name,
                 binding_type,
@@ -115,11 +145,32 @@ impl CodegenContext {
             });
         }
 
-        let (name, binding_type) = resolve_base(component)?;
+        let (mut name, mut binding_type) = resolve_base(component)?;
+        if binding_type == BindingType::PropsAliased {
+            (name, binding_type) = first_prop_spelling(metadata, component)?;
+        }
         Some(ComponentBinding {
             name,
             binding_type,
             suffix: None,
         })
     }
+}
+
+/// A renamed props destructure (`{ icon: Icon }`) is not a setup reference
+/// (Vue's `resolveSetupReference`): only a plain prop under another spelling
+/// resolves, otherwise the tag is an asset. Out of line: reached only when
+/// the first props spelling of a tag is a renamed destructure.
+#[cold]
+#[inline(never)]
+fn first_prop_spelling(
+    metadata: &crate::options::BindingMetadata,
+    name: &str,
+) -> Option<(String, BindingType)> {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    [name, camel.as_str(), pascal.as_str()]
+        .into_iter()
+        .find(|spelling| metadata.bindings.get(*spelling) == Some(&BindingType::Props))
+        .map(|spelling| (spelling.to_compact_string(), BindingType::Props))
 }

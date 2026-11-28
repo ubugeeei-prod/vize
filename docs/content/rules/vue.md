@@ -69,7 +69,7 @@ Correctness rules in the `essential` preset.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Enforce valid `v-slot` directives. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Enforce valid `v-text` directives. |  |
 
-## Default (28)
+## Default (29)
 
 Added by `happy-path`, the default preset.
 
@@ -78,6 +78,7 @@ Added by `happy-path`, the default preset.
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Enforce attribute naming style on custom components. | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Enforce a consistent order of attributes. |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Enforce PascalCase or kebab-case for component definition names. |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | Enforce PascalCase or kebab-case for component file names. |  |
 | <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | Require end tags on HTML elements that may omit them. | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | Enforce quotes style of HTML attributes. | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Enforce consistent spacing inside mustache interpolations. | ✓ |

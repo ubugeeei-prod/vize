@@ -20,7 +20,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

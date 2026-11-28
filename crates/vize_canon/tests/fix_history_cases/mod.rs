@@ -42,6 +42,7 @@ pub(super) mod direct_callback_props_3546;
 pub(super) mod disabled_template_scope_script_checks_1903;
 pub(super) mod dynamic_component_setup_props_4494;
 pub(super) mod dynamic_component_v_for_scope;
+pub(super) mod dynamic_component_v_for_scope_strict;
 pub(super) mod dynamic_directive_names_2797;
 pub(super) mod dynamic_member_component_emits_2915;
 pub(super) mod dynamic_v_slot_props_1260;

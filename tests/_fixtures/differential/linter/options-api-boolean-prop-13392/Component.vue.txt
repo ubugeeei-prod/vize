@@ -1,0 +1,14 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  props: {
+    title: String,
+    open: Boolean,
+  },
+})
+</script>
+
+<template>
+  <span :data-open="open">{{ title }}</span>
+</template>

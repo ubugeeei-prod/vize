@@ -133,6 +133,42 @@ mod element_transform_tests {
     }
 
     #[test]
+    fn test_transform_v_model_on_destructured_key_or_index_reports_error() {
+        for (source, scope_names) in [
+            (
+                r#"<div v-for="(v, { k }) in obj"><input v-model="k" /></div>"#,
+                1,
+            ),
+            (
+                r#"<div v-for="(v, k, [i]) in obj"><input v-model="i" /></div>"#,
+                1,
+            ),
+            (
+                r#"<div v-for="(v, { k: { j }, ...r }, [i = 0]) in obj"><input v-model="j" /><input v-model="r" /><input v-model="i" /></div>"#,
+                3,
+            ),
+        ] {
+            let errors = transform_errors(source);
+            assert_eq!(errors.len(), scope_names, "{source}: {errors:?}");
+            assert!(
+                errors
+                    .iter()
+                    .all(|error| error.code == ErrorCode::VModelOnScope),
+                "{source}: {errors:?}"
+            );
+        }
+        // Reads through a destructured name, and names the pattern does not
+        // bind, stay valid.
+        for source in [
+            r#"<div v-for="(v, { k }) in obj"><input v-model="k.x" /></div>"#,
+            r#"<div v-for="(v, { k: j }) in obj"><input v-model="k" /></div>"#,
+        ] {
+            let errors = transform_errors(source);
+            assert!(errors.is_empty(), "{source}: {errors:?}");
+        }
+    }
+
+    #[test]
     fn test_transform_v_model_on_scope_property_stays_valid() {
         let errors =
             transform_errors(r#"<div v-for="item in items"><input v-model="item.value" /></div>"#);

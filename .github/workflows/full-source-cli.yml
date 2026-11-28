@@ -15,7 +15,7 @@ env:
 jobs:
   cli:
     name: Build original full-suite CLI and SFC oracle
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 30
     outputs:
       sha256: ${{ steps.pack.outputs.sha256 }}
@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: package.json, cache: true, run-install: false }
+        with: { version: 1.8.0, node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-wild-http-recovery

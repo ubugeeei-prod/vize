@@ -1,6 +1,6 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
-use std::fs::{File, OpenOptions, TryLockError};
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -201,6 +201,7 @@ impl Drop for EditorStorage {
 #[cfg(test)]
 mod retained_tests;
 mod storage_root;
+pub(crate) use storage_root::create_user_temporary_root;
 use storage_root::sessions_base;
 
 impl Default for EditorMirrorSession {
@@ -298,20 +299,24 @@ impl<'base> GcLock<'base> {
                 continue;
             }
             let lock_path = path.join(".session.lock");
-            let removable = if lock_path.exists() {
-                match open_existing_session_lock(&lock_path) {
-                    Ok(lock) => match lock.try_lock() {
-                        Ok(()) => true,
-                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
-                    },
-                    Err(_) => false,
+            if lock_path.exists() {
+                if let Ok(lock) = open_existing_session_lock(&lock_path)
+                    && lock.try_lock().is_ok()
+                {
+                    self.reap_unlocked_session(&path, lock);
                 }
-            } else {
-                legacy_session_expired(&path, LEGACY_GRACE)
-            };
-            if removable {
+            } else if legacy_session_expired(&path, LEGACY_GRACE) {
                 let _ = std::fs::remove_dir_all(path);
             }
+        }
+    }
+
+    fn reap_unlocked_session(&self, path: &Path, _lifetime_lock: File) {
+        // The owner can arm retention after the sweep's first marker check,
+        // then release its lifetime lock after an incomplete native shutdown.
+        // Recheck while holding that lock before removing any generated input.
+        if !path.join(RETAINED_FAILURE).exists() {
+            let _ = std::fs::remove_dir_all(path);
         }
     }
 }

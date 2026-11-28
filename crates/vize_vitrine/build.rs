@@ -17,9 +17,23 @@ use sha2::{Digest, Sha256};
 /// A build failure: returning it from `main` fails the build with the message.
 type BuildResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
+/// The wasm32 stack: the 64 MiB the CLI gives each parser thread.
+const WASM_STACK_BYTES: usize = 64 * 1024 * 1024;
+
 fn main() -> BuildResult {
     #[cfg(all(feature = "napi", not(target_arch = "wasm32")))]
     napi_build::setup();
+
+    // The browser build parses authored `<script>` blocks on the module's own
+    // stack, which wasm32 cannot grow at run time. Reserve what the CLI gives
+    // its parser threads instead of the linker's 1 MiB default. The stack
+    // comes first in linear memory, so running out stays a trap rather than
+    // writing over static data, and untouched stack pages are never committed.
+    if std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("wasm32")
+        && std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("unknown")
+    {
+        println!("cargo:rustc-link-arg-cdylib=-zstack-size={WASM_STACK_BYTES}");
+    }
 
     println!("cargo:rerun-if-env-changed=VIZE_NATIVE_BUILD_TOKEN");
     if let Ok(token) = std::env::var("VIZE_NATIVE_BUILD_TOKEN") {

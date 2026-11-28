@@ -13,6 +13,7 @@ use super::stubs::{
     generic_composable_stub, push_declared_const, push_generic_function_stub, push_stub,
     tracked_read_to_string,
 };
+use super::type_auto_imports::TypeAutoImports;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SourceAutoImportKind {
@@ -21,13 +22,22 @@ enum SourceAutoImportKind {
     Composable,
 }
 
+/// Stub what Nuxt would auto-import from the project's own sources, for a
+/// project that has no generated manifest to say so.
+///
+/// Each file is read and parsed once, for values and types alike. A value has
+/// no generated signature to copy, so it keeps a permissive stub; a type is
+/// re-exported from the module that declares it and stays the real type.
 pub(super) fn collect_source_auto_import_stubs(
     cwd: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
+    type_auto_imports: &mut TypeAutoImports,
 ) {
     let mut imports = FxHashMap::default();
-    for root in nuxt_auto_import_roots(cwd) {
+    let mut type_modules = Vec::new();
+    let mut types = Vec::new();
+    for (root, stubs_values) in nuxt_auto_import_roots(cwd) {
         let walker = WalkBuilder::new(root)
             .hidden(false)
             .standard_filters(true)
@@ -42,9 +52,18 @@ pub(super) fn collect_source_auto_import_stubs(
             let Ok(source) = tracked_read_to_string(path) else {
                 continue;
             };
-            collect_source_auto_imports_from_source(path, source.as_str(), &mut imports);
+            let allocator = Allocator::default();
+            let ret = Parser::new(&allocator, source.as_str(), source_type_for_path(path)).parse();
+            if stubs_values {
+                collect_source_auto_imports(path, &ret.program.body, &mut imports);
+            }
+            if let Some(module) = type_module_specifier(path) {
+                collect_source_type_auto_imports(&ret.program.body, type_modules.len(), &mut types);
+                type_modules.push(module);
+            }
         }
     }
+    let type_modules = unambiguous_specifiers(type_modules);
 
     let mut imports: Vec<_> = imports.into_iter().collect();
     imports.sort_by(|left, right| left.0.cmp(&right.0));
@@ -61,56 +80,80 @@ pub(super) fn collect_source_auto_import_stubs(
             }
         }
     }
+
+    // Sorted so a name that two files export resolves to the same file on
+    // every run, whatever order the directory walk yields them in.
+    let mut types = types
+        .into_iter()
+        .filter_map(|(name, module)| Some((name, type_modules.get(module)?.as_str())))
+        .collect::<Vec<_>>();
+    types.sort();
+    for (name, module) in types {
+        type_auto_imports.reexport(module, name.as_str(), name.as_str());
+    }
 }
 
-fn nuxt_auto_import_roots(cwd: &Path) -> Vec<PathBuf> {
+/// One scanned module that can export types.
+struct TypeModule {
+    /// The spelling TypeScript resolves to the file, without a TypeScript
+    /// extension where one is not needed.
+    specifier: String,
+    /// The file's own path, extension included.
+    file: String,
+}
+
+/// The specifier each module is re-exported from. Files that share a
+/// specifier (`model.ts` and `model.tsx`) would all resolve to whichever one
+/// TypeScript tries first, so each of those is named by its own path.
+fn unambiguous_specifiers(modules: Vec<TypeModule>) -> Vec<String> {
+    let mut counts = FxHashMap::<&str, usize>::default();
+    for module in &modules {
+        *counts.entry(module.specifier.as_str()).or_default() += 1;
+    }
+    let shared = counts
+        .into_iter()
+        .filter(|(_, count)| *count > 1)
+        .map(|(specifier, _)| specifier.to_compact_string())
+        .collect::<FxHashSet<_>>();
+    modules
+        .into_iter()
+        .map(|module| {
+            if shared.contains(&module.specifier) {
+                module.file
+            } else {
+                module.specifier
+            }
+        })
+        .collect()
+}
+
+/// The directories Nuxt scans for auto-imports, and whether this fallback
+/// stubs the values found there.
+///
+/// Nuxt 4 scans `composables`, `utils` and `types` of the source directory
+/// and `utils` and `types` of `shared`, each for values and types alike; a
+/// Nuxt 3 project keeps its source directory at the root. Values of the
+/// `types` directories stay unstubbed: a permissive value stub hides errors,
+/// and those directories rarely export one.
+///
+/// Nuxt reads only the top level of each directory unless `imports.dirs`
+/// names more. That setting cannot be read here, so the walk descends: a
+/// missing name reports an error the project does not have.
+fn nuxt_auto_import_roots(cwd: &Path) -> Vec<(PathBuf, bool)> {
     [
-        "app/composables",
-        "app/utils",
-        "composables",
-        "utils",
-        "shared/utils",
+        ("app/composables", true),
+        ("app/utils", true),
+        ("composables", true),
+        ("utils", true),
+        ("shared/utils", true),
+        ("app/types", false),
+        ("types", false),
+        ("shared/types", false),
     ]
     .into_iter()
-    .map(|dir| cwd.join(dir))
-    .filter(|path| path.is_dir())
+    .map(|(dir, stubs_values)| (cwd.join(dir), stubs_values))
+    .filter(|(path, _)| path.is_dir())
     .collect()
-}
-
-pub(super) fn collect_source_type_auto_import_stubs(cwd: &Path, stubs: &mut Vec<String>) {
-    let mut names = FxHashSet::default();
-    for root in nuxt_type_auto_import_roots(cwd) {
-        let walker = WalkBuilder::new(root)
-            .hidden(false)
-            .standard_filters(true)
-            .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
-            .build();
-
-        for entry in walker.flatten() {
-            let path = entry.path();
-            if !path.is_file() || !is_script_source(path) {
-                continue;
-            }
-            let Ok(source) = tracked_read_to_string(path) else {
-                continue;
-            };
-            collect_source_type_auto_import_names_from_source(path, source.as_str(), &mut names);
-        }
-    }
-
-    let mut names: Vec<_> = names.into_iter().collect();
-    names.sort();
-    for name in names {
-        stubs.push(cstr!("type {name} = any;"));
-    }
-}
-
-fn nuxt_type_auto_import_roots(cwd: &Path) -> Vec<PathBuf> {
-    ["app/types", "types", "shared/types"]
-        .into_iter()
-        .map(|dir| cwd.join(dir))
-        .filter(|path| path.is_dir())
-        .collect()
 }
 
 fn is_script_source(path: &Path) -> bool {
@@ -120,58 +163,76 @@ fn is_script_source(path: &Path) -> bool {
     )
 }
 
-fn collect_source_type_auto_import_names_from_source(
-    path: &Path,
-    source: &str,
-    names: &mut FxHashSet<String>,
-) {
-    let allocator = Allocator::default();
-    let ret = Parser::new(&allocator, source, source_type_for_path(path)).parse();
+/// The specifier that imports the TypeScript module at `path`. An
+/// extensionless path resolves to `.ts`, `.tsx` and `.d.ts`; the
+/// format-specific extensions are imported by their JavaScript spelling.
+/// A JavaScript module exports no types, so it has no specifier here.
+fn type_module_specifier(path: &Path) -> Option<TypeModule> {
+    let path = path.to_str()?;
+    let specifier = [
+        (".d.ts", ""),
+        (".d.mts", ".mjs"),
+        (".d.cts", ".cjs"),
+        (".tsx", ""),
+        (".ts", ""),
+        (".mts", ".mjs"),
+        (".cts", ".cjs"),
+    ]
+    .into_iter()
+    .find_map(|(suffix, replacement)| {
+        let stem = path.strip_suffix(suffix)?;
+        Some(cstr!("{stem}{replacement}").replace('\\', "/").into())
+    })?;
+    Some(TypeModule {
+        specifier,
+        file: path.replace('\\', "/").into(),
+    })
+}
 
-    for statement in &ret.program.body {
+fn collect_source_type_auto_imports(
+    statements: &[Statement<'_>],
+    module: usize,
+    types: &mut Vec<(String, usize)>,
+) {
+    let mut push = |name: &str| {
+        if is_ts_identifier(name) {
+            types.push((name.to_compact_string(), module));
+        }
+    };
+    for statement in statements {
         let Statement::ExportNamedDeclaration(export) = statement else {
             continue;
         };
         if let Some(declaration) = &export.declaration {
             match declaration {
-                Declaration::TSTypeAliasDeclaration(alias)
-                    if is_ts_identifier(alias.id.name.as_str()) =>
-                {
-                    names.insert(alias.id.name.to_compact_string());
-                }
-                Declaration::TSInterfaceDeclaration(interface)
-                    if is_ts_identifier(interface.id.name.as_str()) =>
-                {
-                    names.insert(interface.id.name.to_compact_string());
+                Declaration::TSTypeAliasDeclaration(alias) => push(alias.id.name.as_str()),
+                Declaration::TSInterfaceDeclaration(interface) => {
+                    push(interface.id.name.as_str());
                 }
                 _ => {}
             }
             continue;
         }
 
-        if !export.export_kind.is_type() {
-            continue;
-        }
         for specifier in &export.specifiers {
+            if !export.export_kind.is_type() && !specifier.export_kind.is_type() {
+                continue;
+            }
             if let Some(name) = module_export_name(&specifier.exported)
                 && name != "default"
-                && is_ts_identifier(name)
             {
-                names.insert(name.to_compact_string());
+                push(name);
             }
         }
     }
 }
 
-fn collect_source_auto_imports_from_source(
+fn collect_source_auto_imports(
     path: &Path,
-    source: &str,
+    statements: &[Statement<'_>],
     imports: &mut FxHashMap<String, SourceAutoImportKind>,
 ) {
-    let allocator = Allocator::default();
-    let ret = Parser::new(&allocator, source, source_type_for_path(path)).parse();
-
-    for statement in &ret.program.body {
+    for statement in statements {
         match statement {
             Statement::ExportNamedDeclaration(export) => {
                 if export.export_kind.is_type() {

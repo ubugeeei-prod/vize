@@ -4,13 +4,13 @@ use crate::{
     component_name::{
         EXCEPTION_NAMES, definition_name_stem, is_kebab_case, is_nuxt_route_file, is_pascal_case,
     },
-    rules::vue::ComponentDefinitionNameCasing,
+    rules::vue::ComponentFileNameCasing,
 };
 use vize_l1::markup::ComponentTagAnalysis;
 
 use super::{NativeTemplateLintContext, NativeTemplateLintRefusal, NativeTemplateRule};
 
-impl NativeTemplateRule for ComponentDefinitionNameCasing {
+impl NativeTemplateRule for ComponentFileNameCasing {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
@@ -35,9 +35,9 @@ impl NativeTemplateRule for ComponentDefinitionNameCasing {
         }
         if !is_pascal_case(stem) && !is_kebab_case(stem) {
             context.warn_root_with_help(
-                "vue/component-definition-name-casing.message",
+                "vue/component-file-name-casing.message",
                 &[("name", stem)],
-                "vue/component-definition-name-casing.help",
+                "vue/component-file-name-casing.help",
             );
         }
         Ok(())
@@ -57,7 +57,7 @@ mod tests {
         let root = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
         let foreign = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
         let linter = Linter::new();
-        let rule = ComponentDefinitionNameCasing;
+        let rule = ComponentFileNameCasing;
         for filename in [
             "Badge.art.vue",
             r"C:\元\Badge.art.vue",

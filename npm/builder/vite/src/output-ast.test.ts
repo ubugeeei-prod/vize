@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { generateOutput } from "./utils/index.ts";
+import { generateOutput } from "../test/shaped-output.ts";
 
 void test("generateOutput ignores export default text inside template literals", () => {
   const output = generateOutput(

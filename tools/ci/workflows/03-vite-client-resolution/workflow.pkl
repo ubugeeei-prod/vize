@@ -1,0 +1,77 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Benchmark - Vite client Vue resolution"
+on {
+  workflow_dispatch {}
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/03-vite-client-resolution.yml"
+      "tools/ci/workflows/03-vite-client-resolution/**"
+      "tools/benchmarks/scripts/vite-client-resolution-profile*"
+      "tools/benchmarks/fixtures/client-vue-resolution-13795/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "vite-client-resolution-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = false
+}
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+jobs {
+  measure {
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 30
+    strategy {
+      `fail-fast` = false
+      matrix {
+        node = List("24.14.0", "26.13.1")
+        runner = new Listing {
+          ci.windows
+          ci.linuxSmall
+          "blacksmith-16vcpu-ubuntu-2404"
+        }
+      }
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "${{ matrix.node }}"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Check the experiment source transforms"
+        run = "node --test tools/benchmarks/scripts/vite-client-resolution-profile.test.ts"
+      }
+      new Dynamic {
+        name = "Measure the pinned published consumer"
+        env { PROFILE_OUTPUT = "${{ runner.temp }}/vite-client-resolution" }
+        run = "node tools/benchmarks/scripts/vite-client-resolution-profile.ts"
+      }
+      new Dynamic {
+        name = "Retain original samples and identities"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "vite-client-resolution-${{ runner.os }}-${{ matrix.node }}-${{ matrix.runner }}"
+          path = """
+            ${{ runner.temp }}/vite-client-resolution/*.json
+            ${{ runner.temp }}/vite-client-resolution/*.jsonl
+            ${{ runner.temp }}/vite-client-resolution/*.log
+            ${{ runner.temp }}/vite-client-resolution/*.mjs
+            ${{ runner.temp }}/vite-client-resolution/consumer/package.json
+            ${{ runner.temp }}/vite-client-resolution/consumer/pnpm-lock.yaml
+            """
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

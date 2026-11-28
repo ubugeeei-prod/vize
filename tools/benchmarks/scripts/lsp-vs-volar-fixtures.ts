@@ -24,6 +24,10 @@ import { dirname, join, resolve, sep } from "node:path";
 
 import { SCALE_FIXTURES } from "./lsp-vs-volar-scale-fixtures.ts";
 import { registryPrepareSteps } from "./typecheck-vs-vue-tsc-projects.ts";
+import {
+  prepareTypecheckInputOverlays,
+  typecheckPreparationIdentity,
+} from "../../support/compat/fixtures/typecheck-input-overlays.ts";
 import { type Anchor, anchorIn } from "./lsp-vs-volar-text.ts";
 
 export type RequestSpec =
@@ -274,7 +278,9 @@ interface RegistryEntry {
   id: string;
   repository: string;
   revision: string;
-  typecheckPerformance?: { baseline?: { prepare?: string[] | string[][] } };
+  typecheckPerformance?: {
+    baseline?: { prepare?: string[] | string[][]; inputOverlays?: unknown };
+  };
 }
 
 function run(command: string, args: string[], cwd: string) {
@@ -372,7 +378,19 @@ function prepareRegistry(
   const entry = registry.projects.find((project) => project.id === id);
   if (!entry) throw new Error(`${id} is not in the fixture registry`);
   const stamp = join(root, ".lspbench-ready");
-  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === entry.revision) return;
+  const identity = typecheckPreparationIdentity(
+    entry.revision,
+    entry.typecheckPerformance?.baseline,
+  );
+  if (existsSync(stamp) && readFileSync(stamp, "utf8").trim() === identity) {
+    prepareTypecheckInputOverlays(
+      repoRoot,
+      root,
+      entry.revision,
+      entry.typecheckPerformance?.baseline?.inputOverlays,
+    );
+    return;
+  }
   if (!existsSync(root) || !readdirSync(root).some((name) => name !== ".git")) {
     mkdirSync(root, { recursive: true });
     run("git", ["init", "-q"], root);
@@ -393,13 +411,19 @@ function prepareRegistry(
     [...pnpm, "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     root,
   );
+  prepareTypecheckInputOverlays(
+    repoRoot,
+    root,
+    entry.revision,
+    entry.typecheckPerformance?.baseline?.inputOverlays,
+  );
   const steps = prepareCommand
     ? [prepareCommand]
     : registryPrepareSteps(entry.typecheckPerformance?.baseline?.prepare).map((step) =>
         step.slice(1),
       );
   for (const step of steps) run("npx", [...pnpm, ...step], root);
-  writeFileSync(stamp, `${entry.revision}\n`);
+  writeFileSync(stamp, `${identity}\n`);
 }
 
 /** The deepest directory holding every one of `paths`. */

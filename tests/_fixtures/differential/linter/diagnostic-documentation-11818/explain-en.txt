@@ -4491,11 +4491,38 @@ vue/component-definition-name-casing · lint rule
 Enforce PascalCase or kebab-case for component definition names
 
 tier: exact
-domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+domain: the syntax of <script> and <script setup> programs, without type information
 severity: warning
 category: strongly-recommended
 autofix: no
 docs: docs/content/rules/reference/vue-component-definition-name-casing.md
+
+invalid:
+  <script>
+  export default {
+    name: 'my_component'
+  }
+  </script>
+
+valid:
+  <script>
+  export default {
+    name: 'MyComponent'
+  }
+  </script>
+
+help:
+  Rename the component to '{suggestion}'.
+=== vue/component-file-name-casing
+vue/component-file-name-casing · lint rule
+Enforce PascalCase or kebab-case for component file names
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: strongly-recommended
+autofix: no
+docs: docs/content/rules/reference/vue-component-file-name-casing.md
 
 invalid:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue
