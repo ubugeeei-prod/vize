@@ -35,7 +35,11 @@ import {
   undeclaredSlotFromImportedContract,
 } from "./imported_macro_contract.ts";
 import { baselineParserIntentionalReason } from "./parser_intentional.ts";
-import { mutableTemplateRefReason } from "./template_ref_intentional.ts";
+import { ruleSemanticsBaselineReason } from "./rule_semantics_intentional.ts";
+import {
+  templateRefIsOtherwiseUnread,
+  templateRefPatinaReason,
+} from "./template_ref_intentional.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -242,8 +246,8 @@ export function baselineIntentionalReason(
   if (source !== undefined && source !== null) {
     const parser = baselineParserIntentionalReason(finding, source);
     if (parser !== null) return parser;
-    const mutableTemplateRef = mutableTemplateRefReason(finding, source);
-    if (mutableTemplateRef !== null) return mutableTemplateRef;
+    const semantics = ruleSemanticsBaselineReason(finding, source);
+    if (semantics !== null) return semantics;
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
   }
@@ -622,6 +626,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/require-v-for-key",
   "script/valid-next-tick",
   "vue/v-slot-style",
+  "vue/no-unused-refs",
 ]);
 export function patinaIntentionalReason(
   finding: LintRecord,
@@ -822,7 +827,8 @@ export function patinaIntentionalReason(
     registeredComponentIsProvablyAbsent(finding, source)
   )
     return "Patina reports a statically registered component that is absent from the authored executable template; eslint-plugin-vue misses this unused Options API registration.";
-  if (finding.ruleId !== "script/define-props-destructuring") return null;
+  if (finding.ruleId !== "script/define-props-destructuring")
+    return templateRefPatinaReason(finding, source);
   if (hasModuleAndSetupScripts(source))
     return "Patina analyzes defineProps in a setup block after a normal script block; eslint-plugin-vue does not consistently expose that second-script finding.";
   const lines = source.split("\n");
@@ -1135,16 +1141,6 @@ function genericRuntimeConstructorDefault(finding: LintRecord, source: string): 
   if (offset === null) return false;
   const before = source.slice(Math.max(0, offset - 500), offset);
   return /\btype\s*:\s*(?:Array|Object)\s*<[^>]+>\s*,[\s\S]*?\bdefault\s*:\s*$/u.test(before);
-}
-
-function templateRefIsOtherwiseUnread(finding: LintRecord, source: string): boolean {
-  const name = quotedName(finding.message);
-  if (name === undefined) return false;
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-  const script = /<script\b[^>]*\bsetup\b[^>]*>([\s\S]*?)<\/script>/iu.exec(source)?.[1];
-  if (script === undefined) return false;
-  const references = script.match(new RegExp(`\\b${escaped}\\b`, "gu"))?.length ?? 0;
-  return references === 1;
 }
 
 function findingInsideScriptBlock(finding: LintRecord, source: string): boolean {
