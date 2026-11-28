@@ -56,6 +56,10 @@ jobs:
           package-manager-cache: false
       - name: Test the dependency union, shared walks, cycles and freshness
         run: cargo test --locked -p vize_atelier_sfc --lib script::context::external_types
+      - name: Test script classification sharing and exact source equality
+        run: cargo test --locked -p vize --lib type_projects::source_facts
+      - name: Test measurement controls
+        run: node --test tools/benchmarks/scripts/imported-props-worker.test.mjs
       - name: Compare exact source images across threads and chunk sizes
         run: node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props"
       - name: Retain sources, input inventories, per-file output fingerprints and timings

@@ -35,7 +35,12 @@ const report = {
     cpus: os.cpus(),
     availableParallelism: os.availableParallelism(),
   },
-  fixture: { generatorSha256: hash(generatorBytes), components: 1000, environments: 3 },
+  fixture: {
+    generatorSha256: hash(generatorBytes),
+    components: 1000,
+    environments: 3,
+    uniqueScriptsControl: true,
+  },
   recipe: {
     profile: "ci-opt",
     features: "napi,legacy",
@@ -143,14 +148,39 @@ for (const [mode, modules] of [
   ["local", 1],
   ["barrel", 200],
   ["barrel", 800],
+  ["unique", 1],
 ]) {
   const shape = `${mode}-${modules}`;
   run(
     process.execPath,
-    [path.join(out, "generate.mjs"), "1000", "0", mode, String(modules)],
+    [
+      path.join(out, "generate.mjs"),
+      "1000",
+      "0",
+      mode === "unique" ? "local" : mode,
+      String(modules),
+    ],
     fixture,
     `generate-${shape}`,
   );
+  if (mode === "unique") {
+    // Negative sharing control: every component has distinct script bytes.
+    // This checks cache misses as well as the reporter's shared-script case.
+    for (const [index, name] of fs
+      .readdirSync(path.join(fixture, "src/components"))
+      .sort()
+      .entries()) {
+      const file = path.join(fixture, "src/components", name);
+      const source = fs.readFileSync(file, "utf8");
+      fs.writeFileSync(
+        file,
+        source.replace(
+          '<script setup lang="ts">',
+          `<script setup lang="ts">\nconst uniqueMarker = ${index};`,
+        ),
+      );
+    }
+  }
   fs.writeFileSync(
     path.join(fixture, "tsconfig.json"),
     '{"compilerOptions":{"moduleResolution":"bundler","strict":true},"include":["src"]}\n',
@@ -254,7 +284,7 @@ const lines = [
   "| :-- | --: | --: | :-- | --: | --: | --: | --: |",
 ];
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
-for (const mode of ["inline", "local", "barrel"]) {
+for (const mode of ["inline", "local", "barrel", "unique"]) {
   for (const modules of mode === "barrel" ? [200, 800] : [1]) {
     for (const threads of report.recipe.threads) {
       for (const chunk of report.recipe.chunks) {
