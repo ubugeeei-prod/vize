@@ -76,6 +76,7 @@ test("Maestro path and source IO compose without admitting extra source IO", () 
 
 test("regression hosts retain exact real canonicalizer boundaries", () => {
   for (const file of [
+    "crates/vize_canon/src/batch/type_checker/tests/recent_issues/nuxt_generated_reference_graph.rs",
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/constructor_vue_return_consumer.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/build/tests/native_union.rs",
     "crates/vize_maestro/src/server/native_requests/tests.rs",
