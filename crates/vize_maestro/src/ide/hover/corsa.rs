@@ -174,15 +174,20 @@ impl HoverService {
                 canonical::Answer::Empty => {
                     super::component_prop::native_attribute_hover(ctx, None, corsa_bridge.as_ref())
                         .await
+                        .map(|mut hover| {
+                            hover.range = authored_hover_token_range(ctx);
+                            hover
+                        })
                 }
                 canonical::Answer::Hover(mut hover) => {
-                    if let Some(selected) = super::component_prop::native_attribute_hover(
+                    if let Some(mut selected) = super::component_prop::native_attribute_hover(
                         ctx,
                         Some(&hover),
                         corsa_bridge.as_ref(),
                     )
                     .await
                     {
+                        selected.range = hover.range;
                         hover = selected;
                     }
                     super::declaration_keyword::align_hover(ctx, &word, &mut hover);

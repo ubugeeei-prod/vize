@@ -4,22 +4,12 @@ use crate::{
     server::ServerState,
     test_support::native_component::Workspace,
 };
+use serde_json::json;
 use std::sync::Arc;
-use tower_lsp::lsp_types::{GotoDefinitionResponse, Hover, HoverContents, Url};
+use tower_lsp::lsp_types::Url;
 
-fn markdown(hover: Hover) -> String {
-    match hover.contents {
-        HoverContents::Markup(content) => content.value,
-        other => panic!("expected Markdown, got {other:?}"),
-    }
-}
-
-fn target(response: GotoDefinitionResponse) -> Url {
-    match response {
-        GotoDefinitionResponse::Scalar(location) => location.uri,
-        other => panic!("expected one authored target, got {other:?}"),
-    }
-}
+const GENERIC_PROP_HOVER: &str = "**depth**\n\n_Component prop_\n\n```typescript\ndepth: number\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Child depth=\"...\" />\n<Child :depth=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)";
+const CONCRETE_PROP_HOVER: &str = "```typescript\n(property) depth: string\n```";
 
 #[test]
 fn native_selected_package_branch_supplies_tag_definition_and_generic_prop_hover() {
@@ -27,9 +17,15 @@ fn native_selected_package_branch_supplies_tag_definition_and_generic_prop_hover
         let Some(runtime) = crate::test_support::tsgo() else {
             return;
         };
-        for (custom, selected, prop_type) in
-            [(false, "Level11", "number"), (true, "Custom", "string")]
-        {
+        for (custom, selected, props, expected_prop) in [
+            (
+                false,
+                "Level11",
+                "{ depth: number; items?: readonly T[]; }",
+                GENERIC_PROP_HOVER,
+            ),
+            (true, "Custom", "{ depth: string; }", CONCRETE_PROP_HOVER),
+        ] {
             let workspace = Workspace::new(custom);
             let source = Workspace::source("Level11").replace("\n", "\r\n");
             let state = ServerState::new();
@@ -49,25 +45,38 @@ fn native_selected_package_branch_supplies_tag_definition_and_generic_prop_hover
                 DefinitionService::definition_with_corsa(&tag, Some(Arc::clone(&bridge)))
                     .await
                     .unwrap();
-            assert_eq!(target(definition).to_file_path().unwrap(), expected);
+            assert_eq!(
+                serde_json::to_value(definition).unwrap(),
+                json!({
+                    "uri": Url::from_file_path(expected).unwrap(),
+                    "range": {"start":{"line":0,"character":0},"end":{"line":0,"character":0}}
+                })
+            );
             let hover = HoverService::hover_with_corsa(&tag, Some(Arc::clone(&bridge)))
                 .await
                 .unwrap();
-            let tag_text = markdown(hover);
-            assert!(
-                tag_text.contains(vize_l0::cstr!("Vue component: {selected}.vue").as_str()),
-                "{tag_text}"
+            let expected_tag = vize_l0::cstr!(
+                "```typescript\nconst Child: VueComponent &\n{{\n  props: {props};\n}}\n```\n\nVue component: {selected}.vue"
             );
-            assert!(!tag_text.contains("Wrong.vue"), "{tag_text}");
+            assert_eq!(
+                serde_json::to_value(hover).unwrap(),
+                json!({
+                    "contents":{"kind":"markdown","value":expected_tag.as_str()},
+                    "range":{"start":{"line":4,"character":11},"end":{"line":4,"character":16}}
+                })
+            );
             let prop = IdeContext::new(&state, &workspace.uri, source.rfind(":depth").unwrap() + 3)
                 .unwrap();
             let hover = HoverService::hover_with_corsa(&prop, Some(Arc::clone(&bridge)))
                 .await
                 .unwrap();
-            let prop_text = markdown(hover);
-            assert!(prop_text.contains("depth"), "{prop_text}");
-            assert!(prop_text.contains(prop_type), "{prop_text}");
-            assert!(!prop_text.contains("boolean"), "{prop_text}");
+            assert_eq!(
+                serde_json::to_value(hover).unwrap(),
+                json!({
+                    "contents":{"kind":"markdown","value":expected_prop},
+                    "range":{"start":{"line":4,"character":18},"end":{"line":4,"character":23}}
+                })
+            );
             bridge.shutdown().await.unwrap();
         }
     });
