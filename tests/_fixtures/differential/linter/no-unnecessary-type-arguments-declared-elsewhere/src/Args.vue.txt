@@ -1,9 +1,21 @@
 <script setup lang="ts">
-import { Explicit, host, type Option, type Required, Store, load, overloaded } from "./types";
+import {
+  type AnyOption,
+  Explicit,
+  host,
+  type Option,
+  type Required,
+  Store,
+  load,
+  overloaded,
+} from "./types";
 import * as types from "./types";
 import { useLibraryRef, useTemplateRef } from "generic-library";
 
 type Local<T = unknown> = T;
+interface AnyBox<T = any> {
+  value: T;
+}
 
 const importedOption: Option<unknown> = { value: undefined };
 const importedLoad = load<unknown>();
@@ -16,6 +28,9 @@ const libraryRef = useLibraryRef<unknown>("el");
 const templateRef = useTemplateRef<unknown>("el");
 const qualified: types.Option<unknown> = { value: undefined };
 class Derived extends Store<string> {}
+const anyImported: AnyOption<any> = { value: 1 };
+const anyLocal: AnyBox<any> = { value: 1 };
+declare const anyGenerator: Generator<number, any, any>;
 
 const changed: Option<string> = { value: "kept" };
 const required: Required<unknown> = { value: undefined };
@@ -23,8 +38,11 @@ const explicit = new Explicit<string>("kept");
 const specific = document.querySelector<HTMLElement>("main");
 const typedRef = useLibraryRef<HTMLElement>("el");
 const keyed = useLibraryRef<unknown, "el">("el");
+const anyForUnknown: Option<any> = { value: 1 };
+const unknownForAny: AnyBox<unknown> = { value: 1 };
+declare const unknownNext: Generator<number, any, unknown>;
 </script>
 
 <template>
-  <p ref="el">{{ importedOption.value }} {{ importedLoad }} {{ importedStore.value }} {{ importedOverload }} {{ importedMethod }} {{ localValue }} {{ element }} {{ libraryRef }} {{ templateRef }} {{ qualified.value }} {{ Derived }} {{ changed.value }} {{ required.value }} {{ explicit.value }} {{ specific }} {{ typedRef }} {{ keyed }}</p>
+  <p ref="el">{{ importedOption.value }} {{ importedLoad }} {{ importedStore.value }} {{ importedOverload }} {{ importedMethod }} {{ localValue }} {{ element }} {{ libraryRef }} {{ templateRef }} {{ qualified.value }} {{ Derived }} {{ changed.value }} {{ required.value }} {{ explicit.value }} {{ specific }} {{ typedRef }} {{ keyed }} {{ anyImported.value }} {{ anyLocal.value }} {{ anyGenerator }} {{ anyForUnknown.value }} {{ unknownForAny.value }} {{ unknownNext }}</p>
 </template>

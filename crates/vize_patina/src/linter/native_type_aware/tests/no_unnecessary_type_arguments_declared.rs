@@ -76,11 +76,20 @@ fn defaults_declared_outside_the_script_match_typescript_eslint() {
         "useTemplateRef<unknown>(",
         "types.Option<unknown>",
         "extends Store<string>",
+        "AnyOption<any>",
+        "AnyBox<any>",
+        "Generator<number, any, any>",
     ]
     .map(|needle| {
+        // The last argument of the list: after `<` or the last `, `.
         let start = SOURCE.find(needle).expect("reported use");
-        let open = needle.find('<').expect("type argument list") + 1;
         let close = needle.find('>').expect("type argument list");
+        let list = needle.get(..close).expect("type argument list");
+        let open = list.rfind(['<', ',']).expect("type argument list") + 1;
+        let open = open
+            + list
+                .get(open..)
+                .map_or(0, |last| last.len() - last.trim_start().len());
         ((start + open) as u32, (start + close) as u32)
     });
     let mut found = result

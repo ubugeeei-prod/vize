@@ -5,7 +5,7 @@
 //! of the name) and compares `checker.getTypeAtLocation(param.default)` with
 //! the argument. The declaration and its type parameters are read from the
 //! checker's own syntax tree of the declaring file.
-use super::checker::{CONSTRUCT, Checker, flags};
+use super::checker::{CONSTRUCT, Checker};
 use super::{Located, Span};
 use crate::linter::corsa_session::boolean::{CheckerSyntax, syntax_kind};
 use corsa::api::{NodeHandle, SymbolResponse, TypeResponse};
@@ -94,9 +94,7 @@ async fn check(
         });
     };
     let default = default_type(checker, default, memo).await?;
-    // Like the local comparison: an error-typed pair is no proof.
-    let same = (argument.flags | default.flags) & flags::ANY == 0
-        && checker.same_type(&argument, &default).await;
+    let same = checker.same_type(&argument, &default).await;
     Some(DeclaredDefault {
         parameter_count,
         has_default: true,

@@ -23200,12 +23200,12 @@
           {
             "path": "src/Args.vue.txt",
             "role": "issue-reported-reproduction-and-maintainer-controls",
-            "sha256": "3da5ddc49786a13d7e43822e4a438f48cd74387b92034ad540071538105d9c83"
+            "sha256": "1e6790b58f6d29ce650da1558b057a9beb7cb55004ee1cb7f877dcbbe7d34abd"
           },
           {
             "path": "src/types.ts.txt",
             "role": "issue-authored-support-module",
-            "sha256": "668e0b79b9ca080e775aae6ee1d921818502e15b88975fc4777bb63e44717977"
+            "sha256": "b967ba0b0d1a85fd62775e6c977891f16bc738de46e6384fcc0e5e6ea21684c7"
           },
           {
             "path": "generic-library/package.json.txt",

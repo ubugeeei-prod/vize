@@ -2,6 +2,10 @@ export interface Option<T = unknown> {
   value: T;
 }
 
+export interface AnyOption<T = any> {
+  value: T;
+}
+
 export function load<T = unknown>(): T | undefined {
   return undefined;
 }

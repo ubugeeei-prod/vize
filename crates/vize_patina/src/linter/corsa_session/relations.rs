@@ -435,13 +435,9 @@ pub(super) async fn answer(
             located.type_node(translate(*argument)),
             located.type_node(translate(*default)),
         ) {
-            // A bare name in type position can type as the error type; two
-            // of those are not proof the argument is the default.
-            (Some(argument), Some(default))
-                if (argument.flags | default.flags) & flags::ANY == 0 =>
-            {
-                Some(checker.same_type(argument, default).await)
-            }
+            // typescript-eslint compares type identity only, so `any` (or
+            // the error type) on both sides is the default too.
+            (Some(argument), Some(default)) => Some(checker.same_type(argument, default).await),
             _ => None,
         };
         reply.defaults.push(value);
