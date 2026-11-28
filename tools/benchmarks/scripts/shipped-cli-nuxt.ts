@@ -1,7 +1,6 @@
 /** Qualify retained release CLIs against one frozen Nuxt consumer without rebuilding either side. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
   chmodSync,
   copyFileSync,
@@ -16,164 +15,41 @@ import {
 import { arch, cpus, platform, release } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gunzipSync } from "node:zlib";
 import { publish } from "./shipped-cli-nuxt-report.ts";
 
-const fixture = fileURLToPath(
-  new URL("../../../tests/_fixtures/tooling/shipped-cli-nuxt/", import.meta.url),
-);
-export const labels = ["base", "head", "base-twin", "head-twin"] as const;
-type Label = (typeof labels)[number];
-type Output = {
-  fileCount: number;
-  errorCount: number;
-  warningCount: number;
-  files: unknown[];
-  programs: Array<{ files: string[] }>;
-};
-type Snapshot = {
-  files: Record<string, string>;
-  expectedOutput: Output;
-  programInputSha256: Record<string, string>;
-};
-export type Receipt = ReturnType<typeof readReceipt>;
-export type RecordRow = {
-  index: number;
-  label: Label;
-  elapsed: number;
-  user: number;
-  system: number;
-  maxRssKiB: number;
-  outputSha256: string;
-};
-
-export const sha256 = (bytes: string | Uint8Array) =>
-  createHash("sha256").update(bytes).digest("hex");
-const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8"));
-const writeJson = (path: string, value: unknown) =>
-  writeFileSync(path, JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
-function readReceipt() {
-  return readJson(join(fixture, "receipt.json")) as {
-    scope: string;
-    originalProject: string;
-    originalDependencies: string;
-    snapshotSha256: string;
-    snapshotJsonSha256: string;
-    lockSha256: string;
-    packageSha256: string;
-    fixtureFileCount: number;
-    reportedFileCount: number;
-    programInputCount: number;
-    runtime: Record<string, string>;
-    producer: {
-      repository: string;
-      runId: number;
-      driverSha: string;
-      workflow: string;
-      artifactId: number;
-      artifactName: string;
-      artifactSha256: string;
-      baseSha: string;
-      headSha: string;
-      sourceDateEpoch: string;
-      target: string;
-      cli: Record<"base" | "head", { sha256: string; sizeBytes: number }>;
-    };
-  };
-}
-
-export function loadSnapshot(): { receipt: Receipt; snapshot: Snapshot } {
-  const receipt = readReceipt();
-  const compressed = readFileSync(join(fixture, "snapshot.json.gz"));
-  assert.equal(sha256(compressed), receipt.snapshotSha256, "frozen snapshot digest differs");
-  const json = gunzipSync(compressed);
-  assert.equal(sha256(json), receipt.snapshotJsonSha256, "frozen snapshot JSON digest differs");
-  assert.equal(
-    sha256(readFileSync(join(fixture, "package-lock.json"))),
-    receipt.lockSha256,
-    "frozen lock digest differs",
-  );
-  assert.equal(
-    sha256(readFileSync(join(fixture, "package.json"))),
-    receipt.packageSha256,
-    "frozen package digest differs",
-  );
-  const snapshot = JSON.parse(json.toString("utf8")) as Snapshot;
-  assert.equal(Object.keys(snapshot.files).length, receipt.fixtureFileCount);
-  assert.equal(Object.keys(snapshot.programInputSha256).length, receipt.programInputCount);
-  assert.equal(snapshot.expectedOutput.fileCount, receipt.reportedFileCount);
-  assert.equal(snapshot.expectedOutput.programs.length, 1);
-  assert.equal(snapshot.expectedOutput.programs[0].files.length, receipt.programInputCount);
-  for (const path of [...Object.keys(snapshot.files), ...Object.keys(snapshot.programInputSha256)])
-    safeRelative(path);
-  return { receipt, snapshot };
-}
-
-export function safeRelative(path: string) {
-  assert.ok(
-    path && !path.startsWith("/") && !path.includes("\\") && !path.split("/").includes(".."),
-    `unsafe snapshot path: ${path}`,
-  );
-}
-
-function paths(work: string) {
-  return {
-    project: join(work, "vize-p1-nuxt-scale-consumer"),
-    dependencies: join(work, "vize-p1-nuxt-final-consumer"),
-  };
-}
-
-/** The only content substitutions are the two captured absolute filesystem roots. */
-export function relocate(
-  text: string,
-  receipt: Pick<Receipt, "originalProject" | "originalDependencies">,
-  work: string,
-  reverse = false,
-) {
-  const current = paths(work);
-  const replacements = [
-    [receipt.originalProject, current.project],
-    [receipt.originalDependencies, current.dependencies],
-  ];
-  for (const [original, actual] of replacements)
-    text = text.replaceAll(reverse ? actual : original, reverse ? original : actual);
-  return text;
-}
-
-export function validateOutput(
-  actual: unknown,
-  snapshot: Snapshot,
-  receipt: Receipt,
-  work: string,
-) {
-  const restored = JSON.parse(relocate(JSON.stringify(actual), receipt, work, true));
-  assert.deepEqual(
-    restored,
-    snapshot.expectedOutput,
-    "complete JSON diagnostic/configuration/program-input oracle differs",
-  );
-}
-
-export function validateProducer(
-  run: Record<string, unknown>,
-  artifact: Record<string, unknown>,
-  receipt: Receipt,
-) {
-  const p = receipt.producer;
-  assert.equal(run.id, p.runId, "producer run differs");
-  assert.equal(run.head_sha, p.driverSha, "producer source differs");
-  assert.equal(run.path, p.workflow, "producer workflow differs");
-  assert.equal(run.event, "workflow_dispatch", "producer event differs");
-  assert.equal(run.conclusion, "success", "producer did not pass");
-  assert.equal(run.status, "completed", "producer is incomplete");
-  assert.equal(artifact.id, p.artifactId, "artifact ID differs");
-  assert.equal(artifact.name, p.artifactName, "artifact name differs");
-  assert.equal(artifact.expired, false, "artifact expired; rebuild and review a new receipt");
-  assert.equal(artifact.digest, `sha256:${p.artifactSha256}`, "artifact digest differs");
-  const owner = artifact.workflow_run as Record<string, unknown>;
-  assert.equal(owner.id, p.runId, "artifact producer run differs");
-  assert.equal(owner.head_sha, p.driverSha, "artifact producer source differs");
-}
+import {
+  labels,
+  balancedOrder,
+  type Label,
+  type Snapshot,
+  type Receipt,
+  type RecordRow,
+} from "./shipped-cli-nuxt-protocol.ts";
+import {
+  fixture,
+  loadSnapshot,
+  paths,
+  readJson,
+  writeJson,
+  sha256,
+  relocate,
+  validateOutput,
+  validateProducer,
+} from "./shipped-cli-nuxt-capsule.ts";
+export {
+  labels,
+  balancedOrder,
+  type Receipt,
+  type RecordRow,
+} from "./shipped-cli-nuxt-protocol.ts";
+export {
+  loadSnapshot,
+  relocate,
+  safeRelative,
+  sha256,
+  validateOutput,
+  validateProducer,
+} from "./shipped-cli-nuxt-capsule.ts";
 
 async function download(out: string, receipt: Receipt) {
   mkdirSync(out, { recursive: true });
@@ -186,7 +62,12 @@ async function download(out: string, receipt: Receipt) {
   const get = async (suffix: string) => {
     const response = await fetch(api + suffix, { headers });
     assert.ok(response.ok, `GitHub metadata request failed (${response.status})`);
-    return response.json();
+    const payload: unknown = await response.json();
+    assert.ok(
+      payload !== null && typeof payload === "object" && !Array.isArray(payload),
+      "invalid GitHub metadata object",
+    );
+    return payload as Record<string, unknown>;
   };
   const [run, artifact] = await Promise.all([
     get(`/actions/runs/${p.runId}`),
@@ -378,23 +259,6 @@ export function assertInputs(work: string, receipt: Receipt, snapshot: Snapshot)
   return hashes;
 }
 
-export function balancedOrder(): Label[] {
-  return Array.from(
-    { length: 4 },
-    () =>
-      [
-        "base",
-        "head",
-        "head-twin",
-        "base-twin",
-        "head-twin",
-        "base-twin",
-        "base",
-        "head",
-      ] as Label[],
-  ).flat();
-}
-
 function measure(work: string, out: string, receipt: Receipt, snapshot: Snapshot) {
   assert.equal(platform(), "linux");
   assert.equal(arch(), "x64");
@@ -480,5 +344,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     extractImages(out, receipt);
     prepare(work, out, receipt, snapshot);
   } else if (mode === "--measure") measure(work, out, receipt, snapshot);
-  else assert.fail("expected --download, --prepare, or --measure");
+  else if (mode === "--replay") {
+    const { replay } = await import("./shipped-cli-nuxt-replay.ts");
+    replay(out);
+  } else assert.fail("expected --download, --prepare, --measure, or --replay");
 }

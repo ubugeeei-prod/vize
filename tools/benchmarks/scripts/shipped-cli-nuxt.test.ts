@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { publish } from "./shipped-cli-nuxt-report.ts";
+import { loadRetainedCampaign, verifyRetainedCampaign } from "./shipped-cli-nuxt-replay.ts";
 import {
   assertInputs,
   balancedOrder,
@@ -154,4 +156,85 @@ void test("snapshot extraction refuses traversal and absolute paths", () => {
   for (const path of ["../escape", "/escape", "a/../escape", "a\\escape", ""])
     assert.throws(() => safeRelative(path));
   assert.doesNotThrow(() => safeRelative(".nuxt/types/components.d.ts"));
+});
+
+void test("report publication persists the complete evidence result and the incomplete state", () => {
+  const out = mkdtempSync(join(tmpdir(), "shipped-cli-nuxt-report-"));
+  const previousSummary = process.env.GITHUB_STEP_SUMMARY;
+  process.env.GITHUB_STEP_SUMMARY = join(out, "step-summary.md");
+  try {
+    const { receipt } = loadSnapshot();
+    const records = balancedOrder().map((label, index) => ({
+      index,
+      label,
+      elapsed: 1,
+      user: 2,
+      system: 1,
+      maxRssKiB: 100,
+      outputSha256: "a".repeat(64),
+    }));
+    publish(out, receipt, records, true);
+    const result = JSON.parse(readFileSync(join(out, "result.json"), "utf8"));
+    assert.equal(result.complete, true);
+    assert.deepEqual(result.records, records);
+    assert.match(
+      readFileSync(join(out, "summary.md"), "utf8"),
+      /equal in all 4 warmups and 32 measured runs/,
+    );
+    publish(out, receipt, [], false);
+    assert.equal(JSON.parse(readFileSync(join(out, "result.json"), "utf8")).complete, false);
+    assert.match(
+      readFileSync(join(out, "summary.md"), "utf8"),
+      /incomplete; no qualification credit/,
+    );
+  } finally {
+    if (previousSummary === undefined) delete process.env.GITHUB_STEP_SUMMARY;
+    else process.env.GITHUB_STEP_SUMMARY = previousSummary;
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+void test("the original retained campaign verifies all source/image/input/output/time links", () => {
+  const { campaign, snapshot, entries } = loadRetainedCampaign();
+  const verified = verifyRetainedCampaign(entries, campaign, snapshot);
+  assert.equal(verified.records.length, 32);
+  assert.equal(new Set(verified.records.map((row) => row.outputSha256)).size, 1);
+  for (const [file, change] of [
+    [
+      "00-base.stdout.json",
+      (value: unknown) => {
+        (value as { errorCount: number }).errorCount = 1;
+      },
+    ],
+    [
+      "progress.json",
+      (value: unknown) => {
+        (value as Array<{ elapsed: number }>)[0].elapsed += 1;
+      },
+    ],
+    [
+      "inputs-after.json",
+      (value: unknown) => {
+        (value as Record<string, string>)["nuxt.config.ts"] = "0".repeat(64);
+      },
+    ],
+    [
+      "images/head/identity.json",
+      (value: unknown) => {
+        (value as { source: string }).source = "0".repeat(40);
+      },
+    ],
+  ] as const) {
+    const altered = new Map(entries);
+    const value = JSON.parse(altered.get(file)!.toString("utf8"));
+    change(value);
+    altered.set(file, Buffer.from(JSON.stringify(value)));
+    assert.throws(() => verifyRetainedCampaign(altered, campaign, snapshot), file);
+  }
+  const missing = new Map(entries);
+  missing.delete("31-head.stdout.json");
+  assert.throws(
+    () => verifyRetainedCampaign(missing, campaign, snapshot),
+    /missing campaign record/,
+  );
 });

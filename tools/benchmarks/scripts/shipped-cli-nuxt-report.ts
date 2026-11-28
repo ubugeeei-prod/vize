@@ -1,5 +1,6 @@
 import { appendFileSync, writeFileSync } from "node:fs";
-import { labels, type Receipt, type RecordRow } from "./shipped-cli-nuxt.ts";
+import { join } from "node:path";
+import { labels, type Receipt, type RecordRow } from "./shipped-cli-nuxt-protocol.ts";
 
 const median = (values: number[]) => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -19,8 +20,8 @@ export function publish(out: string, receipt: Receipt, records: RecordRow[], com
     "",
     `Complete output and all 1,107 program inputs: **${complete ? "equal in all 4 warmups and 32 measured runs" : "incomplete; no qualification credit"}**.`,
     "",
-    "| Independent image | Runs | Wall median (s) | User median (s) | System median (s) | Peak RSS median (KiB) |",
-    "| --- | ---: | ---: | ---: | ---: | ---: |",
+    "| Independent image | Runs | Wall median (s) | Total CPU median (s) | User median (s) | System median (s) | GNU time maximum RSS median (KiB) |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
   ];
   const medians: Record<string, Record<string, number>> = {};
   for (const label of labels) {
@@ -32,9 +33,10 @@ export function publish(out: string, receipt: Receipt, records: RecordRow[], com
         median(rows.map((r) => r[key as "elapsed"])),
       ]),
     );
+    medians[label].cpuTotal = median(rows.map((r) => r.user + r.system));
     const m = medians[label];
     lines.push(
-      `| ${label} | ${rows.length} | ${m.elapsed.toFixed(4)} | ${m.user.toFixed(4)} | ${m.system.toFixed(4)} | ${m.maxRssKiB.toFixed(0)} |`,
+      `| ${label} | ${rows.length} | ${m.elapsed.toFixed(4)} | ${m.cpuTotal.toFixed(4)} | ${m.user.toFixed(4)} | ${m.system.toFixed(4)} | ${m.maxRssKiB.toFixed(0)} |`,
     );
   }
   if (complete) {
