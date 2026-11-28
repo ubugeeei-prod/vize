@@ -1,0 +1,97 @@
+//! Individual operation code generators.
+//!
+//! Each function emits JavaScript code for a specific IR operation node.
+
+mod component;
+pub(super) use component::{component_resolution_var, emit_component_resolution};
+mod component_props;
+mod component_slots;
+mod directives;
+mod dom;
+mod structural_slots;
+pub(crate) use dom::{set_html_call, set_prop_call, set_text_call};
+mod block_shape;
+mod events;
+mod for_loop;
+mod if_block;
+mod insertion;
+pub(super) mod jsx_children;
+mod keep_alive_map;
+mod key;
+mod match_scope;
+mod merged_props;
+pub(crate) use merged_props::svg_argument;
+mod refs;
+mod slots;
+
+pub(crate) use merged_props::merged_props_call;
+
+use crate::ir::OperationNode;
+use vize_carton::FxHashMap;
+
+use super::context::GenerateContext;
+
+/// Generate operation
+pub(crate) fn generate_operation(
+    ctx: &mut GenerateContext,
+    op: &OperationNode<'_>,
+    element_template_map: &FxHashMap<usize, usize>,
+) {
+    match op {
+        OperationNode::SetProp(set_prop) => {
+            dom::generate_set_prop(ctx, set_prop);
+        }
+        OperationNode::SetDynamicProps(set_props) => {
+            dom::generate_set_dynamic_props(ctx, set_props);
+        }
+        OperationNode::SetMergedProps(merged) => {
+            merged_props::generate_set_merged_props(ctx, merged);
+        }
+        OperationNode::SetText(set_text) => {
+            dom::generate_set_text(ctx, set_text);
+        }
+        OperationNode::SetJsxChildren(children) => {
+            jsx_children::generate(ctx, children);
+        }
+        OperationNode::SetEvent(set_event) => {
+            events::generate_set_event(ctx, set_event);
+        }
+        OperationNode::SetHtml(set_html) => {
+            dom::generate_set_html(ctx, set_html);
+        }
+        OperationNode::SetTemplateRef(set_ref) => {
+            refs::generate_set_template_ref(ctx, set_ref);
+        }
+        OperationNode::InsertNode(insert) => {
+            refs::generate_insert_node(ctx, insert);
+        }
+        OperationNode::PrependNode(prepend) => {
+            refs::generate_prepend_node(ctx, prepend);
+        }
+        OperationNode::Directive(directive) => {
+            directives::generate_directive(ctx, directive);
+        }
+        OperationNode::If(if_node) => {
+            if_block::generate_if(ctx, if_node, element_template_map);
+        }
+        OperationNode::For(for_node) => {
+            for_loop::generate_for(ctx, for_node, element_template_map);
+        }
+        OperationNode::Key(node) => key::generate_key(ctx, node, element_template_map),
+        OperationNode::CreateComponent(component) => {
+            component::generate_create_component(ctx, component, element_template_map);
+        }
+        OperationNode::SlotOutlet(slot) => {
+            slots::generate_slot_outlet(ctx, slot);
+        }
+        OperationNode::GetTextChild(get_text) => {
+            refs::generate_get_text_child(ctx, get_text);
+        }
+        OperationNode::ChildRef(child_ref) => {
+            refs::generate_child_ref(ctx, child_ref);
+        }
+        OperationNode::NextRef(next_ref) => {
+            refs::generate_next_ref(ctx, next_ref);
+        }
+    }
+}

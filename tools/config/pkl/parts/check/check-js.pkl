@@ -52,6 +52,8 @@ steps = new Listing {
     uses = "./.github/actions/setup-ush"
   }
   ci.command("Check Pkl repository configuration", "node tools/commands/generate/repository-config.ts --check")
+  // A pull request that edits a byte-pinned source fails here with the custody procedure.
+  ci.command("Check byte custody", "node tools/ci/commands/byte-custody.ts --check")
   new Dynamic {
     name = "Check JS/TS"
     `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
