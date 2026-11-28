@@ -1,0 +1,30 @@
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
+
+export default defineComponent({
+  props: {
+    label: { type: String, default: '' },
+  },
+  setup() {
+    const count = ref(0)
+    return { count }
+  },
+  data() {
+    return { open: false }
+  },
+  computed: {
+    upper(): string {
+      return this.label.toUpperCase()
+    },
+  },
+  methods: {
+    cx(key: string): string {
+      return `p-${key}`
+    },
+  },
+})
+</script>
+
+<template>
+  <div><slot /></div>
+</template>

@@ -69,14 +69,15 @@ impl<'a> IrregularDefault<'a> {
         &self,
         line: &str,
         start: usize,
-        const_assertions: &[usize],
+        const_assertions: &[(usize, String)],
     ) -> Option<ProjectedLine> {
         let end = start + line.len();
         let declares_alias = start <= self.export.start && self.export.start < end;
         let mut edits = Vec::new();
-        for &offset in const_assertions {
+        for (offset, assertion) in const_assertions {
+            let offset = *offset;
             if start < offset && offset <= end {
-                edits.push((offset - start..offset - start, " as const"));
+                edits.push((offset - start..offset - start, assertion.as_str()));
             }
         }
         for (keyword, mask) in [(&self.export, "      "), (&self.default, "       ")] {

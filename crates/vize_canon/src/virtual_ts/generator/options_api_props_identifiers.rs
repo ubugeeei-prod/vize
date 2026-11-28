@@ -6,18 +6,24 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String};
 
-use super::options_api::{component_options_from_program, option_expression_property};
+use super::options_api::{
+    component_options_from_program, extends_base_assertion, option_expression_property,
+};
 use super::options_api_support::is_safe_value_identifier;
 
+/// Type assertions spliced after authored Options API expressions, as
+/// `(offset, text)` in offset order: `as const` on the initializer of an
+/// identifier `props:` option, and the cast of an `extends:` base imported
+/// from another SFC (see `extends_base_assertion`).
 pub(super) struct PropsConstAssertions {
-    offsets: Vec<usize>,
+    offsets: Vec<(usize, String)>,
     index: usize,
 }
 
 impl PropsConstAssertions {
     pub(super) fn new(script: &str, options_api: bool) -> Self {
         let offsets = if options_api {
-            find_const_assertion_offsets(script)
+            find_assertion_offsets(script)
         } else {
             Vec::new()
         };
@@ -31,10 +37,10 @@ impl PropsConstAssertions {
         }
         let mut output = String::default();
         let mut copied_until = 0usize;
-        for &offset in offsets {
+        for (offset, assertion) in offsets {
             let column = offset - line_start;
             output.push_str(line.get(copied_until..column)?);
-            output.push_str(" as const");
+            output.push_str(assertion);
             copied_until = column;
         }
         output.push_str(line.get(copied_until..)?);
@@ -43,17 +49,21 @@ impl PropsConstAssertions {
 
     /// Consume insertions owned by one authored line before other projections
     /// change its byte offsets.
-    pub(super) fn take_line_offsets(&mut self, line_start: usize, line_end: usize) -> &[usize] {
+    pub(super) fn take_line_offsets(
+        &mut self,
+        line_start: usize,
+        line_end: usize,
+    ) -> &[(usize, String)] {
         while self
             .offsets
             .get(self.index)
-            .is_some_and(|&offset| offset <= line_start)
+            .is_some_and(|&(offset, _)| offset <= line_start)
         {
             self.index += 1;
         }
 
         let first = self.index;
-        while let Some(&offset) = self.offsets.get(self.index) {
+        while let Some(&(offset, _)) = self.offsets.get(self.index) {
             if offset > line_end {
                 break;
             }
@@ -73,7 +83,7 @@ impl PropsConstAssertions {
     }
 }
 
-fn find_const_assertion_offsets(script: &str) -> Vec<usize> {
+fn find_assertion_offsets(script: &str) -> Vec<(usize, String)> {
     if !script.contains("export") || !script.contains("default") {
         return Vec::new();
     }
@@ -86,17 +96,19 @@ fn find_const_assertion_offsets(script: &str) -> Vec<usize> {
     let Some(options) = component_options_from_program(&parsed.program) else {
         return Vec::new();
     };
+    let mut offsets: Vec<(usize, String)> = extends_base_assertion(&parsed.program, options)
+        .into_iter()
+        .collect();
     let Some(props) = option_expression_property(options, "props") else {
-        return Vec::new();
+        return offsets;
     };
 
     let mut prop_bindings = FxHashSet::default();
     collect_props_identifier_names(props, &mut prop_bindings);
     if prop_bindings.is_empty() {
-        return Vec::new();
+        return offsets;
     }
 
-    let mut offsets = Vec::new();
     for statement in parsed.program.body.iter() {
         let Statement::VariableDeclaration(declaration) = statement else {
             continue;
@@ -115,7 +127,7 @@ fn find_const_assertion_offsets(script: &str) -> Vec<usize> {
                 continue;
             };
             if let Some(offset) = const_assertion_offset_for_props_initializer(init) {
-                offsets.push(offset);
+                offsets.push((offset, String::from(" as const")));
             }
         }
     }
