@@ -8,7 +8,6 @@ use crate::batch::{
 
 mod aria_ownership;
 mod aria_witness;
-mod checker_globals;
 
 fn packet(options: ContentMapperTransformOptions) -> serde_json::Value {
     let source = "<script setup lang='ts'>const props = defineProps<{label: string}>();</script>\n<template>{{ props.label }}</template>";

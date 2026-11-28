@@ -65,27 +65,3 @@ fn installed_virtual_module_points_helpers_at_the_package() {
     let sdk = InstalledSdk::new();
     sdk.assert_projection_of("<template><main /></template>", Mode::Shared, json!({}));
 }
-
-#[test]
-fn declaration_emitting_projects_embed_helpers_beside_installed_checker_globals() {
-    let sdk = InstalledSdk::new();
-    for compiler_options in [
-        json!({ "declaration": true }),
-        json!({ "declaration": true, "emitDeclarationOnly": true }),
-        json!({ "composite": true }),
-    ] {
-        sdk.assert_projection_with_options(Mode::Declarations, compiler_options);
-    }
-    sdk.assert_projection_with_options(
-        Mode::Shared,
-        json!({ "declaration": true, "noEmit": true }),
-    );
-    sdk.assert_projection_with_options(Mode::Shared, json!({ "declaration": false }));
-}
-
-#[test]
-fn declaration_emitting_projects_without_an_installed_package_stay_embedded() {
-    let sdk = InstalledSdk::new();
-    std::fs::remove_file(sdk.package.join("package.json")).unwrap();
-    sdk.assert_projection_with_options(Mode::Inline, json!({ "declaration": true }));
-}

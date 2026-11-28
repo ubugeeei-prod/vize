@@ -71,12 +71,6 @@ pub(crate) struct VirtualTsCheckOptions {
     /// The host reports every mapped diagnostic (Content Mapper): add
     /// companion checks for values the whole-props literal leaves unchecked.
     pub(crate) unchecked_prop_values: bool,
-    /// A Content Mapper module that embeds its helpers loads the checker's
-    /// global policy (`ImportMeta`, JSX attributes) from the installed
-    /// package through a type-only import that declaration emit drops,
-    /// instead of declaring it: an emitted declaration never augments the
-    /// globals of its consumer.
-    pub(crate) checker_globals_import: bool,
 }
 
 impl VirtualTsCheckOptions {
@@ -152,7 +146,6 @@ impl Default for VirtualTsCheckOptions {
             #[cfg(feature = "native")]
             strict_css_modules: false,
             unchecked_prop_values: false,
-            checker_globals_import: false,
         }
     }
 }

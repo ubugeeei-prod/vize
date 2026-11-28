@@ -33,7 +33,14 @@ pub(super) fn emit_module_preamble(
             Some(ComponentHelperModule::Types)
         ) {
             // Pulls the checker globals and helpers into the host program once.
-            ts.push_str(checker_globals_import(options));
+            // Declaration emit drops this import, so consumers see only helpers.
+            // Like vue-tsc, only a file that leaves `checkUnknownProps` off
+            // declares the props fallback (#11628).
+            ts.push_str(if options.check_options.check_unknown_props {
+                "import type {} from \"vize/virtual-ts-checker-strict\";\n"
+            } else {
+                "import type {} from \"vize/virtual-ts-checker\";\n"
+            });
         } else {
             // Program helpers and global augmentation are shared once per project.
             ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
@@ -57,10 +64,6 @@ pub(super) fn emit_module_preamble(
             // turning clean authored files into suggestion-only diagnostics.
             ts.push_str(OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS);
         }
-    } else if options.check_options.checker_globals_import {
-        // The helpers below stay in the module, where declaration emit keeps
-        // the ones its public surface names; the globals stay out of it.
-        ts.push_str(checker_globals_import(options));
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);
         ts.push('\n');
@@ -76,17 +79,6 @@ pub(super) fn emit_module_preamble(
         );
     }
     emit_slot_payload_helpers(ts, summary, !options.hoist_shared_preamble);
-}
-
-/// Declaration emit drops this type-only import, so an emitted declaration
-/// never brings the checker's globals into its consumer. Like vue-tsc, only a
-/// file that leaves `checkUnknownProps` off declares the props fallback.
-fn checker_globals_import(options: VirtualTsGenerationOptions<'_>) -> &'static str {
-    if options.check_options.check_unknown_props {
-        "import type {} from \"vize/virtual-ts-checker-strict\";\n"
-    } else {
-        "import type {} from \"vize/virtual-ts-checker\";\n"
-    }
 }
 
 /// Standalone native documents cannot rely on the program-wide ambient file.

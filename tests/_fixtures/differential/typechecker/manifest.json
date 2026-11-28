@@ -66503,50 +66503,6 @@
       }
     },
     {
-      "id": "typechecker/regression/content-mapper-self-contained-declarations",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "content-mapper-self-contained-declarations/Greeting.vue.txt",
-          "sha256": "bde40bc1fa436d75cfd6923b25190cdf0bc3b37e3ac301d1b6b097b5ac822c92",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "content-mapper-self-contained-declarations/Popover.vue.txt",
-          "sha256": "9c2b8ba8af21723dc8ff0472b5e810469cc990362ad4593d196632866b3a1f07",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "content-mapper-self-contained-declarations/Probe.vue.txt",
-          "sha256": "298524f96112bdc79a0e5c8b1e0c7542305496f96553c2e8d376321adfcb69e8",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "content-mapper-self-contained-declarations/tsconfig.json.txt",
-          "sha256": "d503a19d3698afa57cfca4144e18786bc6a0be18e0494e0ddfdf1e0a10a0f822",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper_declaration_fallthrough_cli::mapper_declarations_of_emitting_projects_need_only_vue, content_mapper::shared_helper_tests::declaration_emitting_projects_embed_helpers_beside_installed_checker_globals and helper_modes::checker_globals; a project whose compiler options emit declarations (declaration or composite, without noEmit) gets the projection that declares its helpers in each module and loads the checker globals through the installed package's type-only import, so the declarations tsc --runExternalCode or tsdown emit name no Vize module and no global augmentation. A vue-tsc consumer without Vize installed and without skipLibCheck types the props, events and slots of a props-only and a scoped-slot component and reports exactly the two wrong prop values; the shared-module declarations failed it with TS2304 on every helper. Input-only registration; no native parity claim."
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/regression/content-mapper-shipped-declaration-12968",
       "state": "active",
       "targets": [
