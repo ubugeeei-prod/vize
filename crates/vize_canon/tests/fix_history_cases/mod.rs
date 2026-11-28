@@ -10,6 +10,7 @@ pub(super) mod batch_diagnostic_subspan_mapping_3201;
 pub(super) mod boolean_prop_normalization_2475;
 pub(super) mod branded_ref_template_types_2957;
 pub(super) mod camel_case_sfc_prop_checks_2169;
+pub(super) mod check_option_probe_mode_13300;
 pub(super) mod check_unknown_props_config_4918;
 pub(super) mod class_component_decorators_1434;
 pub(super) mod class_component_prop_usage_contracts_3318;

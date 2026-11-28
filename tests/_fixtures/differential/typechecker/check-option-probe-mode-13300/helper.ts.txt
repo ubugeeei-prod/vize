@@ -1,0 +1,1 @@
+export function label(): string { return 'ready'; }
