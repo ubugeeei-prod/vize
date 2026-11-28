@@ -28,6 +28,13 @@ type Manifest = {
   capture: unknown;
   qualification: unknown;
   history?: { path: string; sha256: string }[];
+  amendments?: {
+    source: string;
+    successor: string;
+    previousSha256: string;
+    successorSha256: string;
+    scope: string;
+  }[];
   records: RecordRow[];
 };
 const manifest = JSON.parse(
@@ -121,8 +128,38 @@ test("JSX child successors retain original goldens, exact observed pointers and 
       path: "tests/_fixtures/differential/jsx/child-values-6890-golden-successors.f7c306d.json",
       sha256: "8ac88305e4ad75ba58a3bddda61ceefa93a5f6ce522d7edae6df90ea6a3895f9",
     },
+    {
+      path: "tests/_fixtures/differential/jsx/child-values-6890-golden-successors.735d38e.json",
+      sha256: "7a4f105810fbe54a811150c3a07da3e6e5ca1b87ca83699921357b6b766abc6c",
+    },
   ]);
-  assert.equal(hash(read(manifest.history![0].path)), manifest.history![0].sha256);
+  for (const layer of manifest.history!) assert.equal(hash(read(layer.path)), layer.sha256);
+  // The 735d38e capture layer stays byte-exact; later reviewed output changes amend single
+  // successor pins on top of it and may not touch anything else.
+  const captured = JSON.parse(read(manifest.history![1].path).toString()) as Manifest;
+  assert.equal(captured.history?.length, 1);
+  assert.equal(captured.amendments, undefined);
+  const { history: _capturedHistory, ...capturedRest } = captured;
+  const { history: _history, amendments, ...currentRest } = manifest;
+  assert.deepEqual(amendments, [
+    {
+      source: "315cc2d2c689967d321a0411271c1fae7f6134ce",
+      successor:
+        "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890_inert_template.snap",
+      previousSha256: "43eda32bab804cbbf697cc1bc0b3f08f38d5a6e3ad06ca56c286fb125a3f8590",
+      successorSha256: "a7511f4184d4a0653a1e5bdb8693826bf8bf815f2b57f314e7afad5af92ba7ae",
+      scope:
+        "a dynamic Vapor template ref joins the element render effect; child-value code is unchanged",
+    },
+  ]);
+  const amended = structuredClone(capturedRest);
+  for (const amendment of amendments!) {
+    const row = amended.records.find((record) => record.successor === amendment.successor);
+    assert.equal(row?.kind, "snapshot", "amendments re-pin generated snapshots only");
+    assert.equal(row.successorSha256, amendment.previousSha256);
+    row.successorSha256 = amendment.successorSha256;
+  }
+  assert.deepEqual(currentRest, amended);
   const historical = JSON.parse(read(manifest.history![0].path).toString()) as Manifest;
   assert.equal(historical.source, "f7c306ddc05377bcaec46d502d995f30f525aa6b");
   assert.deepEqual(historical.capture, {

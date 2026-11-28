@@ -128,7 +128,7 @@
       "previous": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor.snap",
       "previousSha256": "2683e85e6e5e9a701f4c903d3070149121d5815d94c28ab6e6c9894f061de6e3",
       "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890_inert_template.snap",
-      "successorSha256": "43eda32bab804cbbf697cc1bc0b3f08f38d5a6e3ad06ca56c286fb125a3f8590",
+      "successorSha256": "a7511f4184d4a0653a1e5bdb8693826bf8bf815f2b57f314e7afad5af92ba7ae",
       "captureMember": "vize/vize/crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890.snap.new",
       "runtime": false
     },
@@ -155,6 +155,19 @@
     {
       "path": "tests/_fixtures/differential/jsx/child-values-6890-golden-successors.f7c306d.json",
       "sha256": "8ac88305e4ad75ba58a3bddda61ceefa93a5f6ce522d7edae6df90ea6a3895f9"
+    },
+    {
+      "path": "tests/_fixtures/differential/jsx/child-values-6890-golden-successors.735d38e.json",
+      "sha256": "7a4f105810fbe54a811150c3a07da3e6e5ca1b87ca83699921357b6b766abc6c"
+    }
+  ],
+  "amendments": [
+    {
+      "source": "315cc2d2c689967d321a0411271c1fae7f6134ce",
+      "successor": "crates/vize_atelier_jsx/tests/snapshots/adversarial_snapshots__tsx_syntax_edges_root_fallthrough_8625_vapor_child_values_6890_inert_template.snap",
+      "previousSha256": "43eda32bab804cbbf697cc1bc0b3f08f38d5a6e3ad06ca56c286fb125a3f8590",
+      "successorSha256": "a7511f4184d4a0653a1e5bdb8693826bf8bf815f2b57f314e7afad5af92ba7ae",
+      "scope": "a dynamic Vapor template ref joins the element render effect; child-value code is unchanged"
     }
   ]
 }
