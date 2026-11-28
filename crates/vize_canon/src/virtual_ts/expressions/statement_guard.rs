@@ -36,7 +36,10 @@ pub(super) fn generate_vif_guard_expression(
     let generated_guard = rewritten_guard
         .as_ref()
         .map_or_else(|| guard, |s| s.as_str());
-    let isolated_guard = super::incomplete::isolate_incomplete_expression(generated_guard);
+    // The authored condition owns its syntax errors; narrowing-only copies
+    // of the guard stay repaired.
+    let (isolated_guard, kept_syntax_error) =
+        super::incomplete::isolate_diagnostic_expression_reporting(generated_guard);
     let generated_guard = isolated_guard.as_str();
     let mapping_needle = if isolated_guard.is_owned() {
         isolated_guard.mapped_str()
@@ -61,12 +64,17 @@ pub(super) fn generate_vif_guard_expression(
             (start, ts.len())
         }
     };
+    let mut gen_range = generated_text_range(
+        ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
+        mapping_needle,
+        gen_stmt_start,
+    );
+    if kept_syntax_error {
+        // TypeScript reports the dangling operator at the following `)`.
+        gen_range.end += 1;
+    }
     mappings.push(VizeMapping {
-        gen_range: generated_text_range(
-            ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
-            mapping_needle,
-            gen_stmt_start,
-        ),
+        gen_range,
         src_range: src_start..src_end,
         sub_spans: Vec::new(),
     });

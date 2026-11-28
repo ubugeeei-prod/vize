@@ -131,6 +131,8 @@ fn append_guard_condition(
         .condition_expr_index
         .and_then(|expr_index| exprs.get(expr_index))
     {
+        // TypeScript reports a dangling operator at the following `)`.
+        let gen_end = gen_end + usize::from(super::super::keeps_authored_syntax_error(condition));
         mappings.push(VizeMapping {
             gen_range: gen_start..gen_end,
             src_range: (template_offset + expr.start) as usize

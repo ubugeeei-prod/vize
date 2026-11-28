@@ -64,7 +64,10 @@ pub(crate) use component_props::{
 pub(crate) use generic_props_call::{
     generate_slot_constructor_capture, generate_slot_host_binding,
 };
-pub(crate) use incomplete::isolate_incomplete_expression;
+pub(crate) use incomplete::{
+    isolate_diagnostic_expression_reporting, isolate_incomplete_expression,
+    keeps_authored_syntax_error,
+};
 pub(crate) use model_modifiers::ModelModifierBindings;
 pub(crate) use prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, generated_prop_value, prop_name_source_range,

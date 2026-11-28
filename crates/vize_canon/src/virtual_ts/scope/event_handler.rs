@@ -221,6 +221,16 @@ pub(super) fn generate_event_handler_expressions(
                 ts.push_str(";  // handler expression\n");
                 mapped_start..mapped_end
             };
+            // TypeScript reports a dangling operator at the generated `)` or
+            // `;` after the handler; keep it on the end of the handler.
+            let gen_range = if listener_spans.is_none()
+                && matches!(ts.as_str().as_bytes().get(gen_range.end), Some(b')' | b';'))
+                && crate::virtual_ts::expressions::keeps_authored_syntax_error(content)
+            {
+                gen_range.start..gen_range.end + 1
+            } else {
+                gen_range
+            };
             // The declared identifier receives the handler-shape error, which
             // vue-tsc anchors at the attribute name; the initializer keeps the
             // authored expression so errors inside an inline callback still land

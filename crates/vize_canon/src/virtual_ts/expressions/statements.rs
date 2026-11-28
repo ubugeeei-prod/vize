@@ -337,7 +337,10 @@ fn emit_expression_statement(
         .as_ref()
         .map_or_else(|| statement_expression, |s| s.as_str());
     let native_prop = checks.native_props.get(&(expr.start, expr.end));
-    let isolated_expression = if native_prop.is_some() {
+    // The authored projection of a plain value owns its syntax errors.
+    let owns_syntax_diagnostics = native_prop.is_some()
+        || (!is_component_ref_callback && super::incomplete::owns_syntax_diagnostics(expr.kind));
+    let isolated_expression = if owns_syntax_diagnostics {
         super::incomplete::isolate_diagnostic_expression(generated_expression)
     } else {
         super::incomplete::isolate_incomplete_expression(generated_expression)
@@ -462,7 +465,9 @@ fn emit_expression_statement(
             expr.kind.as_str()
         );
         let start = gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0;
-        Some(start..start + mapped_bounds.1)
+        // TypeScript reports a dangling operator at the generated `)`.
+        let terminator = usize::from(owns_syntax_diagnostics && map_recovery_terminator);
+        Some(start..start + mapped_bounds.1 + terminator)
     };
     if let Some(gen_range) = gen_expr_range {
         // Only verbatim stripped text keeps a byte-for-byte authored relation.
