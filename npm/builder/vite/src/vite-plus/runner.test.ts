@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -272,28 +272,27 @@ void test("exceptions and interrupts stop subsequent tools", async () => {
   });
 });
 
-void test("published CLIs without the stdin marker retain legacy file transport", async () => {
+void test("every CLI receives the task config over stdin, never as a temp file", async () => {
   await project(async () => {
     const native = path.resolve("legacy/bin/vize");
     mkdirSync(path.dirname(native), { recursive: true });
-    writeFileSync(native, "legacy native placeholder\n");
-    let transported = "";
-    await runNative(
+    writeFileSync(native, "native without the stdin marker\n");
+    let transported: string | undefined;
+    const status = await runNative(
       "check",
       ["App.vue"],
       { config: {}, options: {} },
       native,
       async (_, args, stdin) => {
-        assert.equal(stdin, undefined);
-        assert.deepEqual(args.slice(0, 3), [native, "check", "--config"]);
-        transported = args[3];
-        assert.deepEqual(JSON.parse(readFileSync(transported, "utf8")), {
-          vue: { basePath: process.cwd(), entries: [] },
-        });
+        assert.deepEqual(args, [native, "check", "--config-stdin", "App.vue"]);
+        transported = stdin;
         return 0;
       },
     );
-    assert.throws(() => readFileSync(transported));
+    assert.equal(status, 0);
+    assert.deepEqual(JSON.parse(transported ?? ""), {
+      vue: { basePath: process.cwd(), entries: [] },
+    });
   });
 });
 

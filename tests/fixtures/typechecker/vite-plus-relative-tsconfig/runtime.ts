@@ -167,7 +167,6 @@ export class ProjectOracle {
     const before = process.cwd();
     const metadata = config === undefined ? this.metadata : { ...this.metadata, config };
     let receipt: Receipt | undefined;
-    let temporaryConfig = "";
     const taskArgs = [...args, "--format", "json", "--quiet", "--corsa-path", this.corsa];
     process.chdir(this.root);
     try {
@@ -181,30 +180,24 @@ export class ProjectOracle {
         metadata,
         "unused-vp",
         this.binary,
-        async (command, argv) => {
+        async (command, argv, stdin) => {
           assert.equal(command, process.execPath);
           assert.equal(argv[0], this.binary);
           assert.equal(argv[1], "check");
-          assert.equal(argv[2], "--config");
-          temporaryConfig = argv[3];
-          const raw = fs.readFileSync(temporaryConfig);
+          assert.equal(argv[2], "--config-stdin");
+          assert.equal(typeof stdin, "string");
+          const raw = Buffer.from(stdin ?? "", "utf8");
           this.rows.push({
             label,
-            temporaryConfig,
             configBytes: Array.from(raw),
             config: JSON.parse(raw.toString("utf8")),
           });
-          receipt = this.capture(label, argv.slice(1));
+          receipt = this.capture(label, argv.slice(1), raw);
           return receipt.status ?? 1;
         },
       );
       assert(receipt, "an enabled typecheck task must launch exactly one native check");
       assert.equal(status, receipt.status);
-      assert.equal(
-        fs.existsSync(temporaryConfig),
-        false,
-        "temporary config must be removed after a failed check too",
-      );
       assert.deepEqual(
         await resolveConfigExport(metadata.config ?? {}, { mode: "production", command: "check" }),
         originalMetadata,
@@ -251,9 +244,10 @@ export class ProjectOracle {
     }
   }
 
-  private capture(label: string, argv: string[]): Receipt {
+  private capture(label: string, argv: string[], input?: Buffer): Receipt {
     const result = spawnSync(this.binary, argv, {
       cwd: this.root,
+      input,
       env: { ...process.env, LANG: "C", LC_ALL: "C" },
       timeout: 120_000,
       maxBuffer: 64 * 1024 * 1024,
