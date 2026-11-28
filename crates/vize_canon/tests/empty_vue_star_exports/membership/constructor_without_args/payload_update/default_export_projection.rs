@@ -45,6 +45,7 @@ fn restore(current: &str, file: &Value) -> String {
 
 /// Only the complete authenticated successor can enter the historical chain.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::optional_jsx_witness::source_before(path, current);
     source_before_in(&support::repository(), path, current)
 }
 

@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { closedEmitGateEdits } from "./callback-owner-closed-emit.ts";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
+import { beforeOptionalJsxWitness } from "./optional-jsx-witness-transition.ts";
 import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
 import { propValueOrPreambleEdit } from "./prop-value-or-transition.ts";
 import { dedentEdits } from "./setup-dedent.ts";
@@ -11,7 +12,12 @@ type Edit = { start: number; end: number; replacement: Buffer };
 /** Whole component-helper images the audit admits, oldest first; the current image is last. */
 export function certifiedHelperImages(path: string, current: string, older: string[]): string[] {
   // #12446 rewrote the TSX instance input-key set; #12467 hoisted the owned key set.
-  const landed = [beforeInstanceInputKeys(path, current), beforeUnownedOwnedKeys(path, current)];
+  // The JSX key witness then made its keys optional.
+  const landed = [
+    beforeInstanceInputKeys(path, current),
+    beforeUnownedOwnedKeys(path, current),
+    beforeOptionalJsxWitness(path, current),
+  ];
   const known = new Set([...older, current]);
   return [...older, ...new Set(landed.filter((image) => !known.has(image))), current];
 }

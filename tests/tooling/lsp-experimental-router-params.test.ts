@@ -71,7 +71,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const golden = expected.generated[kind];
   assert.match(
     golden.file,
-    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys|\.unowned-owned-keys|\.constructor-noinfer|\.shared-usage-gates|\.with-defaults-undefined)?\.virtual\.ts\.txt$/u,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys|\.unowned-owned-keys|\.constructor-noinfer|\.shared-usage-gates|\.with-defaults-undefined|\.optional-jsx-witness)?\.virtual\.ts\.txt$/u,
   );
   const goldenBytes = fs.readFileSync(path.join(custody, golden.file));
   assert.equal(createHash("sha256").update(goldenBytes).digest("hex"), golden.sha256);

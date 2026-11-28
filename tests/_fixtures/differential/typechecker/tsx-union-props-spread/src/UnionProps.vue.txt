@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ label: string, ariaLabel?: undefined } | { label?: undefined, ariaLabel: string }>()
+</script>
+
+<template>
+  <div />
+</template>

@@ -71709,6 +71709,51 @@
       }
     },
     {
+      "id": "typechecker/tsx-union-props-spread/exact-optional-union-spread",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsx-union-props-spread/tsconfig.json.txt",
+          "role": "issue-authored-exact-optional-config",
+          "sha256": "5de9772d8413f7733efa852692e3b514c35bb1bc46690b62b7f4eb730471d46d"
+        },
+        {
+          "path": "tsx-union-props-spread/src/UnionProps.vue.txt",
+          "role": "issue-authored-union-props-component",
+          "sha256": "5453f602ecd493331dde57d620bd405dbbf0640de9dc384c1fcefb5cd42f1fa8"
+        },
+        {
+          "path": "tsx-union-props-spread/src/OptionalProps.vue.txt",
+          "role": "optional-props-union-spread-control",
+          "sha256": "6cd965fc3de4e5691268696d13af8a746295b77f007c3cd4fc9225518d920ecf"
+        },
+        {
+          "path": "tsx-union-props-spread/src/use.tsx.txt",
+          "role": "issue-authored-tsx-union-spread-regression",
+          "sha256": "e0c48960878c327a2214056c765521b92981b4b32dbda4369e528fd8bc48918e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "content_mapper_tsgo_cli::tsx_union_props_spread::standard_tsgo_accepts_union_props_spread_under_exact_optional_property_types; a TSX spread of a normalized union of props objects into union and all-optional SFC props under exactOptionalPropertyTypes, with missing, conflicting and mistyped uses that stay rejected as in vue-tsc. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-use-slots-13578/inferred-dollar-slots",
       "state": "active",
       "targets": [

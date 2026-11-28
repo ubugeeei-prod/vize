@@ -21,6 +21,7 @@ const ADDED: &str = concat!(
 );
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::optional_jsx_witness::source_before(path, current);
     if path != MANIFEST {
         return current;
     }
