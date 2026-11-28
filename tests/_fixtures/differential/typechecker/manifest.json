@@ -71798,6 +71798,66 @@
       }
     },
     {
+      "id": "typechecker/vapor-sfc-component-type/vapor-default-export",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::vapor_component_type::vapor_sfc_default_export_is_a_vapor_component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "vapor-sfc-component-type/tsconfig.json.txt",
+          "sha256": "a4fdcbdc5bf4f4b94f97041df67c33ec2ce139a1790e22587adfd0bbb4c9e30f"
+        },
+        {
+          "file": "src/Plain.vue",
+          "path": "vapor-sfc-component-type/Plain.vue.txt",
+          "sha256": "4a43ec6209f83b4407723632dec45c8656cc31bfde95a4ddc1d82eecb68bbd81"
+        },
+        {
+          "file": "src/Typed.vue",
+          "path": "vapor-sfc-component-type/Typed.vue.txt",
+          "sha256": "3291a2947c66e8a5397111aaaf3fc436f55e60137c01c396eb83ec8c4f388555"
+        },
+        {
+          "file": "src/Slotted.vue",
+          "path": "vapor-sfc-component-type/Slotted.vue.txt",
+          "sha256": "9d9b688dbdd8a09b5e6e4fe16a390a02cf5efbc8d732b3edf61c0dccf66b2121"
+        },
+        {
+          "file": "src/Vdom.vue",
+          "path": "vapor-sfc-component-type/Vdom.vue.txt",
+          "sha256": "525edb826d1b8f00566c8a9632775ead30f9dcf61941c57894d2c71bd7af59b5"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "vapor-sfc-component-type/Parent.vue.txt",
+          "sha256": "c21d51a9e288d5f51601e56ed6bfa3ce48ae29efa8ca33881557455050de9e02"
+        },
+        {
+          "file": "src/main.ts",
+          "path": "vapor-sfc-component-type/main.ts.txt",
+          "sha256": "8fb1fe44470a0e049be970641ac44e45d177fcc3da36e7c053ae840ddb140e4e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::vapor_component_type::vapor_sfc_default_export_is_a_vapor_component; a <script setup vapor> SFC exports the functional component signature vue-tsc 3.3.14 emits for it (language-core reads the vapor attribute as a bare generic), so createVaporApp and VaporComponent accept it with or without props and emits, and a VDOM template still checks its props. A required defineSlots slot and a VDOM SFC stay rejected at the positions vue-tsc reports. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/vfor-const-listener-narrowing-11973",
       "state": "active",
       "targets": [

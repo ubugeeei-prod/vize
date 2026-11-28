@@ -124,6 +124,7 @@ mod unmapped_template_fallback;
 mod v_for_source_callbacks;
 mod v_slot_parameter_default;
 mod vapor_anchors;
+mod vapor_component_type;
 mod vfor_const_listener_narrowing;
 mod vue27_render_h;
 

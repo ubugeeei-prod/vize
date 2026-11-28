@@ -5399,6 +5399,59 @@
       }
     },
     {
+      "id": "lsp/regression/vapor-sfc-component-type",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "vapor-sfc-component-type",
+        "files": [
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+          },
+          {
+            "path": "Counter.vue.txt",
+            "sha256": "4dba5c1b009db65f176700921fcd50eee41487dac799749d2e109bc20afb8ab4"
+          },
+          {
+            "path": "Options.vue.txt",
+            "sha256": "f3f7108c9402bf40a7e4524d251e0bcf94bb03b1777b6a65fc9590f56b3cacd3"
+          },
+          {
+            "path": "App.vue.txt",
+            "sha256": "873aec488e8eb3f660f8e6a9e00b99ac9fbaf09f0bfd691c6ce272daae5eea39"
+          }
+        ]
+      },
+      "case": {
+        "path": "vapor-sfc-component-type/case.json",
+        "sha256": "49e2a62404c9b8fecbe544dff99849f66ee51a41ac4666b10661b0116853ad39"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/versioned-auto-import-6876",
       "state": "active",
       "targets": [

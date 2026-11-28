@@ -1,0 +1,12 @@
+import { createVaporApp, type VaporComponent } from 'vue'
+import Plain from './Plain.vue'
+import Slotted from './Slotted.vue'
+import Typed from './Typed.vue'
+import Vdom from './Vdom.vue'
+
+createVaporApp(Plain).mount('#plain')
+createVaporApp(Typed, { msg: 'ok' }).mount('#typed')
+const component: VaporComponent = Typed
+void component
+createVaporApp(Slotted).mount('#slotted')
+createVaporApp(Vdom).mount('#vdom')

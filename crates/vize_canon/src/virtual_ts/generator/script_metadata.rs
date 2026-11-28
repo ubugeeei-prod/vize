@@ -34,6 +34,15 @@ impl<'a> ScriptMetadata<'a> {
             authored_generic = authored.setup_generic;
             generic_param = authored_generic.filter(|value| !value.trim().is_empty());
         }
+        // Vue's language tools read a setup `vapor` attribute as a bare
+        // `generic`: the default export is a function a Vapor app accepts.
+        if authored_generic.is_none()
+            && options
+                .authored_scripts
+                .is_some_and(|scripts| scripts.setup_vapor)
+        {
+            authored_generic = Some("");
+        }
         let has_script_setup = analyzed_setup
             || options
                 .authored_scripts

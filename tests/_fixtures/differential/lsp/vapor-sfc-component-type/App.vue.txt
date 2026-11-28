@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Counter from './components/Counter.vue'
+import Options from './components/Options.vue'
+
+declare function mountVapor(component: (props: any, ctx: any) => unknown): void
+
+mountVapor(Counter)
+mountVapor(Options)
+</script>
