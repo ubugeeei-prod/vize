@@ -29,6 +29,7 @@ test("unknown exports and modules cannot acquire the original loader authority",
     "formatFile",
     "formatFileSync",
     "nuxtTemplateDiagnostics",
+    "selectOxlintTsrx",
   ]) {
     assert.throws(() =>
       originalNativeLoaderModule(
@@ -122,5 +123,27 @@ test("native-binding.js keeps its original loading law under the load diagnostic
     const changed = current.replace(from, to);
     assert.notEqual(changed, current);
     assert.throws(() => originalNativeLoaderModule("native-binding.js", Buffer.from(changed)));
+  }
+});
+
+test("TSRX selection requires its exact additive facade slot", () => {
+  const current = fs.readFileSync(new URL("../../npm/native/index.js", import.meta.url), "utf8");
+  const addition = "module.exports.selectOxlintTsrx = nativeBinding.selectOxlintTsrx;\n";
+  const without = current.replace(addition, "");
+  assert.notEqual(without, current);
+  assert.deepEqual(
+    originalNativeLoaderModule("index.js", Buffer.from(without)),
+    originalNativeLoaderModule("index.js", Buffer.from(current)),
+    "the earlier facade retains its complete original loader authority",
+  );
+  for (const changed of [
+    addition + without,
+    without + addition,
+    without.replace("const ", addition + "const "),
+    current + addition,
+    current.replace(addition, addition + addition),
+    current.replace("nativeBinding.selectOxlintTsrx;", "nativeBinding.lintPatinaSfc;"),
+  ]) {
+    assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(changed)));
   }
 });

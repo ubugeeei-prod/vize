@@ -67,8 +67,9 @@ function gitDirectory(marker: string, sources: HtmlCustody["sources"]): string |
 
 /** Snapshots prove identity, and do not perform native ignore selection. */
 export function captureHtmlCustody(
-  options: OxlintHtmlOptions,
+  options: Pick<OxlintHtmlOptions, "cwd" | "rootJson" | "rootBytes" | "customIgnoreFilename">,
   candidates: ReadonlySet<string>,
+  isOriginalFile: (filename: string) => boolean = isStandaloneHtmlFile,
 ): HtmlCustody {
   const sources = new Map<string, Buffer | null>([
     [options.rootJson, Buffer.from(options.rootBytes)],
@@ -79,7 +80,7 @@ export function captureHtmlCustody(
     // A missing literal target beside an HTML-bearing one selects nothing, as in Oxlint.
     const stat = fs.lstatSync(candidate, { throwIfNoEntry: false });
     if (!stat) continue;
-    if (isStandaloneHtmlFile(candidate) && stat.isFile() && !stat.isSymbolicLink())
+    if (isOriginalFile(candidate) && stat.isFile() && !stat.isSymbolicLink())
       originals.set(candidate, fs.readFileSync(candidate));
     let directory = stat.isDirectory() ? candidate : path.dirname(candidate);
     for (;;) {

@@ -3,7 +3,7 @@ export function isVueLikeFile(filename: string): boolean {
 }
 
 export function isPatinaFile(filename: string): boolean {
-  return isVueLikeFile(filename) || isScriptLikeFile(filename);
+  return isVueLikeFile(filename) || isScriptLikeFile(filename) || isTsrxFile(filename);
 }
 
 export function isScriptLikeFile(filename: string): boolean {
@@ -21,4 +21,13 @@ export function hasVueLikeExtension(filename: string): boolean {
 
 export function isStandaloneHtmlFile(filename: string): boolean {
   return filename.endsWith(".html") || filename.endsWith(".htm");
+}
+
+/** TSRX uses native markup parsing and must never enter the host's JS parser. */
+export function isTsrxFile(filename: string): boolean {
+  return filename.endsWith(".tsrx");
+}
+
+export function needsSourceCarrier(filename: string): boolean {
+  return hasVueLikeExtension(filename) || isTsrxFile(filename);
 }

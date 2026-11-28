@@ -15,6 +15,7 @@ use super::{HostProfile, Origin, Request, Selection, SourceRole, select};
 mod custody;
 mod git_metadata;
 mod setup;
+mod tsrx;
 use setup::{setup, source_bytes};
 
 const CORPUS: &str = concat!(

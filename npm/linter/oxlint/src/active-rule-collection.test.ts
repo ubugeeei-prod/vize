@@ -12,6 +12,7 @@ import {
   getFileStateCacheStats,
 } from "./file-state.ts";
 import type { PatinaDiagnostic, PatinaRuleOptions, PatinaSettings } from "./model.js";
+import { prepareWorkaroundSource } from "./workaround.ts";
 import { getRuleOptions } from "./rule-options.ts";
 
 const { nativeLint } = vi.hoisted(() => ({ nativeLint: vi.fn() }));
@@ -329,4 +330,33 @@ it("changes after the first exit cannot mix old native packets with later source
       undefined,
     );
   }
+});
+
+it("TSRX carrier acceptance revalidates original bytes after native callbacks", () => {
+  const original = path.join(root, "MutatedDuringNative.tsrx");
+  const text = 'export function Avatar() @{\n  <img src="x" />\n}\n';
+  fs.writeFileSync(original, text);
+  const bridge = prepareWorkaroundSource(text, original);
+  const physical = path.join(root, "MutatedDuringNative.tsrx.vue");
+  fs.writeFileSync(physical, bridge.source);
+  const context = contextFor(physical);
+  (context.sourceCode as { text: string }).text = bridge.source.slice(
+    bridge.locations.scriptStart,
+    bridge.source.indexOf("</script>"),
+  );
+  const program = {};
+  collectActiveRule(context, program, "a11y/alt-text");
+  nativeLint.mockImplementation(() => {
+    fs.writeFileSync(original, text.replace("src", "alt"));
+    return {
+      filename: original,
+      diagnostics: [diagnostic("a11y/alt-text", "stale")],
+      errorCount: 0,
+      warningCount: 1,
+    };
+  });
+  assert.throws(
+    () => getActiveRuleDiagnostics(context, program, "a11y/alt-text"),
+    /original file bytes/u,
+  );
 });

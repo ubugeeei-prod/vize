@@ -263,6 +263,23 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 
 For CI annotations and code-quality artifacts, `-f github` and `-f gitlab` are generated from that same merged JSON report. This keeps one summary and preserves original Vue paths and ranges even when a lint run uses multiple internal phases.
 
+### TSRX modules
+
+`oxlint-vize -c .oxlintrc.json -f json src` also discovers `.tsrx` modules and
+runs their shared markup rules with the original module paths and ranges.
+`vize/parser/tsrx` reports malformed or unsupported TSRX as errors even when
+all configured markup rules are warnings. Original JavaScript, JSX, TSX and Vue
+host diagnostics remain in the same report.
+
+TSRX transport currently supports Oxlint 1.78.0, 1.81.0 and 1.86.0 with a regular
+JSON config directly in the working directory and literal file or directory
+targets within that directory. Git, custom-ignore, config and CLI ignore patterns
+are matched against the original `.tsrx` paths. Inherited or override configs,
+symlinks and unsupported filesystem/VCS layouts, wildcard targets, external
+`vue.plugins`, native type-aware rules, fix flags and CLI severity/limit overrides
+produce a visible failure; use `vize lint` for those configurations. TSRX source
+never enters Oxlint's JavaScript parser. Direct `oxlint` does not select TSRX.
+
 ### Oxlint type-aware rules in Vue files
 
 Oxlint's own type-aware rules (`typescript/no-floating-promises`, `typescript/no-misused-promises` and the rest of the tsgolint set) do not look inside `.vue` files. When you run `oxlint-vize --type-aware`, or your `.oxlintrc.json` sets `options.typeAware: true`, the wrapper runs those rules on each SFC's `<script>` and `<script setup>` blocks too, with the severities from your resolved configuration, and reports them at the original `.vue` lines and columns. Imports between `.vue` and `.ts` files resolve as they do for TypeScript. Template expressions are not part of this pass; Vize's `vize/type/*` rules cover them.

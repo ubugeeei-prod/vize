@@ -216,3 +216,53 @@ void test("an unavailable bridge retains every original JSON field and fatal row
     }
   }
 });
+
+void test("original script rules stay enabled while only original carrier paths are disabled", () => {
+  const config = {
+    file: "/project/.oxlintrc.json",
+    bytes: "authored",
+    value: {
+      rules: { "vize/a11y/alt-text": "warn", "no-debugger": "error" },
+      overrides: [{ files: ["src/*.tsx"], rules: { "vize/vue/no-multi-spaces": "error" } }],
+    },
+  };
+  const split = splitProjectConfig(config, false, [
+    "/project/src/[Avatar].vue",
+    "/project/src/Panel.tsrx",
+  ]);
+  assert.deepEqual(split.original.value.rules, config.value.rules);
+  assert.deepEqual(split.original.value.overrides, [
+    config.value.overrides[0],
+    {
+      files: ["**/*.vue", "**/*.tsrx"],
+      rules: {
+        "vize/a11y/alt-text": "off",
+        "vize/vue/no-multi-spaces": "off",
+      },
+    },
+  ]);
+  assert.deepEqual(split.bridge.value.rules, { "vize/a11y/alt-text": "warn" });
+});
+
+void test("shared source rules are counted once and only new TSRX originals/parser extend metadata", () => {
+  const report = (files: number, rules: number) => ({
+    status: 0,
+    stderr: "",
+    stdout: JSON.stringify({
+      diagnostics: [],
+      number_of_files: files,
+      number_of_rules: rules,
+      threads_count: 1,
+      start_time: 0,
+    }),
+  });
+  const source = report(4, 98),
+    bridge = report(7, 3);
+  const ordinary = JSON.parse(mergeProjectOutput(source, bridge, ["-f", "json"], 0, 0).stdout);
+  assert.equal(ordinary.number_of_files, 4);
+  assert.equal(ordinary.number_of_rules, 98);
+  const tsrx = JSON.parse(mergeProjectOutput(source, bridge, ["-f", "json"], 3, 1).stdout);
+  assert.equal(tsrx.number_of_files, 7);
+  assert.equal(tsrx.number_of_rules, 99);
+  assert.deepEqual(tsrx.diagnostics, []);
+});

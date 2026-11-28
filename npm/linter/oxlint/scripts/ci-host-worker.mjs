@@ -49,7 +49,14 @@ export function verifyProjectHostCalls(events, custody, receipt) {
 export function createHostCommandRunner({ temporary, output, version }) {
   return (command, args, options = {}, captureName = command === "npm" ? "install" : "tests") => {
     assert.ok(
-      ["install", "tests", "html-tests", "linked-worktree-html-tests"].includes(captureName),
+      [
+        "install",
+        "tests",
+        "html-tests",
+        "linked-worktree-html-tests",
+        "tsrx-181-install",
+        "tsrx-181-tests",
+      ].includes(captureName),
     );
     const result = spawnSync(command, args, {
       cwd: temporary,
@@ -135,6 +142,7 @@ async function runProjectHost({ packageDir, artifacts, binary, version, types, t
           "src/project-transport.test.ts",
           "src/script-safe-transport.test.ts",
           "src/original-ignore.test.ts",
+          "src/tsrx-transport.test.ts",
         ],
         {
           cwd: packageDir,
@@ -148,6 +156,7 @@ async function runProjectHost({ packageDir, artifacts, binary, version, types, t
             VIZE_OXLINT_PROJECT_CAPTURE: path.join(output, "original-project.json"),
             VIZE_OXLINT_SCRIPT_SAFE_CAPTURE: path.join(output, "script-safe.json"),
             VIZE_OXLINT_ORIGINAL_IGNORE_CAPTURE: path.join(output, "original-ignore.json"),
+            VIZE_OXLINT_TSRX_CAPTURE: path.join(output, "tsrx-transport.json"),
           },
         },
       );
@@ -214,6 +223,48 @@ async function runProjectHost({ packageDir, artifacts, binary, version, types, t
         qualification.linkedWorktreeHtml = linked.observations.map(({ label }) => label);
       }
     });
+    if (version === "1.86.0") {
+      timed("tsrx181", () => {
+        const host181 = path.join(temporary, "tsrx-181");
+        fs.mkdirSync(host181);
+        run(
+          "npm",
+          [
+            "install",
+            "--ignore-scripts",
+            "--no-audit",
+            "--no-fund",
+            "--legacy-peer-deps",
+            "oxlint@1.81.0",
+          ],
+          { cwd: host181 },
+          "tsrx-181-install",
+        );
+        const engine181 = path.join(host181, "node_modules/oxlint/bin/oxlint");
+        assert.equal(
+          JSON.parse(fs.readFileSync(path.join(host181, "node_modules/oxlint/package.json")))
+            .version,
+          "1.81.0",
+        );
+        run(
+          process.execPath,
+          ["--test", "src/tsrx-transport.test.ts"],
+          {
+            cwd: packageDir,
+            env: {
+              ...process.env,
+              NODE_OPTIONS:
+                `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(preload)}`.trim(),
+              VIZE_OXLINT_NATIVE_CUSTODY: configuration,
+              VIZE_OXLINT_TEST_ENTRYPOINT: engine181,
+              VIZE_OXLINT_TSRX_CAPTURE: path.join(output, "tsrx-181-transport.json"),
+            },
+          },
+          "tsrx-181-tests",
+        );
+        qualification.tsrx181 = true;
+      });
+    }
     const waiting = performance.now();
     let replay;
     try {

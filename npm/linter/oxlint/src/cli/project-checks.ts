@@ -28,7 +28,11 @@ export function needsOriginalProjectChecks(config: ScopedConfig, args: readonly 
 }
 
 /** Native/project checks retain original paths; only Vize executes on the bridge. */
-export function splitProjectConfig(config: ScopedConfig, directoryTransport = false) {
+export function splitProjectConfig(
+  config: ScopedConfig,
+  directoryTransport = false,
+  carrierOriginals?: readonly string[],
+) {
   const visit = (value: Config, bridge: boolean, override = false): Config => ({
     ...value,
     ...(Array.isArray(value.extends)
@@ -39,7 +43,11 @@ export function splitProjectConfig(config: ScopedConfig, directoryTransport = fa
       : {}),
     rules: Object.fromEntries(
       Object.entries(isRecord(value.rules) ? value.rules : {}).flatMap(([name, setting]) =>
-        bridge ? (isVize(name) ? [[name, setting]] : []) : [[name, isVize(name) ? "off" : setting]],
+        bridge
+          ? isVize(name)
+            ? [[name, setting]]
+            : []
+          : [[name, isVize(name) && !carrierOriginals ? "off" : setting]],
       ),
     ),
     ...(bridge
@@ -62,8 +70,28 @@ export function splitProjectConfig(config: ScopedConfig, directoryTransport = fa
         }
       : {}),
   });
+  const original = visit(config.value, false);
+  if (carrierOriginals) {
+    const names = new Set<string>();
+    const collect = (value: Config) => {
+      for (const name of Object.keys(isRecord(value.rules) ? value.rules : {}))
+        if (isVize(name)) names.add(name);
+      for (const entry of [value.extends, value.overrides])
+        if (Array.isArray(entry)) for (const row of entry) if (isRecord(row)) collect(row);
+    };
+    collect(config.value);
+    original.overrides = [
+      ...(Array.isArray(original.overrides) ? original.overrides : []),
+      {
+        // Every selected original of these carrier-only dialects is mirrored.
+        // Keep this predicate bounded instead of compiling one glob per file.
+        files: [...new Set(carrierOriginals.map((file) => `**/*${path.extname(file)}`))],
+        rules: Object.fromEntries([...names].map((name) => [name, "off"])),
+      },
+    ];
+  }
   return {
-    original: { ...config, value: visit(config.value, false) },
+    original: { ...config, value: original },
     bridge: { ...config, value: visit(config.value, true) },
   };
 }

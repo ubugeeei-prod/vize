@@ -214,6 +214,7 @@ pub(super) fn walk_originals(
     config: &Gitignore,
     overrides: Option<Override>,
     is_dir: bool,
+    extensions: &[&str],
     selection: &mut Selection,
 ) -> Result<(), Refusal> {
     // WalkBuilder's filter_entry bypasses depth zero. Oxlint's visitor does not.
@@ -286,7 +287,7 @@ pub(super) fn walk_originals(
             .any(|part| name.contains(part))
             || !path
                 .extension()
-                .is_some_and(|extension| extension == "html" || extension == "htm")
+                .is_some_and(|extension| extensions.iter().any(|candidate| extension == *candidate))
         {
             continue;
         }
