@@ -66512,6 +66512,50 @@
       }
     },
     {
+      "id": "typechecker/regression/declaration-emit-diagnostic-only-options",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "declaration-emit-diagnostic-only-options/Panel.vue.txt",
+          "sha256": "f72d2bc3f37cc1990f8a252f9238914b9a8b2edeb729f7679b5c948aa5452438",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "declaration-emit-diagnostic-only-options/Popover.vue.txt",
+          "sha256": "cc40601f8bbd393f60c83fd422b966de6c10db06e65ec4f4920aed7674aae758",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "declaration-emit-diagnostic-only-options/index.ts.txt",
+          "sha256": "58d36c5ad864c23df3117b0e0d45290f393de7ca6d7b3bfedd7bef5dbb520792",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "declaration-emit-diagnostic-only-options/tsconfig.json.txt",
+          "sha256": "419087fb8da81c5455862deb7951040454b41f6f5429bb0eea7c3d4de566fbe8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::no_unused::declaration_emit::diagnostic_only_options_never_fail_declaration_emit and batch::virtual_project::tests::tsconfig_native_options::declaration_tsconfig_turns_off_options_that_only_add_diagnostics; a component with a <slot /> outlet, named and scoped slots, a v-for and a v-if checks clean under noUnusedLocals, noUnusedParameters, noImplicitReturns, noFallthroughCasesInSwitch, noPropertyAccessFromIndexSignature, noImplicitOverride and allowUnreachableCode/allowUnusedLabels false, and its declarations then emit (with the shipped helper imports) instead of failing on the generated slot outlet helper (TS6133) and generated unreachable code (TS7027); vue-tsc emits the same sources without a diagnostic. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/declaration-fallthrough-attrs-11454",
       "state": "active",
       "targets": [

@@ -1,0 +1,20 @@
+<script setup lang="ts">
+const props = defineProps<{ items: string[]; open: boolean; label?: string }>()
+const emit = defineEmits<{ select: [item: string]; toggle: [] }>()
+
+function choose(item: string) {
+  emit('select', item)
+}
+</script>
+
+<template>
+  <div @click="emit('toggle')">
+    <slot name="trigger" :open="open" />
+    <ul v-if="open">
+      <li v-for="(item, index) in props.items" :key="index" @click="choose(item)">
+        <slot name="item" :item="item" :index="index">{{ item }}</slot>
+      </li>
+    </ul>
+    <slot>{{ label }}</slot>
+  </div>
+</template>

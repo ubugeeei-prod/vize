@@ -5,6 +5,7 @@ use super::{
 use vize_carton::cstr;
 
 mod css_v_bind;
+mod declaration_emit;
 mod define_emits_unused;
 mod define_props_template_object;
 mod macro_hygiene;
