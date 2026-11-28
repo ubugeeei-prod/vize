@@ -18,6 +18,7 @@ mod component_exports;
 mod diagnostic_origin;
 mod diagnostic_ownership;
 mod helper_modes;
+mod intersection_props;
 mod models;
 mod navigation;
 mod options_api;

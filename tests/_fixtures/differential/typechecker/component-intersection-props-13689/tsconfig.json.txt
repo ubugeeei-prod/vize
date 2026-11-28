@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"target":"ESNext","module":"preserve","moduleResolution":"bundler","noEmit":true,"skipLibCheck":true,"jsx":"preserve","exactOptionalPropertyTypes":true,"lib":["ESNext","DOM"],"types":[]},"vueCompilerOptions":{"strictTemplates":true,"checkUnknownProps":true},"include":["*.vue","*.ts"]}

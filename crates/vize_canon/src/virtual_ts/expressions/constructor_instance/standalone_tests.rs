@@ -84,7 +84,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
         );
         let selected = "(typeof __vize_slot_host_1_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_1_instances.withArguments : typeof __vize_slot_host_1_instances.withoutArguments)";
         let raw = cstr!(
-            "typeof ElBadge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentRawProps<typeof ElBadge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof ElBadge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof ElBadge>"
+            "typeof ElBadge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentUsageProps<typeof ElBadge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof ElBadge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof ElBadge>"
         );
         let is_any = if hoisted {
             "import(\"vize:virtual-ts\").IsAny"

@@ -188,6 +188,14 @@ pub(super) fn emit_default_export_declaration(
             component_contract_fields,
             " readonly __vizeRawProps?: {props_ref};"
         );
+        if generic_component_params.is_none() {
+            // The unchanged component can read its identical static raw props
+            // without instantiating the generic input constructor. A function
+            // return retains one original identity when two SFCs intersect;
+            // an intersected self property would merge into the intersection.
+            component_contract_fields
+                .push_str(" readonly __vizeComponentSelf?: () => typeof __vize_component__;");
+        }
     }
     // `defineSlots` describes the callable payload for each slot; it does not
     // require a parent to provide every declared slot. Keep the private marker

@@ -248,6 +248,29 @@ fn append_prop_check_helpers_text(
     ts.push_str(
         "  type $HasRawProps<C> = $HasInstanceRawProps<C> extends true ? true : $HasStaticRawProps<C>;\n",
     );
+    // Ordinary SFCs carry their original component identity. Only an exact
+    // identity can use static raw props; intersections retain instance-first
+    // raw metadata and add public wrapper keys discovered through setup.
+    // Setup uses LooseRequired, so values/defaults/optionality come from the
+    // public constructors rather than from its parameter type.
+    ts.push_str(
+        "  type $PublicInstanceProps<I> = $IsAny<I> extends true ? {} : I extends { $props: infer P } ? P : {};\n",
+    );
+    ts.push_str(
+        "  type $ComponentPublicOverloads<C> = C extends { new(...args: any[]): infer A; new(...args: any[]): infer B; new(...args: any[]): infer D; new(...args: any[]): infer E } ? $PublicInstanceProps<A> & $PublicInstanceProps<B> & $PublicInstanceProps<D> & $PublicInstanceProps<E> : {};\n",
+    );
+    ts.push_str(
+        "  type $StaticRawKeys<C> = C extends { readonly __vizeRawProps?: infer P } ? $IsAny<P> extends true ? never : keyof P : never;\n",
+    );
+    ts.push_str(
+        "  type $AdditionalComponentProps<C, P, K, U = $ComponentPublicOverloads<C>> = [K] extends [never] ? P : P & Pick<U, Extract<K, keyof U>>;\n",
+    );
+    ts.push_str(
+        "  type $ExpandedComponentUsageProps<C> = C extends { readonly __vizeComponentMarker: true; setup?: { (this: void, props: infer A, ...args: any[]): any; (this: void, props: infer B, ...args: any[]): any; (this: void, props: infer D, ...args: any[]): any; (this: void, props: infer E, ...args: any[]): any } } ? $IsAny<A | B | D | E> extends true ? $ComponentRawProps<C> : $AdditionalComponentProps<C, $ComponentRawProps<C>, Exclude<keyof A | keyof B | keyof D | keyof E, keyof $ComponentRawProps<C> | $StaticRawKeys<C>>> : $ComponentRawProps<C>;\n",
+    );
+    ts.push_str(
+        "  type $ComponentUsageProps<C, __P = C extends { readonly __vizeComponentMarker: true; readonly __vizeComponentSelf?: () => infer S; readonly __vizeRawProps?: infer P } ? $IsAny<S> extends true ? $ExpandedComponentUsageProps<C> : (<T>() => T extends S ? 1 : 2) extends (<T>() => T extends C ? 1 : 2) ? P : $ExpandedComponentUsageProps<C> : $ExpandedComponentUsageProps<C>> = unknown extends __P ? Record<string, unknown> : __P;\n",
+    );
     ts.push_str(
         "  type $FallthroughValue<C, K extends PropertyKey> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? unknown : $PropValue<NonNullable<__F>, K, unknown> : unknown : unknown;\n",
     );

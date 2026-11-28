@@ -1,0 +1,59 @@
+import type { $ComponentUsageProps as Props, $UsageProps as Usage } from 'vize:virtual-ts';
+import Child from './Child.vue';
+import Second from './Second.vue';
+import Generic from './Generic.vue';
+import type { Left, Right, EmptyLeft, EmptyRight, RequiredLeft, RequiredRight } from './lazy';
+const left: Usage<typeof Left> = { label: 'Ready', hydrateOnIdle: true };
+const right: Usage<typeof Right> = { label: 'Ready', hydrateOnIdle: 100 };
+const emptyLeft: Usage<typeof EmptyLeft> = { hydrateOnIdle: true };
+const emptyRight: Usage<typeof EmptyRight> = { hydrateOnIdle: 100 };
+const defaults: Usage<typeof Child> = { label: 'Ready' };
+const defaultsFalse: Usage<typeof Child> = { label: 'Ready', enabled: false };
+// @ts-expect-error wrapper values remain typed
+const wrong: Usage<typeof Left> = { label: 'Ready', hydrateOnIdle: 'later' };
+// @ts-expect-error the required SFC prop remains required
+const missing: Usage<typeof Right> = { hydrateOnIdle: true };
+// @ts-expect-error an ordinary SFC remains closed
+const ordinary: Usage<typeof Child> = { label: 'Ready', hydrateOnIdle: true };
+// @ts-expect-error unknown wrapper properties remain unknown
+const unknown: Usage<typeof Left> = { label: 'Ready', other: true };
+// @ts-expect-error exact optional property types stay exact
+const absent: Usage<typeof Right> = { label: 'Ready', hydrateOnIdle: undefined };
+// @ts-expect-error an empty wrapped SFC retains hydration value types
+const emptyWrong: Usage<typeof EmptyRight> = { hydrateOnIdle: 'wrong' };
+// @ts-expect-error wrapper requiredness is preserved
+const required: Usage<typeof RequiredLeft> = { label: 'Ready' };
+const requiredRight: Usage<typeof RequiredRight> = { label: 'Ready', token: 'yes' };
+// @ts-expect-error boolean defaults do not widen the prop type
+const wrongDefault: Usage<typeof Child> = { label: 'Ready', enabled: 123 };
+type ExtraRaw = { new(): { readonly __vizeRawProps?: { extra: number }; $props: { extra: number } } };
+const last: Props<typeof Child & ExtraRaw> = { extra: 1 };
+// @ts-expect-error the final raw constructor remains authoritative
+const oldRaw: Props<typeof Child & ExtraRaw> = { label: 'Ready' };
+const first: Props<ExtraRaw & typeof Child> = { label: 'Ready' };
+// @ts-expect-error the generated raw constructor is last
+const wrongFirst: Props<ExtraRaw & typeof Child> = { extra: 1 };
+const two: Props<typeof Child & typeof Second> = { count: 1 };
+// @ts-expect-error distinct generated components must not share the static fast path
+const wrongTwo: Props<typeof Child & typeof Second> = { label: 'Ready' };
+const reversed: Props<typeof Second & typeof Child> = { label: 'Ready' };
+// @ts-expect-error the reverse intersection keeps its final instance raw props
+const wrongReversed: Props<typeof Second & typeof Child> = { count: 1 };
+type Legacy = { readonly __vizeComponentMarker: true; new(): { readonly __vizeRawProps?: { legacy: string }; $props: { legacy: string } } };
+const legacy: Props<Legacy> = { legacy: 'yes' };
+// @ts-expect-error legacy components without static metadata remain strict
+const badLegacy: Props<Legacy> = { legacy: 1 };
+type Conflict = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { static: string }; new(): { readonly __vizeRawProps?: { instance: number }; $props: { instance: number } } };
+const conflict: Props<Conflict> = { instance: 1 };
+// @ts-expect-error instance metadata still takes precedence over static metadata
+const badConflict: Props<Conflict> = { static: 'bad' };
+const loose: Props<any> = { unrelated: 1 };
+const unknownProps: Props<unknown> = {};
+const unionA: Props<typeof Child | Legacy> = { label: 'Ready' };
+const unionB: Props<typeof Child | Legacy> = { legacy: 'Ready' };
+type AssertNever<T extends never> = T;
+type NeverRemainsNever = AssertNever<Props<never>>;
+const generic: Usage<typeof Generic> = { value: 1, identity: (value: number) => value };
+Generic.__vizeCheck({ value: 1, identity: (value: number) => value });
+// @ts-expect-error the generic __vizeCheck path retains its inference
+Generic.__vizeCheck({ value: 1, identity: (value: string) => value });

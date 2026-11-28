@@ -37,6 +37,7 @@ shared_type_refs! {
     COMPONENT_NAVIGATION_PROPS => ("$ComponentNavigationProps", "$ComponentNavigationProps"),
     EMIT_LISTENERS => ("$EmitListeners", "$EmitListeners"),
     COMPONENT_RAW_PROPS => ("$ComponentRawProps", "$ComponentRawProps"),
+    COMPONENT_USAGE_PROPS => ("$ComponentUsageProps", "$ComponentUsageProps"),
     COMPONENT_EVENTS => ("$ComponentEvents", "$ComponentEvents"),
     IS_LIBRARY_GENERIC_EXPORT => ("$IsLibraryGenericExport", "$IsLibraryGenericExport"),
     USAGE_PROPS => ("$UsageProps", "$UsageProps"),

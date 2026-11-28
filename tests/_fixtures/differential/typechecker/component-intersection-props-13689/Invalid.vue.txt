@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+import { Left, Right, EmptyLeft, EmptyRight, RequiredLeft, RequiredRight } from './lazy';
+</script>
+<template>
+  <Left hydrate-on-idle />
+  <Right :label="1" hydrate-on-idle />
+  <Left label="Ready" :hydrate-on-idle="'soon'" />
+  <Right label="Ready" unknown-prop />
+  <RequiredLeft label="Ready" />
+  <RequiredRight label="Ready" :token="1" />
+  <Child label="Ready" hydrate-on-idle />
+  <Right label="Ready" :enabled="123" />
+  <EmptyLeft :hydrate-on-idle="'soon'" />
+  <EmptyRight unknown-prop />
+</template>

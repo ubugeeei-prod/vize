@@ -1,0 +1,2 @@
+<script setup lang="ts" generic="T">defineProps<{ value: T; identity: (value: T) => T }>();</script>
+<template>{{ identity(value) }}</template>

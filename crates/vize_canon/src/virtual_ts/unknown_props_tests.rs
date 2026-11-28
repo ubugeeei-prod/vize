@@ -249,7 +249,7 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
     );
     assert_eq!(code.matches("\"foo\": \"x\"").count(), 1, "{code}");
     assert_eq!(
-        code.matches("$ComponentRawProps<typeof is>").count(),
+        code.matches("$ComponentUsageProps<typeof is>").count(),
         2,
         "{code}"
     );
@@ -275,7 +275,7 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
         "{code}"
     );
     assert_eq!(
-        code.matches("$ComponentRawProps<typeof Div>").count(),
+        code.matches("$ComponentUsageProps<typeof Div>").count(),
         2,
         "{code}"
     );
