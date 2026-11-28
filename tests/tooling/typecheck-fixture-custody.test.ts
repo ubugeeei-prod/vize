@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   typecheckProvider,
   verifyTypecheckProviderSource,
-} from "../../tools/support/compat/fixtures/typecheck-baseline-provider.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-provider.ts";
 import { typecheckPreparationIdentity } from "../../tools/support/compat/fixtures/typecheck-input-overlays.ts";
 import { readAndValidateDependencyPreparation } from "../../tools/support/compat/fixtures/typecheck-divergence-provenance.mjs";
 import { installArguments } from "../../tools/support/compat/fixtures/typecheck-package-manager.ts";
@@ -91,6 +91,7 @@ test("the unpublished oracle is explicit and never substitutes an unknown provid
   assert.equal(typecheckProvider(undefined), null);
   assert.throws(() => typecheckProvider("latest"), /Unknown pinned/);
   const provider = typecheckProvider("vue-language-tools-6371");
+  assert.ok(provider);
   assert.equal(provider.revision, "b77bba35e9fa78b4bdab6baf8588a4e4c9469ce7");
   assert.equal(provider.typescriptPeerVersion, "6.0.3");
   assert.match(provider.reason, /not qualification against the unmodified published/);
@@ -177,7 +178,7 @@ test("source-provider verification still executes through a linked tooling direc
     const tools = fileURLToPath(new URL("../../tools", import.meta.url));
     const link = path.join(root, "tools");
     fs.symlinkSync(tools, link, process.platform === "win32" ? "junction" : "dir");
-    const executable = path.join(link, "support/compat/fixtures/typecheck-baseline-provider.mjs");
+    const executable = path.join(link, "support/compat/fixtures/typecheck-baseline-provider.ts");
     const result = spawnSync(process.execPath, [executable, "invalid"], { encoding: "utf8" });
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Expected provider verify inputs/);

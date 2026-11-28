@@ -3,7 +3,7 @@ import { readFileSync, statSync, type Stats } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
 import { typecheckUnits } from "./typecheck-targets.ts";
-import { typecheckProvider } from "./typecheck-baseline-provider.mjs";
+import { typecheckProvider } from "./typecheck-baseline-provider.ts";
 import {
   typecheckInputOverlays,
   verifyTypecheckInputOverlays,

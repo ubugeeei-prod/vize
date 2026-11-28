@@ -231,7 +231,7 @@ fn write_project_artifact(
             context,
             Path::new("node"),
             &[
-                root.join("tools/support/compat/fixtures/typecheck-baseline-provider.mjs")
+                root.join("tools/support/compat/fixtures/typecheck-baseline-provider.ts")
                     .display()
                     .to_string(),
                 "verify".into(),

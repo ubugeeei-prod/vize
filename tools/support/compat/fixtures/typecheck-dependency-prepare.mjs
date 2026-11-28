@@ -31,7 +31,7 @@ import {
 import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.ts";
 import { typecheckUnitTsconfigs } from "./typecheck-targets.ts";
 import { prepareTypecheckInputOverlays } from "./typecheck-input-overlays.ts";
-import { prepareTypecheckProvider } from "./typecheck-baseline-provider.mjs";
+import { prepareTypecheckProvider } from "./typecheck-baseline-provider.ts";
 
 export { installArguments } from "./typecheck-package-manager.ts";
 

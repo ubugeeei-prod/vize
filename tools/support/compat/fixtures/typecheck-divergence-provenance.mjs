@@ -8,7 +8,7 @@ import {
   typecheckInputOverlays,
   verifyTypecheckInputOverlays,
 } from "./typecheck-input-overlays.ts";
-import { verifyPreparedTypecheckProvider } from "./typecheck-baseline-provider.mjs";
+import { verifyPreparedTypecheckProvider } from "./typecheck-baseline-provider.ts";
 import {
   buildSeededMutation,
   executeSeededMutationOracle,

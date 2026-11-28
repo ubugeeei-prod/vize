@@ -9,7 +9,7 @@ import {
   type Stats,
 } from "node:fs";
 import path from "node:path";
-import { typecheckProvider } from "./typecheck-baseline-provider.mjs";
+import { typecheckProvider } from "./typecheck-baseline-provider.ts";
 
 export interface TypecheckInputOverlay {
   readonly source: string;
