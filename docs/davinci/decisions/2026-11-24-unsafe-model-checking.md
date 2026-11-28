@@ -52,22 +52,30 @@ that every invocation of Fresco's old wrapper has finished. The original single
 handler still read it. Its safety argument no longer depends on rollback
 providing that quiescence.
 
-`signal_hook/unix/previous_actions.rs` keeps two fixed generations. The sole
-publisher, serialized by the installation mutex, fills the inactive generation
-after its readers drain and then publishes it. A reader reserves the generation
-it observed and validates publication before borrowing any bytes. Those atomic
-operations and the publisher's drain check share a sequentially consistent
-order: a late reservation either validates after the complete new write, or
-rejects the inactive generation and reads no bytes. Reuse waits for every
-validated reader. The handler locks and allocates nothing; only the installer
-may wait. Chaining owns the required action data and releases its reader slot
-before calling a foreign handler. Custom and ignored actions retain only their
-handler/ABI choice; the default path retains the complete original signal mask,
-flags and platform fields for restoration.
+`signal_hook/unix/previous_actions.rs` keeps two bounded generations. Publication
+and sealing share the installation mutex. The installer reuses an inactive
+allocation after reserved readers drain, then publishes the complete action
+array. An initial reader borrows no generation; later readers reserve the
+publication they observed and validate it before borrowing any bytes. The
+reservation counter rejects overflow. Sequentially consistent reservation,
+validation and publication make a late reservation either accept a complete
+new publication or reject the inactive generation without reading it.
+
+Successful installation seals the current generation permanently. New handlers
+then read immutable storage without updating the counter. Sealing drains the
+older reserved readers and frees only the inactive allocation. The two bounded
+allocations are reused across retries; the installer does not accumulate an
+allocation per attempt. The handler locks and allocates nothing; only the
+installer may wait. Chaining owns the required action data and releases its
+guard before calling a foreign handler. Custom and ignored actions retain
+only their handler/ABI choice; the default path retains the complete original
+signal mask, flags and platform fields for restoration. Actual handler cost,
+static storage and allocation measurements remain required for acceptance.
 
 The `fresco-signal-actions` Miri job exercises this actual shipped cell: a
 retained reader across two publications, repeated reuse under concurrent
-readers, absent slots, and releasing every reader before foreign dispatch.
+readers, late and exhausted reservations, initial empty guards, sealing and
+inactive reclamation, allocation reuse, and release before foreign dispatch.
 Existing subprocess tests still exercise native signal chaining, flags, masks,
 errno, default termination and terminal restoration. These are dynamic checks
 of the publication protocol, not a deductive proof of POSIX signal delivery.
@@ -129,9 +137,9 @@ Sites are `unsafe` tokens: blocks, `unsafe fn` and `unsafe impl` declarations, `
 | `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix.rs`                  | `fn replace_action`                                          | 1     | (b) `sigaction` install                                     | a complete action borrowed for the call; null `oact`; every installed handler matches its `SA_SIGINFO` flag                                             | out of scope (OS); test `signal_hook/tests.rs`                                                                                                                                                                                                                                             |
 | `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix.rs`                  | `fn terminal_signal_handler`                                 | 2     | (b) async-signal handler (`unsafe extern "C" fn` and chain) | the kernel supplies the pointers; the stored action came from `sigaction` for this signal                                                               | out of scope (signals); test `signal_hook/tests.rs` child processes                                                                                                                                                                                                                        |
 | `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix.rs`                  | `fn chain_previous_action`                                   | 4     | (b) `unsafe fn`, `raise` and two handler-ABI casts          | the action came from `sigaction` for this signal; `SA_SIGINFO` selects the ABI                                                                          | out of scope (signals); test `signal_hook/tests.rs` child processes                                                                                                                                                                                                                        |
-| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `fn publish`                                                 | 1     | (b) saved-action generation write                           | serialized publisher writes an inactive generation after its validated readers drain; late reservations revalidate before reading                       | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
-| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `fn actions`                                                 | 1     | (b) saved-action generation borrow                          | sequentially consistent reservation then validation; publication follows the complete write and reuse waits for the reader slot                         | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
-| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `impl Sync for PreviousActions`                              | 1     | (b) unsafe impl Sync                                        | one serialized publisher, two fixed generations and validated reader slots; no assumption that rollback drains handlers                                 | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
+| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `fn replace_inactive`                                        | 1     | (b) saved-action generation write                           | serialized publication/sealing replaces an unpublished or drained inactive allocation; late reservations validate before reading                        | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
+| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `fn actions`                                                 | 1     | (b) saved-action generation borrow                          | validated reservation pins the generation, or sealing forbids later publication; the action borrow ends before guard release                            | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
+| `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/unix/previous_actions.rs` | `impl Sync for PreviousActions`                              | 1     | (b) unsafe impl Sync                                        | serialized publication/sealing, two bounded generations and checked reader slots; sealed readers see immutable current storage                          | miri `cargo miri test -p vize_fresco --lib -- previous_actions::tests`; test `signal_hook/tests.rs`                                                                                                                                                                                        |
 | `crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/windows.rs`               | `fn install`                                                 | 1     | (b) `SetConsoleCtrlHandler`                                 | static `extern "system"` routine valid for process life                                                                                                 | out of scope (OS); test `signal_hook/tests.rs` (Windows)                                                                                                                                                                                                                                   |
 | `crates/vize_fresco/src/terminal/backend/lifecycle/windows_console.rs`                   | `fn std_handle`                                              | 1     | (b) `GetStdHandle`                                          | selector by value; no pointer                                                                                                                           | out of scope (OS); test `windows_console/tests.rs`, `raw_mode/windows_tests.rs`, `panic_hook/windows_tests.rs`                                                                                                                                                                             |
 | `crates/vize_fresco/src/terminal/backend/lifecycle/windows_console.rs`                   | `fn console_mode`                                            | 1     | (b) `GetConsoleMode`                                        | writes one `DWORD` to a live local                                                                                                                      | out of scope (OS); test `windows_console/tests.rs`, `raw_mode/windows_tests.rs`                                                                                                                                                                                                            |

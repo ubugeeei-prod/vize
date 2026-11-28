@@ -57,17 +57,18 @@ pub(super) fn install() -> Result<TerminalSignalHookInstallation, TerminalSignal
 }
 
 fn install_actions() -> Result<TerminalSignalHookInstallation, TerminalSignalHookError> {
-    let mut previous = Vec::with_capacity(SUPERVISED_SIGNALS.len());
-    for signal in SUPERVISED_SIGNALS {
-        previous.push(inspect_action(signal)?);
-    }
-
-    PREVIOUS_ACTIONS.publish(&previous);
+    let [first, second, third, fourth] = SUPERVISED_SIGNALS;
+    let previous = PREVIOUS_ACTIONS.publish([
+        inspect_action(first)?,
+        inspect_action(second)?,
+        inspect_action(third)?,
+        inspect_action(fourth)?,
+    ]);
     // The kernel cannot invoke our handler until a later `sigaction` call.
     // Prevent compiler motion across that publication boundary.
     compiler_fence(Ordering::Release);
 
-    if let Err(failure) = install_actions_with(&previous, replace_action) {
+    if let Err(failure) = install_actions_with(previous.actions(), replace_action) {
         let InstallAttemptFailure {
             signal,
             source,
@@ -83,6 +84,8 @@ fn install_actions() -> Result<TerminalSignalHookInstallation, TerminalSignalHoo
         });
     }
 
+    drop(previous);
+    PREVIOUS_ACTIONS.seal();
     SIGNAL_HOOK_INSTALLED.store(true, Ordering::Release);
     Ok(TerminalSignalHookInstallation::Installed)
 }
