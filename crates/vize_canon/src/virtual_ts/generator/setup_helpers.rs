@@ -15,12 +15,13 @@ mod declarations;
 mod emit_navigation;
 pub use emit_navigation::owned_emit_navigation_source_ranges;
 mod macro_results;
+mod script_jsx_refs;
 pub(super) use declarations::SetupHelperPlan;
 mod template_ref_registry;
 
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
 pub(super) use template_ref_registry::registers_template_refs;
-use template_ref_registry::template_ref_registry;
+use template_ref_registry::{script_jsx_ref_registry, template_ref_registry};
 
 pub(super) struct SetupHelperComponentContext<'a> {
     pub(super) helpers: &'a SetupHelperPlan,
@@ -116,14 +117,24 @@ pub(super) fn emit_setup_helpers(
     // scope's shim, so it is collected here rather than by the caller.
     let scope = component_context.scope;
     let record = component_context.template_record;
-    let registry = template_ref_registry(
-        scope.summary,
-        scope.options,
-        component_context.helpers.template_refs.needs_registry(),
-        template_ast,
-        scope.syntactic_type_only_imported_names,
-        (scope.checks, record),
-    );
+    let infer_template_refs = component_context.helpers.template_refs.needs_registry();
+    let registry =
+        if template_ast.is_none() && !component_context.helpers.script_jsx_refs.is_empty() {
+            script_jsx_ref_registry(
+                infer_template_refs,
+                record,
+                &component_context.helpers.script_jsx_refs,
+            )
+        } else {
+            template_ref_registry(
+                scope.summary,
+                scope.options,
+                infer_template_refs,
+                template_ast,
+                scope.syntactic_type_only_imported_names,
+                (scope.checks, record),
+            )
+        };
     let template_refs = registry.as_ref().map(|registry| registry.body.as_str());
     if let Some(registry) = registry.as_ref() {
         // Hoisted batch and content-mapper modules name the shared SDK

@@ -64449,6 +64449,40 @@
       }
     },
     {
+      "id": "typechecker/jsx-map-template-refs/no-template-tsx-render",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::jsx_map_template_refs::jsx_map_refs_type_use_template_ref_as_an_element_array",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "jsx-map-template-refs/tsconfig.json.txt",
+          "sha256": "4105e062544b3ff7ac904577928b543a8935e606ffe0195db1cf00885c26233c"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "jsx-map-template-refs/App.vue.txt",
+          "sha256": "443016e25736b4ee7de07816f341a4ad552ca0dea0bdba04331a69f0ed252371"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "tsx"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::jsx_map_template_refs::jsx_map_refs_type_use_template_ref_as_an_element_array; a component without a template types useTemplateRef from its script's JSX refs: a ref inside an items.map() JSX child holds an element array, as a template v-for ref does, and a key the JSX never registers keeps Vue's untyped result without a key check. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/legacy-js-mixin-receiver-11780/finite-js-methods",
       "state": "active",
       "targets": [
