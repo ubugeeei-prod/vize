@@ -5,9 +5,9 @@ export const ADAPTER_CAPABILITY_FORMAT_VERSION = 1 as const;
 export interface AdapterCapabilitySupport {
   /** Stable capability identifier from an application marquette. */
   readonly id: string;
-  /** Oldest supported capability contract version, inclusive. */
+  /** Oldest supported capability contract version, inclusive; a positive unsigned 32-bit integer. */
   readonly minVersion: number;
-  /** Newest supported capability contract version, inclusive. */
+  /** Newest supported capability contract version, inclusive; a positive unsigned 32-bit integer. */
   readonly maxVersion: number;
 }
 
@@ -53,7 +53,8 @@ export type AdapterCapabilityMismatchCode =
   | "unknown-requirement"
   | "missing-capability"
   | "version-below-minimum"
-  | "version-above-maximum";
+  | "version-above-maximum"
+  | "invalid-requirement-version";
 
 /** One failed adapter capability requirement. */
 export interface AdapterCapabilityMismatch {

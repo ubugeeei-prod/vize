@@ -131,6 +131,12 @@ not mutate their inputs. Compatibility reports expose validation diagnostics for
 both manifests and omit changes when either input is invalid. The published manifest schema is available from
 `@vizejs/marquette/adapter/schema`.
 
+Capability definitions and adapter bounds use positive unsigned 32-bit integer
+versions (`1` through `4294967295`) in TypeScript, native contracts, and published
+schemas. Direct validation and negotiation refuse non-finite, fractional, and
+out-of-range numbers. An invalid application requirement produces the stable
+`invalid-requirement-version` mismatch without serializing the invalid number.
+
 Native rendering adapters share one closed version-one baseline for rendering,
 events, layout, text, images, animation, accessibility, and lifecycle:
 

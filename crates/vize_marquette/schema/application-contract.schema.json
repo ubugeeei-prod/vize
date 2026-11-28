@@ -32,7 +32,7 @@
       "properties": {
         "id": { "$ref": "#/$defs/identifier" },
         "description": { "type": "string", "minLength": 1 },
-        "version": { "type": "integer", "minimum": 1, "default": 1 }
+        "version": { "type": "integer", "minimum": 1, "maximum": 4294967295, "default": 1 }
       }
     },
     "environment": {

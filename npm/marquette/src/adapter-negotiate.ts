@@ -44,9 +44,12 @@ function mismatch(
 ): AdapterCapabilityMismatch[] {
   const requirement = marquette.capabilities?.[id];
   if (requirement === undefined) return [problem("unknown-requirement", id)];
+  const requiredVersion = requirement.version === undefined ? 1 : requirement.version;
+  if (!Number.isInteger(requiredVersion) || requiredVersion < 1 || requiredVersion > 0xffff_ffff) {
+    return [problem("invalid-requirement-version", id)];
+  }
   if (!manifestIsValid) return [];
 
-  const requiredVersion = requirement.version ?? 1;
   if (support === undefined) return [problem("missing-capability", id, requiredVersion)];
   if (requiredVersion < support.minVersion) {
     return [problem("version-below-minimum", id, requiredVersion, support)];
@@ -79,6 +82,8 @@ function mismatchMessage(code: AdapterCapabilityMismatchCode): string {
   switch (code) {
     case "unknown-requirement":
       return "application references an undeclared capability requirement";
+    case "invalid-requirement-version":
+      return "application capability version must be a positive unsigned 32-bit integer";
     case "missing-capability":
       return "adapter does not support the required capability";
     case "version-below-minimum":

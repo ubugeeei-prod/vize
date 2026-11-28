@@ -10,9 +10,9 @@ pub const ADAPTER_CAPABILITY_FORMAT_VERSION: u32 = 1;
 pub struct AdapterCapabilitySupport {
     /// Stable capability identifier from an application marquette.
     pub id: String,
-    /// Oldest supported capability contract version, inclusive.
+    /// Oldest supported capability contract version, inclusive; must be positive.
     pub min_version: u32,
-    /// Newest supported capability contract version, inclusive.
+    /// Newest supported capability contract version, inclusive; must be positive.
     pub max_version: u32,
 }
 
@@ -80,6 +80,8 @@ pub enum AdapterCapabilityMismatchCode {
     VersionBelowMinimum,
     /// The application requires a newer contract than the adapter supports.
     VersionAboveMaximum,
+    /// The application capability version is outside the portable version range.
+    InvalidRequirementVersion,
 }
 
 /// One failed adapter capability requirement.

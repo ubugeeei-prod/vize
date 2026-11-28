@@ -61,10 +61,16 @@ export function validateApplicationMarquette(
         error("VIZE_MARQUETTE_004", path, "capability map key must equal capability.id"),
       );
     }
-    const version = capability.version ?? 1;
-    if (!Number.isInteger(version) || version < 1) {
+    const version = capability.version === undefined ? 1 : capability.version;
+    if (!Number.isInteger(version) || version < 1 || version > 0xffff_ffff) {
       diagnostics.push(
-        error("VIZE_MARQUETTE_005", path, "capability version must be greater than zero"),
+        error(
+          "VIZE_MARQUETTE_005",
+          path,
+          version === 0
+            ? "capability version must be greater than zero"
+            : "capability version must be a positive unsigned 32-bit integer",
+        ),
       );
     }
     if (capability.description.trim().length === 0) {
