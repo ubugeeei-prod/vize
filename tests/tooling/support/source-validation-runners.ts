@@ -51,12 +51,6 @@ export const sourceRunnerChanges = [
   },
   {
     "workflow": ".github/workflows/pr-source-checks.yml",
-    "job": "affected-tooling",
-    "before": "blacksmith-32vcpu-ubuntu-2404",
-    "after": "blacksmith-16vcpu-ubuntu-2404",
-  },
-  {
-    "workflow": ".github/workflows/pr-source-checks.yml",
     "job": "ci-selection-tests",
     "before":
       "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
@@ -160,7 +154,7 @@ export const sourceRunnerChanges = [
 /** Unowned workflows and every field other than these exact selectors pass through. */
 export function sourceRunnersBefore(file: string, source: string): string {
   const rows = sourceRunnerChanges.filter((row) => row.workflow === file);
-  if (rows.length === 0) return source;
+  if (rows.length === 0) return plannedRunnersBefore(file, source);
   assert.equal([...source.matchAll(/^jobs:\n/gm)].length, 1, `one jobs map: ${file}`);
   for (const row of rows) {
     assert.equal(
@@ -179,6 +173,41 @@ export function sourceRunnersBefore(file: string, source: string): string {
     const selector = selectors[0]!;
     assert.ok(
       selector[1] === row.before || selector[1] === row.after,
+      `unowned runner: ${file}/${row.job}`,
+    );
+    const previous = job.replace(selector[0], `    runs-on: ${row.before}`);
+    source = source.slice(0, start) + previous + source.slice(end);
+  }
+  return plannedRunnersBefore(file, source);
+}
+
+/**
+ * Jobs whose live runner is a planner matrix value. Older custody recorded the
+ * 32-vCPU runner, then the 16-vCPU validation pool; history restores the former.
+ */
+export const plannedSourceRunnerChanges = [
+  {
+    "workflow": ".github/workflows/pr-source-checks.yml",
+    "job": "affected-tooling",
+    "before": "blacksmith-32vcpu-ubuntu-2404",
+    "after": "${{ matrix.runner }}",
+    "previous": ["blacksmith-16vcpu-ubuntu-2404"],
+  },
+] as const;
+
+function plannedRunnersBefore(file: string, source: string): string {
+  for (const row of plannedSourceRunnerChanges.filter((row) => row.workflow === file)) {
+    const header = `  ${row.job}:\n`;
+    assert.equal(source.split(header).length, 2, `one recorded job: ${file}/${row.job}`);
+    const start = source.indexOf(header) + header.length;
+    const following = /^  [^ \t#][^\n]*:\n/m.exec(source.slice(start));
+    const end = following ? start + following.index : source.length;
+    const job = source.slice(start, end);
+    const selectors = [...job.matchAll(/^    runs-on: (.+)$/gm)];
+    assert.equal(selectors.length, 1, `one runner selector: ${file}/${row.job}`);
+    const selector = selectors[0]!;
+    assert.ok(
+      ([row.before, row.after, ...row.previous] as readonly string[]).includes(selector[1]!),
       `unowned runner: ${file}/${row.job}`,
     );
     const previous = job.replace(selector[0], `    runs-on: ${row.before}`);

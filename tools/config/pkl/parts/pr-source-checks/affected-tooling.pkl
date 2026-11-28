@@ -3,7 +3,8 @@ import "../../../../ci/lib/Actions.pkl" as ci
 name = "Affected tooling (${{ matrix.name }})"
 needs = List("pr-source-plan", "affected-tooling-cli")
 `if` = "${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}"
-`runs-on` = ci.linuxValidation
+// The planner picks each shard's class (toolingShardMatrix in tooling-test-shards.ts).
+`runs-on` = "${{ matrix.runner }}"
 `timeout-minutes` = 30
 strategy {
   `fail-fast` = false

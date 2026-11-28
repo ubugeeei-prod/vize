@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -19,6 +19,9 @@ import {
   selectToolingShard,
   toolingLeadSteps,
   toolingShardMatrix,
+  TOOLING_CPU_HEAVY_TESTS,
+  TOOLING_NATIVE_SHARD_RUNNER,
+  TOOLING_SHARD_RUNNER,
   toolingShardNativeBuildRequired,
   toolingShards,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
@@ -144,7 +147,18 @@ void test("only shards that own a native runtime consumer build the addon", () =
       .sort(),
     [...nativeBuildTests].sort(),
   );
+  // Only the shards that build the addon keep the validation pool.
+  for (const entry of matrix)
+    assert.equal(
+      entry.runner,
+      toolingShardNativeBuildRequired(input, `${entry.index}/${entry.total}`)
+        ? TOOLING_NATIVE_SHARD_RUNNER
+        : TOOLING_SHARD_RUNNER,
+    );
   const plain = plan(files);
+  assert.ok(
+    toolingShardMatrix(plain).include.every(({ runner }) => runner === TOOLING_SHARD_RUNNER),
+  );
   const first = toolingShardMatrix(plain).include[0];
   assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
   // One more unmeasured native consumer than a single runner's budget holds.
@@ -277,4 +291,21 @@ void test("the real merge runner rejects a partial PR plan before starting any t
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }
+});
+
+void test("CPU-heavy files pack onto the fewest 16-vCPU shards without building the addon", () => {
+  const files = Array.from({ length: 30 }, (_, index) => `tests/tooling/${index}.test.ts`);
+  const heavy = TOOLING_CPU_HEAVY_TESTS.slice(0, 3);
+  const input = plan([...files, ...heavy]);
+  const matrix = toolingShardMatrix(input).include;
+  const large = matrix.filter(({ runner }) => runner === TOOLING_NATIVE_SHARD_RUNNER);
+  assert.ok(large.length >= 1 && large.length < matrix.length);
+  const placed = large.flatMap(({ index, total }) =>
+    selectToolingShard(input, `${index}/${total}`),
+  );
+  for (const file of heavy) assert.ok(placed.includes(file), file);
+  for (const { index, total } of matrix)
+    assert.equal(toolingShardNativeBuildRequired(input, `${index}/${total}`), false);
+  for (const file of TOOLING_CPU_HEAVY_TESTS)
+    assert.ok(existsSync(new URL(`../../${file}`, import.meta.url)), file);
 });
