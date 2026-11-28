@@ -76,12 +76,15 @@ impl InstalledSdk {
         )
         .unwrap();
         let core = matches!(mode, Mode::Core | Mode::Shared);
+        let command_line = compiler_options.get("project").is_some();
         let options = configuration
             .transform_options
             .with_external_component_attrs_module(core)
             .with_external_component_type_helpers(core)
             .with_shared_virtual_module(matches!(mode, Mode::Shared))
-            .with_checker_globals_module(matches!(mode, Mode::Declarations));
+            .with_checker_globals_module(matches!(mode, Mode::Declarations))
+            // `project` is what a command line passes (see `mode.rs`).
+            .with_diagnostics_only(command_line);
         let expected = generate_vue_content_mapper_transform_with_project_context(
             Path::new("/project/Options.vue"),
             source,
@@ -89,6 +92,20 @@ impl InstalledSdk {
             &configuration.project_context,
         )
         .unwrap();
+        let response = self.transform_response(source, compiler_options);
+        if command_line {
+            // A command line also coalesces spans; the projection is the text.
+            assert_eq!(response["result"]["text"], json!(expected.text.as_str()));
+            return;
+        }
+        assert_eq!(
+            response,
+            json!({ "id": 3, "jsonrpc": "2.0", "result": super::dispatch::wire_value(&expected.with_semantic_diagnostics()) })
+        );
+    }
+
+    /// The server's reply to one transform in a project opened with `compiler_options`.
+    pub fn transform_response(&self, source: &str, compiler_options: Value) -> Value {
         let mut open = open_project_request(2, Value::Null, compiler_options);
         open["params"]["configFileName"] = json!(self.config);
         let responses = exchange(&frames(&[
@@ -96,10 +113,7 @@ impl InstalledSdk {
             open,
             transform_request(3, source),
         ]));
-        assert_eq!(
-            responses[2],
-            json!({ "id": 3, "jsonrpc": "2.0", "result": super::dispatch::wire_value(&expected.with_semantic_diagnostics()) })
-        );
+        responses[2].clone()
     }
 
     /// The fixture declares the winners; this oracle never calls installed_helpers.

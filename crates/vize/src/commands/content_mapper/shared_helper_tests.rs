@@ -67,25 +67,47 @@ fn installed_virtual_module_points_helpers_at_the_package() {
 }
 
 #[test]
-fn declaration_emitting_projects_embed_helpers_beside_installed_checker_globals() {
+fn declaration_emitting_command_lines_embed_helpers_beside_installed_checker_globals() {
     let sdk = InstalledSdk::new();
-    for compiler_options in [
+    let project = json!(sdk.config.parent().unwrap());
+    for mut compiler_options in [
         json!({ "declaration": true }),
         json!({ "declaration": true, "emitDeclarationOnly": true }),
         json!({ "composite": true }),
     ] {
+        compiler_options["project"] = project.clone();
         sdk.assert_projection_with_options(Mode::Declarations, compiler_options);
     }
-    sdk.assert_projection_with_options(
-        Mode::Shared,
-        json!({ "declaration": true, "noEmit": true }),
+    // A command line that writes no declarations keeps its projection.
+    let source = "<template><main /></template>";
+    assert_eq!(
+        sdk.transform_response(
+            source,
+            json!({ "declaration": true, "noEmit": true, "project": project }),
+        ),
+        sdk.transform_response(source, json!({ "noEmit": true, "project": project })),
     );
-    sdk.assert_projection_with_options(Mode::Shared, json!({ "declaration": false }));
+    assert_eq!(
+        sdk.transform_response(source, json!({ "declaration": false, "project": project })),
+        sdk.transform_response(source, json!({ "project": project })),
+    );
+    sdk.assert_projection_with_options(Mode::Shared, json!({ "project": project }));
+}
+
+#[test]
+fn editors_of_declaration_emitting_projects_keep_the_shared_projection() {
+    let sdk = InstalledSdk::new();
+    sdk.assert_projection_with_options(Mode::Shared, json!({ "declaration": true }));
+    sdk.assert_projection_with_options(Mode::Shared, json!({ "composite": true }));
 }
 
 #[test]
 fn declaration_emitting_projects_without_an_installed_package_stay_embedded() {
     let sdk = InstalledSdk::new();
     std::fs::remove_file(sdk.package.join("package.json")).unwrap();
-    sdk.assert_projection_with_options(Mode::Inline, json!({ "declaration": true }));
+    let project = json!(sdk.config.parent().unwrap());
+    sdk.assert_projection_with_options(
+        Mode::Inline,
+        json!({ "declaration": true, "project": project }),
+    );
 }

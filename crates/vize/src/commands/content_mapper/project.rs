@@ -197,7 +197,6 @@ pub(super) fn resolve_open_project(
         Path::new(params.config_file_name.as_str()),
         &params.compiler_options,
     );
-    let emits_declarations = emits_declarations(&params.compiler_options);
     let mut watched_files = configuration.watched_files;
     watched_files.extend(
         ambient_declarations
@@ -231,16 +230,21 @@ pub(super) fn resolve_open_project(
     } else {
         config_identity
     };
-    let config_identity = if emits_declarations {
-        cstr!("{config_identity}:declarations:1")
-    } else {
-        config_identity
-    };
     let mode = ProjectionMode::resolve(
         explicit_mode,
         params.config_file_name.as_str(),
         &params.compiler_options,
     );
+    // Self-contained modules cost several times the shared projection's
+    // check time, so only a command-line host, the one that writes the
+    // declarations, receives them; an editor never emits.
+    let emits_declarations =
+        mode == ProjectionMode::Check && emits_declarations(&params.compiler_options);
+    let config_identity = if emits_declarations {
+        cstr!("{config_identity}:declarations:1")
+    } else {
+        config_identity
+    };
     Ok((
         ProjectSettings {
             skip_lib_check: params.compiler_options.get("skipLibCheck") == Some(&Value::Bool(true)),
