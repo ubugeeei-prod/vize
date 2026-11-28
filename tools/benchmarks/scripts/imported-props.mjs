@@ -100,10 +100,24 @@ function build(input, role, expected) {
   };
   report.sources[role] = source;
   retain();
+  const declarations = path.join(out, `declarations-${role}`);
+  fs.mkdirSync(declarations);
   run("cargo", args, root, `build-${role}`, {
     CARGO_TARGET_DIR: target,
     VIZE_NATIVE_BUILD_TOKEN: token,
+    NAPI_TYPE_DEF_TMP_FOLDER: declarations,
   });
+  const definitions = fs.readFileSync(path.join(declarations, "vize_vitrine"), "utf8");
+  source.declarations = definitions
+    .trim()
+    .split("\n")
+    .map((line) => {
+      const definition = JSON.parse(line);
+      delete definition.original_name;
+      return definition;
+    })
+    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  assert(source.declarations.length > 100, "retain the complete generated declaration inventory");
   const name =
     process.platform === "win32"
       ? "vize_vitrine.dll"
@@ -122,6 +136,11 @@ const images = {
   head: build(headInput, "head", process.env.IMPORTED_PROPS_HEAD_SHA),
 };
 assert.equal(report.sources.base.lockSha256, report.sources.head.lockSha256);
+assert.deepEqual(
+  report.sources.head.declarations,
+  report.sources.base.declarations,
+  "the complete generated JavaScript declarations must remain unchanged",
+);
 const provider = path.join(out, "provider");
 run(
   process.platform === "win32" ? "npm.cmd" : "npm",
