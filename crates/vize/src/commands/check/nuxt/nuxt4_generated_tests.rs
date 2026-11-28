@@ -116,7 +116,7 @@ fn detect_program(root: &Path, program: &[PathBuf]) -> Vec<String> {
 
 fn detect_program_under(root: &Path, program_root: &Path, program: &[PathBuf]) -> Vec<String> {
     let mut options = VirtualTsOptions::default();
-    let _ = detect(
+    detect(
         &mut options,
         root,
         program_root,
@@ -124,7 +124,8 @@ fn detect_program_under(root: &Path, program_root: &Path, program: &[PathBuf]) -
         Some(program),
         false,
         VueVersion::V3,
-    );
+    )
+    .unwrap();
     options.auto_import_stubs
 }
 
@@ -283,9 +284,95 @@ fn local_type_aliases_rewrite_vue_imports_inside_the_namespace() {
         oxc_parser::Parser::new(&allocator, namespace.as_str(), oxc_span::SourceType::d_ts())
             .parse();
     assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
-    assert!(
-        namespace.contains("import('./app/Foo.vue.ts')"),
-        "{namespace}"
+    assert_eq!(
+        namespace.as_str(),
+        "declare namespace __VizeNuxtLocalTypes__2e_nuxt_2f_types_2f_components_2e_d_2e_ts {\ntype LazyFoo = typeof import('./app/Foo.vue.ts')['default']\n}"
     );
-    assert!(!namespace.contains("Foo.vue'"));
+}
+
+#[cfg(unix)]
+#[test]
+fn linked_installed_declarations_keep_their_installed_membership() {
+    let (root, program) = nuxt4_project("linked-nitro");
+    let installed = root.join("node_modules/.pnpm/nitro-server");
+    let real = root.join("packages/nitro-server");
+    std::fs::create_dir_all(real.parent().unwrap()).unwrap();
+    std::fs::rename(&installed, &real).unwrap();
+    std::os::unix::fs::symlink(&real, &installed).unwrap();
+    let stubs = detect_program(&root, &program);
+    let augmentation = real.join("dist/augments.d.mts");
+    let references = stubs
+        .iter()
+        .filter(|stub| stub.starts_with("///"))
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        references,
+        vec![
+            format!(
+                "/// <reference path=\"{}\" />",
+                root.join("node_modules/nitro-kit/index.d.ts").display()
+            ),
+            format!("/// <reference path=\"{}\" />", augmentation.display()),
+        ]
+    );
+}
+
+#[test]
+fn nested_shadowing_references_keep_safe_parent_declarations_in_snapshots() {
+    let (root, program) = nuxt4_project("nested-shadowing");
+    let parent = write(
+        &root,
+        "node_modules/.pnpm/nitro-server/dist/augments.d.mts",
+        "/// <reference path=\"child.d.ts\" />\nexport {}; declare global { const safeParent: number }\n",
+    );
+    let child = write(
+        &root,
+        "node_modules/.pnpm/nitro-server/dist/child.d.ts",
+        "/// <reference path=\"shim.d.ts\" />\nexport {}; declare global { const safeChild: true }\n",
+    );
+    let shim = write(
+        &root,
+        "node_modules/.pnpm/nitro-server/dist/shim.d.ts",
+        "declare module 'vue' { export const unrelated: true }\n",
+    );
+    let originals = [&parent, &child, &shim].map(|path| std::fs::read(path).unwrap());
+    let mut options = VirtualTsOptions::default();
+    let detection = detect(
+        &mut options,
+        &root,
+        &root,
+        Some(&root.join("tsconfig.json")),
+        Some(&program),
+        false,
+        VueVersion::V3,
+    )
+    .unwrap();
+    assert_eq!(detection.declaration_snapshots, vec![
+        (root.join(".nuxt/nuxt.d.ts"), format!("/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\nexport {{}}\n",
+            parent.display(), root.join(".nuxt/types/components.d.ts").display(), root.join(".nuxt/types/imports.d.ts").display(), root.join("node_modules/nitro-kit/index.d.ts").display()).into()),
+        (parent.clone(), format!("/// <reference path=\"{}\" />\nexport {{}}; declare global {{ const safeParent: number }}\n", child.display()).into()),
+        (child.clone(), "export {}; declare global { const safeChild: true }\n".into()),
+    ]);
+    let references = options
+        .auto_import_stubs
+        .iter()
+        .filter(|stub| stub.starts_with("///"))
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        references,
+        vec![
+            format!("/// <reference path=\"{}\" />", parent.display()),
+            format!("/// <reference path=\"{}\" />", child.display()),
+            format!(
+                "/// <reference path=\"{}\" />",
+                root.join("node_modules/nitro-kit/index.d.ts").display()
+            ),
+        ]
+    );
+    assert_eq!(
+        [&parent, &child, &shim].map(|path| std::fs::read(path).unwrap()),
+        originals
+    );
 }

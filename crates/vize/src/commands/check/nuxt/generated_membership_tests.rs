@@ -113,7 +113,8 @@ fn configured_generated_stubs_follow_references_and_literal_includes() {
             Some(&files),
             false,
             VueVersion::V3,
-        );
+        )
+        .unwrap();
         let mut expected = vec![
             "declare const useConfigured: () => string;",
             "declare const referencedGlobal: number;",
@@ -181,7 +182,8 @@ fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
         Some(&files),
         false,
         VueVersion::V3,
-    );
+    )
+    .unwrap();
     assert_complete_stubs(
         &options,
         vec!["declare const useOutsideBuildDir: () => string;"],
@@ -232,7 +234,8 @@ fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
         Some(&files),
         false,
         VueVersion::V3,
-    );
+    )
+    .unwrap();
     assert_complete_stubs(&options, vec!["declare const useConfigured: () => string;"]);
     assert_complete_template_globals(&options, vec![]);
     assert!(options.strict_instance_globals);

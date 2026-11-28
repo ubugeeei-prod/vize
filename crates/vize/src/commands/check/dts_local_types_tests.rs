@@ -191,8 +191,9 @@ fn qualified_references_respect_comments_unicode_conditionals_and_binding_scopes
         result.as_str(),
         "{ Local: number; a: true extends true ? NS.Local : never; b: NS.État; c: <T>(value: T) => T; d: { // user's prop\n value: NS.Dep }; e: `literal ${NS.Local}` }"
     );
-    assert_eq!(used.len(), 3);
-    assert!(!used.contains("T"));
+    let mut used = used.iter().map(String::as_str).collect::<Vec<_>>();
+    used.sort();
+    assert_eq!(used, vec!["Dep", "Local", "État"]);
 }
 
 #[test]
@@ -219,6 +220,8 @@ fn copied_local_types_preserve_import_keys_and_generic_bindings() {
         "NS",
     );
     let local = result.local_types.unwrap();
-    assert!(local.contains("type Wrapper = { Ref: import('vue').Ref<T>; generic: <T>() => T }"));
-    assert!(local.contains("type T = string"));
+    assert_eq!(
+        local.as_str(),
+        "declare namespace NS {\ntype T = string\ntype Wrapper = { Ref: import('vue').Ref<T>; generic: <T>() => T }\n}"
+    );
 }

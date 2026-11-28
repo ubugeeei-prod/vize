@@ -251,7 +251,10 @@ fn collect_global_component_stubs(
 pub(super) fn local_types_namespace(root: &Path, path: &Path) -> String {
     let relative = path.strip_prefix(root).unwrap_or(path);
     let mut namespace = String::from("__VizeNuxtLocalTypes_");
-    for ch in relative.to_string_lossy().chars() {
+    let relative = relative.to_string_lossy();
+    #[cfg(windows)]
+    let relative = relative.replace('\\', "/");
+    for ch in relative.chars() {
         if ch.is_ascii_alphanumeric() {
             namespace.push(ch);
         } else {

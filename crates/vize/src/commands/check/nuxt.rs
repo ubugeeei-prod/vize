@@ -1,6 +1,6 @@
 //! Nuxt-specific auto-import and plugin injection helpers.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_l0::{FxHashSet, String, ToCompactString, config::VueVersion};
@@ -41,7 +41,7 @@ use fallback::{
 use generated::{GeneratedImports, collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
-use reference_graph::{installed_reference_stubs, is_installed};
+use reference_graph::installed_reference_stubs;
 use source_scan::collect_source_auto_import_stubs;
 use stubs::{declared_name, is_template_component_binding};
 use tsconfig_aliases::collect_explicit_virtual_module_aliases;
@@ -60,12 +60,20 @@ pub(in crate::commands::check) struct NuxtPathAlias {
     pub(in crate::commands::check) targets: Vec<String>,
 }
 
+#[derive(Default)]
+pub(in crate::commands::check) struct NuxtDetection {
+    pub(in crate::commands::check) path_aliases: Vec<NuxtPathAlias>,
+    pub(in crate::commands::check) declaration_snapshots: Vec<(PathBuf, String)>,
+}
+
 #[cfg(test)]
 pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
     detect(options, cwd, cwd, None, None, false, VueVersion::V3)
+        .expect("Nuxt declarations")
+        .path_aliases
 }
 
 #[cfg(test)]
@@ -74,6 +82,8 @@ pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
     detect(options, cwd, cwd, None, None, true, VueVersion::V2_7)
+        .expect("Nuxt declarations")
+        .path_aliases
 }
 
 /// `program_root` is the directory the checked program's virtual project
@@ -87,9 +97,9 @@ pub(in crate::commands::check) fn detect(
     configured_files: Option<&[std::path::PathBuf]>,
     legacy_vue2: bool,
     dialect: VueVersion,
-) -> Vec<NuxtPathAlias> {
+) -> Result<NuxtDetection, String> {
     if !is_nuxt_project_root(cwd) {
-        return Vec::new();
+        return Ok(NuxtDetection::default());
     }
 
     let mut seen_names = FxHashSet::default();
@@ -136,17 +146,18 @@ pub(in crate::commands::check) fn detect(
                 &roots,
                 Default::default(),
                 |path, content| {
-                    if is_installed(path)
-                        && super::tsconfig_inputs::declares_shadowing_ambient_module(content)
-                    {
+                    if super::tsconfig_inputs::declares_shadowing_ambient_module(content) {
                         shadowing_declarations.insert(path.to_path_buf());
                     }
                 },
             )
         })
     });
+    let mut declaration_snapshots = Vec::new();
     let installed_references = match (&declaration_graph, configured_files) {
         (Some(graph), Some(files)) => {
+            declaration_snapshots =
+                reference_graph::safe_declaration_snapshots(graph, &shadowing_declarations)?;
             installed_reference_stubs(graph, &shadowing_declarations, files)
         }
         _ => Vec::new(),
@@ -159,7 +170,7 @@ pub(in crate::commands::check) fn detect(
         program_root,
         &generated_dir,
         &generated_files,
-        declaration_graph.as_ref(),
+        declaration_graph.as_ref().map(|graph| &graph.files),
         &mut collected,
         &mut seen_names,
         &mut external_template_bindings,
@@ -214,7 +225,7 @@ pub(in crate::commands::check) fn detect(
     options.strict_instance_globals = has_generated_imports && !vue2_dialect;
     collect_generated_template_globals(
         &generated_files,
-        declaration_graph.as_ref(),
+        declaration_graph.as_ref().map(|graph| &graph.files),
         options,
         &seen_names,
         !options.strict_instance_globals,
@@ -235,7 +246,10 @@ pub(in crate::commands::check) fn detect(
     let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
     external_template_bindings.sort();
     options.external_template_bindings = external_template_bindings;
-    path_aliases
+    Ok(NuxtDetection {
+        path_aliases,
+        declaration_snapshots,
+    })
 }
 
 /// Whether Nuxt detection for `cwd` supplies `declaration` itself.

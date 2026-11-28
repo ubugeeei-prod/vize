@@ -24,6 +24,7 @@ use super::super::glob::normalize_input_path;
 #[derive(Default)]
 pub(super) struct ReferenceRealpaths {
     directories: FxHashMap<PathBuf, Listing>,
+    pub(super) installed: FxHashSet<PathBuf>,
 }
 
 enum Listing {

@@ -179,6 +179,82 @@ impl VirtualProject {
         content.push_str(stub.get(copied..).unwrap_or_default());
     }
 
+    /// Rewrite generated reference directives through the original-source
+    /// index, including explicitly registered installed declaration snapshots.
+    fn mirrored_reference_directive(
+        &self,
+        line: &str,
+        snapshots: &vize_carton::FxHashSet<&std::path::Path>,
+    ) -> Option<CompactString> {
+        let trimmed = line.trim_start();
+        let value = trimmed.strip_prefix("/// <reference path=")?;
+        let quote = value.chars().next()?;
+        if !matches!(quote, '\'' | '"') {
+            return None;
+        }
+        let path = value.get(1..)?.split_once(quote)?.0;
+        let path = std::path::Path::new(path);
+        if !snapshots.contains(path) {
+            return None;
+        }
+        let file = self.find_by_original(path)?;
+        let rendered = file.virtual_path.to_str()?;
+        if rendered.contains(quote) || rendered.contains(['\r', '\n', '\0']) {
+            return None;
+        }
+        Some(vize_carton::cstr!(
+            "/// <reference path={quote}{rendered}{quote} />"
+        ))
+    }
+
+    pub(in crate::batch) fn rewrite_snapshot_references(
+        &mut self,
+        declarations: &[(std::path::PathBuf, CompactString)],
+    ) {
+        if declarations.is_empty() {
+            return;
+        }
+        let snapshots = declarations
+            .iter()
+            .map(|(path, _)| path.as_path())
+            .collect::<vize_carton::FxHashSet<_>>();
+        let stubs = self
+            .virtual_ts_options
+            .auto_import_stubs
+            .iter()
+            .enumerate()
+            .filter_map(|(index, stub)| {
+                self.mirrored_reference_directive(stub, &snapshots)
+                    .map(|stub| (index, stub))
+            })
+            .collect::<Vec<_>>();
+        for (index, stub) in stubs {
+            if let Some(target) = self.virtual_ts_options.auto_import_stubs.get_mut(index) {
+                *target = stub;
+            }
+        }
+        for (path, _) in declarations {
+            let Some(file) = self.find_by_original(path) else {
+                continue;
+            };
+            let virtual_path = file.virtual_path.clone();
+            let mut content = CompactString::with_capacity(file.content.len());
+            for line in file.content.split_inclusive('\n') {
+                if let Some(reference) = self.mirrored_reference_directive(line, &snapshots) {
+                    content.push_str(&reference);
+                    if line.ends_with('\n') {
+                        content.push('\n');
+                    }
+                } else {
+                    content.push_str(line);
+                }
+            }
+            if let Some(file) = self.virtual_files.get_mut(&virtual_path) {
+                file.content = content;
+            }
+        }
+    }
+
     /// `./relative` for an absolute project specifier whose script module is
     /// mirrored at the same relative path, keeping the authored extension form.
     fn stub_mirror(&self, specifier: &str) -> Option<CompactString> {
