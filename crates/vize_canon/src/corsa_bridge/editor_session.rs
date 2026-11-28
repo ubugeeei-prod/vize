@@ -299,20 +299,26 @@ impl<'base> GcLock<'base> {
                 continue;
             }
             let lock_path = path.join(".session.lock");
-            let removable = if lock_path.exists() {
+            if lock_path.exists() {
                 match open_existing_session_lock(&lock_path) {
                     Ok(lock) => match lock.try_lock() {
-                        Ok(()) => true,
-                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => false,
+                        Ok(()) => self.reap_unlocked_session(&path, lock),
+                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => {}
                     },
-                    Err(_) => false,
+                    Err(_) => {}
                 }
-            } else {
-                legacy_session_expired(&path, LEGACY_GRACE)
-            };
-            if removable {
+            } else if legacy_session_expired(&path, LEGACY_GRACE) {
                 let _ = std::fs::remove_dir_all(path);
             }
+        }
+    }
+
+    fn reap_unlocked_session(&self, path: &Path, _lifetime_lock: File) {
+        // The owner can arm retention after the sweep's first marker check,
+        // then release its lifetime lock after an incomplete native shutdown.
+        // Recheck while holding that lock before removing any generated input.
+        if !path.join(RETAINED_FAILURE).exists() {
+            let _ = std::fs::remove_dir_all(path);
         }
     }
 }

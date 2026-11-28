@@ -51,6 +51,37 @@ fn failed_owner_keeps_exact_generated_bytes_through_clear_drop_and_later_sweep()
 }
 
 #[test]
+fn stale_sweep_observation_keeps_retention_armed_before_owner_unlock() {
+    let session = EditorMirrorSession::new();
+    let file = generated(&session);
+    let root = session.root().unwrap().to_path_buf();
+    let gc = GcLock::acquire(root.parent().unwrap()).unwrap();
+
+    // Pause the sweep after its initial marker observation and lock open.
+    assert!(!root.join(RETAINED_FAILURE).exists());
+    let reaper_lock = open_existing_session_lock(&root.join(".session.lock")).unwrap();
+    assert!(matches!(
+        reaper_lock.try_lock(),
+        Err(std::fs::TryLockError::WouldBlock)
+    ));
+
+    session.arm_retention_before_startup().unwrap();
+    session.retain_after_failed_shutdown();
+    drop(session);
+
+    // Resume the same sweep after the owner's lifetime lock is released.
+    reaper_lock.try_lock().unwrap();
+    gc.reap_unlocked_session(&root, reaper_lock);
+    assert_eq!(
+        std::fs::read_to_string(&file).unwrap(),
+        "export const generated = 42;\n"
+    );
+    assert!(root.join(RETAINED_FAILURE).is_file());
+    // This fixture has no native reader; only the test removes its own owner.
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn actual_marker_creation_failure_is_unarmed_and_rollback_restores_normal_cleanup() {
     let session = EditorMirrorSession::new();
     let file = generated(&session);
