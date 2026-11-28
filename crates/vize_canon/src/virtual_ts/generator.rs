@@ -727,7 +727,7 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
     emits_info.emit(&mut ts, summary, forwards, emit_mode);
     let generic_component_params =
         setup_props_plan.generic_component_params(generic_parameters, authored_generic);
-    let (public_component_type, non_owned_instance_base) = emit_component_constructors(
+    let public_component_type = emit_component_constructors(
         &mut ts,
         &setup_props_plan,
         &ComponentInstanceAliases {
@@ -758,7 +758,6 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
         &emits_info,
         public_component_type,
         authored_default,
-        non_owned_instance_base.as_ref().map(|base| base.as_str()),
         setup_props_plan
             .component_value_props_type_ref(generic_component_params.as_ref(), legacy_vue2)
             .as_deref(),

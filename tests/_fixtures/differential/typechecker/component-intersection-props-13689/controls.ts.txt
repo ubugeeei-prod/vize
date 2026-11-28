@@ -152,3 +152,11 @@ const exposedAlias: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 1 };
 const exposedAliasMissing: Props<typeof ExposedAlias> = { own: 'Ready' };
 // @ts-expect-error aliased expose raw metadata stays typed
 const exposedAliasWrong: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 'wrong' };
+
+// Unrelated exposed members can reduce the complete instance to never.
+import ExposedConflictingProps from './ExposedConflictingProps.vue';
+const ExposedConflictingPropsRawPrecedence: Equal<Raw<typeof ExposedConflictingProps>, Props<typeof ExposedConflictingProps>> = true;
+import ExposedConflictingEmit from './ExposedConflictingEmit.vue';
+const ExposedConflictingEmitRawPrecedence: Equal<Raw<typeof ExposedConflictingEmit>, Props<typeof ExposedConflictingEmit>> = true;
+import ExposedConflictingSlots from './ExposedConflictingSlots.vue';
+const ExposedConflictingSlotsRawPrecedence: Equal<Raw<typeof ExposedConflictingSlots>, Props<typeof ExposedConflictingSlots>> = true;

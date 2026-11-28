@@ -21,4 +21,6 @@ The oracle config includes the original Vue inputs and `lazy.ts`; the production
 
 The callable self witness carries the actual direct instance raw contract and the canonical owned props separately. `Exposed*.vue` and the isolated `globals/` projects retain raw metadata contributed by expose/global augmentation, including any/unknown/never. `Static*.vue` proves that authored static-only literal, never, open, and pattern metadata cannot hide hydration props. `Own*.vue` keeps real owned literal/pattern/index values strict. Each global variant is compiled in its own program to avoid contaminating unrelated fixtures.
 
-`RawMethods`, `RawComputed`, and `RawSetup` preserve Options API raw metadata. Aliased, union, open-index, and pattern-index exposed surfaces preserve the original instance-first helper contract; `OptionalSource` checks optional-field inference. The semantic optimization inspects the exact emitted non-owned instance base, including the source-owning Vue type, and falls back whenever any branch can carry raw metadata.
+`RawMethods`, `RawComputed`, and `RawSetup` preserve Options API raw metadata. Aliased, union, open-index, and pattern-index exposed surfaces preserve the original instance-first helper contract; `OptionalSource` checks optional-field inference. Raw metadata always comes from the complete default instance.
+
+`ExposedConflictingProps`, `ExposedConflictingEmit`, and `ExposedConflictingSlots` retain full-instance `never` behavior when an unrelated exposed member conflicts with an owned field.

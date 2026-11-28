@@ -66124,6 +66124,21 @@
           "role": "regression-reproduction"
         },
         {
+          "path": "component-intersection-props-13689/ExposedConflictingEmit.vue.txt",
+          "sha256": "e07e4e3789396d6778618f6d1c218a6d791a7d6ef8b1e04a9f16ad584a1c89c5",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedConflictingProps.vue.txt",
+          "sha256": "7403634ef84ee0b8f125a9f3c184a9557b44015ccad61add711329cc7ef8639f",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedConflictingSlots.vue.txt",
+          "sha256": "de7aa0a35588db818f8c66b81171d7081443e1c404bd0074d6b4e1d9754965be",
+          "role": "regression-control"
+        },
+        {
           "path": "component-intersection-props-13689/ExposedNever.vue.txt",
           "sha256": "b8ae859139dde73c6dbe346587f1a8a01dedbe31cdc3257a4e152fa6700ae91a",
           "role": "regression-reproduction"
@@ -66235,7 +66250,7 @@
         },
         {
           "path": "component-intersection-props-13689/controls.ts.txt",
-          "sha256": "9318caf56bcbbca6e49bf430e1714b9a372e5335df4eb957b39493f49c78ad3e",
+          "sha256": "97f6e6bd28686fd49d1fb68a2a2701fe0175ccd09a1739233461dfe076599644",
           "role": "regression-control"
         },
         {
