@@ -39,7 +39,7 @@
   "scripts": {
     "build": "vp pack",
     "test": "node ./scripts/package-tasks.cjs test",
-    "check": "vp check src vite.config.ts",
+    "check": "vp check src test/packed-consumer.ts test/real-projects.ts vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts"
   },
   "dependencies": {

@@ -102,7 +102,6 @@
       "npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/prefer-import-meta-oracle.mjs",
       "npm/framework/nuxt/src/lint/fixtures/hide-oxlint-plugin.mjs",
       "npm/linter/eslint/test/consumer.test.mjs",
-      "npm/linter/eslint/test/packed-consumer.mjs",
       "npm/linter/eslint/test/source-read-probe.mjs",
       "npm/linter/eslint/test/startup-profile.mjs",
       "npm/linter/oxlint/scripts/check-project-transport.mjs",

@@ -7,6 +7,10 @@ on {
   pull_request {
     paths = new Listing {
       "npm/linter/eslint/**"
+      "examples/vite-musea/src/**"
+      "examples/vite-musea/package.json"
+      "examples/jsx-tsx/src/**"
+      "examples/jsx-tsx/package.json"
       "npm/linter/oxlint/src/eslint*"
       "npm/linter/oxlint/src/native.ts"
       "npm/linter/oxlint/src/configs.ts"
@@ -81,7 +85,7 @@ jobs {
         run = ci.workflowScript("verify-no-physical-sfc-reads-including-native-code.sh")
       }
       new Dynamic {
-        name = "Qualify packed public entries in an isolated consumer"
+        name = "Qualify packed public entries and real application packets in an isolated consumer"
         shell = "bash"
         run = ci.workflowScript("qualify-packed-public-entries-in-an-isolated-consumer.sh")
       }
@@ -165,7 +169,8 @@ jobs {
           path = """
           ${{ runner.temp }}/eslint-compatibility/*.json
           ${{ runner.temp }}/eslint-compatibility/project*/package*.json
-          ${{ runner.temp }}/eslint-compatibility/project*/consumer.mjs
+          ${{ runner.temp }}/eslint-compatibility/project*/consumer.ts
+          ${{ runner.temp }}/eslint-compatibility/project*/real-projects.ts
 
           """
           `if-no-files-found` = "error"

@@ -59,3 +59,14 @@ An unavailable runtime produces a visible diagnostic. These presets do not reque
 This integration exposes the native per-file Vue rules. Project graph analysis and cross-file linting remain separate Vize operations; linting several files with ESLint does not enable them. The bundled configurations do not claim HTML, JSX, Svelte, Pug or other input-language support. No JavaScript fallback substitutes for an unavailable native binding.
 
 The existing `oxlint-plugin-vize` and `oxlint-plugin-vize/eslint` exports remain available. This package uses their shared rule implementation and native binding.
+
+## Application conformance
+
+Packed consumers exercise every SFC in the Vite Musea and JSX/TSX example
+applications on Node 22.13.0 and 24.14.0 with TypeScript 4.8.4, 5.9.3 and 6.0.3.
+The installed adapter must use the same rule objects as the shared bridge and
+produce identical complete native call, diagnostic, suggestion and autofix
+packets. Repeated autofix must reach a fixed point without modifying the
+original application sources. Actions retains complete application inputs and
+both returned packets, including failures. This application matrix retains the
+package's experimental maturity.
