@@ -31,6 +31,11 @@ const budgets = [
     file: "dist/navigation.mjs",
     maximumGzipBytes: 2048,
   },
+  {
+    entry: "@vizejs/marquette/navigation/links",
+    file: "dist/navigation-links.mjs",
+    maximumGzipBytes: 4096,
+  },
   { entry: "@vizejs/marquette/test-run", file: "dist/test-run.mjs", maximumGzipBytes: 1024 },
   {
     entry: "@vizejs/marquette/test-run/validate",
