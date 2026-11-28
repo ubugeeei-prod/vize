@@ -23189,6 +23189,64 @@
       }
     },
     {
+      "id": "linter/no-unnecessary-type-arguments-declared-elsewhere",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-arguments-declared-elsewhere",
+        "files": [
+          {
+            "path": "src/Args.vue.txt",
+            "role": "issue-reported-reproduction-and-maintainer-controls",
+            "sha256": "1e6790b58f6d29ce650da1558b057a9beb7cb55004ee1cb7f877dcbbe7d34abd"
+          },
+          {
+            "path": "src/types.ts.txt",
+            "role": "issue-authored-support-module",
+            "sha256": "b967ba0b0d1a85fd62775e6c977891f16bc738de46e6384fcc0e5e6ea21684c7"
+          },
+          {
+            "path": "generic-library/package.json.txt",
+            "role": "library-package-manifest",
+            "sha256": "c4c3ed49c4de998b7bc2485dac9a4bb1abde2f84224748e1e0829537e9c95a5e"
+          },
+          {
+            "path": "generic-library/index.d.ts.txt",
+            "role": "library-package-declarations",
+            "sha256": "b30fb81fbe76e3932237206129973d53faff55d3babf9098e5a3a9c3d759633b"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-typescript-configuration",
+            "sha256": "240d4a075d2223ef2135e651e760cb688878de493339595e67fd9cad12596044"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-linter-configuration",
+            "sha256": "af7a1ccbf8b4672c69381c52862218bbe93cbaaf1c1dc98e4cf83012031b28aa"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [
@@ -27773,7 +27831,7 @@
           {
             "path": "cases.json",
             "role": "upstream-immutable-oracle",
-            "sha256": "29005a4d37b70a7708b02959fd41916946108ec6dd99e6c8a7e251de6e7fb608"
+            "sha256": "e51d2fe5155f64b2518c0cb41cb8cfdad99f77f3439fc823670717b170b281e1"
           }
         ]
       },

@@ -106,6 +106,18 @@ pub(super) enum Instantiated {
     New,
 }
 
+/// Where the declaration a type argument list instantiates lives.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum Declared {
+    /// In this script: its type parameter default spans.
+    Local(Defaults),
+    /// Imported, or not declared in this script at all (a global or library
+    /// name): only the checker can read its type parameters.
+    Elsewhere,
+    /// In this script, in a form the host does not answer.
+    Unanswered,
+}
+
 /// Type parameter default spans (`None` without a default) of the local
 /// declaration each referenced name resolves to, chosen the way
 /// typescript-eslint's `getTypeParametersFromNode` does: among a merged
@@ -115,11 +127,11 @@ pub(super) enum Instantiated {
 /// function declaration their signature resolves to. Overloads, classes with
 /// an explicit constructor called through `new` (whose resolved signature owns
 /// no type parameters) and declarations whose parameters need the checker
-/// resolve to `None`.
+/// stay unanswered. Imported and undeclared names are declared elsewhere.
 pub(super) fn type_parameter_defaults(
     program: &Program<'_>,
     names: &[((u32, u32), Instantiated)],
-) -> Vec<Option<Defaults>> {
+) -> Vec<Declared> {
     if names.is_empty() {
         return Vec::new();
     }
@@ -132,20 +144,36 @@ pub(super) fn type_parameter_defaults(
     names
         .iter()
         .map(|&((start, end), context)| {
-            let symbol = nodes.iter().find_map(|node| match node.kind() {
-                AstKind::IdentifierReference(identifier)
-                    if identifier.span.start == start && identifier.span.end == end =>
+            let mut reference = None;
+            for node in nodes.iter() {
+                if let AstKind::IdentifierReference(identifier) = node.kind()
+                    && identifier.span.start == start
+                    && identifier.span.end == end
                 {
-                    identifier
-                        .reference_id
-                        .get()
-                        .and_then(|reference| scoping.get_reference(reference).symbol_id())
+                    reference = Some(identifier);
+                    break;
                 }
-                _ => None,
-            })?;
+            }
+            let symbol = reference?
+                .reference_id
+                .get()
+                .and_then(|reference| scoping.get_reference(reference).symbol_id());
+            let Some(symbol) = symbol else {
+                return Some(Declared::Elsewhere);
+            };
             let redeclarations = scoping.symbol_redeclarations(symbol);
             let mut declarations = if redeclarations.is_empty() {
-                vec![semantic.symbol_declaration(symbol).kind()]
+                let declaration = semantic.symbol_declaration(symbol).kind();
+                if matches!(
+                    declaration,
+                    AstKind::ImportSpecifier(_)
+                        | AstKind::ImportDefaultSpecifier(_)
+                        | AstKind::ImportNamespaceSpecifier(_)
+                        | AstKind::TSImportEqualsDeclaration(_)
+                ) {
+                    return Some(Declared::Elsewhere);
+                }
+                vec![declaration]
             } else {
                 redeclarations
                     .iter()
@@ -165,7 +193,7 @@ pub(super) fn type_parameter_defaults(
                     declared_parameters(&declarations)?
                 }
             };
-            Some(
+            Some(Declared::Local(
                 parameters
                     .params
                     .iter()
@@ -176,8 +204,9 @@ pub(super) fn type_parameter_defaults(
                         })
                     })
                     .collect(),
-            )
+            ))
         })
+        .map(|declared| declared.unwrap_or(Declared::Unanswered))
         .collect()
 }
 
@@ -253,7 +282,7 @@ fn construct_parameters<'a>(
 #[cfg(test)]
 mod tests {
     use super::super::super::tree;
-    use super::{Binding, Defaults, Instantiated};
+    use super::{Binding, Declared, Defaults, Instantiated};
 
     fn resolve(source: &str, tsx: bool, references: &[(u32, u32)]) -> Vec<Binding> {
         tree::collect_with(source, tsx, &[], |_, ast| super::resolve(ast, references)).1
@@ -264,6 +293,16 @@ mod tests {
         tsx: bool,
         names: &[((u32, u32), Instantiated)],
     ) -> Vec<Option<Defaults>> {
+        declared(source, tsx, names)
+            .into_iter()
+            .map(|declared| match declared {
+                Declared::Local(defaults) => Some(defaults),
+                Declared::Elsewhere | Declared::Unanswered => None,
+            })
+            .collect()
+    }
+
+    fn declared(source: &str, tsx: bool, names: &[((u32, u32), Instantiated)]) -> Vec<Declared> {
         tree::collect_with(source, tsx, &[], |_, ast| {
             super::type_parameter_defaults(ast, names)
         })
@@ -327,6 +366,30 @@ mod tests {
             Some("number")
         );
         assert_eq!(found[1], None);
+    }
+
+    #[test]
+    fn imported_and_undeclared_names_are_declared_elsewhere() {
+        let source = "import { Option } from \"./types\";\nclass Local<T = string> {}\ntype A = Option<unknown>;\ntype B = Map<string, string>;\ntype C = Local<string>;";
+        let local = at(source, "Local<string>").0;
+        let default = source.find("string> {}").unwrap() as u32;
+        let found = declared(
+            source,
+            false,
+            &[
+                (at(source, "Option"), Instantiated::Type),
+                (at(source, "Map"), Instantiated::Type),
+                ((local, local + 5), Instantiated::Type),
+            ],
+        );
+        assert_eq!(
+            found,
+            [
+                Declared::Elsewhere,
+                Declared::Elsewhere,
+                Declared::Local(vec![Some((default, default + 6))]),
+            ]
+        );
     }
 
     /// The default text the reference at the last `needle` reads, if any.

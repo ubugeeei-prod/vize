@@ -23,6 +23,7 @@ pub(super) struct Pending {
     shapes: Vec<Key>,
     deprecations: Vec<Key>,
     defaults: Vec<Key>,
+    declared_defaults: Vec<Key>,
     returns: Vec<Key>,
     /// Assignability replies and the field each is written to.
     assignable: Vec<(Key, &'static str)>,
@@ -73,6 +74,7 @@ impl Pending {
             && self.request.shapes.is_empty()
             && self.request.deprecations.is_empty()
             && self.request.defaults.is_empty()
+            && self.request.declared_defaults.is_empty()
             && self.request.returns.is_empty()
             && self.request.assignable.is_empty()
             && self.request.enum_checks.is_empty()
@@ -190,6 +192,20 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
             "__lastTypeArgumentEqualsDefault",
             json!(same == Some(true)),
         );
+    }
+    for (index, key) in pending.declared_defaults.iter().enumerate() {
+        let found = reply
+            .and_then(|reply| reply.declared_defaults.get(index))
+            .copied()
+            .flatten()
+            .unwrap_or_default();
+        push(*key, "__typeParameterCount", json!(found.parameter_count));
+        push(
+            *key,
+            "__lastTypeParameterHasDefault",
+            json!(found.has_default),
+        );
+        push(*key, "__lastTypeArgumentEqualsDefault", json!(found.same));
     }
     for (index, key) in pending.deprecations.iter().enumerate() {
         let found = reply

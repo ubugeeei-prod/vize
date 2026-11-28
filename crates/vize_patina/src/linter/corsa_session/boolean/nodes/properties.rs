@@ -15,10 +15,25 @@ pub(in crate::linter) mod kind {
     pub const PARAMETER: u32 = 170;
     pub const PROPERTY_SIGNATURE: u32 = 172;
     pub const PROPERTY_DECLARATION: u32 = 173;
+    pub const METHOD_SIGNATURE: u32 = 174;
+    pub const METHOD_DECLARATION: u32 = 175;
+    pub const CONSTRUCTOR: u32 = 177;
     pub const GET_ACCESSOR: u32 = 178;
+    pub const SET_ACCESSOR: u32 = 179;
+    pub const CALL_SIGNATURE: u32 = 180;
+    pub const CONSTRUCT_SIGNATURE: u32 = 181;
+    pub const FUNCTION_TYPE: u32 = 185;
+    pub const CONSTRUCTOR_TYPE: u32 = 186;
     pub const TYPE_LITERAL: u32 = 188;
     pub const MAPPED_TYPE: u32 = 201;
+    pub const FUNCTION_EXPRESSION: u32 = 219;
+    pub const ARROW_FUNCTION: u32 = 220;
+    pub const CLASS_EXPRESSION: u32 = 232;
     pub const VARIABLE_DECLARATION: u32 = 261;
+    pub const FUNCTION_DECLARATION: u32 = 263;
+    pub const CLASS_DECLARATION: u32 = 264;
+    pub const INTERFACE_DECLARATION: u32 = 265;
+    pub const TYPE_ALIAS_DECLARATION: u32 = 266;
     pub const SOURCE_FILE: u32 = 307;
     /// A node list: the parent of its elements.
     pub const LIST: u32 = u32::MAX;
@@ -88,6 +103,14 @@ impl<'a> Syntax<'a> {
             child = self.link(child, 12)?;
         }
         Some(child)
+    }
+
+    /// The elements of the node list at `index`, in source order.
+    pub(in crate::linter) fn elements(&self, index: usize) -> impl Iterator<Item = usize> + '_ {
+        let first = (self.kind(index) == Some(kind::LIST))
+            .then(|| self.first_child(index))
+            .flatten();
+        std::iter::successors(first, move |&element| self.link(element, 12))
     }
 
     /// The node index a declaration handle names in this file: the compact

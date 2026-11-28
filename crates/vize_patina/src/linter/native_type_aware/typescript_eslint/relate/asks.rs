@@ -4,9 +4,9 @@ mod checks;
 mod context;
 mod deprecated;
 mod enums;
-use super::binding::{self, Binding, Instantiated};
+use super::binding::{self, Binding, Declared, Instantiated};
 use super::{Key, Pending};
-use crate::linter::corsa_session::{Literal, Span};
+use crate::linter::corsa_session::{DeclaredDefaultAsk, Literal, Span};
 use oxc_ast::ast::Program;
 use serde_json::{Value, json};
 
@@ -23,14 +23,25 @@ const ENUM_ASSIGNMENT: &str = "no-unsafe-enum-assignment";
 /// A node and the key it sits under in its parent.
 type Ancestor<'a> = (&'a Value, &'a str);
 
+/// A type argument list and what it instantiates.
+struct Instantiation<'v> {
+    list: &'v Value,
+    /// The instantiated name or callee.
+    owner: Span,
+    context: Instantiated,
+    /// The call-like expression the list belongs to.
+    call: Option<Span>,
+    /// Whether `owner` is a bare name this script's scopes can resolve.
+    identifier: bool,
+}
+
 struct Walk<'a, 'm, 'v> {
     rules: &'a [&'a str],
     map: &'m dyn Fn(Span) -> Option<Span>,
     pending: &'a mut Pending,
     /// Non-null operands whose binding still needs scope analysis.
     identifiers: Vec<(usize, Span)>,
-    /// Type argument lists, the name they instantiate, and where.
-    instantiations: Vec<(&'v Value, Span, Instantiated)>,
+    instantiations: Vec<Instantiation<'v>>,
 }
 
 pub(super) fn collect(
@@ -52,12 +63,20 @@ pub(super) fn collect(
     let instantiations = std::mem::take(&mut walk.instantiations);
     let names = instantiations
         .iter()
-        .map(|(_, name, context)| (*name, *context))
+        .filter(|item| item.identifier)
+        .map(|item| (item.owner, item.context))
         .collect::<Vec<_>>();
-    let defaults = binding::type_parameter_defaults(ast, &names);
-    for ((list, _, _), defaults) in instantiations.into_iter().zip(defaults) {
-        if let Some(defaults) = defaults {
-            walk.type_arguments(list, &defaults);
+    let mut declared = binding::type_parameter_defaults(ast, &names).into_iter();
+    for item in instantiations {
+        let found = if item.identifier {
+            declared.next().unwrap_or(Declared::Unanswered)
+        } else {
+            Declared::Elsewhere
+        };
+        match found {
+            Declared::Local(defaults) => walk.type_arguments(item.list, &defaults),
+            Declared::Elsewhere => walk.declared_type_arguments(&item),
+            Declared::Unanswered => {}
         }
     }
     let identifiers = std::mem::take(&mut walk.identifiers);
@@ -292,8 +311,58 @@ impl<'v> Walk<'_, '_, 'v> {
         self.pending.request.defaults.push(pair);
     }
 
-    /// A type argument list whose instantiated name may resolve to a local
-    /// declaration with defaults (`TSTypeParameterInstantiation`).
+    /// `checkTSArgsAndParameters` for a generic declared outside the script:
+    /// the checker finds its type parameters.
+    fn declared_type_arguments(&mut self, item: &Instantiation<'_>) {
+        let Some(arguments) = item.list.get("params").and_then(Value::as_array) else {
+            return;
+        };
+        let (Some(key), Some(last), Some(list_span)) =
+            (key(item.list), arguments.last(), span(item.list))
+        else {
+            return;
+        };
+        let map = self.map;
+        let ask = (|| {
+            let owner = match item.context {
+                Instantiated::Call => None,
+                _ => Some(map(item.owner)?),
+            };
+            let call = match item.call {
+                Some(call) => Some(map(call)?),
+                None => None,
+            };
+            Some(DeclaredDefaultAsk {
+                argument: map(span(last)?)?,
+                index: arguments.len() - 1,
+                owner,
+                call,
+                type_context: item.context == Instantiated::Type,
+            })
+        })();
+        let Some(ask) = ask else {
+            return;
+        };
+        let ranges = arguments
+            .iter()
+            .filter_map(span)
+            .map(|(start, end)| json!({ "start": start, "end": end }))
+            .collect::<Vec<_>>();
+        self.pending
+            .fixed
+            .push((key, "__typeArgumentRanges", Value::Array(ranges)));
+        self.pending.fixed.push((
+            key,
+            "__typeArgumentListRange",
+            json!({ "start": list_span.0, "end": list_span.1 }),
+        ));
+        self.pending.declared_defaults.push(key);
+        self.pending.request.declared_defaults.push(ask);
+    }
+
+    /// A type argument list and the name it instantiates: a bare name the
+    /// script may declare, or a member, qualified name or callee only the
+    /// checker resolves (`TSTypeParameterInstantiation`).
     fn instantiation(&mut self, value: &'v Value, ancestors: &[Ancestor<'v>]) {
         let Some(&(parent, field)) = ancestors.last() else {
             return;
@@ -313,13 +382,25 @@ impl<'v> Walk<'_, '_, 'v> {
             }
             _ => return,
         };
-        let Some(name) = name
-            .filter(|name| kind(name) == "Identifier")
-            .and_then(span)
-        else {
+        let Some(name) = name else {
             return;
         };
-        self.instantiations.push((value, name, context));
+        let identifier = kind(name) == "Identifier";
+        let resolvable = matches!(context, Instantiated::Call | Instantiated::New)
+            || matches!(kind(name), "MemberExpression" | "TSQualifiedName");
+        let Some(owner) = span(name).filter(|_| identifier || resolvable) else {
+            return;
+        };
+        let call = matches!(context, Instantiated::Call | Instantiated::New)
+            .then(|| span(parent))
+            .flatten();
+        self.instantiations.push(Instantiation {
+            list: value,
+            owner,
+            context,
+            call,
+            identifier,
+        });
     }
 }
 

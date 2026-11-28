@@ -1,0 +1,9 @@
+export interface LibraryRef<T> {
+  readonly value: T | null;
+}
+export declare function useLibraryRef<T = unknown, Keys extends string = string>(
+  key: Keys,
+): LibraryRef<T>;
+export declare function useTemplateRef<T = unknown, Keys extends string = string>(
+  key: Keys,
+): LibraryRef<T>;
