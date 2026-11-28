@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -187,27 +195,44 @@ void test("unknown rows cannot produce an empty successful attribution packet", 
 });
 
 void test("source CLI retention binds complete bytes and refuses overwriting an earlier image", () => {
-  const root = mkdtempSync(join(tmpdir(), "release-cli-retention-"));
+  for (const buildTarget of ["x86_64-unknown-linux-gnu.2.17", "x86_64-unknown-linux-gnu.2.36"]) {
+    const root = mkdtempSync(join(tmpdir(), "release-cli-retention-"));
+    try {
+      const file = join(root, "built-cli");
+      const bytes = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 255, 0, 13, 10]);
+      writeFileSync(file, bytes);
+      const identity = retainSourceCli(file, root, "a".repeat(40), buildTarget);
+      unlinkSync(file);
+      assert.deepEqual(readFileSync(join(root, "cli", "vize")), bytes);
+      assert.deepEqual(identity, {
+        schema: "vize.release-measure.cli.v1",
+        source: "a".repeat(40),
+        profile: "release",
+        target: buildTarget,
+        sizeBytes: 8,
+        sha256: sha(bytes),
+      });
+      assert.deepEqual(
+        JSON.parse(readFileSync(join(root, "cli", "identity.json"), "utf8")),
+        identity,
+      );
+      assert.throws(() => retainSourceCli(file, root, "a".repeat(40), buildTarget), /EEXIST/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+
+void test("source CLI identity rejects an unspecified or foreign target before copying", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-cli-target-"));
   try {
-    const file = join(root, "built-cli");
-    const bytes = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 255, 0, 13, 10]);
-    writeFileSync(file, bytes);
-    const identity = retainSourceCli(file, root, "a".repeat(40));
-    unlinkSync(file);
-    assert.deepEqual(readFileSync(join(root, "cli", "vize")), bytes);
-    assert.deepEqual(identity, {
-      schema: "vize.release-measure.cli.v1",
-      source: "a".repeat(40),
-      profile: "release",
-      target: "x86_64-unknown-linux-gnu.2.36",
-      sizeBytes: 8,
-      sha256: sha(bytes),
-    });
-    assert.deepEqual(
-      JSON.parse(readFileSync(join(root, "cli", "identity.json"), "utf8")),
-      identity,
-    );
-    assert.throws(() => retainSourceCli(file, root, "a".repeat(40)), /EEXIST/);
+    for (const target of [
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu.2.17",
+      "x86_64-unknown-linux-gnu.2.17\n",
+    ])
+      assert.throws(() => retainSourceCli(join(root, "absent"), root, "a".repeat(40), target));
+    assert.equal(existsSync(join(root, "cli")), false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -380,7 +380,12 @@ export function measureSide(
       join(target, linuxTarget, "release", "libvize_vitrine.so"),
     ).size,
   };
-  retainSourceCli(join(target, linuxTarget, "release", "vize"), side, gitHead(source));
+  retainSourceCli(
+    join(target, linuxTarget, "release", "vize"),
+    side,
+    gitHead(source),
+    linuxFloorTarget,
+  );
   const result: Side = { rows, sizes, binaries };
   writeFileSync(join(side, "side.json"), JSON.stringify(result, null, 2) + "\n");
   rmSync(target, { recursive: true, force: true });

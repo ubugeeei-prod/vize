@@ -232,8 +232,10 @@ export function publishMovedAttribution(out: string, moved: (base: Side, head: S
 }
 
 /** Keep the exact optimized source CLI available for later consumer qualification. */
-export function retainSourceCli(file: string, side: string, source: string) {
+export function retainSourceCli(file: string, side: string, source: string, buildTarget: string) {
   assert.match(source, /^[a-f0-9]{40}$/);
+  assert.equal(buildTarget.trim(), buildTarget);
+  assert.match(buildTarget, /^x86_64-unknown-linux-gnu\.[0-9]+\.[0-9]+$/u);
   const target = join(side, "cli");
   mkdirSync(target);
   const bytes = readFileSync(file);
@@ -242,7 +244,7 @@ export function retainSourceCli(file: string, side: string, source: string) {
     schema: "vize.release-measure.cli.v1",
     source,
     profile: "release",
-    target: "x86_64-unknown-linux-gnu.2.36",
+    target: buildTarget,
     sizeBytes: bytes.length,
     sha256: digest(bytes),
   };
