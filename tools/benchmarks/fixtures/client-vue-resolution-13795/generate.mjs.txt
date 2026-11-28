@@ -1,0 +1,42 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+
+// Usage: node generate.mjs <imported components> <unimported components> <props: inline | local | barrel> <barrel modules>
+// - inline: each component writes its props type in place
+// - local: each component imports its props type from src/types.ts, which declares it outright
+// - barrel: src/types.ts extends a type taken from a star barrel of <barrel modules> modules
+const count = Number(process.argv[2] ?? 1000);
+const unimported = Number(process.argv[3] ?? 0);
+const props = process.argv[4] ?? "barrel";
+const modules = Number(process.argv[5] ?? 200);
+
+rmSync("src", { force: true, recursive: true });
+mkdirSync("src/components", { recursive: true });
+mkdirSync("src/models", { recursive: true });
+for (let i = 0; i < modules; i++) writeFileSync(`src/models/Model${i}.ts`, `export interface Model${i} {\n  field${i}: string;\n}\n`);
+writeFileSync("src/models/index.ts", Array.from({ length: modules }, (_, i) => `export * from "./Model${i}";\n`).join(""));
+writeFileSync(
+  "src/types.ts",
+  props === "barrel"
+    ? `import type { Model0 } from "./models";\n\nexport interface ItemProps extends Model0 {\n  id: string;\n  label: string;\n}\n`
+    : `export interface ItemProps {\n  field0: string;\n  id: string;\n  label: string;\n}\n`,
+);
+const script =
+  props === "inline"
+    ? `const props = defineProps<{ field0: string; id: string; label: string }>();`
+    : `import type { ItemProps } from "../types";\n\nconst props = defineProps<ItemProps>();`;
+const writeComponent = (name, i) =>
+  writeFileSync(`src/components/${name}.vue`, `<script setup lang="ts">\n${script}\n</script>\n\n<template><div>{{ props.label }} ${i}</div></template>\n`);
+for (let i = 0; i < count; i++) writeComponent(`Item${i}`, i);
+for (let i = 0; i < unimported; i++) writeComponent(`Unused${i}`, i);
+
+writeFileSync(
+  "src/app.ts",
+  `import { h } from "vue";\n${Array.from({ length: count }, (_, i) => `import Item${i} from "./components/Item${i}.vue";`).join("\n")}\n\nexport const Root = { render: () => [${Array.from({ length: count }, (_, i) => `h(Item${i}, { field0: "", id: "${i}", label: "item" })`).join(", ")}] };\n`,
+);
+writeFileSync("src/main.ts", `import { createApp } from "vue";\nimport { Root } from "./app";\n\ncreateApp(Root).mount("#app");\n`);
+writeFileSync(
+  "src/entry-server.ts",
+  `import { createSSRApp } from "vue";\nimport { renderToString } from "vue/server-renderer";\nimport { Root } from "./app";\n\nexport const render = () => renderToString(createSSRApp(Root));\n`,
+);
+// The third environment imports no component, as Nuxt's Nitro pass imports none
+writeFileSync("src/worker.ts", `export const handler = (): string => "ok";\n`);
