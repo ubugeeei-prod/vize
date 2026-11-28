@@ -229,13 +229,11 @@ fn run_official_compiler_for_compare(
     let (output, write_result) = node_module::run(
         &node,
         &["--experimental-import-meta-resolve"],
-        "official-compiler.mjs",
         OFFICIAL_COMPILER_NODE_SCRIPT,
         &input_json,
     )
     .unwrap_or_else(|error| {
         match error {
-            NodeModuleError::Prepare(error) => eprintln!("Failed to prepare official compiler module: {error}"),
             NodeModuleError::Start(error) => {
                 let node = node.to_string_lossy();
                 eprintln!("--format compare requires a local Node.js runtime and @vue/compiler-sfc. Failed to start {node}: {error}");
