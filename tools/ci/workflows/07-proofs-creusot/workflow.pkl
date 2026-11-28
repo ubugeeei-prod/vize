@@ -175,7 +175,7 @@ jobs {
   }
   `editor-projection-discovery` {
     name = "Discover editor projection certificates"
-    if = "${{ github.event_name == 'workflow_dispatch' && inputs.discover_editor_projection }}"
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.discover_editor_projection }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
@@ -213,7 +213,7 @@ jobs {
       }
       new Dynamic {
         uses = ci.uploadArtifact
-        if = "always()"
+        `if` = "always()"
         with {
           name = "editor-projection-certificates-${{ github.sha }}"
           path = "tests/formal/creusot/verif/vize_incremental_editor_projection_proofs_rlib/"

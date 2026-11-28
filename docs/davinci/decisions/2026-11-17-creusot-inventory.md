@@ -312,8 +312,8 @@ ordinary module discovery. The Kani harness remains in
 Certificate generation and replay are still pending; this row is not yet
 counted as proved.
 
-| Kani harness | Law | Kani bound | Creusot replacement | Status |
-| --- | --- | --- | --- | --- |
+| Kani harness                                                  | Law                                                                                             | Kani bound                         | Creusot replacement                                                                                                           | Status                          |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | `all_utf8_ranges_match_the_reference_and_fit_the_source_file` | `authored` accepts exactly ordered scalar-boundary ranges and shifts both ends without overflow | 5 bytes, whole `u32` base and ends | `template/creusot.rs::all_utf8_ranges_match_the_reference_and_fit_the_source_file` over the shipped byte kernel, every length | pending certificates and replay |
 
 ## Template line breaks (`crates/vize_glyph/src/template/formatter/suppression`)

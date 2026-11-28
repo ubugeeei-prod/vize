@@ -61,7 +61,7 @@ on:
       - tests/davinci_test_support/src/l3_reference/trace.rs
       - tests/formal/creusot/unicode/creusot.rs
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - ".github/workflows/07-proofs-creusot.yml"
       - "tools/nix/creusot/**"
@@ -113,7 +113,11 @@ on:
       - tests/davinci_test_support/src/l3_reference/trace.rs
       - tests/formal/creusot/unicode/creusot.rs
   workflow_dispatch:
-
+    inputs:
+      discover_editor_projection:
+        description: Generate candidate editor projection certificates for review; grants no replay acceptance
+        type: boolean
+        required: false
 permissions:
   contents: read
 
@@ -147,3 +151,35 @@ jobs:
         # for new ones; why3find exits non-zero on any unproved goal.
         working-directory: tests/formal/creusot
         run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked
+  editor-projection-discovery:
+    name: Discover editor projection certificates
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.discover_editor_projection }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - name: Cache the Creusot toolchain
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569
+        with:
+          primary-key: creusot-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/nix/creusot/flake.nix', 'tools/nix/creusot/flake.lock') }}
+          restore-prefixes-first-match: creusot-${{ runner.os }}-${{ runner.arch }}-
+          gc-max-store-size-linux: 8G
+      - name: Build the pinned toolchain
+        run: nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs
+      - name: Search the actual editor projection goals
+        working-directory: tests/formal/creusot
+        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_incremental_editor_projection_proofs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: editor-projection-certificates-${{ github.sha }}
+          path: tests/formal/creusot/verif/vize_incremental_editor_projection_proofs_rlib/
+          if-no-files-found: warn
+          retention-days: 30

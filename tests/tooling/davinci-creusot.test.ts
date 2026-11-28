@@ -34,7 +34,10 @@ type Workflow = {
     push: { branches: string[]; paths: string[] };
     workflow_dispatch: unknown;
   };
-  jobs: Record<string, { name?: string; steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
+  jobs: Record<
+    string,
+    { name?: string; steps: Step[]; if?: unknown; "continue-on-error"?: unknown }
+  >;
 };
 
 /** Each proof package's library root, which sits next to its kernel. */
@@ -127,10 +130,12 @@ test("certificate discovery has a separate manual check and never substitutes fo
   const search = job.steps.filter((step) => step.run?.includes("cargo creusot"));
   assert.deepEqual(
     search.map((step) => [step["working-directory"], step.run]),
-    [[
-      "tests/formal/creusot",
-      "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_incremental_editor_projection_proofs",
-    ]],
+    [
+      [
+        "tests/formal/creusot",
+        "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_incremental_editor_projection_proofs",
+      ],
+    ],
   );
   assert.equal(workflow.jobs.prove!.if, undefined);
 });
