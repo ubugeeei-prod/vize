@@ -199,12 +199,6 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
       issue: 6258,
       state: "blocked-upstream",
     },
-    {
-      id: "diagnostic-code-selector-consumer",
-      issue: 13057,
-      external: "microsoft/TypeScript#65517",
-      state: "blocked-upstream",
-    },
   ]);
   assert.ok(qualification.producerProtocol.evidenceCandidates.length > 0);
   for (const evidence of qualification.producerProtocol.evidenceCandidates)

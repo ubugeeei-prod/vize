@@ -56,7 +56,7 @@ const semanticObligations = [
   {
     id: "generics",
     requirement: "Generic components preserve declared inference, fallthrough and authored errors.",
-    issues: [11655, 13021, 13057],
+    issues: [11655, 13018],
     evidenceCandidates: [
       "crates/vize/tests/content_mapper_tsgo_cli/reported_generic_components.rs",
       "crates/vize/tests/content_mapper_tsgo_cli/generic_constructor_slots.rs",
@@ -94,7 +94,7 @@ const semanticObligations = [
     id: "diagnostic-directives",
     requirement:
       "Ignore, skip and expect directives suppress only their authored diagnostic owners.",
-    issues: [6258, 13057],
+    issues: [6258],
     evidenceCandidates: [
       "crates/vize/tests/content_mapper_tsgo_cli/directive_tables.rs",
       "crates/vize/tests/content_mapper_tsgo_directives.rs",
@@ -136,7 +136,7 @@ const semanticObligations = [
   {
     id: "project-references",
     requirement: "Referenced projects are checked once without dropping cross-project diagnostics.",
-    issues: [12102, 12109],
+    issues: [12102],
     evidenceCandidates: [
       "crates/vize/tests/content_mapper_tsgo_package_references.rs",
       "crates/vize/src/commands/check/tsconfig_inputs/tests/reference_programs.rs",
@@ -145,7 +145,7 @@ const semanticObligations = [
   {
     id: "nuxt-generated-types",
     requirement: "Nuxt-generated aliases and ambient types participate in the mapper project.",
-    issues: [11104, 13018],
+    issues: [13018],
     evidenceCandidates: [
       ".github/workflows/04-content-mapper-conformance.yml",
       "crates/vize/tests/check_canon_nuxt_parity_cli.rs",
@@ -193,7 +193,7 @@ const diagnosticObligations = [
     id: "suppression-ownership",
     requirement:
       "Suppression is selected by authored ownership and never widens to a generated range.",
-    issues: [6258, 13021, 13057],
+    issues: [6258],
     evidenceCandidates: [
       "crates/vize_canon/src/batch/virtual_project/content_mapper/directives.rs",
       "crates/vize/src/commands/content_mapper/dispatch/wire.rs",
@@ -291,7 +291,7 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         id: "cold-warm-edit",
         measurements: ["cold", "warm", "no-op", "leaf-edit", "dependency-edit", "p95", "rss"],
         scales: [1_000, 5_000, 20_000],
-        issues: [10620, 12102, 12109],
+        issues: [10620, 12102],
         evidenceCandidates: [
           ".github/workflows/03-typecheck-compare.yml",
           ".github/workflows/04-content-mapper-cold-start.yml",
@@ -355,12 +355,6 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
       {
         id: "grouped-disjoint-expect-usage",
         issue: 6258,
-        state: "blocked-upstream",
-      },
-      {
-        id: "diagnostic-code-selector-consumer",
-        issue: 13057,
-        external: "microsoft/TypeScript#65517",
         state: "blocked-upstream",
       },
     ],
