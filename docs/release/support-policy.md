@@ -5,6 +5,10 @@ something working?" It complements the broader [stability tiers](../content/stab
 [production-readiness checklist](./production-readiness.md). When this page disagrees with marketing
 copy or a blog post, this page wins.
 
+The [v2 adapter admission matrix](./v2-adapter-admission.md) names the owners,
+executable host matrices, application evidence, and current maturity of expanded
+adapter claims. Package maturity continues to determine this policy's scope.
+
 ## Scope of this policy
 
 This policy applies to all surfaces in the `alpha-supported` and `compatibility-preview` tiers as
