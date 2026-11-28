@@ -125,7 +125,10 @@ fn authored_spelling_and_exact_original_selection_remain_required() {
     let summary = analyze(source, true, None);
     let usage = collect_identifier_usage(&original.parsed().program);
     let names = ImportNames::from_original(&summary, source, &usage, &facts);
-    assert_eq!(names.values.bindings, Default::default());
+    assert_eq!(
+        names.values.bindings,
+        vize_carton::FxHashSet::<vize_carton::CompactString>::default()
+    );
     assert_eq!(
         facts.value_names(&summary).collect::<Vec<_>>(),
         [r"\u006cocal"]
