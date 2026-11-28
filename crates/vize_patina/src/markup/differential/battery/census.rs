@@ -65,7 +65,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // modifier, a property bind and a longform bind.
         + 2
         // Component `for` IDs add six literal fixtures.
-        + 6,
+        + 6
+        // Template rule options add one literal fixture.
+        + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -265,7 +267,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // existing literals and four helper-driven calls.
         + 6
         // Component `for` IDs add six literal calls.
-        + 6,
+        + 6
+        // Template rule options add five literal calls.
+        + 5,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -332,6 +336,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // The four helper-driven suffix, `v-t` and static-`is` calls remain
         // explicit scanner skips.
+        + 4
+        // Template rule options add four loop-driven calls.
         + 4,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
@@ -398,7 +404,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The two same-name binding fixtures retain twenty trace lines.
         + 20
         // The six component `for` ID fixtures retain forty-one trace lines.
-        + 41,
+        + 41
+        // Template rule options add seven fixture lines.
+        + 7,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

@@ -27346,6 +27346,73 @@
       }
     },
     {
+      "id": "linter/template-rule-options",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "template-rule-options",
+        "files": [
+          {
+            "path": "DuplicateAttributes.vue.txt",
+            "role": "class-and-style-coexistence-input",
+            "sha256": "4506bb02a079c2791e2bf748b57ab99586e932c15184dd560593b1b875c47b1d"
+          },
+          {
+            "path": "DynamicIs.vue.txt",
+            "role": "dynamic-and-literal-is-registration-input",
+            "sha256": "d6b680d032cb0e5159f5011def89826e56e895da70e2001739da9fbe6c8a7993"
+          },
+          {
+            "path": "LoneTemplates.vue.txt",
+            "role": "accessible-and-plain-nested-template-input",
+            "sha256": "e9c3e29d0b95c06367cb6627a7f347e644c6af174ab89acd4ad504ee97fca006"
+          },
+          {
+            "path": "StaticInlineStyles.vue.txt",
+            "role": "static-attribute-and-binding-style-input",
+            "sha256": "a1d80ba78a9452b47666d028cf09bad0e4fc54ceca77687f6575bd4bc6f2bcf3"
+          },
+          {
+            "path": "TemplateRootComments.vue.txt",
+            "role": "root-and-nested-comment-input",
+            "sha256": "89e1349486c581528ee240dd6286d7de1a36e75e8e0a46f3abf28805db7f1906"
+          },
+          {
+            "path": "VHtml.vue.txt",
+            "role": "identifier-and-expression-v-html-input",
+            "sha256": "86977088ecc1c86274b2b819d73ff6cb2b102cc9da414f88a4bc48e26a31e95c"
+          },
+          {
+            "path": "cases.json",
+            "role": "pinned-option-corpus",
+            "sha256": "3fe7e7fbb67b07ffefdb9c26afed12d3a96bbb4f71f73284abca263c3d4b71f2"
+          },
+          {
+            "path": "eslint-plugin-vue.original.json",
+            "role": "independent-eslint-reference",
+            "sha256": "891a4c7659c5269b21c4e835db53a971dcdded6ddb7e88cd432e3465b7359628"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/template-script-shadow-10822",
       "state": "active",
       "targets": [

@@ -440,7 +440,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoNonComponentKeepAliveChild));
 
         // Security Rules
-        registry.register(Box::new(crate::rules::vue::NoVHtml));
+        registry.register(Box::new(crate::rules::vue::NoVHtml::default()));
         registry.register(Box::new(crate::rules::vue::NoUnsafeUrl));
 
         // HTML Conformance (essential)

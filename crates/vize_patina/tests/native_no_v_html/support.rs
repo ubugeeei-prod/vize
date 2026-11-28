@@ -38,7 +38,7 @@ pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateCo
 
 pub fn registered(source: &str, locale: Locale) -> LintResult {
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(NoVHtml));
+    registry.register(Box::new(NoVHtml::default()));
     Linter::with_registry(registry)
         .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)

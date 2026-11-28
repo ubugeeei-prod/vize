@@ -334,6 +334,12 @@ class LintRuleOptions {
   `vue/valid-v-on`: ValidVOnOptions? = null
   `vue/valid-v-slot`: ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
+  `vue/no-duplicate-attributes`: LintRuleOptionTypes.NoDuplicateAttributesOptions? = null
+  `vue/no-multiple-template-root`: LintRuleOptionTypes.NoMultipleTemplateRootOptions? = null
+  `vue/no-lone-template`: LintRuleOptionTypes.NoLoneTemplateOptions? = null
+  `vue/no-static-inline-styles`: LintRuleOptionTypes.NoStaticInlineStylesOptions? = null
+  `vue/no-unused-components`: LintRuleOptionTypes.NoUnusedComponentsOptions? = null
+  `vue/no-v-html`: LintRuleOptionTypes.NoVHtmlOptions? = null
 }
 
 class LinterConfig {

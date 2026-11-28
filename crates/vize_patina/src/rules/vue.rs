@@ -294,7 +294,7 @@ pub(crate) fn register_valid_directives(registry: &mut crate::rule::RuleRegistry
 /// invalid HTML attributes). Bundling them here keeps the per-preset
 /// registration list short.
 pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
-    registry.register(Box::new(NoVHtml));
+    registry.register(Box::new(NoVHtml::default()));
     registry.register(Box::new(NoUnsafeUrl));
     registry.register(Box::new(NoTemplateTargetBlank));
     registry.register(Box::new(NoUnsandboxedIframe));
@@ -353,7 +353,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
         registry.register(Box::new(NoUndefinedRefs));
     }
     if !registry.has_rule("vue/no-multiple-template-root") {
-        registry.register(Box::new(NoMultipleTemplateRoot));
+        registry.register(Box::new(NoMultipleTemplateRoot::default()));
     }
     if !registry.has_rule("vue/no-v-for-template-key") {
         registry.register(Box::new(NoVForTemplateKey));
@@ -399,7 +399,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
         registry.mark_has_exit_element_rules();
     }
     if !registry.has_rule("vue/no-static-inline-styles") {
-        registry.register(Box::new(NoStaticInlineStyles));
+        registry.register(Box::new(NoStaticInlineStyles::default()));
     }
     if !registry.has_rule("vue/no-non-component-keep-alive-child") {
         registry.register(Box::new(NoNonComponentKeepAliveChild));

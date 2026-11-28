@@ -9,7 +9,7 @@ Disallow duplicate attributes on the same element.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
+| `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
@@ -53,5 +53,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31)

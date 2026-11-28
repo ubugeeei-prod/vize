@@ -18,7 +18,7 @@ fn linter() -> Linter {
     // Opt-in, so the happy-path registry would otherwise skip the comparison.
     linter
         .registry
-        .register(Box::new(crate::rules::vue::NoStaticInlineStyles));
+        .register(Box::new(crate::rules::vue::NoStaticInlineStyles::default()));
     linter.registry.register(Box::new(
         crate::rules::opinionated::vapor::PreferStaticClass,
     ));

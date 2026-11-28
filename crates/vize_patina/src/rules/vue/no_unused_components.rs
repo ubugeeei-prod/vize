@@ -58,6 +58,8 @@ static META: RuleMeta = RuleMeta {
 pub struct NoUnusedComponents {
     /// Pattern for components to ignore (e.g., starts with '_')
     pub ignore_pattern: Option<String>,
+    /// Still report when `is` is bound dynamically (`ignoreWhenBindingPresent: false`).
+    pub report_with_dynamic_is: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -249,7 +251,7 @@ impl Rule for NoUnusedComponents {
             self.report_recovered_options_registrations(ctx);
             return;
         }
-        if has_dynamic_is_binding(&root.children) {
+        if !self.report_with_dynamic_is && has_dynamic_is_binding(&root.children) {
             return;
         }
 

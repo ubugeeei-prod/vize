@@ -40,6 +40,7 @@ mod sfc_element_order;
 mod slot_name_casing;
 mod stable;
 mod strict_boolean;
+mod template_rules;
 pub(super) mod type_aware;
 mod v_bind_style;
 mod v_on_event_hyphenation;
@@ -95,6 +96,10 @@ pub use script_unused::{
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
+pub use template_rules::{
+    NoDuplicateAttributesOptions, NoLoneTemplateOptions, NoMultipleTemplateRootOptions,
+    NoStaticInlineStylesOptions, NoUnusedComponentsOptions, NoVHtmlOptions, TemplateRuleOptions,
+};
 pub use v_bind_style::{VBindSameNameShorthand, VBindStyle, VBindStyleConfig, VBindStyleOptions};
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
 pub use v_on_handler_style::{
@@ -258,6 +263,9 @@ pub struct ConfigLintRuleOptions {
     /// Configurable Vue rules that check nothing until a project names a limit.
     #[serde(flatten)]
     configured: configured_vue::ConfiguredVueRuleOptions,
+    /// eslint-plugin-vue template rules that keep their defaults until configured.
+    #[serde(flatten)]
+    template_rules: TemplateRuleOptions,
     /// Options for the typescript-eslint type-aware rules.
     #[serde(flatten)]
     type_aware: type_aware::TypeAwareRuleOptions,
@@ -326,6 +334,7 @@ impl ConfigLintRuleOptions {
             && self.max_lines.is_none()
             && self.max_lines_per_block.is_none()
             && self.configured.is_empty()
+            && self.template_rules.is_empty()
             && self.type_aware.is_empty()
     }
 

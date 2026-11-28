@@ -91,3 +91,24 @@ are now mapped.
 entries accept upstream's `lang` and `allowNoLang`. This brings the audited surface to 42 mapped
 rules with typed options and leaves 46 mapped configurable rules without them. The status totals
 are unchanged: 88 mapped, 23 unimplemented, and 1 intentional divergence.
+
+## Template cohort 1
+
+Six template rules now accept their eslint-plugin-vue options under the same names and defaults:
+`vue/no-duplicate-attributes` (`allowCoexistClass`, `allowCoexistStyle`),
+`vue/no-multiple-template-root` (`disallowComments`), `vue/no-lone-template`
+(`ignoreAccessible`), `vue/no-static-inline-styles` (`allowBinding`), `vue/no-unused-components`
+(`ignoreWhenBindingPresent`), and `vue/no-v-html` (`ignorePattern`). This brings the audited surface
+to 48 mapped rules with typed options and leaves 40 mapped configurable rules without them.
+
+The pinned fixture `tests/_fixtures/differential/linter/template-rule-options` records the ranges
+eslint-plugin-vue 10.12.0 reports for 21 source and option rows, and the Patina rows must report
+the same ranges. Two boundaries are recorded rather than matched. `ignorePattern` uses Rust regex
+syntax, so a JavaScript-only construct such as a lookbehind fails to compile and ignores nothing
+instead of failing the configuration. With `ignoreWhenBindingPresent: false`, a template that only
+the HTML recovery lane can read still withholds unused conclusions, because that lane cannot tell a
+literal `is` from a dynamic one.
+
+Options are applied once, when the linter is configured, by replacing the registered rule. A linter
+with no template rule options never reaches that code, and the rules' default fields reproduce the
+previous behavior.

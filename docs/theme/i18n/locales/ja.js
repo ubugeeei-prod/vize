@@ -74,6 +74,7 @@
       "/rules/options-events": "イベント",
       "/rules/options-attributes": "属性",
       "/rules/options-props": "Props",
+      "/rules/options-template": "テンプレート",
       "/rules/reference/max-lines": "max-lines",
       "/rules/options-script": "スクリプト",
       "/rules/options-type": "型",

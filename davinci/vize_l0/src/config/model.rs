@@ -84,6 +84,10 @@ pub use linter_rule_options::{
     VOnHandlerStyleConfig, VOnHandlerStyleOptions, VOnStyle, VSlotNamedStyle, VSlotStyle,
     VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions, esquery,
 };
+pub use linter_rule_options::{
+    NoDuplicateAttributesOptions, NoLoneTemplateOptions, NoMultipleTemplateRootOptions,
+    NoStaticInlineStylesOptions, NoUnusedComponentsOptions, NoVHtmlOptions, TemplateRuleOptions,
+};
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
 

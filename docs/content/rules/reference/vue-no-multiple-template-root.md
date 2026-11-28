@@ -9,7 +9,7 @@ Disallow multiple root nodes in a template.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `error` | None | No | None |
+| `error` | None | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
@@ -56,5 +56,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L22)

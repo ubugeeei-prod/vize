@@ -39,8 +39,8 @@
     "mapped": 88,
     "unimplemented": 23,
     "intentionalDivergence": 1,
-    "mappedWithTypedOptions": 42,
-    "mappedWithoutTypedOptions": 46
+    "mappedWithTypedOptions": 48,
+    "mappedWithoutTypedOptions": 40
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -61,6 +61,9 @@
     ["vue/multi-word-component-names", "vue/multi-word-component-names"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-bare-strings-in-template", "vue/no-bare-strings-in-template"],
+    ["vue/no-duplicate-attributes", "vue/no-duplicate-attributes"],
+    ["vue/no-lone-template", "vue/no-lone-template"],
+    ["vue/no-multiple-template-root", "vue/no-multiple-template-root"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],
     ["vue/no-restricted-block", "vue/no-restricted-block"],
     ["vue/no-restricted-call-after-await", "vue/no-restricted-call-after-await"],
@@ -72,9 +75,12 @@
     ["vue/no-restricted-props", "vue/no-restricted-props"],
     ["vue/no-restricted-static-attribute", "vue/no-restricted-static-attribute"],
     ["vue/no-restricted-v-on", "vue/no-restricted-v-on"],
+    ["vue/no-static-inline-styles", "vue/no-static-inline-styles"],
     ["vue/no-undef-components", "vue/require-component-registration"],
     ["vue/no-unsupported-features", "vue/no-unsupported-features"],
+    ["vue/no-unused-components", "vue/no-unused-components"],
     ["vue/no-use-v-if-with-v-for", "vue/no-use-v-if-with-v-for"],
+    ["vue/no-v-html", "vue/no-v-html"],
     ["vue/prop-name-casing", "vue/prop-name-casing"],
     ["vue/slot-name-casing", "vue/slot-name-casing"],
     ["vue/sort-keys", "vue/sort-keys"],

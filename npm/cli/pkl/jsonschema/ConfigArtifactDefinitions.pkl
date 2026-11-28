@@ -4,6 +4,7 @@ module vize.jsonschema.ConfigArtifactDefinitions
 import "@json_schema/JsonSchema.pkl"
 
 import "LintRuleOptionsSchemaDefinitions.pkl"
+import "TemplateRuleOptions.pkl"
 
 experimentalsConfigDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -339,4 +340,8 @@ museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
 definePropsDestructuringOptionsDef: JsonSchema =
   LintRuleOptionsSchemaDefinitions.definePropsDestructuringOptionsDef
 
-lintRuleOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef
+lintRuleOptionsDef: JsonSchema = (LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef) {
+  properties {
+    ...TemplateRuleOptions.properties
+  }
+}

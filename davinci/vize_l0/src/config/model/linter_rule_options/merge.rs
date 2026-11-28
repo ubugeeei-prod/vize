@@ -114,6 +114,7 @@ impl ConfigLintRuleOptions {
             self.block_lang = Some(options.clone());
         }
         self.configured.merge_from(&overlay.configured);
+        self.template_rules.merge_from(&overlay.template_rules);
         self.type_aware.merge_from(&overlay.type_aware);
     }
 }

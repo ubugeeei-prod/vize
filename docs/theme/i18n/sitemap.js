@@ -111,6 +111,7 @@
         "/rules/options-events",
         "/rules/options-attributes",
         "/rules/options-props",
+        "/rules/options-template",
         "/rules/reference/max-lines",
       ],
     },

@@ -47,6 +47,18 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "模板根节点不允许 'v-for' 指令。",
     ),
     (
+        "vue/no-multiple-template-root.comment_root",
+        "The template root disallows comments.",
+        "テンプレートのルートにはコメントを置けません。",
+        "模板根节点不允许注释。",
+    ),
+    (
+        "vue/no-multiple-template-root.comment_help",
+        "Move the comment inside the root element or remove it.",
+        "コメントをルート要素の中に移すか、削除してください。",
+        "请将注释移到根元素内部，或将其删除。",
+    ),
+    (
         "vue/no-multiple-template-root.help",
         "Wrap the template in one rendered element; keep conditional branches in one v-if chain.",
         "テンプレートを1つの描画要素で囲み、条件分岐は1つのv-ifチェーンにまとめてください。",

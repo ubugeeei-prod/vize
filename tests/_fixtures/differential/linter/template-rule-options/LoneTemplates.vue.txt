@@ -1,0 +1,11 @@
+<template>
+  <div>
+    <template id="a"><span /></template>
+    <template ref="b"><span /></template>
+    <template :id="c"><span /></template>
+    <template v-bind:ref="d"><span /></template>
+    <template :[e]="f"><span /></template>
+    <template data-id="g"><span /></template>
+    <template><span /></template>
+  </div>
+</template>

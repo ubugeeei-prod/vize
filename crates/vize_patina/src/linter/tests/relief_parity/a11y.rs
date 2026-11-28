@@ -88,7 +88,7 @@ fn remaining_facade_family() -> Vec<Box<dyn Rule>> {
         Box::new(NoBareStringsInTemplate),
         Box::new(NoInvalidHtmlAttribute),
         Box::new(NoMultiSpaces::default()),
-        Box::new(NoStaticInlineStyles),
+        Box::new(NoStaticInlineStyles::default()),
         Box::new(NoTemplateTargetBlank),
         Box::new(NoTextareaMustache),
         Box::new(NoUnsandboxedIframe),

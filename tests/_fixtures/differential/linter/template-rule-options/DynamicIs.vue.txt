@@ -1,0 +1,13 @@
+<script>
+import Used from './Used.vue'
+import Unused from './Unused.vue'
+export default {
+  components: { Used, Unused },
+  data: () => ({ current: 'Used' }),
+}
+</script>
+
+<template>
+  <component :is="current" />
+  <Used />
+</template>

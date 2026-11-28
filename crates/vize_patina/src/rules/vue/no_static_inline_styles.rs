@@ -28,10 +28,13 @@ static META: RuleMeta = RuleMeta {
 
 #[derive(Default)]
 /// Implements the `vue/no-static-inline-styles` lint rule.
-pub struct NoStaticInlineStyles;
+pub struct NoStaticInlineStyles {
+    /// Accept static values inside a `:style` binding, as upstream's `allowBinding`.
+    pub allow_binding: bool,
+}
 
 impl NoStaticInlineStyles {
-    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
+    fn check_binding(&self, ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
         if !binding.is_unqualified_arg_exact("style") {
             return;
         }
@@ -39,7 +42,7 @@ impl NoStaticInlineStyles {
             MarkupBindingKind::Attribute if binding.static_value().is_some() => {
                 Self::report(ctx, binding.range());
             }
-            MarkupBindingKind::Bind => {
+            MarkupBindingKind::Bind if !self.allow_binding => {
                 let Some(expression) = binding.retained_expression() else {
                     return;
                 };
@@ -68,8 +71,8 @@ impl NoStaticInlineStyles {
         );
     }
 
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        element.walk_bindings(&mut |binding| Self::check_binding(ctx, &binding));
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_bindings(&mut |binding| self.check_binding(ctx, &binding));
     }
 }
 
@@ -194,7 +197,7 @@ impl MarkupRule for NoStaticInlineStyles {
         _element: &MarkupElement<'a>,
         binding: &MarkupBinding<'a>,
     ) {
-        Self::check_binding(ctx.lint(), binding);
+        self.check_binding(ctx.lint(), binding);
     }
 }
 
@@ -208,7 +211,7 @@ impl Rule for NoStaticInlineStyles {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+        self.check_element(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -220,7 +223,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(NoStaticInlineStyles));
+        registry.register(Box::new(NoStaticInlineStyles::default()));
         Linter::with_registry(registry)
     }
 
@@ -243,6 +246,34 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn allow_binding_keeps_only_the_static_attribute_report() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(NoStaticInlineStyles {
+            allow_binding: true,
+        }));
+        let linter = Linter::with_registry(registry);
+        for source in [
+            r#"<div :style="{ color: 'red', width: 10 }">text</div>"#,
+            r#"<div v-bind:style="[{ color: 'red' }]">text</div>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source}");
+        }
+        let result = linter.lint_template(
+            r#"<div style="color: red" :style="{ width: 10 }">text</div>"#,
+            "test.vue",
+        );
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.start, diagnostic.end))
+                .collect::<Vec<_>>(),
+            vec![(5, 23)]
+        );
     }
 
     #[test]

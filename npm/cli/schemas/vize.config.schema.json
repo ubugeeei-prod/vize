@@ -2748,6 +2748,69 @@
         },
         "musea/prefer-design-tokens": {
           "$ref": "#/definitions/MuseaPreferDesignTokensOptions"
+        },
+        "vue/no-duplicate-attributes": {
+          "type": "object",
+          "properties": {
+            "allowCoexistClass": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowCoexistStyle": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-multiple-template-root": {
+          "type": "object",
+          "properties": {
+            "disallowComments": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-lone-template": {
+          "type": "object",
+          "properties": {
+            "ignoreAccessible": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-static-inline-styles": {
+          "type": "object",
+          "properties": {
+            "allowBinding": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-unused-components": {
+          "type": "object",
+          "properties": {
+            "ignoreWhenBindingPresent": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-v-html": {
+          "type": "object",
+          "properties": {
+            "ignorePattern": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

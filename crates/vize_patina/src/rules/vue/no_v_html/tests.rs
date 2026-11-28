@@ -4,7 +4,7 @@ use crate::rule::RuleRegistry;
 
 fn create_linter() -> Linter {
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(NoVHtml));
+    registry.register(Box::new(NoVHtml::default()));
     Linter::with_registry(registry)
 }
 

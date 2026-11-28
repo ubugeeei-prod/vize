@@ -299,3 +299,28 @@ class VOnHandlerStyleOptions {
   style: VOnHandlerStyle? = null
   ignoreIncludesComment: Boolean = false
 }
+
+class NoDuplicateAttributesOptions {
+  allowCoexistClass: Boolean = true
+  allowCoexistStyle: Boolean = true
+}
+
+class NoMultipleTemplateRootOptions {
+  disallowComments: Boolean = false
+}
+
+class NoLoneTemplateOptions {
+  ignoreAccessible: Boolean = false
+}
+
+class NoStaticInlineStylesOptions {
+  allowBinding: Boolean = false
+}
+
+class NoUnusedComponentsOptions {
+  ignoreWhenBindingPresent: Boolean = true
+}
+
+class NoVHtmlOptions {
+  ignorePattern: String? = null
+}
