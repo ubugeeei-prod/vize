@@ -1,9 +1,6 @@
 import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
-import os from "node:os";
 import path from "node:path";
 import { glob } from "tinyglobby";
 import type { ConfigWithVizeTasks, VizeTask, VizeTaskConfig } from "./types.ts";
@@ -174,7 +171,7 @@ export function nativeBinary(): string {
 
 const CONFIG_STDIN_MARKER = "config-stdin-v1";
 
-/** Preserve compatibility with published CLI packages from before stdin transport. */
+/** Published CLI packages from before stdin transport lack this marker. */
 export function nativeSupportsConfigStdin(native: string): boolean {
   return !existsSync(native) || existsSync(path.join(path.dirname(native), CONFIG_STDIN_MARKER));
 }
@@ -208,25 +205,13 @@ export async function runNative(
           ...(metadata.lintHelpLevel ? ["--help-level", metadata.lintHelpLevel] : []),
         ]
       : [];
-  if (nativeSupportsConfigStdin(native))
-    return spawn(
-      process.execPath,
-      [native, command, "--config-stdin", ...lintOptions, ...argv],
-      payload,
+  if (!nativeSupportsConfigStdin(native))
+    throw new Error(
+      `${native} predates --config-stdin; install the vize CLI version that matches @vizejs/vite-plugin.`,
     );
-
-  const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
-  try {
-    await writeFile(file, payload, { flag: "wx", mode: 0o600 });
-    return await spawn(process.execPath, [
-      native,
-      command,
-      "--config",
-      file,
-      ...lintOptions,
-      ...argv,
-    ]);
-  } finally {
-    await rm(file, { force: true });
-  }
+  return spawn(
+    process.execPath,
+    [native, command, "--config-stdin", ...lintOptions, ...argv],
+    payload,
+  );
 }
