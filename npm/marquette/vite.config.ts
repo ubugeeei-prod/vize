@@ -34,6 +34,7 @@ export default defineConfig({
       "src/native-build.ts",
       "src/native-build-validate.ts",
       "src/navigation.ts",
+      "src/navigation-links.ts",
       "src/validate.ts",
       "src/test-run.ts",
       "src/test-run-validate.ts",

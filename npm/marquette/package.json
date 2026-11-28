@@ -57,6 +57,11 @@
       "import": "./dist/navigation.mjs",
       "default": "./dist/navigation.mjs"
     },
+    "./navigation/links": {
+      "types": "./dist/navigation-links.d.mts",
+      "import": "./dist/navigation-links.mjs",
+      "default": "./dist/navigation-links.mjs"
+    },
     "./test-run": {
       "types": "./dist/test-run.d.mts",
       "import": "./dist/test-run.mjs",

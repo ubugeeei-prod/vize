@@ -202,6 +202,45 @@ Unknown routes and missing, extra, empty, or non-finite parameters are rejected
 before the target-specific adapter runs. Route identifiers, required parameter
 names, and the owning environment remain inferred from `app`.
 
+### Incoming application links
+
+The experimental `@vizejs/marquette/navigation/links` entry resolves incoming
+HTTPS and custom-scheme links against the same authored route contract. Select
+the owning environment and explicitly admit each origin:
+
+```ts
+import { createMarquetteLinkResolver } from "@vizejs/marquette/navigation/links";
+
+const links = createMarquetteLinkResolver(app, {
+  environment: "native",
+  origins: ["https://shop.example", "shop://app"],
+});
+
+const result = links.resolve(incomingLink);
+if (result.matched) {
+  nativeHost.open(result.target);
+} else {
+  console.error(result.code);
+}
+```
+
+Successful targets preserve route and environment literals, infer decoded string
+parameters for each route, and provide a canonical encoded path. Static route
+segments take precedence over parameters, which take precedence over terminal
+`*rest` segments. Equally specific matches fail with `ambiguous-route` rather
+than relying on declaration order. Only routes in the selected environment
+participate in matching.
+
+The boundary refuses untrusted origins, credentials, malformed escaping,
+backslashes, control characters, and decoded `.` or `..` segments before URL
+normalization can hide them. Query strings and fragments are not forwarded as
+route parameters. Invalid origin policies and unsupported route templates fail
+at construction. Origins require HTTPS or an explicit custom scheme and host;
+HTTP origins are not admitted. Resolution scans precompiled routes in the
+selected environment. The entry has an enforced 4 KiB gzip budget and adds no
+runtime code to the authoring or programmatic-navigation entries. Device
+launch and operating-system link registration remain host responsibilities.
+
 ## Test-run evidence
 
 Release-bound test-run evidence records live in their own lazy entries so
