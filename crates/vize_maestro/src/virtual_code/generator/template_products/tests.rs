@@ -2,6 +2,7 @@
     clippy::unwrap_used,
     reason = "original parsers and product equivalence are asserted"
 )]
+use super::super::binding::template_used_script_bindings;
 use super::super::tests::fixture_descriptor;
 use super::*;
 use crate::virtual_code::extract_expressions;
@@ -63,33 +64,41 @@ fn compare(
     name: &str,
 ) -> TemplateOperandProducts {
     let expected = separate(native, descriptor);
-    let result = VirtualCodeGenerator::new()
-        .template_operand_products(native, descriptor, URI)
-        .unwrap();
-    assert_eq!(result.checker, expected.checker, "{name}");
-    assert_eq!(
-        result.expressions.len(),
-        expected.expressions.len(),
-        "{name}"
-    );
-    for (a, b) in result.expressions.iter().zip(&expected.expressions) {
+    let published = VirtualCodeGenerator::new().generate(descriptor, URI);
+    let results = [
+        VirtualCodeGenerator::new()
+            .native_template_operand_products(native, URI)
+            .unwrap(),
+        VirtualCodeGenerator::new()
+            .template_operand_products(native, descriptor, URI)
+            .unwrap(),
+    ];
+    for result in &results {
+        assert_eq!(result.checker, expected.checker, "{name}");
         assert_eq!(
-            (&a.text, a.range, a.kind),
-            (&b.text, b.range, b.kind),
+            result.expressions.len(),
+            expected.expressions.len(),
             "{name}"
         );
+        for (a, b) in result.expressions.iter().zip(&expected.expressions) {
+            assert_eq!(
+                (&a.text, a.range, a.kind),
+                (&b.text, b.range, b.kind),
+                "{name}"
+            );
+        }
+        equal_script(
+            result.script_setup.as_ref(),
+            expected.script_setup.as_ref(),
+            name,
+        );
+        equal_script(
+            result.script_setup.as_ref(),
+            published.script_setup.as_ref(),
+            name,
+        );
     }
-    equal_script(
-        result.script_setup.as_ref(),
-        expected.script_setup.as_ref(),
-        name,
-    );
-    let published = VirtualCodeGenerator::new().generate(descriptor, URI);
-    equal_script(
-        result.script_setup.as_ref(),
-        published.script_setup.as_ref(),
-        name,
-    );
+    let [result, _] = results;
     result
 }
 
@@ -167,8 +176,18 @@ fn empty_static_script_only_and_nested_sources_match_the_public_editor() {
 #[test]
 #[ignore = "compare complete checker, expression and public script documents on original files"]
 fn original_tool_template_projections_match() {
-    let list = std::fs::read(std::env::var_os("VIZE_TEMPLATE_PRODUCT_INPUTS").unwrap()).unwrap();
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let list = if let Some(path) = std::env::var_os("VIZE_TEMPLATE_PRODUCT_INPUTS") {
+        std::fs::read(path).unwrap()
+    } else {
+        let result = std::process::Command::new("git")
+            .args(["ls-files", "-z", "--", "*.vue"])
+            .current_dir(&root)
+            .output()
+            .unwrap();
+        assert!(result.status.success(), "tracked Vue source inventory");
+        result.stdout
+    };
     let (mut invalid, mut refused, mut admitted, mut operands, mut links, mut script_bytes) =
         (0, 0, 0, 0, 0, 0);
     for path in list.split(|&b| b == 0).filter(|p| !p.is_empty()) {
