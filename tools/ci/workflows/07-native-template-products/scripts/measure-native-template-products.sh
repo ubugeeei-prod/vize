@@ -11,5 +11,6 @@ export VIZE_TEMPLATE_PRODUCT_INPUTS="$report/tracked-vue-inputs"
 git ls-files -z -- '*.vue' > "$VIZE_TEMPLATE_PRODUCT_INPUTS"
 flags=(--locked --profile ci-opt -p vize_maestro --features experimental-template-operand-products,micro-profiling --lib)
 cargo test "${flags[@]}" virtual_code::generator::template_products::tests:: -- --nocapture --test-threads=1 2>&1 | tee "$report/parity.log"
+cargo test "${flags[@]}" source_project::template_products::tests:: -- --nocapture --test-threads=1 2>&1 | tee "$report/open-buffer-products.log"
 cargo test "${flags[@]}" original_tool_template_projections_match -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/original-sources.log"
 cargo test "${flags[@]}" paired_template_tool_products -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/paired-resources.log"

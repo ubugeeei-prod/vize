@@ -9,6 +9,10 @@ on:
       - crates/vize_maestro/src/virtual_code/script_code.rs
       - crates/vize_maestro/src/virtual_code/generator/template_products.rs
       - crates/vize_maestro/src/virtual_code/generator/template_products/**
+      - crates/vize_maestro/src/source_project.rs
+      - crates/vize_maestro/src/source_project/query.rs
+      - crates/vize_maestro/src/source_project/template_products.rs
+      - crates/vize_maestro/src/source_project/template_products/**
       - crates/vize_canon/src/projection/native_template.rs
       - davinci/vize_l1_to_l2/src/native_file/operands.rs
       - davinci/vize_l2/src/query/expression/operand.rs
