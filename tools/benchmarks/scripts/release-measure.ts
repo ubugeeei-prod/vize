@@ -17,10 +17,8 @@
  * release codegen (fat LTO, one codegen unit) with Cargo's profile environment
  * variables, so no temporary branch has to edit `Cargo.toml`. The binaries
  * whose bytes ship are built with `--release`.
- *
- * Usage (Actions; see .github/workflows/shipped-profile-measure.yml):
- *   node tools/benchmarks/scripts/release-measure.ts --base <dir> --head <dir> --out <dir> [--no-twins]
- *   node tools/benchmarks/scripts/release-measure.ts --report <out-dir>
+ * Usage: node tools/benchmarks/scripts/release-measure.ts --base <dir> --head <dir> --out <dir> [--no-twins]
+ * Report: node tools/benchmarks/scripts/release-measure.ts --report <out-dir>
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -37,6 +35,11 @@ import {
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glibcFloorTarget } from "../../support/github/glibc-floor.ts";
+import {
+  publishMovedAttribution,
+  retainMeasuredProbes,
+  retainSourceCli,
+} from "./release-measure-attribution.ts";
 
 /** Instruction suites and the instruction-counts.mjs flags that collect them. */
 export const SUITES: ReadonlyArray<readonly [string, readonly string[]]> = [
@@ -272,6 +275,11 @@ export function collectInstructionSuite(
     try {
       if (existsSync(dir))
         cpSync(dir, destination, { recursive: true, force: false, errorOnExist: true });
+      const probes = join(
+        capture,
+        flags.includes("--formatter") ? "formatter-instruction-probes" : "instruction-probes",
+      );
+      retainMeasuredProbes(dir, probes, join(destination, "probes"));
     } catch (error) {
       failures.push(error);
     } finally {
@@ -370,6 +378,12 @@ export function measureSide(
       join(target, linuxTarget, "release", "libvize_vitrine.so"),
     ).size,
   };
+  retainSourceCli(
+    join(target, linuxTarget, "release", "vize"),
+    side,
+    gitHead(source),
+    linuxFloorTarget,
+  );
   const result: Side = { rows, sizes, binaries };
   writeFileSync(join(side, "side.json"), JSON.stringify(result, null, 2) + "\n");
   rmSync(target, { recursive: true, force: true });
@@ -460,6 +474,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const summary = join(resolve(publish), "summary.md");
     const destination = process.env.GITHUB_STEP_SUMMARY;
     if (existsSync(summary) && destination) appendFileSync(destination, readFileSync(summary));
+    publishMovedAttribution(resolve(publish), movedRows);
   } else if (reportOnly) {
     report(resolve(reportOnly));
   } else {

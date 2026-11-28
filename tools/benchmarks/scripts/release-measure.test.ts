@@ -1,5 +1,15 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import {
+  existsSync,
+  lstatSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -301,6 +311,55 @@ void test("failed collection retains partial evidence, propagates failure and em
     );
     assert.equal(readFileSync(join(destination, "measurement.json"), "utf8"), "original evidence");
     assert.equal(existsSync(join(scratch, "instruction-capture")), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("instruction capture preserves the measured executable before cleaning probe links", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-probe-retention-"));
+  const image = join(root, "measured-image");
+  const bytes = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0, 255, 13, 10]);
+  writeFileSync(image, bytes);
+  try {
+    for (const [suite, flags] of [
+      ["stages", []],
+      ["formatter", ["--formatter"]],
+      ["sfc", ["--sfc-parsing"]],
+    ] as const) {
+      const destination = join(root, suite);
+      collectInstructionSuite("source", root, destination, flags, {}, (_cmd, args) => {
+        const directory = args[args.indexOf("--out") + 1];
+        mkdirSync(directory, { recursive: true });
+        writeFileSync(join(directory, "measurement.json"), "{}\n");
+        writeFileSync(
+          join(directory, "binaries.json"),
+          JSON.stringify(
+            [0, 1, 2].map((index) => ({
+              pkg: "package",
+              bench: `bench-${index}`,
+              sha256: createHash("sha256").update(bytes).digest("hex"),
+            })),
+          ),
+        );
+        const probes = join(
+          directory,
+          "..",
+          suite === "formatter" ? "formatter-instruction-probes" : "instruction-probes",
+        );
+        mkdirSync(probes);
+        for (const index of [0, 1, 2])
+          symlinkSync(image, join(probes, `probe-${String(index).padStart(2, "0")}`));
+      });
+      for (const index of [0, 1, 2]) {
+        const file = join(destination, "probes", `probe-${String(index).padStart(2, "0")}`);
+        assert.equal(lstatSync(file).isFile(), true);
+        assert.deepEqual(readFileSync(file), bytes);
+      }
+      assert.equal(existsSync(join(root, "instruction-capture")), false);
+    }
+    rmSync(image);
+    assert.deepEqual(readFileSync(join(root, "stages", "probes", "probe-02")), bytes);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
