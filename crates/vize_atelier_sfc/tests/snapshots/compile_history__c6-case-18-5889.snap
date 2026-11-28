@@ -27,7 +27,7 @@ Case {
 }
 Template {
     errors: [],
-    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"div\", null, [\n      _createVNode(_component_MyComp, { \":x\": \"1\" })\n    ])\n  ]))\n}",
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"div\", null, [\n      _createElementVNode(\"MyComp\", { \":x\": \"1\" })\n    ])\n  ]))\n}",
     map: None,
 }

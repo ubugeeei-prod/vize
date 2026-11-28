@@ -314,6 +314,27 @@ impl<'a> TransformContext<'a> {
             0,
             0,
         );
+        if key_alias.is_some_and(for_bindings::is_pattern)
+            || index_alias.is_some_and(for_bindings::is_pattern)
+        {
+            self.bind_key_and_index_patterns(key_alias, index_alias);
+        }
+    }
+
+    /// A destructured key or index alias binds every name of its pattern, so
+    /// `v-model` rejects each one as a scope variable. The scope slot keeps
+    /// one name per alias; the pattern is parsed only here.
+    #[cold]
+    #[inline(never)]
+    fn bind_key_and_index_patterns(&mut self, key_alias: Option<&str>, index_alias: Option<&str>) {
+        for alias in [key_alias, index_alias].into_iter().flatten() {
+            if for_bindings::is_pattern(alias) {
+                for name in for_bindings::value_bindings(alias) {
+                    self.scope_chain
+                        .add_binding(name, ScopeBinding::new(BindingType::SetupConst, 0));
+                }
+            }
+        }
     }
 
     /// Enter a v-slot scope with the given slot params

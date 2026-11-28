@@ -6514,6 +6514,61 @@
       }
     },
     {
+      "id": "compiler/sfc/v-pre-component-tags-and-v-for-key-pattern",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "v-pre-component-tags-and-v-for-key-pattern",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9435217aa068bc2d93da603995c96314975504d2d13fa2996f984b8c18cd856a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "v-pre-component-tags-and-v-for-key-pattern/module.expected.txt",
+        "sha256": "12e96a1abe08fced5f5fc1cb1e7d65c951d55a3aababb84599c1fe04c905f192",
+        "source": "crates/vize_atelier_sfc/tests/v_pre_and_v_for_key_pattern.rs:ssr_module_matches_the_pinned_differential_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins a v-pre subtree whose component and slot spellings stay markup and a destructured v-for key read through by v-model (Vue 3.5 emits the same markup) without native parity credit. The DOM and SSR rejection of v-model on a destructured key or index name is checked in the Rust API tests."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/vapor-authored-attribute-quotes",
       "state": "active",
       "targets": [
