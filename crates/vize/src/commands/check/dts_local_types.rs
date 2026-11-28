@@ -92,14 +92,14 @@ pub(super) fn qualify_local_references(
         }
         let start = reference.span.start as usize;
         let end = reference.span.end as usize;
-        out.push_str(&text[offset..start]);
+        out.push_str(text.get(offset..start).unwrap_or_default());
         out.push_str(namespace);
         out.push('.');
-        out.push_str(&text[start..end]);
+        out.push_str(text.get(start..end).unwrap_or_default());
         used.insert(reference.name);
         offset = end;
     }
-    out.push_str(&text[offset..]);
+    out.push_str(text.get(offset..).unwrap_or_default());
     out
 }
 

@@ -183,7 +183,7 @@ pub(super) fn prepare_program(
         super::warn_for_disabled_legacy(legacy_vue2);
     }
     let mut virtual_ts_options = settings.virtual_ts_options.clone();
-    let nuxt_path_aliases = nuxt::detect(
+    let nuxt_detection = nuxt::detect(
         &mut virtual_ts_options,
         input.nuxt_project_root,
         input.project_root,
@@ -191,7 +191,7 @@ pub(super) fn prepare_program(
         input.tsconfig_path.as_ref().map(|_| input.files),
         legacy_vue2,
         dialect,
-    );
+    )?;
     // Nuxt detection supplies the generated auto-imports as its own stubs, so
     // a manifest reached only through `nuxt.d.ts` references (Nuxt's default
     // layout) is never a program file. A stub keeps the manifest's spelling,
@@ -213,7 +213,7 @@ pub(super) fn prepare_program(
         input.tsconfig_path.as_deref(),
         input.project_root,
         input.nuxt_project_root,
-        &nuxt_path_aliases,
+        &nuxt_detection.path_aliases,
     )
     .map_err(|error| cstr!("Failed to prepare type checker tsconfig: {}", error))?;
     wait_for_prepared_config_test_barrier(&checker_tsconfig).map_err(|error| {
@@ -298,6 +298,9 @@ pub(super) fn prepare_program(
             .ensure_included_sources()
             .map_err(|error| cstr!("{}", error))?;
     }
+    checker
+        .register_declaration_snapshots(&nuxt_detection.declaration_snapshots)
+        .map_err(|error| cstr!("Failed to register Nuxt declaration snapshots: {}", error))?;
     checker
         .adopt_diagnostic_sources(input.reported_files.iter().cloned())
         .map_err(|error| cstr!("{}", error))?;

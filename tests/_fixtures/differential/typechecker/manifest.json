@@ -65061,6 +65061,34 @@
       }
     },
     {
+      "id": "typechecker/nuxt-generated-reference-snapshots/importer-identity",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::nuxt_generated_reference_graph::declaration_snapshots_preserve_parent_types_and_importer_package_identity",
+      "inputs": [
+        {
+          "path": "nuxt-generated-reference-graph/reference-snapshots.json",
+          "role": "declaration-reference-snapshots-and-importer-local-package-identities",
+          "sha256": "d43666a8fce85283b6c51da8ee64b497dc3e912b0b533259e5e5f2aad0dc9d84"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "The ordinary native checker test loads these exact inputs. It observes the original nested bare Vue shim failure, then checks sanitized declaration snapshots with app Vue literal42 and dependency-local Vue literal77, preserves a relative imported type, retains the intentional wrong assignment, and checks original source bytes. Input-only registration; no differential adapter, native parity admission, frozen oracle or historical execution credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/nuxt-referenced-import-manifest-template-ref/default-layout",
       "state": "active",
       "targets": [

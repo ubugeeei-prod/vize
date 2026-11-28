@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "tsconfig.json",
+      "source": "{ \"compilerOptions\": { \"strict\": true, \"skipLibCheck\": true }, \"include\": [\"src/**/*.ts\"] }"
+    },
+    {
+      "path": "src/use.ts",
+      "source": "import { real } from 'vue';\nconst app: 42 = real;\nconst parent: 77 = fromParent;\nconst child: 'ready' = fromChild;\nconst bad: string = fromParent;\n"
+    },
+    {
+      "path": "node_modules/vue/package.json",
+      "source": "{ \"name\": \"vue\", \"types\": \"index.d.ts\" }"
+    },
+    {
+      "path": "node_modules/vue/index.d.ts",
+      "source": "export declare const real: 42;\n"
+    },
+    {
+      "path": "node_modules/server-kit/package.json",
+      "source": "{ \"name\": \"server-kit\", \"types\": \"dist/parent.d.ts\" }"
+    },
+    {
+      "path": "node_modules/server-kit/node_modules/vue/package.json",
+      "source": "{ \"name\": \"vue\", \"types\": \"index.d.ts\" }"
+    },
+    {
+      "path": "node_modules/server-kit/node_modules/vue/index.d.ts",
+      "source": "export declare const real: 77;\n"
+    },
+    {
+      "path": "node_modules/server-kit/dist/parent.d.ts",
+      "source": "/// <reference path=\"child.d.ts\" />\nimport type { real } from 'vue';\nexport {}; declare global { const fromParent: typeof real }\n"
+    },
+    {
+      "path": "node_modules/server-kit/dist/child.d.ts",
+      "source": "/// <reference path=\"shim.d.ts\" />\nimport type { Marker } from './types';\nexport {}; declare global { const fromChild: Marker }\n"
+    },
+    {
+      "path": "node_modules/server-kit/dist/types.d.ts",
+      "source": "export type Marker = 'ready';\n"
+    },
+    {
+      "path": "node_modules/server-kit/dist/shim.d.ts",
+      "source": "declare module 'vue' { export const unrelated: true }\n"
+    }
+  ]
+}

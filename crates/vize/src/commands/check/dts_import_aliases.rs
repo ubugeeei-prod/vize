@@ -69,11 +69,11 @@ pub(super) fn rewrite_import_type_aliases(
                 render_named_reference(module.as_str(), "default")
             }
         };
-        out.push_str(&type_annotation[offset..start]);
+        out.push_str(type_annotation.get(offset..start).unwrap_or_default());
         out.push_str(&replacement);
         offset = end;
     }
-    out.push_str(&type_annotation[offset..]);
+    out.push_str(type_annotation.get(offset..).unwrap_or_default());
     out
 }
 
