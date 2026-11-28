@@ -191,6 +191,19 @@ vize lsp --debug
 プロファイルのスイッチ（`lint`、`typecheck`、`editor`、`ecosystem`、または `hover` などの個別機能）は
 `initializationOptions` で渡します。
 
+TCP サーバーは `127.0.0.1` だけで待ち受け、最初に受け付けた接続を使います。Linux では他のアカウントが
+開いた接続も閉じます。起動したクライアントとだけ接続するには、`--token-file <path>`（または環境変数
+`VIZE_LSP_TOKEN`）でトークンを渡し、同じトークンを `initializationOptions.vizeToken` で送ります。最初の
+メッセージがその `initialize` でない接続は閉じられ、サーバーは次の接続を待ちます。
+
+```bash
+vize lsp --port 9527 --token-file /path/to/token
+```
+
+```json
+{ "initializationOptions": { "vizeToken": "<トークンファイルの内容>" } }
+```
+
 ## トラブルシューティング
 
 | 症状                                          | 確認すること                                                                                                                  |
