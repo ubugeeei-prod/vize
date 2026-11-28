@@ -15,6 +15,8 @@ export function isCensusToolingInput(path: string) {
   return (
     censusScripts.has(path) ||
     path === "docs/davinci/plan/croquis-consumption.md" ||
+    // This exact generated rule inventory has only Node check/read consumers.
+    path === "docs/davinci/plan/lint-substrate-ledger.tsv" ||
     /^docs\/davinci\/plan\/croquis-consumption\/vize(?:_[a-z0-9]+)*\.md$/.test(path)
   );
 }
