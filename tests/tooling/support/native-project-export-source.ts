@@ -37,6 +37,7 @@ const configStdinCapabilityExport =
 const registerPluginPlanExport =
   "module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;\n";
 const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
+const selectOxlintTsrxExport = "module.exports.selectOxlintTsrx = nativeBinding.selectOxlintTsrx;\n";
 // Builds compile a batch for their client and SSR environments in one call.
 const compileForTargetsExport =
   "module.exports.compileSfcBatchForTargets = nativeBinding.compileSfcBatchForTargets;\n";
@@ -208,6 +209,17 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       "Nuxt template diagnostics export retains its canonical initialization position",
     );
   }
+  if (text.includes(selectOxlintTsrxExport)) {
+    assert.equal(
+      text.split(
+        "module.exports.lintOxlintHtml = nativeBinding.lintOxlintHtml;\n" +
+          selectOxlintTsrxExport +
+          "module.exports.lintPatinaSfc = nativeBinding.lintPatinaSfc;\n",
+      ).length,
+      2,
+      "TSRX selection export retains its canonical initialization position",
+    );
+  }
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -225,6 +237,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(typeResolutionBatchFunctionExport, "")
       .replace(configStdinCapabilityExport, "")
       .replace(compileTsrxExport, "")
+      .replace(selectOxlintTsrxExport, "")
       .replace(registerPluginPlanExport, "")
       .replace(compileForTargetsExport, "")
       .replace(formatFileExports, "")
