@@ -139,6 +139,8 @@ jobs:
         uses: ./.github/actions/setup-ush
       - name: Check Pkl repository configuration
         run: node tools/commands/generate/repository-config.ts --check
+      - name: Check byte custody
+        run: node tools/ci/commands/byte-custody.ts --check
       - name: Check JS/TS
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         run: . "${{ env.VIZE_CI_FILES }}/check-js-ts.sh"

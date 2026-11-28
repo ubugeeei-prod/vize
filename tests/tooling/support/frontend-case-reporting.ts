@@ -1,3 +1,4 @@
+import { restoreCiLibraryPaths } from "./ci-library-paths.ts";
 import { readToolingProgram } from "./program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -102,15 +103,20 @@ export function restoreCheckJsCasePacket(job: Job, original: Job) {
   assert(steps);
   const install = steps.findIndex((step) => step.name === "Install JS dependencies");
   assert(install >= 0);
-  // The generator check came later, with the ush compiler that it needs.
-  assert.deepEqual(steps.slice(install + 1, install + 3), [
+  // The generator check came later, with the ush compiler that it needs, and
+  // the byte-custody check after it.
+  assert.deepEqual(steps.slice(install + 1, install + 4), [
     { name: "Install ush", uses: "./.github/actions/setup-ush" },
     {
       name: "Check Pkl repository configuration",
       run: "node tools/commands/generate/repository-config.ts --check",
     },
+    {
+      name: "Check byte custody",
+      run: restoreCiLibraryPaths("node tools/ci/commands/byte-custody.ts --check"),
+    },
   ]);
-  steps.splice(install + 1, 2);
+  steps.splice(install + 1, 3);
   restoreSmallNodeAction(job, original, "Check fast JS/TS", {
     suite: "check-js",
     job: "check-js",

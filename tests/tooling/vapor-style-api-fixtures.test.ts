@@ -29,6 +29,16 @@ const admission: typeof admissionSourcePairs = JSON.parse(
 // changes execute the full packet/runtime workflows; they cannot inherit this
 // closed historical source permission by replacing the approved hashes.
 const admittedRevision = "b09ac660cd0684396c21d24249c4b1e2193e965a";
+// Admitted producers that changed later; their admitted bytes are frozen under
+// the byte-custody fixtures and must match the admitted revision.
+const frozenProducers = new Set([
+  "crates/vize_atelier_core/src/lane/element/directive_expressions.rs",
+  "crates/vize_atelier_core/src/lane/element/directive_expressions/ssr_keys.rs",
+  "crates/vize_atelier_core/src/lane/element/directive_expressions/tests.rs",
+  "crates/vize_atelier_core/src/lane/element/tests.rs",
+  "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
+  "crates/vize_atelier_vapor/src/lower/element/template.rs",
+]);
 const files = new Map<string, Buffer | null>();
 for (const source of admission.sourceFiles) {
   const old = spawnSync("git", ["show", `${authority.beforeRevision}:${source.path}`], {
@@ -39,7 +49,7 @@ for (const source of admission.sourceFiles) {
     maxBuffer: 8 * 1024 * 1024,
   });
   assert.equal(admitted.status, 0, `missing admitted source ${source.path}`);
-  if (source.path === "crates/vize_atelier_vapor/src/l3/native/emit/element.rs") {
+  if (frozenProducers.has(source.path)) {
     const frozen = readFileSync(`tests/_fixtures/byte-custody/${source.path}`);
     assert.deepEqual(frozen, admitted.stdout);
     files.set(`head:${source.path}`, frozen);

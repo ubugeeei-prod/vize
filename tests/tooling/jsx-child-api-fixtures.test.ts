@@ -51,13 +51,20 @@ for (const entry of historical.files) {
   );
   files.set(key, bytes);
 }
-// The Vapor text producer changed after admission; its admitted bytes are also
+// These Vapor producers changed after admission; their admitted bytes are also
 // frozen under the byte-custody fixtures and must match the historical record.
-const frozenProducer = "crates/vize_atelier_vapor/src/lower/text.rs";
-assert.deepEqual(
-  fs.readFileSync(`tests/_fixtures/byte-custody/${frozenProducer}`),
-  files.get(`head:${frozenProducer}`),
-);
+for (const frozenProducer of [
+  "crates/vize_atelier_vapor/src/generate.rs",
+  "crates/vize_atelier_vapor/src/generate/operations.rs",
+  "crates/vize_atelier_vapor/src/generate/transformed_root.rs",
+  "crates/vize_atelier_vapor/src/lower.rs",
+  "crates/vize_atelier_vapor/src/lower/context.rs",
+  "crates/vize_atelier_vapor/src/lower/text.rs",
+])
+  assert.deepEqual(
+    fs.readFileSync(`tests/_fixtures/byte-custody/${frozenProducer}`),
+    files.get(`head:${frozenProducer}`),
+  );
 assert.deepEqual(
   [...files.keys()].sort(),
   [

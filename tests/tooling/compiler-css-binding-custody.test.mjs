@@ -38,6 +38,11 @@ const from = (revision, file) => {
 };
 const baseline = "3a3c8460f966fddbd8e1be4c083d460b24202f90",
   fixed = "91c25c1b4a2ea842705e4db321b6e92d2b70ba42";
+// The CSS transform changed after admission; its admitted bytes are frozen
+// under the byte-custody fixtures and must match the fixed revision.
+const frozenProducer = "crates/vize_croquis/src/sfc/css_transform.rs";
+const frozen = fs.readFileSync(path.join(root, "tests/_fixtures/byte-custody", frozenProducer));
+assert.deepEqual(frozen, from(fixed, frozenProducer));
 const before = JSON.parse(from(baseline, manifestPath)),
   current = JSON.parse(read(manifestPath));
 // Keep the entire original envelope: future independent registrations cannot
@@ -48,9 +53,11 @@ const side = (side, file) =>
     ? from(baseline, file)
     : file === manifestPath
       ? cssOnly
-      : cssBindingProducerPaths.map(historicalCompilerCssPath).includes(file)
-        ? from(fixed, file)
-        : read(file);
+      : file === frozenProducer
+        ? frozen
+        : cssBindingProducerPaths.map(historicalCompilerCssPath).includes(file)
+          ? from(fixed, file)
+          : read(file);
 const compilerDialectCoverage = {
   state: "source-inspected",
   registryRef: null,
