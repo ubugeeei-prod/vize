@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { componentPropDefaults } from "../../npm/ui/scripts/reference-docs/component-defaults.ts";
+import {
+  componentPropDefaults,
+  type ComponentPropContractSource,
+} from "../../npm/ui/scripts/reference-docs/component-defaults.ts";
 
 const cases = [
   { component: "TextInput", count: 21, file: "components/TextInput.ts" },
@@ -26,24 +29,126 @@ const cases = [
   { component: "Form", count: 11, file: "components/Form.ts" },
   { component: "Stepper", count: 9, file: "components/Stepper.ts" },
   { component: "Tree", count: 12, file: "components/Tree.ts" },
+  {
+    component: "Code",
+    count: 19,
+    file: "components/Code.ts",
+    contract: "components/code-types.ts",
+  },
+  {
+    component: "Table",
+    count: 16,
+    file: "components/Table.ts",
+    contract: "components/table-types.ts",
+  },
 ] as const;
 
-function source(component: string): { filename: string; text: string } {
+function source(component: string): {
+  filename: string;
+  text: string;
+  contractSource?: ComponentPropContractSource;
+} {
   const contract = cases.find((contract) => contract.component === component);
   assert.ok(contract, `Expected a public component contract: ${component}`);
   const filename = `npm/fresco/src/${contract.file}`;
-  return { filename, text: readFileSync(new URL(`../../${filename}`, import.meta.url), "utf8") };
+  const contractSource =
+    "contract" in contract
+      ? {
+          filename: `npm/fresco/src/${contract.contract}`,
+          text: readFileSync(
+            new URL(`../../npm/fresco/src/${contract.contract}`, import.meta.url),
+            "utf8",
+          ),
+        }
+      : undefined;
+  return {
+    filename,
+    text: readFileSync(new URL(`../../${filename}`, import.meta.url), "utf8"),
+    contractSource,
+  };
 }
 
 for (const { component, count } of cases) {
   void test(`${component} documents every optional input's actual Vue default`, () => {
-    const { filename, text } = source(component);
-    const records = componentPropDefaults(filename, text, `${component}Props`, component);
+    const { filename, text, contractSource } = source(component);
+    const records = componentPropDefaults(
+      filename,
+      text,
+      `${component}Props`,
+      component,
+      contractSource,
+    );
     assert.equal(records.length, count);
     for (const record of records)
       assert.equal(record.documented, record.runtime, `${component}.${record.name}`);
   });
 }
+
+void test("imported interfaces stay bound to their actual source and default tags", () => {
+  const { filename, text, contractSource } = source("Code");
+  assert.ok(contractSource);
+  assert.throws(() => componentPropDefaults(filename, text, "CodeProps", "Code"), {
+    message: "Expected a complete prop interface: CodeProps",
+  });
+  assert.throws(
+    () =>
+      componentPropDefaults(filename, text, "CodeProps", "Code", {
+        ...contractSource,
+        filename: "other/code-types.ts",
+      }),
+    {
+      message: "Expected imported prop source: CodeProps",
+    },
+  );
+  const changed = text.replace('from "./code-types.js";', 'from "./table-types.js";');
+  assert.notEqual(changed, text);
+  assert.throws(
+    () => componentPropDefaults(filename, changed, "CodeProps", "Code", contractSource),
+    {
+      message: "Expected imported prop source: CodeProps",
+    },
+  );
+  assert.throws(
+    () =>
+      componentPropDefaults(filename, text, "CodeProps", "Code", {
+        ...contractSource,
+        text: `${contractSource.text}\nexport interface CodeProps {}\n`,
+      }),
+    {
+      message: "Expected a complete prop interface: CodeProps",
+    },
+  );
+  const bare = text.replace('from "./code-types.js";', 'from ".code-types.js";');
+  assert.notEqual(bare, text);
+  assert.throws(() => componentPropDefaults(filename, bare, "CodeProps", "Code", contractSource), {
+    message: "Expected direct imported prop interface: CodeProps",
+  });
+  const defaultExport = contractSource.text.replace(
+    "export interface CodeProps",
+    "export default interface CodeProps",
+  );
+  assert.notEqual(defaultExport, contractSource.text);
+  assert.throws(
+    () =>
+      componentPropDefaults(filename, text, "CodeProps", "Code", {
+        ...contractSource,
+        text: defaultExport,
+      }),
+    {
+      message: "Expected a complete prop interface: CodeProps",
+    },
+  );
+  const missing = contractSource.text.replace("@default 1", "default 1");
+  assert.notEqual(missing, contractSource.text);
+  const records = componentPropDefaults(filename, text, "CodeProps", "Code", {
+    ...contractSource,
+    text: missing,
+  });
+  assert.deepEqual(
+    records.filter(({ documented, runtime }) => documented !== runtime),
+    [{ name: "startLine", documented: null, runtime: "1" }],
+  );
+});
 
 void test("quoted default literals preserve whitespace and refuse duplicate tags", () => {
   const { filename, text } = source("Select");
@@ -158,7 +263,7 @@ void test("merged interfaces and overridden runtime declarations cannot hide inp
   const { filename, text } = source("TextInput");
   const merged = `${text}\nexport interface TextInputProps { extra?: string }\n`;
   assert.throws(() => componentPropDefaults(filename, merged, "TextInputProps", "TextInput"), {
-    message: "Expected a complete local prop interface: TextInputProps",
+    message: "Expected a complete prop interface: TextInputProps",
   });
   const computed = text.replace('name: "TextInput",', 'name: "TextInput", ["pro" + "ps"]: {},');
   assert.notEqual(computed, text);

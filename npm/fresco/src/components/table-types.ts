@@ -40,30 +40,69 @@ export interface TableViewportRange {
 export interface TableProps<Row extends TableRow = TableRow> {
   columns: readonly TableColumn<Row>[];
   data: readonly Row[];
+  /** Render the table header.
+   * @default true
+   */
   showHeader?: boolean;
+  /** Table border style.
+   * @default "single"
+   */
   border?: "none" | "single" | "double" | "rounded";
+  /** Default foreground color for header cells.
+   * @default "white"
+   */
   headerFg?: string;
+  /** Default background color for header cells.
+   * @default undefined
+   */
   headerBg?: string;
+  /** Default foreground color for body cells.
+   * @default undefined
+   */
   rowFg?: string;
+  /** Background color used for alternating body rows.
+   * @default undefined
+   */
   stripedBg?: string;
+  /** Gap between adjacent table cells, in terminal cells.
+   * @default 1
+   */
   cellPadding?: number;
-  /** Controlled sort column key. */
+  /** Controlled sort column key.
+   * @default undefined
+   */
   sortKey?: string;
-  /** Controlled sort direction. */
+  /** Controlled sort direction.
+   * @default "ascending"
+   */
   sortDirection?: TableSortDirection;
-  /** Controlled first visible sorted row. */
+  /** Controlled first visible sorted row.
+   * @default 0
+   */
   offset?: number;
-  /** Visible row count; omit to render every row. */
+  /** Visible row count; omit to render every row.
+   * @default undefined
+   */
   viewportSize?: number;
-  /** Rows retained outside each viewport edge. */
+  /** Rows retained outside each viewport edge.
+   * @default 2
+   */
   overscan?: number;
-  /** Whether the header owns keyboard navigation, sort, resize, and scrolling. */
+  /** Whether the header owns keyboard navigation, sort, resize, and scrolling.
+   * @default false
+   */
   focused?: boolean;
-  /** Controlled focused column index. */
+  /** Controlled focused column index.
+   * @default undefined
+   */
   focusedColumn?: number;
-  /** Controlled width overrides keyed by column key. */
+  /** Controlled width overrides keyed by column key.
+   * @default undefined
+   */
   columnWidths?: Readonly<Record<string, number>>;
-  /** Keyboard resize delta in terminal cells. */
+  /** Keyboard resize delta in terminal cells.
+   * @default 1
+   */
   resizeStep?: number;
 }
 

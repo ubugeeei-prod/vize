@@ -1,4 +1,6 @@
 /** Match documented component inputs to their actual Vue runtime prop declarations. */
+import { dirname, resolve } from "node:path";
+
 import ts from "typescript";
 import { commentText, memberName } from "./ts-scope.ts";
 
@@ -10,6 +12,14 @@ export interface ComponentPropDefault {
   readonly documented: string | null;
   /** Canonical JavaScript literal or undefined, derived from the Vue declaration. */
   readonly runtime: string;
+}
+
+/** Actual source file owning an interface imported by a component. */
+export interface ComponentPropContractSource {
+  /** Source filename corresponding to the component's named relative import. */
+  readonly filename: string;
+  /** Unmodified source text read by the documentation gate. */
+  readonly text: string;
 }
 
 const propBuiltins = new Set([
@@ -193,12 +203,14 @@ function documentedDefault(member: ts.PropertySignature): string | null {
  * unsupported declaration shapes fail.
  * Optional event-listener fields default to absence; event delivery is a separate
  * runtime contract.
+ * Imported interfaces must match a direct named import and its source filename.
  */
 export function componentPropDefaults(
   filename: string,
   sourceText: string,
   interfaceName: string,
   componentName: string,
+  contractSource?: ComponentPropContractSource,
 ): readonly ComponentPropDefault[] {
   const source = ts.createSourceFile(filename, sourceText, ts.ScriptTarget.Latest, true);
   requireGlobalPropBuiltins(source);
@@ -223,13 +235,58 @@ export function componentPropDefaults(
     );
   });
   if (!vueFactory) throw new Error("Expected defineComponent imported from Vue");
-  const contracts = source.statements.filter(
+  let interfaceSource = source;
+  if (contractSource) {
+    const imports = source.statements.flatMap((statement) => {
+      if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+        return [];
+      const specifier = statement.moduleSpecifier.text;
+      const bindings = statement.importClause?.namedBindings;
+      if (!bindings || !ts.isNamedImports(bindings)) return [];
+      return bindings.elements
+        .filter((binding) => binding.name.text === interfaceName)
+        .map((binding) => ({
+          name: binding.propertyName?.text ?? binding.name.text,
+          specifier,
+        }));
+    });
+    const imported = imports[0];
+    const local = source.statements.some(
+      (statement) => ts.isInterfaceDeclaration(statement) && statement.name.text === interfaceName,
+    );
+    if (
+      imports.length !== 1 ||
+      !imported ||
+      imported.name !== interfaceName ||
+      !(imported.specifier.startsWith("./") || imported.specifier.startsWith("../")) ||
+      !/\.(?:js|ts)$/u.test(imported.specifier) ||
+      local
+    )
+      throw new Error(`Expected direct imported prop interface: ${interfaceName}`);
+    const expected = resolve(dirname(filename), imported.specifier.replace(/\.js$/u, ".ts"));
+    if (resolve(contractSource.filename) !== expected)
+      throw new Error(`Expected imported prop source: ${interfaceName}`);
+    interfaceSource = ts.createSourceFile(
+      contractSource.filename,
+      contractSource.text,
+      ts.ScriptTarget.Latest,
+      true,
+    );
+  }
+  const contracts = interfaceSource.statements.filter(
     (statement): statement is ts.InterfaceDeclaration =>
       ts.isInterfaceDeclaration(statement) && statement.name.text === interfaceName,
   );
   const contract = contracts[0];
-  if (contracts.length !== 1 || !contract || contract.heritageClauses?.length)
-    throw new Error(`Expected a complete local prop interface: ${interfaceName}`);
+  if (
+    contracts.length !== 1 ||
+    !contract ||
+    contract.heritageClauses?.length ||
+    (contractSource &&
+      (!contract.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ||
+        contract.modifiers.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword)))
+  )
+    throw new Error(`Expected a complete prop interface: ${interfaceName}`);
   const declaration = source.statements
     .filter(ts.isVariableStatement)
     .flatMap((statement) => [...statement.declarationList.declarations])
