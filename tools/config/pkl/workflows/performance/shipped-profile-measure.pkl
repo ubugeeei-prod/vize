@@ -11,6 +11,15 @@
         `required` = true
         `type` = "string"
       }
+      `runner` = new Dynamic {
+        `required` = false
+        `type` = "choice"
+        `default` = "blacksmith-32vcpu-ubuntu-2404"
+        `options` = new Listing {
+          "blacksmith-32vcpu-ubuntu-2404"
+          "blacksmith-16vcpu-ubuntu-2404"
+        }
+      }
     }
   }
 }
@@ -22,7 +31,7 @@
 }
 `jobs` = new Dynamic {
   `compare` = new Dynamic {
-    `runs-on` = "blacksmith-32vcpu-ubuntu-2404"
+    `runs-on` = "${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}"
     `timeout-minutes` = 60
     `steps` = new Listing {
       new Dynamic {
