@@ -237,7 +237,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   const lintGeneration = await setupNuxtLint(options, nuxt, raw);
   const resolver = createNuxtModuleResolver(nuxt.options.rootDir);
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
-  registerNuxtContentMapper(nuxt, detectedNuxtMajor);
+  registerNuxtContentMapper(nuxt, detectedNuxtMajor, resolver.resolve());
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
   const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
   const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);

@@ -63,6 +63,8 @@ Nuxt compiles components on demand, so the log prints `[vize] load: on-demand co
 
 On Nuxt 3 and 4, the module adds `{ "package": "vize", "extensions": [".vue"] }` to the generated `.nuxt/tsconfig.app.json` during `prepare:types`. This is independent of the `compiler` option because the TypeScript host, not the SFC build compiler, owns type checking. If `contentMappers` already contains a mapper for `.vue`, the module keeps that explicit choice and does not add a duplicate. Other mapper entries keep their original order and values. Nuxt 2 output is unchanged.
 
+You do not need to install `vize` yourself. TypeScript resolves the mapper `package` from the generated tsconfig's directory. pnpm links only direct dependencies there. When `vize` is installed only through `@vizejs/nuxt`, the module writes the absolute path of that installed `vize` package instead of the name `vize`.
+
 The TypeScript host still controls whether external mapper code may run. Use TypeScript 7.1 or later with `--runExternalCode` for CLI checks, and enable Content Mapper support only in a trusted editor workspace. See [TypeScript Content Mapper](../guide/content-mapper.md) for the complete host and editor setup.
 
 ## Options
