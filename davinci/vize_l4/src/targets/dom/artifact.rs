@@ -239,6 +239,9 @@ struct EmitCx<'facts> {
     untracked_children: bool,
     /// A runtime `class` follows `createVNode`: only truthy non-strings normalize.
     runtime_class: bool,
+    /// The lexer saw a backslash in an attribute or directive name, so names
+    /// written between quotes are escaped.
+    escape_names: bool,
     /// `hoist_static`: static props and static VNode declarations are emitted
     /// only when the public transform option enabled them.
     hoist_static: bool,

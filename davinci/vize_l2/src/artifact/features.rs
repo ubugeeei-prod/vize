@@ -112,6 +112,24 @@ impl LoweringFeatures {
         self.holds(OpFamily::RuntimeClass)
     }
 
+    /// Whether an authored attribute or directive name holds a backslash.
+    ///
+    /// Not an op family: the markup lexer reports it while reading names.
+    /// Emitters write names between double quotes, so they escape a name only
+    /// when this is set and spell every name as it is otherwise.
+    #[must_use]
+    pub const fn has_backslash_names(self) -> bool {
+        self.bits & BACKSLASH_NAMES != 0
+    }
+
+    /// The same bits with a backslash name observed.
+    #[must_use]
+    pub const fn observing_backslash_names(self) -> Self {
+        Self {
+            bits: self.bits | BACKSLASH_NAMES,
+        }
+    }
+
     /// The same bits with `family` observed.
     #[must_use]
     pub const fn observing(self, family: OpFamily) -> Self {
@@ -124,6 +142,9 @@ impl LoweringFeatures {
         self.bits & family.bit() != 0
     }
 }
+
+/// The bit above every [`OpFamily`]: a lexical fact, not an op.
+const BACKSLASH_NAMES: u8 = 1 << 7;
 
 impl OpFamily {
     const fn bit(self) -> u8 {
@@ -176,6 +197,21 @@ mod tests {
             assert_eq!(bit.count_ones(), 1, "{family:?} must name one bit");
             assert_eq!(seen & bit, 0, "{family:?} shares a bit with an earlier one");
             seen |= bit;
+        }
+    }
+
+    #[test]
+    fn backslash_names_answer_for_no_family() {
+        let names = LoweringFeatures::EMPTY.observing_backslash_names();
+        assert!(names.has_backslash_names());
+        assert!(!LoweringFeatures::EMPTY.has_backslash_names());
+        for family in EVERY {
+            assert!(!names.holds(family), "{family:?} shares the name bit");
+            assert!(
+                !LoweringFeatures::EMPTY
+                    .observing(family)
+                    .has_backslash_names()
+            );
         }
     }
 

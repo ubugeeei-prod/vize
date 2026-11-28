@@ -87,6 +87,7 @@ fn component_has_static_bind_props(
         &component.bindings,
         is_ts,
         None,
+        false,
     )?
     .is_some_and(|props| props.all_static_binds && props.valued_prop))
 }

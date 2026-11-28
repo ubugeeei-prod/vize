@@ -17,8 +17,9 @@ pub(in crate::targets::dom::artifact) fn root_hoist_props(
     bindings: &[BindingOp<'_>],
     is_ts: bool,
     scope_id: Option<&str>,
+    escape_names: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, None, is_ts, scope_id)
+    root_hoist_props_with_layout(attributes, bindings, None, is_ts, scope_id, escape_names)
 }
 
 pub(in crate::targets::dom::artifact) fn cached_root_hoist_props(
@@ -27,8 +28,16 @@ pub(in crate::targets::dom::artifact) fn cached_root_hoist_props(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
+    escape_names: bool,
 ) -> Result<Option<String>, EmitError> {
-    root_hoist_props_with_layout(attributes, bindings, Some(line_indent), is_ts, scope_id)
+    root_hoist_props_with_layout(
+        attributes,
+        bindings,
+        Some(line_indent),
+        is_ts,
+        scope_id,
+        escape_names,
+    )
 }
 
 /// The shipped `genObjectExpression`'s second multiline arm: a property
@@ -49,6 +58,7 @@ fn root_hoist_props_with_layout(
     multiline_indent: Option<usize>,
     is_ts: bool,
     scope_id: Option<&str>,
+    escape_names: bool,
 ) -> Result<Option<String>, EmitError> {
     let scope = scope_id.filter(|scope| !attributes.iter().any(|attr| attr.name == *scope));
     if !can_root_hoist_props(attributes, bindings, is_ts)
@@ -61,7 +71,7 @@ fn root_hoist_props_with_layout(
     let pieces = pieces(attributes, bindings, false)?;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some(key) = static_hoist_prop(&mut prop, piece, is_ts)? else {
+        let Some(key) = static_hoist_prop(&mut prop, piece, is_ts, escape_names)? else {
             return Ok(None);
         };
         if has_prior_hoist_key(pieces.get(..index).unwrap_or_default(), key.as_str(), is_ts)? {

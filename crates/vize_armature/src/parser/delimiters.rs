@@ -46,12 +46,21 @@ impl<'a> Parser<'a> {
         // Keep the original compatibility sink and lexer instantiation. The
         // private callback alone opts into complete borrowed attribute values.
         let sink = CompatSink::new(ParserCallbacks { parser: self });
-        if document {
-            Lexer::<Document, _>::new(source, sink, options).run();
+        let name_backslash = if document {
+            let mut lexer = Lexer::<Document, _>::new(source, sink, options);
+            lexer.run();
+            lexer.name_backslash()
         } else if sfc {
-            Lexer::<VueTemplate, _>::new(source, sink, options).run();
+            let mut lexer = Lexer::<VueTemplate, _>::new(source, sink, options);
+            lexer.run();
+            lexer.name_backslash()
         } else {
-            Lexer::<Component, _>::new(source, sink, options).run();
+            let mut lexer = Lexer::<Component, _>::new(source, sink, options);
+            lexer.run();
+            lexer.name_backslash()
+        };
+        if let Some(root) = self.root.as_mut() {
+            root.name_backslash = name_backslash;
         }
         true
     }

@@ -6,7 +6,7 @@ use crate::{ElementNode, PropNode, RuntimeHelper, TemplateChildNode};
 
 use super::super::{
     context::CodegenContext,
-    helpers::{escape_js_string, name_needs_escape},
+    helpers::{escape_js_string, push_quoted_name_escaping},
 };
 
 /// Serialize a fully-static element as a nested `createElementVNode(...)` for a
@@ -22,7 +22,7 @@ pub(super) fn generate_static_element_to_bytes(
     out.push_str(el.tag);
     out.push('"');
 
-    let props = build_static_props(el);
+    let props = build_static_props(el, ctx.escape_names);
     if let Some(props) = &props {
         out.push_str(", ");
         out.push_str(props.as_str());
@@ -99,7 +99,7 @@ fn generate_static_child_array_to_bytes(
 /// Build the props-object literal for a static element, or `None` when it has
 /// no renderable static props. Mirrors the dedupe and quoting rules used by the
 /// main props codegen.
-fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
+fn build_static_props(el: &ElementNode<'_>, escape_names: bool) -> Option<String> {
     let mut buf = String::default();
     buf.push_str("{ ");
     let mut seen: vize_l0::FxHashSet<vize_l0::String> = vize_l0::FxHashSet::default();
@@ -116,8 +116,8 @@ fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
             }
             emitted += 1;
             let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
-            if needs_quote && name_needs_escape(attr.name) {
-                crate::codegen::helpers::push_escaped_name(&mut buf, attr.name);
+            if needs_quote && escape_names {
+                push_quoted_name_escaping(&mut buf, attr.name);
             } else if needs_quote {
                 buf.push('"');
                 buf.push_str(attr.name);

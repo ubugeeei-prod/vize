@@ -41,24 +41,29 @@ pub(super) fn parse_with_compat<'a>(
             }
         },
     };
-    if document {
-        Lexer::<Document, _>::new(
+    let name_backslash = if document {
+        let mut lexer = Lexer::<Document, _>::new(
             source,
             OriginalFirstScalarSink::new(ParserCallbacks {
                 parser: &mut parser,
             }),
             options,
-        )
-        .run();
+        );
+        lexer.run();
+        lexer.name_backslash()
     } else {
-        Lexer::<Component, _>::new(
+        let mut lexer = Lexer::<Component, _>::new(
             source,
             OriginalFirstScalarSink::new(ParserCallbacks {
                 parser: &mut parser,
             }),
             options,
-        )
-        .run();
+        );
+        lexer.run();
+        lexer.name_backslash()
+    };
+    if let Some(root) = parser.root.as_mut() {
+        root.name_backslash = name_backslash;
     }
     parser.flush_pending_text();
     parser.handle_unclosed_elements();

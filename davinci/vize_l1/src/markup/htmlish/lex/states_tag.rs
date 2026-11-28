@@ -1,10 +1,10 @@
 use super::{
     Lexer,
     char_codes::{
-        AMP, AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT,
+        AMP, AT, BACKSLASH, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT,
         LEFT_SQUARE, LOWER_V, LT, NUMBER, QUESTION_MARK, SINGLE_QUOTE, SLASH,
     },
-    types::{State, is_end_of_tag_section, is_tag_start_char, is_whitespace},
+    types::{State, is_end_of_tag_section, is_tag_start_char, is_whitespace, may_stop_name},
 };
 use crate::markup::profile::Profile;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
@@ -154,6 +154,9 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
 
     pub(super) fn handle_attr_start(&mut self, c: u8) {
         if self.sink.mode() == LexMode::Verbatim && !self.sink.directive_heads_in_verbatim() {
+            if c == BACKSLASH {
+                self.name_backslash = true;
+            }
             self.state = State::InAttrName;
             self.section_start = self.index;
             return;
@@ -161,10 +164,18 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         if c == LOWER_V && self.input.get(self.index + 1) == Some(&DASH) {
             self.state = State::InDirName;
             self.section_start = self.index;
-        } else if c == DOT || c == COLON || c == AT || c == NUMBER {
-            self.sink.on_dir_name(self.index, self.index + 1);
-            self.state = State::InDirArg;
-            self.section_start = self.index + 1;
+        } else if matches!(c, DOT | COLON | AT | NUMBER | BACKSLASH) {
+            // One test for the directive shorthands and a leading backslash,
+            // which the name state never reads as the name's first byte.
+            if c == BACKSLASH {
+                self.name_backslash = true;
+                self.state = State::InAttrName;
+                self.section_start = self.index;
+            } else {
+                self.sink.on_dir_name(self.index, self.index + 1);
+                self.state = State::InDirArg;
+                self.section_start = self.index + 1;
+            }
         } else {
             self.state = State::InAttrName;
             self.section_start = self.index;
@@ -172,6 +183,9 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     pub(super) fn state_in_attr_name(&mut self, c: u8) {
+        if !may_stop_name(c) {
+            return;
+        }
         if c == EQ || is_end_of_tag_section(c) {
             self.sink.on_attrib_name(self.section_start, self.index);
             self.sink.on_attrib_name_end(self.index);
@@ -192,10 +206,15 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         } else if c == LT {
             self.sink
                 .on_error(LexErrorCode::UnexpectedCharacterInAttributeName, self.index);
+        } else if c == BACKSLASH {
+            self.name_backslash = true;
         }
     }
 
     pub(super) fn state_in_dir_name(&mut self, c: u8) {
+        if !may_stop_name(c) {
+            return;
+        }
         if c == EQ || is_end_of_tag_section(c) {
             self.sink.on_dir_name(self.section_start, self.index);
             self.sink.on_attrib_name_end(self.index);
@@ -216,6 +235,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.index + 1;
         } else if c == DOUBLE_QUOTE {
             self.report_quote_in_directive_name();
+        } else if c == BACKSLASH {
+            self.name_backslash = true;
         }
     }
 
@@ -229,6 +250,9 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     pub(super) fn state_in_dir_arg(&mut self, c: u8) {
+        if !may_stop_name(c) {
+            return;
+        }
         if c == EQ || is_end_of_tag_section(c) {
             if self.section_start < self.index {
                 self.sink.on_dir_arg(self.section_start, self.index);
@@ -251,10 +275,15 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.index + 1;
         } else if c == DOUBLE_QUOTE {
             self.report_quote_in_directive_name();
+        } else if c == BACKSLASH {
+            self.name_backslash = true;
         }
     }
 
     pub(super) fn state_in_dir_modifier(&mut self, c: u8) {
+        if !may_stop_name(c) {
+            return;
+        }
         if c == EQ || is_end_of_tag_section(c) {
             self.sink.on_dir_modifier(self.section_start, self.index);
             self.sink.on_attrib_name_end(self.index);
@@ -266,6 +295,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.index + 1;
         } else if c == DOUBLE_QUOTE {
             self.report_quote_in_directive_name();
+        } else if c == BACKSLASH {
+            self.name_backslash = true;
         }
     }
 

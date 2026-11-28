@@ -243,6 +243,7 @@ pub(super) fn emit_call(
             &element.bindings,
             cx.is_ts,
             cx.scope_id,
+            cx.escape_names,
         )?
     } else {
         None
@@ -293,7 +294,11 @@ pub(super) fn emit_call(
         super::props_static::emit_inline(cx, element.attributes.iter(), false);
     } else if let Some(scope_id) = cx.scope_id_here().filter(|_| cx.in_v_for) {
         cx.buf.push(", ");
-        let props = super::hoist::compact_props_object(element.attributes.iter(), Some(scope_id));
+        let props = super::hoist::compact_props_object(
+            element.attributes.iter(),
+            Some(scope_id),
+            cx.escape_names,
+        );
         cx.buf.push(props.as_str());
     } else if empty_runtime_for {
         cx.buf.push(", { }");

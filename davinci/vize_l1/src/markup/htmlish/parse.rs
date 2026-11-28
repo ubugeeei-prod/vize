@@ -239,7 +239,7 @@ fn parse_projection_mode<'a, const RAW: bool>(
         |events, errors| {
             let recorder = Recorder { events, errors };
             let sink = NamespaceSink::new(allocator, source, recorder);
-            Lexer::<Component, _>::new(
+            let mut lexer = Lexer::<Component, _>::new(
                 source,
                 sink,
                 LexOptions {
@@ -247,8 +247,9 @@ fn parse_projection_mode<'a, const RAW: bool>(
                     raw_interpolation,
                     ..LexOptions::default()
                 },
-            )
-            .run();
+            );
+            lexer.run();
+            lexer.name_backslash()
         },
     );
     if options.syntax.is_quirks() {
@@ -263,7 +264,7 @@ pub(crate) fn construct<'a, const RAW: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
-    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>) -> bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
@@ -284,7 +285,7 @@ fn construct_with_diagnostics<'a, const RAW: bool>(
     source: &'a str,
     authored: bool,
     structure: Structure,
-    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>) -> bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
@@ -301,7 +302,7 @@ pub(crate) fn construct_with_tag_facts<'a, const RAW: bool, const TAG_FACTS: boo
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
-    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>) -> bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
@@ -321,7 +322,7 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
     source: &'a str,
     authored: bool,
     structure: Structure,
-    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>) -> bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
@@ -335,25 +336,35 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
         let mut children = Vec::new_in(&allocator);
         let hole = Token::present(crate::slice::range(source, 0, 0), source);
         children.push(SurfaceChild::Unexpected(hole));
-        return (SurfaceTree { source, children }, None, errors);
+        let tree = SurfaceTree {
+            source,
+            children,
+            name_backslash: false,
+        };
+        return (tree, None, errors);
     }
-    record(&mut events, &mut errors);
+    let name_backslash = record(&mut events, &mut errors);
     // Native lint admission owns typed holes, duplicate headers and unsupported
     // directive heads separately. Ordinary surface callers also retain the
     // historical lexer-only contract; replacing product owners opt in to the
     // complete parser/template vector explicitly.
-    let (tree, repaired) = if TAG_FACTS || matches!(structure, Structure::Off | Structure::Repaired)
-    {
-        let mut ignored = Vec::new_in(&allocator);
-        let repair = structure == Structure::Repaired;
-        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, repair, false)
-    } else {
-        let in_dom = structure == Structure::InDom;
-        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, in_dom, in_dom)
-    };
+    let (mut tree, repaired) =
+        if TAG_FACTS || matches!(structure, Structure::Off | Structure::Repaired) {
+            let mut ignored = Vec::new_in(&allocator);
+            let repair = structure == Structure::Repaired;
+            build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, repair, false)
+        } else {
+            let in_dom = structure == Structure::InDom;
+            build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, in_dom, in_dom)
+        };
+    tree.name_backslash = name_backslash;
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, false, false).0
+        let mut authored =
+            build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, false, false)
+                .0;
+        authored.name_backslash = name_backslash;
+        authored
     });
     errors.sort_by_key(|error| error.encounter);
     debug_assert!(

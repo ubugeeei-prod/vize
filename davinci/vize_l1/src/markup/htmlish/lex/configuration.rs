@@ -29,6 +29,7 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
             triple_mustache,
             in_raw_interpolation,
             in_tag_comments,
+            name_backslash,
             profile: _,
         } = self;
         Lexer {
@@ -51,6 +52,7 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
             triple_mustache,
             in_raw_interpolation,
             in_tag_comments,
+            name_backslash,
             profile: PhantomData,
         }
     }

@@ -53,20 +53,27 @@ pub(super) fn hoistable_static_props(
     hoist_attrs: &[&Attribute<'_>],
     is_ts: bool,
     scope_id: Option<&str>,
+    escape_names: bool,
 ) -> Result<Option<ComponentHoistProps>, EmitError> {
     if skip_is {
         if has_rendered_binds(component, skip_is) {
             return Ok(None);
         }
         return Ok((!hoist_attrs.is_empty()).then(|| ComponentHoistProps {
-            source: compact_props_object(hoist_attrs.iter().copied(), scope_id),
+            source: compact_props_object(hoist_attrs.iter().copied(), scope_id, escape_names),
             dynamic_values: false,
             non_key: hoist_attrs.iter().any(|attr| attr.name != "key"),
             valued_prop: hoist_attrs.iter().any(|attr| attr.value.is_some()),
             all_static_binds: false,
         }));
     }
-    props_static::component_hoist_props(&component.attributes, &component.bindings, is_ts, scope_id)
+    props_static::component_hoist_props(
+        &component.attributes,
+        &component.bindings,
+        is_ts,
+        scope_id,
+        escape_names,
+    )
 }
 
 pub(super) fn can_hoist_static_props(

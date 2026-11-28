@@ -287,10 +287,26 @@ impl<'a> AttrValue<'a> {
 }
 
 /// The parse result: the source and the root children level.
-#[derive(Debug)]
 pub struct SurfaceTree<'a> {
     pub source: &'a str,
     pub children: Vec<'a, SurfaceChild<'a>>,
+    /// An attribute or directive name in `source` holds a backslash, as the
+    /// lexer saw while reading names.
+    pub name_backslash: bool,
+}
+
+/// Reviewed fixtures pin this output byte for byte, so the lexer fact prints
+/// only when it is set.
+impl core::fmt::Debug for SurfaceTree<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut out = f.debug_struct("SurfaceTree");
+        out.field("source", &self.source)
+            .field("children", &self.children);
+        if self.name_backslash {
+            out.field("name_backslash", &self.name_backslash);
+        }
+        out.finish()
+    }
 }
 
 /// Node footprints are pinned (P1-10 discipline: slices, not owned
@@ -310,7 +326,7 @@ const _: () = {
     assert!(size_of::<ElementClose<'_>>() == 80);
     assert!(size_of::<Element<'_>>() == 248);
     assert!(size_of::<SurfaceChild<'_>>() == 48);
-    assert!(size_of::<SurfaceTree<'_>>() == 40);
+    assert!(size_of::<SurfaceTree<'_>>() == 48);
 };
 
 mod tag_facts;

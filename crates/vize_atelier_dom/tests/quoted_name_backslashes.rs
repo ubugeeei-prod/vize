@@ -73,6 +73,28 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }), 256 /* UNKEYED_FRAGMENT */))
 }"#,
     ),
+    (
+        r#"<div \a="1" data-b="2" :c-d="v"></div>"#,
+        r#"const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", {
+    "\\a": "1",
+    "data-b": "2",
+    "c-d": _ctx.v
+  }, null, 8 /* PROPS */, ["c-d"]))
+}"#,
+    ),
+    (
+        r#"<div v-pre><span \a="{{ x }}"></span></div>"#,
+        r#"const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("span", { "\\a": "{{ x }}" })
+  ]))
+}"#,
+    ),
 ];
 
 fn options() -> DomCompilerOptions {

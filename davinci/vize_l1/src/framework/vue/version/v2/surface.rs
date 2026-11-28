@@ -114,7 +114,9 @@ fn projection<'a>(
                 bindings: &mut bindings,
                 unsupported: &mut unsupported,
             };
-            Lexer::<Component, _>::new(source, sink, LexOptions::default()).run();
+            let mut lexer = Lexer::<Component, _>::new(source, sink, LexOptions::default());
+            lexer.run();
+            lexer.name_backslash()
         });
     for error in &mut errors {
         *error = error.rebased(block.start());

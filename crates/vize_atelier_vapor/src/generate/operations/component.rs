@@ -1,7 +1,6 @@
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode, PropValueKind};
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
-use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 use super::{
     super::{context::GenerateContext, setup::escape_js_string_literal},
@@ -259,9 +258,8 @@ fn generate_component_call(
             let name_span = slot.name.loc.span;
             let name_source = (name_span.start < name_span.end).then_some(name_span.start);
             let mut name = EmitDocument::plain("\"");
-            if name_needs_escape(slot.name.content) {
-                let contents = escaped_name_contents(slot.name.content);
-                name.push_spanned(&ctx.spanned_at(&contents, name_source));
+            if ctx.escape_names {
+                push_slot_key_escaping(ctx, &mut name, slot.name.content, name_source);
             } else {
                 name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
             }
@@ -359,5 +357,24 @@ fn creation_flags(
         // Nested in an element, a slot, a `v-for`, or among sibling roots: not the owner's single
         // root, so the owner's fallthrough attrs must not reach it.
         "false"
+    }
+}
+
+/// Push a static slot key's string-literal contents, escaped when it holds a
+/// backslash. Only a compile whose lexer saw a backslash in a name comes here.
+#[cold]
+#[inline(never)]
+fn push_slot_key_escaping(
+    ctx: &GenerateContext<'_>,
+    name: &mut EmitDocument,
+    key: &str,
+    source: Option<u32>,
+) {
+    use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
+    if name_needs_escape(key) {
+        let contents = escaped_name_contents(key);
+        name.push_spanned(&ctx.spanned_at(&contents, source));
+    } else {
+        name.push_spanned(&ctx.spanned_at(key, source));
     }
 }

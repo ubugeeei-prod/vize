@@ -16,7 +16,7 @@ use static_vnode::generate_static_element_to_bytes;
 
 use super::{
     context::CodegenContext,
-    helpers::{escape_js_string, name_needs_escape, push_escaped_name},
+    helpers::{escape_js_string, push_quoted_name_escaping},
 };
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -81,8 +81,8 @@ fn generate_js_child_node_to_bytes_guarded(
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
-                        if needs_quote && name_needs_escape(key) {
-                            push_escaped_name(out, key);
+                        if needs_quote && ctx.escape_names {
+                            push_quoted_name_escaping(out, key);
                         } else if needs_quote {
                             out.push('"');
                             out.push_str(key);
@@ -219,8 +219,8 @@ fn generate_props_expression_to_bytes(
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
                         let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
-                        if needs_quote && name_needs_escape(key) {
-                            push_escaped_name(out, key);
+                        if needs_quote && ctx.escape_names {
+                            push_quoted_name_escaping(out, key);
                         } else if needs_quote {
                             out.push('"');
                             out.push_str(key);

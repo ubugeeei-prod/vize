@@ -23,6 +23,8 @@ pub(super) struct L2Artifact<'s, 'a> {
     pub(super) root_origin: Option<vize_l0::Span>,
     pub(super) facts: PlanFacts<'s, 'a>,
     pub(super) diagnostics: u64,
+    /// The lexer saw a backslash in an attribute or directive name.
+    pub(super) escape_names: bool,
 }
 
 /// Lower `artifact` to L3, verify it, build the string plan from the shared
@@ -103,6 +105,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         artifact.source,
         experimental.clone(),
     );
+    ctx.escape_names = artifact.escape_names;
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
     ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
@@ -177,6 +180,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         artifact.source,
         experimental.clone(),
     );
+    ctx.escape_names = artifact.escape_names;
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
     ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));

@@ -159,11 +159,12 @@ pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {
 impl super::EmitCx<'_> {
     /// Push an authored name as a double-quoted JavaScript string literal. A
     /// name with a backslash is spelled through the string-literal writer;
-    /// every other name is copied as it is.
+    /// every other name is copied as it is. Only a compile whose lexer saw a
+    /// backslash in a name looks at the name's bytes.
     #[inline(always)]
     pub(super) fn push_quoted_name(&mut self, name: &str) {
-        if vize_l0::general::quoted_name::name_needs_escape(name) {
-            self.push_escaped_quoted_name(name);
+        if self.escape_names {
+            self.push_quoted_name_escaping(name);
         } else {
             self.buf.push("\"");
             self.buf.push(name);
@@ -173,10 +174,14 @@ impl super::EmitCx<'_> {
 
     #[cold]
     #[inline(never)]
-    fn push_escaped_quoted_name(&mut self, name: &str) {
-        let contents = vize_l0::general::quoted_name::escaped_name_contents(name);
+    fn push_quoted_name_escaping(&mut self, name: &str) {
+        use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
         self.buf.push("\"");
-        self.buf.push(contents.as_str());
+        if name_needs_escape(name) {
+            self.buf.push(escaped_name_contents(name).as_str());
+        } else {
+            self.buf.push(name);
+        }
         self.buf.push("\"");
     }
 }

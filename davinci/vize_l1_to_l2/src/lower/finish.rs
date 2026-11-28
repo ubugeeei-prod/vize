@@ -34,6 +34,9 @@ fn walk<'a>(
     errors: &[SurfaceError],
     block: SourceBlock<'a>,
 ) -> vize_l0::Vec<'a, vize_l2::op::Op<'a>> {
+    if tree.name_backslash {
+        cx.features = cx.features.observing_backslash_names();
+    }
     for error in errors {
         cx.diagnostics.push(crate::exemptions::surface_syntax(
             surface_error_span(block, error.offset),

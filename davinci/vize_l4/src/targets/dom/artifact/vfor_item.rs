@@ -79,9 +79,12 @@ fn register_props_hoist(
     {
         return Ok(());
     }
-    if let Some(props) =
-        super::props_static::for_item_hoist_props(&element.attributes, &element.bindings, cx.is_ts)?
-    {
+    if let Some(props) = super::props_static::for_item_hoist_props(
+        &element.attributes,
+        &element.bindings,
+        cx.is_ts,
+        cx.escape_names,
+    )? {
         let _ = cx.buf.push_hoist(props);
     }
     Ok(())

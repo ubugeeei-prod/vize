@@ -111,6 +111,7 @@ pub(super) fn component_hoist_props(
     bindings: &[BindingOp<'_>],
     is_ts: bool,
     scope_id: Option<&str>,
+    escape_names: bool,
 ) -> Result<Option<ComponentHoistProps>, EmitError> {
     let pieces = pieces(attributes, bindings, false)?;
     let mut out = String::from("{ ");
@@ -121,7 +122,9 @@ pub(super) fn component_hoist_props(
     let mut all_static_binds = true;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece, is_ts)? else {
+        let Some((key, dynamic_value)) =
+            component_hoist_prop(&mut prop, piece, is_ts, escape_names)?
+        else {
             return Ok(None);
         };
         if has_prior_component_hoist_key(
@@ -171,13 +174,14 @@ pub(super) fn for_item_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     is_ts: bool,
+    escape_names: bool,
 ) -> Result<Option<String>, EmitError> {
     let pieces = pieces(attributes, bindings, false)?;
     let mut out = String::from("{ ");
     let mut emitted = 0usize;
     for (index, piece) in pieces.iter().enumerate() {
         let mut prop = String::default();
-        let Some(key) = for_item_hoist_prop(&mut prop, piece, is_ts)? else {
+        let Some(key) = for_item_hoist_prop(&mut prop, piece, is_ts, escape_names)? else {
             return Ok(None);
         };
         if has_prior_for_item_hoist_key(
@@ -244,7 +248,7 @@ pub(super) fn emit_inline<'a>(
             continue;
         }
         let mut pair = String::default();
-        push_attr_pair(&mut pair, attr);
+        push_attr_pair(&mut pair, attr, cx.escape_names);
         cx.buf.push(pair.as_str());
     }
     if let Some(sid) = scope_id {

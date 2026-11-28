@@ -1,6 +1,5 @@
 //! Code generation context and result types.
 
-mod quoted_names;
 mod slot_outlet;
 mod spans;
 mod vnode_factory;
@@ -10,8 +9,11 @@ use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
 use super::document::EmitDocument;
+use super::helpers::is_valid_js_identifier;
 use vize_l0::FxHashMap;
+use vize_l0::Span;
 use vize_l0::String;
+use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 /// Code generation context using a UTF-8 string buffer for performance.
 pub struct CodegenContext {
@@ -104,6 +106,9 @@ pub struct CodegenContext {
     /// The template source node spans index into (the transformed root's
     /// `source`), used to recover covered text from a `SourceLocation`.
     pub(super) source: String,
+    /// The lexer saw a backslash in an attribute or directive name, so names
+    /// written between quotes are escaped (the root's `name_backslash`).
+    pub(super) escape_names: bool,
 }
 
 /// Byte offsets of the structural sections of a generated render module,
@@ -369,5 +374,80 @@ impl std::fmt::Write for CodegenContext {
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
         self.out.push_str(s);
         Ok(())
+    }
+}
+
+/// Authored names written between quotes: prop keys, event keys, dynamic
+/// prop names, directive arguments and modifiers. A name is final text, so a
+/// name with a backslash is spelled through the string-literal writer; every
+/// other name is copied as it is. The lexer records whether any name holds a
+/// backslash, so a compile without one writes every name as it is.
+impl CodegenContext {
+    /// Push `name` as a double-quoted JavaScript string literal.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_string_literal(&mut self, name: &str) {
+        if self.escape_names {
+            self.push_string_literal_escaping(name);
+        } else {
+            self.push("\"");
+            self.push(name);
+            self.push("\"");
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_string_literal_escaping(&mut self, name: &str) {
+        self.push("\"");
+        if name_needs_escape(name) {
+            self.push(&escaped_name_contents(name));
+        } else {
+            self.push(name);
+        }
+        self.push("\"");
+    }
+
+    /// Push `key` as an object key: bare when it is an identifier, otherwise
+    /// as the string literal that spells it.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_key(&mut self, key: &str) {
+        if is_valid_js_identifier(key) {
+            self.push(key);
+        } else {
+            self.push_string_literal(key);
+        }
+    }
+
+    /// [`Self::push_key`], with the key generated from the authored range
+    /// `span` that spells the symbol `name`.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_named_key(&mut self, key: &str, span: Span, name: &str) {
+        let needs_quotes = !is_valid_js_identifier(key);
+        if needs_quotes && self.escape_names {
+            self.push_named_key_escaping(key, span, name);
+            return;
+        }
+        if needs_quotes {
+            self.push("\"");
+        }
+        self.push_named(key, span, name);
+        if needs_quotes {
+            self.push("\"");
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_named_key_escaping(&mut self, key: &str, span: Span, name: &str) {
+        let escaped;
+        let text = if name_needs_escape(key) {
+            escaped = escaped_name_contents(key);
+            escaped.as_str()
+        } else {
+            key
+        };
+        self.push("\"");
+        self.push_named(text, span, name);
+        self.push("\"");
     }
 }

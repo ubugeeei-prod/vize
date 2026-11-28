@@ -17,13 +17,14 @@ pub(super) fn static_hoist_prop<'a>(
     out: &mut String,
     piece: &Piece<'a>,
     is_ts: bool,
+    escape_names: bool,
 ) -> Result<Option<HoistKey<'a>>, EmitError> {
     let Some(key) = hoist_key(piece, is_ts)? else {
         return Ok(None);
     };
     match piece {
         Piece::Attr(attr) => {
-            push_attr_pair(out, attr);
+            push_attr_pair(out, attr, escape_names);
         }
         Piece::Bind(bind) => {
             push_key(out, key.as_str());
@@ -41,10 +42,11 @@ pub(super) fn component_hoist_prop<'a>(
     out: &mut String,
     piece: &Piece<'a>,
     is_ts: bool,
+    escape_names: bool,
 ) -> Result<Option<(HoistKey<'a>, bool)>, EmitError> {
     match piece {
         Piece::Attr(attr) if attr.name != "ref" => {
-            push_attr_pair(out, attr);
+            push_attr_pair(out, attr, escape_names);
             Ok(Some((HoistKey::Borrowed(attr.name), false)))
         }
         Piece::Bind(bind) => {
@@ -75,10 +77,11 @@ pub(super) fn for_item_hoist_prop<'a>(
     out: &mut String,
     piece: &Piece<'a>,
     is_ts: bool,
+    escape_names: bool,
 ) -> Result<Option<HoistKey<'a>>, EmitError> {
     match piece {
         Piece::Attr(attr) if attr.name != "ref" => {
-            push_attr_pair(out, attr);
+            push_attr_pair(out, attr, escape_names);
             Ok(Some(HoistKey::Borrowed(attr.name)))
         }
         Piece::Bind(bind) => {

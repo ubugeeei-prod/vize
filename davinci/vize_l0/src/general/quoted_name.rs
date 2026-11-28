@@ -4,7 +4,9 @@
 //! argument or modifier, a slot name) is authored text, or is assembled from
 //! authored text and fixed ASCII. The markup lexer ends a name at whitespace
 //! and reports a double quote inside one, so a quoted name can change meaning
-//! only through a backslash. A name without one is written as it is.
+//! only through a backslash. A name without one is written as it is. The lexer
+//! also records whether any name of a template holds a backslash, so an
+//! emitter reaches these helpers only for such a template.
 
 use crate::String;
 use crate::js_string::push_js_string_literal;

@@ -14,15 +14,22 @@ use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 use super::{SsrCodegenContext, TemplatePart};
 
-/// Push the string-literal contents of a bound attribute name that needs
-/// escaping, mapped at `start` when there is one.
+/// Push the string-literal contents of a bound attribute name, escaped when
+/// it holds a backslash and mapped at `start` when there is one. Only a
+/// compile whose lexer saw a backslash in a name comes here.
 #[cold]
 #[inline(never)]
-pub(crate) fn push_escaped_bound_name(piece: &mut EmitDocument, name: &str, start: Option<u32>) {
-    let contents = escaped_name_contents(name);
+pub(crate) fn push_bound_name_escaping(piece: &mut EmitDocument, name: &str, start: Option<u32>) {
+    let escaped;
+    let text = if name_needs_escape(name) {
+        escaped = escaped_name_contents(name);
+        escaped.as_str()
+    } else {
+        name
+    };
     match start {
-        Some(start) => piece.push_mapped(&contents, start),
-        None => piece.push_str(&contents),
+        Some(start) => piece.push_mapped(text, start),
+        None => piece.push_str(text),
     }
 }
 
@@ -110,9 +117,9 @@ impl SsrCodegenContext<'_> {
     /// Push `_ssrRenderAttr("name", exp)` for a statically named `v-bind`.
     pub(crate) fn push_bound_attr_part(&mut self, name: &str, dir: &DirectiveNode<'_>, exp: &str) {
         let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
-        if name_needs_escape(name) {
+        if self.escape_names {
             let start = dir.arg.as_ref().map(|arg| arg.loc().span.start);
-            push_escaped_bound_name(&mut piece, name, start.filter(|_| self.spans_enabled()));
+            push_bound_name_escaping(&mut piece, name, start.filter(|_| self.spans_enabled()));
         } else {
             match (&dir.arg, self.spans_enabled()) {
                 (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),

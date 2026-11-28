@@ -100,6 +100,7 @@ fn lower_and_emit_plain(
             frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
+        escape_names: s2.artifact.features.has_backslash_names(),
     };
     let table = request
         .options
@@ -211,6 +212,7 @@ fn lower_and_emit_direct(
             frozen_slots: Some(frozen_slots),
         },
         diagnostics: 0,
+        escape_names: s2.artifact.features.has_backslash_names(),
     };
     let table = request
         .options
@@ -366,6 +368,7 @@ fn lower_and_emit<C: CaptureSink>(
             frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
+        escape_names: s2.artifact.features.has_backslash_names(),
     };
     let table = request
         .options

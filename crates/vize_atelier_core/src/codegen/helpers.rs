@@ -6,9 +6,7 @@ mod escape_gate;
 pub use self::constant_expression::is_constant_simple_expression;
 use self::escape_gate::byte_may_need_js_escaping;
 use crate::RuntimeHelper;
-use vize_l0::{ToCompactString, general::quoted_name};
-
-pub(super) use quoted_name::name_needs_escape;
+use vize_l0::{ToCompactString, general::quoted_name, js_string::push_js_string_literal};
 
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
@@ -118,16 +116,24 @@ pub fn escape_js_string(s: &str) -> String {
 /// `name` exactly. Unlike [`escape_js_string`], `name` is final text (a tag
 /// name, an already decoded attribute value): no entity in it is decoded.
 pub(super) fn js_string_contents(name: &str) -> String {
-    quoted_name::js_string_contents(name)
+    let mut literal = String::with_capacity(name.len() + 2);
+    push_js_string_literal(&mut literal, name);
+    // Drop the opening and the closing quote.
+    let end = literal.len().saturating_sub(1);
+    String::from(literal.get(1..end).unwrap_or(name))
 }
 
-/// Append the double-quoted JavaScript string literal of a name that
-/// [`quoted_name::name_needs_escape`].
+/// Append `name` between double quotes, escaped when it holds a backslash.
+/// Only a compile whose lexer saw a backslash in a name comes here.
 #[cold]
 #[inline(never)]
-pub(super) fn push_escaped_name(out: &mut String, name: &str) {
+pub(super) fn push_quoted_name_escaping(out: &mut String, name: &str) {
     out.push('"');
-    out.push_str(&quoted_name::escaped_name_contents(name));
+    if quoted_name::name_needs_escape(name) {
+        out.push_str(&quoted_name::escaped_name_contents(name));
+    } else {
+        out.push_str(name);
+    }
     out.push('"');
 }
 
