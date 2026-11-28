@@ -1,0 +1,8 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCommitShas(List("CANDIDATE_SHA"))
+  module.requireCheckout("CANDIDATE_SHA")
+}

@@ -28,7 +28,7 @@ jobs:
   inventory-contract:
     name: Generated fail-closed inventory contract
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -49,8 +49,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version: "24", package-manager-cache: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          version: 1.8.0
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
       - name: Verify the exact source checkout
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-source-checkout.sh"
@@ -58,9 +64,7 @@ jobs:
         run: node tools/commands/release/v1-support-matrix.ts --check
       - name: Verify closed support, boundary and identity inventories
         run: >-
-          node --test
-          tests/tooling/v1-supported-matrix.test.ts
-          tests/tooling/v1-exact-candidate.test.ts
+          node --test tests/tooling/v1-supported-matrix.test.ts tests/tooling/v1-exact-candidate.test.ts
       - name: Retain the complete exact-head coverage plan
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/retain-the-complete-exact-head-coverage-plan.sh"
@@ -74,3 +78,9 @@ jobs:
       - name: Enforce complete exact-candidate qualification
         if: ${{ inputs.enforce_complete }}
         run: node tools/commands/release/v1-support-matrix.ts --check --enforce-complete
+  admission:
+    needs: inventory-contract
+    uses: ./.github/workflows/02-v1-admission.yml
+    with:
+      candidate_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      enforce_complete: ${{ inputs.enforce_complete }}

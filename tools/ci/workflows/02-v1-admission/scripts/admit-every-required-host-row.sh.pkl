@@ -1,0 +1,19 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  args=(
+    admit-run
+    --candidate "$CANDIDATE_SHA"
+    --run "$GITHUB_RUN_ID"
+    --run-attempt "$GITHUB_RUN_ATTEMPT"
+    --receipts "$HOST_RECEIPTS"
+    --output .qualification/v1-exact-candidate-manifest.json
+  )
+  if [ "$ENFORCE_COMPLETE" = true ]; then args+=(--enforce-complete); fi
+  node tools/commands/release/v1-exact-candidate.ts "${args[@]}"
+  """#
+}

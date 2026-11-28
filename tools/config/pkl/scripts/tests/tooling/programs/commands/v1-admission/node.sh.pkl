@@ -1,0 +1,10 @@
+amends "../../../../../../../../ci/lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  set -euo pipefail
+  printf "%s\n" "$@" > "$NODE_ARGUMENTS_LOG"
+  """#
+}

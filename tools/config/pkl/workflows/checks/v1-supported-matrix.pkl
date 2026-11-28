@@ -36,7 +36,7 @@ jobs {
   `inventory-contract` {
     name = "Generated fail-closed inventory contract"
     `runs-on` = ci.linux
-    `timeout-minutes` = 5
+    `timeout-minutes` = 10
     env {
 
       SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
@@ -44,13 +44,10 @@ jobs {
     steps = new Listing {
       ...ci.stageWorkflowScripts("v1-supported-matrix")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
-      new Dynamic {
-        uses = ci.setupNode
-        with {
-          `node-version` = "24"
-          `package-manager-cache` = false
-        }
-      }
+      // The manifest renderer formats with oxfmt and the tests import
+      // workspace packages, so plain `node` needs the installed workspace.
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify the exact source checkout"
         shell = "bash"
@@ -81,6 +78,16 @@ jobs {
         `if` = "${{ inputs.enforce_complete }}"
         run = "node tools/commands/release/v1-support-matrix.ts --check --enforce-complete"
       }
+    }
+  }
+
+  // Exact-candidate admission of the same source, from the receipts this run uploads.
+  admission {
+    needs = "inventory-contract"
+    uses = "./.github/workflows/02-v1-admission.yml"
+    with {
+      candidate_sha = "${{ github.event.pull_request.head.sha || github.sha }}"
+      enforce_complete = "${{ inputs.enforce_complete }}"
     }
   }
 }

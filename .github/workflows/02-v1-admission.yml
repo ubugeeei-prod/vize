@@ -1,0 +1,122 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/02-v1-admission/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: V1 qualification admission
+on:
+  workflow_call:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character source candidate to admit
+        required: true
+        type: string
+      enforce_complete:
+        description: Reject any five-case selector or required host row without exact receipts
+        required: false
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact 40-character source candidate to admit
+        required: true
+        type: string
+      enforce_complete:
+        description: Reject any five-case selector or required host row without exact receipts
+        required: false
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: v1-admission-${{ inputs.candidate_sha }}-${{ github.run_id }}
+  cancel-in-progress: false
+jobs:
+  admission:
+    name: Admit exact five-case and host receipts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      ENFORCE_COMPLETE: ${{ inputs.enforce_complete }}
+      FIVE_CASE_BUNDLES: .qualification/v1-five-case-bundles
+      HOST_RECEIPTS: .qualification/v1-host-receipts
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/02-v1-admission/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - name: Verify the exact candidate checkout
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-candidate-checkout.sh"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          version: 1.8.0
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Plan the five-case selectors
+        uses: ./.github/actions/v1-five-case-receipts
+        with:
+          operation: plan
+          source-sha: ${{ inputs.candidate_sha }}
+          candidate-sha: ${{ inputs.candidate_sha }}
+          mode: release
+          run-id: ${{ github.run_id }}
+          run-attempt: ${{ github.run_attempt }}
+          artifact-name: v1-five-case-plan-${{ inputs.candidate_sha }}-${{ github.run_attempt }}
+      - name: Download the five-case receipt bundles of this run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: v1-five-case-bundle-${{ inputs.candidate_sha }}-*
+          path: ${{ env.FIVE_CASE_BUNDLES }}
+          merge-multiple: true
+      - name: Count the five-case receipt bundles
+        id: five-case-bundles
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/count-the-five-case-receipt-bundles.sh"
+      - name: Admit the five-case receipts
+        if: ${{ inputs.enforce_complete || steps.five-case-bundles.outputs.count != '0' }}
+        uses: ./.github/actions/v1-five-case-receipts
+        with:
+          operation: admit
+          source-sha: ${{ inputs.candidate_sha }}
+          candidate-sha: ${{ inputs.candidate_sha }}
+          mode: release
+          run-id: ${{ github.run_id }}
+          run-attempt: ${{ github.run_attempt }}
+          bundles-directory: ${{ env.FIVE_CASE_BUNDLES }}
+          enforce-complete: ${{ inputs.enforce_complete }}
+          artifact-name: v1-five-case-admission-${{ inputs.candidate_sha }}-${{ github.run_attempt }}
+      - name: Download the host receipt bundles of this run
+        if: ${{ !cancelled() }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: v1-host-receipts-${{ inputs.candidate_sha }}-*
+          path: ${{ env.HOST_RECEIPTS }}
+          merge-multiple: true
+      - name: Admit every required host row
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/admit-every-required-host-row.sh"
+      - name: Preserve the admitted manifest
+        if: ${{ !cancelled() && hashFiles('.qualification/v1-exact-candidate-manifest.json') != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v1-exact-candidate-manifest-${{ inputs.candidate_sha }}-${{ github.run_attempt }}
+          path: .qualification/v1-exact-candidate-manifest.json
+          if-no-files-found: error
+          retention-days: 30
