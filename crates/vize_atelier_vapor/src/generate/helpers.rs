@@ -6,7 +6,9 @@ use vize_carton::{String, cstr};
 
 use super::{
     context::GenerateContext,
-    operations::{merged_props_call, set_html_call, set_prop_call, set_text_call},
+    operations::{
+        merged_props_call, set_html_call, set_prop_call, set_template_ref_call, set_text_call,
+    },
     setup::escape_js_string_literal,
 };
 
@@ -26,6 +28,9 @@ pub(crate) fn generate_operation_inline(
         }
         OperationNode::SetText(set_text) => Some(set_text_call(ctx, set_text)),
         OperationNode::SetHtml(set_html) => Some(EmitDocument::from(set_html_call(ctx, set_html))),
+        OperationNode::SetTemplateRef(set_ref) => {
+            Some(EmitDocument::from(set_template_ref_call(ctx, set_ref)))
+        }
         _ => None,
     }
 }

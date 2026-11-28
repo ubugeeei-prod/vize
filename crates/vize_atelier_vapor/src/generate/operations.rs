@@ -22,6 +22,7 @@ mod match_scope;
 mod merged_props;
 pub(crate) use merged_props::svg_argument;
 mod refs;
+pub(crate) use refs::set_template_ref_call;
 mod slots;
 
 pub(crate) use merged_props::merged_props_call;

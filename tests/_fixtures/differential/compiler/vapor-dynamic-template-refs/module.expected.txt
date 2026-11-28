@@ -1,0 +1,38 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderClass as _ssrRenderClass, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<section${_ssrRenderAttrs(_mergeProps({ ref: "static" }, _attrs))}><p>switch</p><p class="${_ssrRenderClass({ on: $setup.first })}">callback</p><aside>panel</aside><i></i><b></b>`)
+  _push(`<!--[-->`)
+  _ssrRenderList($setup.items, (item) => {
+    _push(`<li>${_ssrInterpolate(item)}</li>`)
+  })
+  _push(`<!--]-->`)
+  _push(`</section>`)
+}
+import { ref, useTemplateRef } from 'vue'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  __vapor: true,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const first = ref(true);
+const panel = ref(null);
+let mutable = null;
+const a = useTemplateRef("a");
+const b = useTemplateRef("b");
+const items = ref(["x", "y"]);
+function setFirst(node) {}
+function setSecond(node) {}
+
+const __returned__ = { first, useTemplateRef, a, setFirst, setSecond, ref, get mutable() { return mutable }, set mutable(v) { mutable = v }, items, panel, b }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

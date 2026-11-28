@@ -2,6 +2,7 @@ use crate::ir::{
     ChildRefIRNode, GetTextChildIRNode, InsertNodeIRNode, NextRefIRNode, PrependNodeIRNode,
     SetTemplateRefIRNode,
 };
+use vize_atelier_core::options::BindingType;
 use vize_carton::{String, cstr};
 
 use super::super::{context::GenerateContext, setup::escape_js_string_literal};
@@ -11,19 +12,57 @@ pub(super) fn generate_set_template_ref(
     ctx: &mut GenerateContext,
     set_ref: &SetTemplateRefIRNode<'_>,
 ) {
-    let element = cstr!("n{}", set_ref.element);
+    let element = set_ref.element;
+    let value = template_ref_value(ctx, set_ref);
+    if set_ref.ref_for {
+        ctx.push_line_fmt(format_args!("_setRef(n{element}, {value}, true)"));
+    } else {
+        ctx.push_line_fmt(format_args!("_setRef(n{element}, {value})"));
+    }
+}
 
-    let value = if set_ref.value.is_static {
+/// The `_setRef(...)` call a render effect wraps.
+pub(crate) fn set_template_ref_call(
+    ctx: &GenerateContext,
+    set_ref: &SetTemplateRefIRNode<'_>,
+) -> String {
+    let element = set_ref.element;
+    let value = template_ref_value(ctx, set_ref);
+    if set_ref.ref_for {
+        cstr!("_setRef(n{element}, {value}, true)")
+    } else {
+        cstr!("_setRef(n{element}, {value})")
+    }
+}
+
+fn template_ref_value(ctx: &GenerateContext, set_ref: &SetTemplateRefIRNode<'_>) -> String {
+    if set_ref.value.is_static {
         cstr!("\"{}\"", escape_js_string_literal(set_ref.value.content))
+    } else if let Some(name) = setup_ref_binding(ctx, set_ref.value.content) {
+        // The setup binding itself, not the value `_ctx` unwraps it to: the
+        // script-setup setter resolves the name to the declaration and keys
+        // it by that name, as Vue's inline `ref_key` binding does.
+        cstr!("\"{}\"", name)
     } else {
         ctx.resolve_expression_node(&set_ref.value)
-    };
-
-    if set_ref.ref_for {
-        ctx.push_line_fmt(format_args!("_setRef({}, {}, true)", element, value));
-    } else {
-        ctx.push_line_fmt(format_args!("_setRef({}, {})", element, value));
     }
+}
+
+/// A `:ref` naming a script-setup declaration that can hold a ref
+/// (`const el = ref()`, `let el`), which no loop or slot alias shadows.
+fn setup_ref_binding<'v>(ctx: &GenerateContext, content: &'v str) -> Option<&'v str> {
+    let bindings = ctx
+        .binding_metadata
+        .filter(|bindings| bindings.is_script_setup)?;
+    if ctx.jsx_closure {
+        return None;
+    }
+    let name = content.trim();
+    let ref_capable = matches!(
+        bindings.bindings.get(name),
+        Some(BindingType::SetupLet | BindingType::SetupRef | BindingType::SetupMaybeRef)
+    );
+    (ref_capable && ctx.resolve_scope_binding(name).is_none()).then_some(name)
 }
 
 /// Generate InsertNode

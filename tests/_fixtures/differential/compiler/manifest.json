@@ -6622,6 +6622,61 @@
       }
     },
     {
+      "id": "compiler/sfc/vapor-dynamic-template-refs",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "vapor-dynamic-template-refs",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "7d739ccc8c39e6260dfea888d9653d1d79b5c6f5f3e0788ed87c0ff7d010b60a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-dynamic-template-refs/module.expected.txt",
+        "sha256": "928294c3166504c448271652cbe19bab384fec5c48affda65e167dc9d4388d6c",
+        "source": "crates/vize_atelier_sfc/tests/vapor_dynamic_template_refs.rs:ssr_module_matches_the_pinned_differential_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The SSR CLI provides this whole-module reference; SSR renders no template refs and is unchanged. The Vapor module of the same input (dynamic refs inside render effects, setup bindings bound by name, static and literal refs set once) is pinned in the Rust API test, and the mounted Vapor runtime contracts in crates/vize_atelier_sfc/tests/vapor_runtime_contracts/template_refs.rs consume the sibling switch, binding and callback inputs."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/vapor-invalid-expression-control-11622",
       "state": "active",
       "targets": [
