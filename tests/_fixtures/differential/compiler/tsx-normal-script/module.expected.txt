@@ -1,0 +1,22 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(_ctx.label)}</p>`)
+}
+
+import { defineComponent } from "vue";
+const label = "hi";
+const identity = (value) => value;
+const badge = (text) => <b class="badge">{identity(text)}</b>;
+const _sfc_main = defineComponent({
+  name: "Layout",
+  setup() {
+    return {
+      label,
+      badge: badge(label)
+    };
+  }
+});
+
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

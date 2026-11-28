@@ -394,9 +394,12 @@ fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: Vapor
     let output = compile_to_vapor(&bump, source, lang, options);
     capture_snapshot(name, source, &vapor_output_summary(source, &output), None);
     let active = match name {
-        "stateful_destructured_component"
-        | "tsx_syntax_edges_root_fallthrough_8625"
-        | "fragment_whitespace_text" => format!("{name}_vapor_child_values_6890_inert_template"),
+        "stateful_destructured_component" | "fragment_whitespace_text" => {
+            format!("{name}_vapor_child_values_6890_inert_template")
+        }
+        "tsx_syntax_edges_root_fallthrough_8625" => {
+            format!("{name}_vapor_child_values_6890_inert_template_dynamic_refs_13887")
+        }
         _ => format!("{name}_vapor"),
     };
     insta::assert_debug_snapshot!(active, vapor_output_summary(source, &output));

@@ -12,11 +12,13 @@ use vize_carton::{CompactString, FxHashSet, String};
 
 mod computed;
 mod default_export;
+mod extends_base;
 mod variables;
 
 pub(super) use default_export::{OptionsApiScriptFacts, analyze_options_script_source};
 #[cfg(test)]
 pub(super) use default_export::{analyze_options_api_script, find_default_export_targets};
+pub(super) use extends_base::extends_base_assertion;
 pub(super) use variables::emit_options_api_variables;
 
 fn unresolved_extends_template_names(

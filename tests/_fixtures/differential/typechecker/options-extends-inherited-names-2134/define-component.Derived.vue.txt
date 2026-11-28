@@ -1,0 +1,20 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+import Base from './Base.vue'
+
+export default defineComponent({
+  extends: Base,
+  methods: {
+    own(n: number): number {
+      return n + this.count + this.cx('a').length
+    },
+    bad(): string {
+      return this.cx(1)
+    },
+  },
+})
+</script>
+
+<template>
+  <p :class="cx(2)">{{ own('x') }} {{ upper.toFixed() }} {{ open.length }} {{ count.toUpperCase() }} {{ label }}</p>
+</template>

@@ -191,6 +191,20 @@ vize lsp --debug
 Send the profile switches (`lint`, `typecheck`, `editor`, `ecosystem`, or single features such as
 `hover`) as `initializationOptions`.
 
+The TCP server listens on `127.0.0.1` only and serves the first connection it accepts. On Linux it
+also closes connections opened by other accounts. To make sure it serves the client that launched
+it, give it a token with `--token-file <path>` (or the `VIZE_LSP_TOKEN` environment variable) and
+send the same token as `initializationOptions.vizeToken`. A connection whose first message is not
+that `initialize` is closed, and the server waits for the next one:
+
+```bash
+vize lsp --port 9527 --token-file /path/to/token
+```
+
+```json
+{ "initializationOptions": { "vizeToken": "<contents of the token file>" } }
+```
+
 ## Troubleshooting
 
 For a machine-readable session profile, launch the server with

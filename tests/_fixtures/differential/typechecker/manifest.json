@@ -34298,7 +34298,7 @@
       },
       "packReference": {
         "path": "options-extends-inherited-names-2134/cases.json",
-        "sha256": "dcf56bcab3c81d039cede1b6cd42fd828a1fcdc50ebbdd9566790ae53a6c066c"
+        "sha256": "94c01300948aa3f2dca62ed71f9faf67999d94454f7cfc5713363de4159a1a1a"
       },
       "inputs": [
         {
@@ -34315,6 +34315,116 @@
           "file": "src/Button.vue",
           "path": "options-extends-inherited-names-2134/Button.vue.txt",
           "sha256": "522883bb7733d8a61e510353e62f155cca9e7e5c4b252a194adc49d6d63d085c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/options-extends-inherited-names-2134/extends-base-method-argument-checked",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "options-extends-inherited-names-2134",
+      "case": "extends-base-method-argument-checked",
+      "test": "fix_history_cases::options_extends_inherited_names_2134::options_api_extends_base_exposes_inherited_template_names",
+      "regressionCommit": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+      "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "options-extends-inherited-names-2134/cases.json",
+        "sha256": "94c01300948aa3f2dca62ed71f9faf67999d94454f7cfc5713363de4159a1a1a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "options-extends-inherited-names-2134/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "path": "options-extends-inherited-names-2134/BaseButton.vue.txt",
+          "sha256": "999c1e36d323bc095b65c86d4aa7512d84f6dfa3a3da480fad88733cfafd457e"
+        },
+        {
+          "file": "src/Button.vue",
+          "path": "options-extends-inherited-names-2134/method-argument.Button.vue.txt",
+          "sha256": "df7d3d07d4f422a30205e725d9463d60d55a0babe973f6cc2643f5b57bb50b6c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/options-extends-inherited-names-2134/define-component-extends-base-members-checked",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "options-extends-inherited-names-2134",
+      "case": "define-component-extends-base-members-checked",
+      "test": "fix_history_cases::options_extends_inherited_names_2134::options_api_extends_base_exposes_inherited_template_names",
+      "regressionCommit": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+      "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "options-extends-inherited-names-2134/cases.json",
+        "sha256": "94c01300948aa3f2dca62ed71f9faf67999d94454f7cfc5713363de4159a1a1a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "options-extends-inherited-names-2134/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/Base.vue",
+          "path": "options-extends-inherited-names-2134/define-component.Base.vue.txt",
+          "sha256": "0c39bd017e02b4c390f0dd57a529131afd6b0dc6a1d3c580283efae5f7ea1603"
+        },
+        {
+          "file": "src/Derived.vue",
+          "path": "options-extends-inherited-names-2134/define-component.Derived.vue.txt",
+          "sha256": "79a7e0ff0c06db874ee1f39053411aa2afc00fc961dfbcb2cb1ca49d35726ecf"
         }
       ],
       "dialectCoverage": {

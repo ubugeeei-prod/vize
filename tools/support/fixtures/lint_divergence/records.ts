@@ -35,6 +35,7 @@ import {
   undeclaredSlotFromImportedContract,
 } from "./imported_macro_contract.ts";
 import { baselineParserIntentionalReason } from "./parser_intentional.ts";
+import { mutableTemplateRefReason } from "./template_ref_intentional.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -241,6 +242,8 @@ export function baselineIntentionalReason(
   if (source !== undefined && source !== null) {
     const parser = baselineParserIntentionalReason(finding, source);
     if (parser !== null) return parser;
+    const mutableTemplateRef = mutableTemplateRefReason(finding, source);
+    if (mutableTemplateRef !== null) return mutableTemplateRef;
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
   }

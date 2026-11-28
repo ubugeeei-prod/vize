@@ -1,0 +1,26 @@
+import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent($setup.node), _attrs, null), _parent)
+}
+
+export const Badge = (props) => <b class="badge">{props.text}</b>;
+const __default__ = { inheritAttrs: false };
+
+export default /*@__PURE__*/Object.assign(__default__, {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const label = "hi";
+const node = () => <span><Badge text={label} /></span>;
+
+const __returned__ = { label, node, Badge }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

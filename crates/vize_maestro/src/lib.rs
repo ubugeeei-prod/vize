@@ -63,6 +63,7 @@ pub mod document;
 pub mod ide;
 mod logging;
 mod loopback_peer;
+mod pairing;
 pub mod runtime;
 pub mod server;
 #[cfg(feature = "experimental-source-folding")]
@@ -86,6 +87,7 @@ pub use ide::{
     HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService,
     SignatureHelpService, TypeService, WorkspaceSymbolsService,
 };
+pub use pairing::PairingToken;
 pub use server::MaestroServer;
 pub use virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
@@ -138,10 +140,16 @@ pub fn serve_blocking() -> ServeResult {
     block_on_server_thread("vize-lsp", || runtime::block_on(serve()))
 }
 
-/// Start the LSP server on a TCP socket.
+/// Start the LSP server on a TCP socket bound to loopback.
 ///
-/// This is useful for debugging and testing.
-pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+/// With a `token`, only a connection whose first message is an `initialize`
+/// carrying it as `initializationOptions.vizeToken` is served; see
+/// [`PairingToken`].
+pub async fn serve_tcp(
+    port: u16,
+    token: Option<PairingToken>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    use std::io::Read;
     use std::net::TcpListener;
 
     tracing_subscriber::fmt()
@@ -156,22 +164,12 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     let listener = TcpListener::bind(addr.as_str())?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 
-    let local = listener.local_addr()?;
-    let (stream, addr) = loop {
-        let (stream, addr) =
-            runtime::accept_tcp("vize-lsp-tcp-accept", listener.try_clone()?).await?;
-        if loopback_peer::opened_by_this_account(local, addr) {
-            break (stream, addr);
-        }
-        tracing::warn!(
-            "Closed a connection from {} opened by another account",
-            addr
-        );
-    };
+    let (stream, addr, opening) = pairing::accept_client(&listener, token.as_ref()).await?;
     tracing::info!("Accepted connection from {}", addr);
 
     let _ = stream.set_nodelay(true);
-    let read = runtime::threaded_reader("vize-lsp-tcp-read", stream.try_clone()?)?;
+    let input = std::io::Cursor::new(opening).chain(stream.try_clone()?);
+    let read = runtime::threaded_reader("vize-lsp-tcp-read", input)?;
     let write = runtime::threaded_writer("vize-lsp-tcp-write", stream)?;
 
     serve_transport(read, write).await;
@@ -180,8 +178,10 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 }
 
 /// Start the TCP LSP server and block until it stops.
-pub fn serve_tcp_blocking(port: u16) -> ServeResult {
-    block_on_server_thread("vize-lsp", move || runtime::block_on(serve_tcp(port)))
+pub fn serve_tcp_blocking(port: u16, token: Option<PairingToken>) -> ServeResult {
+    block_on_server_thread("vize-lsp", move || {
+        runtime::block_on(serve_tcp(port, token))
+    })
 }
 
 async fn serve_transport<I, O>(read: I, write: O)

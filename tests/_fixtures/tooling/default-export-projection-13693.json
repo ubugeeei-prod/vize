@@ -53,8 +53,8 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/irregular_default.rs",
       "role": "AST default export keyword edits and exact copied source mappings",
-      "bytes": 5680,
-      "sha256": "6ca2a44e9599603ebd3f92bf2c8c1f1af57a162a0dafa212a763f7f1dd85af8b",
+      "bytes": 5743,
+      "sha256": "74035b326949ab4a9f7c5e58167ba34bcdb548c7965c74f1e8bfc56483f94b19",
       "callee": "fn project_line"
     },
     {
@@ -67,8 +67,8 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/options_api.rs",
       "role": "Options object selection and option property classification",
-      "bytes": 11567,
-      "sha256": "8d90a428f4371048587075afe559ae4b3fe1eac35c1598c2557859c1068c8217",
+      "bytes": 11638,
+      "sha256": "384e8c4808bd3e79b38d8f2ced013b667402fc982630f170d2fcd05042670d20",
       "callee": "fn component_options_from_program"
     },
     {
@@ -80,9 +80,9 @@
     },
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/options_api_props_identifiers.rs",
-      "role": "Options props const assertion offsets consumed by line projection",
-      "bytes": 5348,
-      "sha256": "7b1cce37e49868fbd84fb970c2034ad4eaddf46be02e34c17d3758993a0f5c30",
+      "role": "Options props const and imported extends base assertion offsets consumed by line projection",
+      "bytes": 5845,
+      "sha256": "a724da9589e18ed70574882a35a072d6d19bb488362a34850330c71788df8d05",
       "callee": "fn take_line_offsets"
     },
     {
