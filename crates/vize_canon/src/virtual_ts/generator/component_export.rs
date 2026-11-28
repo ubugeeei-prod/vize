@@ -188,7 +188,8 @@ pub(super) fn emit_default_export_declaration(
             component_contract_fields,
             " readonly __vizeRawProps?: {props_ref};"
         );
-        if generic_component_params.is_none() {
+        if generic_component_params.is_none() && authored_default != AuthoredDefaultKind::Component
+        {
             // The unchanged component can read its identical static raw props
             // without instantiating the generic input constructor. A function
             // return retains one original identity when two SFCs intersect;

@@ -66089,6 +66089,11 @@
       ],
       "inputs": [
         {
+          "path": "component-intersection-props-13689/Authored.vue.txt",
+          "sha256": "e8e2adae01d695e6b17d344678745aac321ccb734cf5984f8edcb37e4b4d99d6",
+          "role": "regression-reproduction"
+        },
+        {
           "path": "component-intersection-props-13689/Child.vue.txt",
           "sha256": "a8024cb81346dbd034dd0f551b93a5ed1511eea85d3f854d734b3bb16abcb4ea",
           "role": "regression-reproduction"
@@ -66120,7 +66125,7 @@
         },
         {
           "path": "component-intersection-props-13689/controls.ts.txt",
-          "sha256": "148e715d75914f55f2c9d12990eb60d917d57d7dfc8a12f1312310f7688e20c4",
+          "sha256": "79139c71951862ba63e0a9e76487c5b986851a609ea13858aa40ce770c0da5e8",
           "role": "regression-control"
         },
         {

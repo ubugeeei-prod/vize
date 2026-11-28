@@ -10,6 +10,7 @@ fn intersection_props_match_the_vue_tsc_negative_controls() {
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/_fixtures/differential/typechecker/component-intersection-props-13689");
     let names = [
+        "Authored.vue",
         "Child.vue",
         "Empty.vue",
         "Second.vue",

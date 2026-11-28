@@ -57,3 +57,8 @@ const generic: Usage<typeof Generic> = { value: 1, identity: (value: number) => 
 Generic.__vizeCheck({ value: 1, identity: (value: number) => value });
 // @ts-expect-error the generic __vizeCheck path retains its inference
 Generic.__vizeCheck({ value: 1, identity: (value: string) => value });
+
+import Authored from './Authored.vue';
+import type { $ComponentRawProps as Raw } from 'vize:virtual-ts';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+const authoredRawPrecedence: Equal<Raw<typeof Authored>, Props<typeof Authored>> = true;

@@ -13,6 +13,7 @@ const FIXTURES: &str = concat!(
     "/../../tests/_fixtures/differential/typechecker/component-intersection-props-13689"
 );
 const FILES: &[&str] = &[
+    "Authored.vue",
     "Child.vue",
     "Empty.vue",
     "Second.vue",
