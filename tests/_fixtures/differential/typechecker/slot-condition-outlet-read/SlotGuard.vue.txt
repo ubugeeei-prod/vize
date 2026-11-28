@@ -1,0 +1,18 @@
+<script setup lang="ts">
+const slots = defineSlots<{
+  tip: () => unknown
+  note: () => unknown
+  footer: () => unknown
+  aside: () => unknown
+}>()
+</script>
+
+<template>
+  <div>
+    <span v-if="slots.tip"><slot name="tip" /></span>
+    <p v-if="slots.note"><em><slot name="note" /></em></p>
+    <p v-else-if="slots.footer"><slot name="footer" /></p>
+    <slot v-if="slots.aside" name="aside" />
+    <i v-if="slots.footer">no outlet</i>
+  </div>
+</template>

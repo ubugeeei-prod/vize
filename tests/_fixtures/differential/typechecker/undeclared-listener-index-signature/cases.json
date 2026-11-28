@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "issue": 13881,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fallthrough-listeners",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 12,
+          "column": 21,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(id: string) => string' is not assignable to type '(id: number) => any'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

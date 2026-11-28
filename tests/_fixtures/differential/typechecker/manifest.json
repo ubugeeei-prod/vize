@@ -71304,6 +71304,46 @@
       }
     },
     {
+      "id": "typechecker/slot-condition-outlet-read/declared-slot-conditions",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::slot_condition_outlet_read::slot_conditions_that_render_their_slot_are_not_uncalled_function_checks",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "slot-condition-outlet-read/tsconfig.json.txt",
+          "sha256": "fa4012f10b56094bc621384332dca40f2741193c43334482675fc73c8b50b8e4"
+        },
+        {
+          "file": "src/SlotGuard.vue",
+          "path": "slot-condition-outlet-read/SlotGuard.vue.txt",
+          "sha256": "a9366c690ead152ac2b16966002fff658d41e2ab0b48eab69d55eeb7ce6cf397"
+        },
+        {
+          "file": "cases.json",
+          "path": "slot-condition-outlet-read/cases.json",
+          "sha256": "1e304cb058cb31e536cfc4e0580a8d1982adfeef0884e3121fee2c10f822aad5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::slot_condition_outlet_read::slot_conditions_that_render_their_slot_are_not_uncalled_function_checks; a v-if or v-else-if that tests a declared slot and renders it through a <slot> outlet in its branch, or on the outlet itself, reads that slot inside its block, so it is not TS2774; a condition whose branch renders no outlet keeps vue-tsc's TS2774. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/slot-type-message-10902",
       "state": "active",
       "targets": [
@@ -71749,6 +71789,51 @@
               "ts"
             ],
             "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::inferred_dollar_slots_keep_script_use_slots_exact; with inferTemplateDollarSlots, useSlots() stays the exact template map and the public slot map stays closed. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/undeclared-listener-index-signature/fallthrough-listeners",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::undeclared_listener_index_signature::undeclared_listeners_stay_clean_under_no_property_access_from_index_signature",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undeclared-listener-index-signature/tsconfig.json.txt",
+          "sha256": "4bc45e7cfb130cac041c4df2deb3bdf25e8b72b756379157e384f1f4af095d8b"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "undeclared-listener-index-signature/Child.vue.txt",
+          "sha256": "60cd5e578c85995ca4fb8bf05ecca1f4e2edf88aff1f1279f9a36dec08674829"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "undeclared-listener-index-signature/Parent.vue.txt",
+          "sha256": "607e4cfd2a591dca319e2dbd6863d6bca39ae44d42e8b5369b9b5c7ea1a494e8"
+        },
+        {
+          "file": "cases.json",
+          "path": "undeclared-listener-index-signature/cases.json",
+          "sha256": "bf52505ebd6a9332ea82d9a0e43e2f81cac9c8e13c734f77863b6ce92d1d2110"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::undeclared_listener_index_signature::undeclared_listeners_stay_clean_under_no_property_access_from_index_signature; under noPropertyAccessFromIndexSignature a listener for an undeclared event (@click, @blur, kebab @focus-in) reads its navigation key with element access, so it is not TS4111; a declared event keeps its handler check. Input-only registration; no native parity claim."
           }
         ]
       }

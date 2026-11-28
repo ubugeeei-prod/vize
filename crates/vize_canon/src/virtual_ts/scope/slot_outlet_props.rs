@@ -6,6 +6,7 @@
 //! parameter types and creates Vize-only `TS7006`.
 
 mod collect;
+mod condition_reads;
 mod emit;
 mod inference;
 mod literal;
@@ -47,6 +48,7 @@ pub(super) struct SlotOutletChecks {
     slots_type: String,
     infer: bool,
     merge_payloads: bool,
+    condition_reads: crate::virtual_ts::expressions::SlotConditionReads,
 }
 
 impl SlotOutletChecks {
@@ -72,12 +74,29 @@ impl SlotOutletChecks {
         }
         let merge_payloads = static_name_counts.values().any(|count| *count > 1)
             || (dynamic_names && outlet_count > 1);
+        // Only declared slots are non-optional functions a condition can test
+        // as always defined; outlets read them through `slots`.
+        let condition_reads = match root {
+            Some(root)
+                if !infer
+                    && !by_scope.is_empty()
+                    && super::super::script_facts::contains_binding(summary, "slots") =>
+            {
+                condition_reads::collect_slot_condition_reads(root)
+            }
+            _ => Default::default(),
+        };
         Self {
             by_scope,
             slots_type: slots_type_ref(summary, generic_parameters),
             infer,
             merge_payloads,
+            condition_reads,
         }
+    }
+
+    pub(super) fn condition_reads(&self) -> &crate::virtual_ts::expressions::SlotConditionReads {
+        &self.condition_reads
     }
 
     pub(super) fn emit_helpers(&self, ts: &mut crate::virtual_ts::TextBuf) {

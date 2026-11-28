@@ -38,6 +38,8 @@ pub(crate) struct TemplateValueChecks<'a> {
     /// `checkUnknownDirectives` for this file. Setup-local directives stay
     /// ordinary bindings; only a registry lookup can be `TS2339`.
     pub(crate) check_unknown_directives: bool,
+    /// Declared slots each `v-if` condition tests and its branch renders.
+    pub(crate) slot_condition_reads: Option<&'a super::SlotConditionReads>,
 }
 
 impl<'a> TemplateValueChecks<'a> {
@@ -53,6 +55,14 @@ impl<'a> TemplateValueChecks<'a> {
     ) -> Self {
         self.diagnostic_ownership = collector;
         self.prop_expression_owners = collector.map(|_| owners);
+        self
+    }
+
+    pub(crate) fn with_slot_condition_reads(
+        mut self,
+        reads: &'a super::SlotConditionReads,
+    ) -> Self {
+        self.slot_condition_reads = (!reads.is_empty()).then_some(reads);
         self
     }
 }
@@ -133,6 +143,7 @@ impl TemplateValueCheckTables {
             model_modifiers: &self.model_modifiers,
             template_source,
             check_unknown_directives: self.check_unknown_directives,
+            slot_condition_reads: None,
         }
     }
 }

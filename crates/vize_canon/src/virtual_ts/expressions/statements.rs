@@ -191,10 +191,10 @@ pub(crate) fn generate_expression(
                 ts,
                 mappings,
                 expr,
-                guard.as_str(),
                 template_binding_access,
                 template_offset,
                 indent,
+                checks.slot_condition_reads,
             );
             return;
         }

@@ -125,8 +125,9 @@ pub(super) fn emit_scope_closures(
         collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
     });
     let skipped_expression_ranges = expression_plan.skipped;
-    let checks =
-        checks.with_diagnostic_ownership(options.diagnostic_ownership, &expression_plan.owners);
+    let checks = checks
+        .with_diagnostic_ownership(options.diagnostic_ownership, &expression_plan.owners)
+        .with_slot_condition_reads(slot_outlets.condition_reads());
 
     let children_map: FxHashMap<u32, Vec<ScopeId>> =
         profile!("canon.virtual_ts.build_scope_tree", {
@@ -229,6 +230,7 @@ pub(super) fn emit_scope_closures(
                 .generic_parameters
                 .is_none_or(|generic| generic.parameters.is_empty()),
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
+        event_navigation_element_access: check_options.no_property_access_from_index_signature,
         fallthrough_listener_events: !options.legacy_vue2
             && check_options.infers_fallthrough_attributes(),
         strict_v_model: check_options.strict_v_model && check_options.check_emits,

@@ -14,11 +14,12 @@ pub(super) fn generate_vif_guard_expression(
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
-    guard: &str,
     template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
     indent: &str,
+    slot_reads: Option<&super::SlotConditionReads>,
 ) {
+    let guard = expr.vif_guard.as_deref().unwrap_or_default();
     let src_start = (template_offset + expr.start) as usize;
     let src_end = (template_offset + expr.end) as usize;
     let expression = profile!(
@@ -82,6 +83,9 @@ pub(super) fn generate_vif_guard_expression(
         *ts,
         "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",
     );
+    if let Some(slot_reads) = slot_reads {
+        slot_reads.append(ts, expr, template_binding_access, indent);
+    }
     if chained.is_some() {
         append_chained_vif_guard_close(ts, indent);
     } else {

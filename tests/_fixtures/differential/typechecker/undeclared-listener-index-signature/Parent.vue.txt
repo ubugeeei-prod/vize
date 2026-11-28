@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+function onClick() {}
+function onSave(id: string) {
+  return id
+}
+</script>
+
+<template>
+  <Child label="a" @click="onClick" @blur="onClick" @focus-in="onClick" />
+  <Child label="b" @save="onSave" />
+</template>

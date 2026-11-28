@@ -65,7 +65,7 @@ impl VirtualProject {
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
-        self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
+        self.refresh_tsconfig_diagnostic_options();
         self.source_policy = self.resolve_source_file_policy();
         self.alias_rewrite_policy = self.resolve_alias_rewrite_policy();
         self.refresh_vue_compiler_options();
@@ -80,7 +80,7 @@ impl VirtualProject {
     /// own the graph rebuild: changing `paths`, package conditions, or JS
     /// membership is a topology event, not an in-place option tweak.
     pub(crate) fn refresh_compiler_configuration(&mut self) {
-        self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
+        self.refresh_tsconfig_diagnostic_options();
         self.source_policy = self.resolve_source_file_policy();
         self.alias_rewrite_policy = self.resolve_alias_rewrite_policy();
         self.refresh_vue_compiler_options();

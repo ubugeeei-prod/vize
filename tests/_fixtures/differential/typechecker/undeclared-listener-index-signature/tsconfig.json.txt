@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "types": []
+  },
+  "include": ["src"]
+}

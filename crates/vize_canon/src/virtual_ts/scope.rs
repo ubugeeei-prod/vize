@@ -39,6 +39,8 @@ pub(crate) use root_owner_packets::RootOwnerBuffer;
 mod slot_outlet_props;
 pub(crate) use slot_outlet_props::has_inferred_slots;
 #[cfg(test)]
+mod condition_and_listener_reads_tests;
+#[cfg(test)]
 mod projection_size;
 mod slot_scope;
 mod vif_guard;

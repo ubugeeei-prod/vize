@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "issue": 13879,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "declared-slot-conditions",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/SlotGuard.vue",
+          "source": "SlotGuard.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/SlotGuard.vue",
+          "line": 16,
+          "column": 14,
+          "severity": 1,
+          "code": 2774,
+          "message": "This condition will always return true since this function is always defined. Did you mean to call it instead?"
+        }
+      ]
+    }
+  ]
+}
