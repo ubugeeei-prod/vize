@@ -158,6 +158,19 @@ void test("strict parsing rejects unknown and malformed fields before negotiatio
   );
 });
 
+void test("capability negotiation never treats inherited members as application declarations", () => {
+  const result = negotiateAdapterCapabilities(
+    { application: "inherited", capabilities: {} },
+    ["constructor"],
+    {
+      adapter: "native.fixture",
+      capabilities: [{ id: "constructor", minVersion: 1, maxVersion: 1 }],
+    },
+  );
+  assert.equal(result.compatible, false);
+  assert.equal(result.mismatches[0]?.code, "unknown-requirement");
+});
+
 void test("matches the shared adapter compatibility matrix", async () => {
   const cases = await read<readonly CompatibilityCase[]>("adapter-compatibility.json");
   for (const case_ of cases) {

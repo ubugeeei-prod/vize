@@ -182,6 +182,40 @@ The published profile schema is available from
 `@vizejs/marquette/native-build/schema` and is embedded by the Rust contract
 crate for native hosts.
 
+### Admission before scheduling
+
+The experimental `defineNativeApplicationBuildProfile(app, profile)` helper
+infers native client environment identifiers and declared capability identifiers
+from `app`. It preserves the original profile and its literal types. Standalone
+`defineNativeBuildProfile` remains available for portable records.
+
+Local and hosted executors can use the lazy
+`@vizejs/marquette/native-build/admission` entry before scheduling:
+
+```ts
+import { admitNativeBuildProfile } from "@vizejs/marquette/native-build/admission";
+
+const result = admitNativeBuildProfile(app, profile, nativeAdapter);
+if (!result.allowed) {
+  throw new Error(JSON.stringify(result.diagnostics));
+}
+```
+
+Admission validates the application, profile, and adapter, binds the selected
+environment to a native client, and negotiates every capability required by
+the profile, that environment, and its routes. A capability offered only by the
+adapter cannot authorize an undeclared application requirement. Findings retain
+their source, stable code, path, severity, and explanation; application warnings
+remain visible. The result is deterministic and does not mutate inputs.
+Strict profile and adapter parsing runs before graph inspection. Unknown fields,
+invalid enum values, or unsafe numeric bounds throw `TypeError`; semantic
+failures return `allowed: false`. Executors must treat either as a refusal.
+
+Executors must check the same inputs immediately before scheduling. Admission
+does not run builds, access signing material, or persist an approval. Its
+complete emitted runtime dependency graph has an enforced 8 KiB gzip budget;
+authoring imports do not include admission or validation code.
+
 ## Typed navigation
 
 `@vizejs/marquette/navigation` derives programmatic navigation directly from

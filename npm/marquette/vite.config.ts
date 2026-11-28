@@ -27,40 +27,50 @@ export default defineConfig({
   fmt: {
     ignorePatterns: ["dist/**"],
   },
-  pack: {
-    entry: [
-      "src/index.ts",
-      "src/adapter.ts",
-      "src/native-build.ts",
-      "src/native-build-validate.ts",
-      "src/navigation.ts",
-      "src/validate.ts",
-      "src/test-run.ts",
-      "src/test-run-validate.ts",
-      "src/test-run-canonical.ts",
-      "src/test-run-admission.ts",
-      "src/test-run-check.ts",
-      "src/test-run-transition.ts",
-    ],
-    format: "esm",
-    dts: true,
-    clean: true,
-    plugins: [
-      {
-        name: "marquette:emit-contract-schemas",
-        generateBundle() {
-          for (const schema of contractSchemas) {
-            this.emitFile({
-              type: "asset",
-              fileName: schema,
-              source: readFileSync(
-                new URL(`../../crates/vize_marquette/schema/${schema}`, import.meta.url),
-                "utf8",
-              ),
-            });
-          }
+  pack: [
+    {
+      entry: [
+        "src/index.ts",
+        "src/adapter.ts",
+        "src/native-build.ts",
+        "src/native-build-validate.ts",
+        "src/navigation.ts",
+        "src/validate.ts",
+        "src/test-run.ts",
+        "src/test-run-validate.ts",
+        "src/test-run-canonical.ts",
+        "src/test-run-admission.ts",
+        "src/test-run-check.ts",
+        "src/test-run-transition.ts",
+      ],
+      format: "esm",
+      dts: true,
+      clean: true,
+      plugins: [
+        {
+          name: "marquette:emit-contract-schemas",
+          generateBundle() {
+            for (const schema of contractSchemas) {
+              this.emitFile({
+                type: "asset",
+                fileName: schema,
+                source: readFileSync(
+                  new URL(`../../crates/vize_marquette/schema/${schema}`, import.meta.url),
+                  "utf8",
+                ),
+              });
+            }
+          },
         },
-      },
-    ],
-  },
+      ],
+    },
+    {
+      // Admission is an executor boundary. Bundle it independently so adding it
+      // does not split existing adapter imports into extra runtime requests.
+      entry: ["src/native-build-admission.ts"],
+      format: "esm",
+      dts: true,
+      clean: false,
+    },
+  ],
 });

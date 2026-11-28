@@ -42,7 +42,9 @@ function mismatch(
   support: AdapterCapabilitySupport | undefined,
   manifestIsValid: boolean,
 ): AdapterCapabilityMismatch[] {
-  const requirement = marquette.capabilities?.[id];
+  const declarations = marquette.capabilities;
+  const requirement =
+    declarations && Object.hasOwn(declarations, id) ? declarations[id] : undefined;
   if (requirement === undefined) return [problem("unknown-requirement", id)];
   if (!manifestIsValid) return [];
 
