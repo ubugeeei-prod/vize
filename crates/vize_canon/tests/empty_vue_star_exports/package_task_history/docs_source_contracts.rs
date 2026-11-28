@@ -32,7 +32,11 @@ mod tests {
         let previous = before_docs_source_contracts(MANIFEST, current.as_bytes()).unwrap();
         assert_eq!(current.len() - previous.len(), ADDED.len());
         let previous = String::from_utf8(previous).unwrap();
-        assert!(!previous.contains("check:contracts"));
+        let manifest: serde_json::Value = serde_json::from_str(&previous).unwrap();
+        assert_eq!(
+            manifest["scripts"]["check:contracts"],
+            serde_json::Value::Null
+        );
         let anchor =
             "    \"generate:metadata\": \"node ./scripts/generate-contract-metadata.ts\",\n";
         assert_eq!(previous.matches(anchor).count(), 1);
