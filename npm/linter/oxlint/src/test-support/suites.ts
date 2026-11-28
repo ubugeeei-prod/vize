@@ -15,6 +15,7 @@ await Promise.all([
   import("../cli/oxlint.test.ts"),
   import("../cli/type-aware-vue.test.ts"),
   import("../cli/scoped-config.test.ts"),
+  import("../cli/owned-scratch.test.ts"),
   import("../cli/scoped-discovery.test.ts"),
   import("../cli/project-checks.test.ts"),
   import("../cli/project-json.test.ts"),

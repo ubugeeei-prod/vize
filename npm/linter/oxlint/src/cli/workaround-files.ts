@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { createOwnedScratch } from "./owned-scratch.ts";
 import { prepareWorkaroundSource } from "../workaround.ts";
 import type { BridgeLocations } from "./locations.js";
 
@@ -96,11 +97,7 @@ function createWorkaroundTempDir(
   tempRoot: string,
 ): { createdNodeModules: boolean; tempDir: string } {
   const createdNodeModules = !fs.existsSync(nodeModulesDir);
-  fs.mkdirSync(tempRoot, { recursive: true });
-  return {
-    createdNodeModules,
-    tempDir: fs.mkdtempSync(path.join(tempRoot, `${process.pid}-`)),
-  };
+  return { createdNodeModules, tempDir: createOwnedScratch(tempRoot, "") };
 }
 
 function removeEmptyDirectory(dirname: string): void {
