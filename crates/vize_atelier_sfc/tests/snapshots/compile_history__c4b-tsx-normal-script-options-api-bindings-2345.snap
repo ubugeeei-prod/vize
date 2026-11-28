@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "export default {\n  data() {\n    return { count: 0 };\n  },\n  computed: { label() {\n    return `Count: ${this.count}`;\n  } },\n  methods: { renderBadge() {\n    return <span class=\"badge\">{this.count}</span>;\n  } }\n};\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    title: $options.label,\n    onClick: (...args) => (_ctx.renderBadge && _ctx.renderBadge(...args))\n  }, _toDisplayString($data.count), 9 /* TEXT, PROPS */, [\"title\", \"onClick\"]))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            code: "const _sfc_main = {\n  data() {\n    return { count: 0 };\n  },\n  computed: { label() {\n    return `Count: ${this.count}`;\n  } },\n  methods: { renderBadge() {\n    return <span class=\"badge\">{this.count}</span>;\n  } }\n};\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    title: $options.label,\n    onClick: (...args) => (_ctx.renderBadge && _ctx.renderBadge(...args))\n  }, _toDisplayString($data.count), 9 /* TEXT, PROPS */, [\"title\", \"onClick\"]))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
             css: None,
             map: None,
             errors: [],

@@ -1,0 +1,18 @@
+<script lang="tsx">
+import { defineComponent, type VNode } from 'vue'
+
+const label: string = 'hi'
+const identity = <T,>(value: T): T => value
+const badge = (text: string): VNode => <b class="badge">{identity(text)}</b>
+
+export default defineComponent({
+  name: 'Layout',
+  setup() {
+    return { label, badge: badge(label as string) }
+  },
+})
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

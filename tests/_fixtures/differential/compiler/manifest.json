@@ -6188,6 +6188,116 @@
       }
     },
     {
+      "id": "compiler/sfc/tsx-normal-script",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "tsx-normal-script",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "ad751b12f01ead14020190cdfe10f88570317752b6d7618f1dfb0b5f04a3e31a",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "tsx-normal-script/module.expected.txt",
+        "sha256": "9c4800e6d563dd9c75e50060abb787f3f057d352524c503ea525c34c186b4458",
+        "source": "crates/vize_atelier_sfc/tests/tsx_script_blocks.rs:the_normal_script_ssr_module_matches_its_pinned_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this source-built SSR observation pins a normal <script lang=\"tsx\"> read as TSX: its TypeScript annotations and a generic arrow are erased, its JSX is kept for the JSX lowering, and its default export becomes the one _sfc_main binding, without native parity credit. The DOM lane compiles the same input in the Rust test."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "tsx",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "tsx"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/tsx-normal-script-beside-setup",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "tsx-normal-script-beside-setup",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "bf5dbbb1da856ca53264343bb2e3fd00e2da483ac599387cab799469b539b03e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "tsx-normal-script-beside-setup/module.expected.txt",
+        "sha256": "c47b20b6c0823acd6f077ab90c897f959a0cbeb08e2ef4f520119ff73d5b82b3",
+        "source": "crates/vize_atelier_sfc/tests/tsx_script_blocks.rs:the_normal_script_beside_setup_ssr_module_matches_its_pinned_reference"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this source-built SSR observation pins a normal <script lang=\"tsx\"> beside <script setup lang=\"tsx\"> read as TSX, so its interface and parameter annotations are erased while its JSX is kept for the JSX lowering, without native parity credit. The DOM lane compiles the same input in the Rust test."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "tsx",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "tsx"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/tsx-setup-jsx-bindings",
       "state": "active",
       "targets": [

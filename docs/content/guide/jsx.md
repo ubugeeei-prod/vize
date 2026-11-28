@@ -320,8 +320,8 @@ authoring form inside a JSX style block.
 
 Glyph formats JSX/TSX script content with the OXC parser and formatter. In `.vue` files,
 `<script lang="jsx">`, `<script lang="tsx">`, and `<script setup lang="tsx">` format as real JSX/TSX
-syntax. Builds lower that JSX with the standalone modules' `jsxMode`/`jsxCompat`, but the native
-compiler cannot yet build a normal `<script lang="tsx">` mixing TS annotations and JSX. For example:
+syntax. Builds erase the TypeScript, then lower that JSX with the standalone modules'
+`jsxMode`/`jsxCompat`, normal `<script lang="tsx">` blocks included. For example:
 
 ```vue
 <script setup lang="tsx">
