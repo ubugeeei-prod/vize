@@ -1,6 +1,6 @@
 //! Private lifetime owner for editor Canon mirrors and their in-memory cache.
 
-use std::fs::{File, OpenOptions, TryLockError};
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -300,12 +300,10 @@ impl<'base> GcLock<'base> {
             }
             let lock_path = path.join(".session.lock");
             if lock_path.exists() {
-                match open_existing_session_lock(&lock_path) {
-                    Ok(lock) => match lock.try_lock() {
-                        Ok(()) => self.reap_unlocked_session(&path, lock),
-                        Err(TryLockError::WouldBlock | TryLockError::Error(_)) => {}
-                    },
-                    Err(_) => {}
+                if let Ok(lock) = open_existing_session_lock(&lock_path)
+                    && lock.try_lock().is_ok()
+                {
+                    self.reap_unlocked_session(&path, lock);
                 }
             } else if legacy_session_expired(&path, LEGACY_GRACE) {
                 let _ = std::fs::remove_dir_all(path);
