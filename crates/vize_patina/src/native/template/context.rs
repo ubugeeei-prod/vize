@@ -340,7 +340,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         &mut self,
         default_severity: Severity,
         range: Span,
-        message: String,
+        message: impl Into<String>,
         help: &str,
     ) {
         let mut diagnostic =
