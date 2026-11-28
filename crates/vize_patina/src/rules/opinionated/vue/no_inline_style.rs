@@ -32,6 +32,8 @@ use crate::markup::{
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
+mod native;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-inline-style",
     description: "Discourage use of inline style attributes",
@@ -89,6 +91,10 @@ impl Rule for NoInlineStyle {
     }
 
     fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
         Some(self)
     }
 

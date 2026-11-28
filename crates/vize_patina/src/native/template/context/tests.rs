@@ -110,6 +110,7 @@ fn an_authentic_attribute_of_another_element_cannot_join_a_same_component_checke
     );
 }
 
+mod attribute_rules;
 mod focus;
 mod html_is;
 mod option;
