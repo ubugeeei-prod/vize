@@ -49,7 +49,7 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "8"
       CARGO_INCREMENTAL: "0"
-      VIZE_NATIVE_BUILD_RECEIPT: ${{ runner.temp }}/native-first-host-compiler.json
+      VIZE_NATIVE_BUILD_RECEIPT: ${{ github.workspace }}/npm/native-host-fixture/.build/compiler-build.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
@@ -83,7 +83,7 @@ jobs:
         with:
           name: native-application-host-${{ github.sha }}
           path: |-
-            ${{ runner.temp }}/native-first-host-compiler.json
+            npm/native-host-fixture/.build/compiler-build.json
             ${{ runner.temp }}/vize-native-first-host-*/qualification.json
             ${{ runner.temp }}/vize-native-first-host-*/*.log
             ${{ runner.temp }}/vize-native-first-host-*/*.xcresult

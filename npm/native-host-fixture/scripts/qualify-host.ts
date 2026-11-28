@@ -40,11 +40,24 @@ interface ApplicationBuild {
   readonly sha256: string;
 }
 
+function currentSource(): string {
+  const changes = command("git", [
+    "-C",
+    packageRoot,
+    "status",
+    "--porcelain",
+    "--untracked-files=no",
+  ]);
+  if (changes !== "")
+    throw new Error("Native qualification requires a clean tracked source checkout.");
+  return command("git", ["-C", packageRoot, "rev-parse", "HEAD"]);
+}
+
 function verifiedApplication(): ApplicationBuild {
   const receipt = JSON.parse(
     readFileSync(path.join(packageRoot, ".build/application-build.json"), "utf8"),
   ) as ApplicationBuild;
-  const source = command("git", ["-C", packageRoot, "rev-parse", "HEAD"]);
+  const source = currentSource();
   const hash = createHash("sha256")
     .update(readFileSync(path.join(ios, "Resources/application.js")))
     .digest("hex");
@@ -54,7 +67,7 @@ function verifiedApplication(): ApplicationBuild {
     receipt.source !== source ||
     receipt.sha256 !== hash ||
     receipt.compilerSourceVerified !== true ||
-    (process.env.GITHUB_ACTIONS === "true" && receipt.trackedSourceClean !== true)
+    receipt.trackedSourceClean !== true
   ) {
     throw new Error(
       "Native qualification requires the application built by this checkout's compiler.",
@@ -116,29 +129,35 @@ command(
 let ownedDevice = "";
 let selectedDeviceName = "";
 const refusedTypes: { readonly identifier: string; readonly message: string }[] = [];
-for (const [identifier, name] of candidates) {
-  const result = spawnSync(
-    "xcrun",
-    [
-      "simctl",
-      "create",
-      `Vize First Host ${path.basename(output)}`,
-      identifier,
-      selectedRuntime.identifier,
-    ],
-    { encoding: "utf8" },
-  );
-  if (!result.error && result.status === 0) {
-    ownedDevice = result.stdout.trim();
-    selectedDeviceName = name;
-    break;
-  }
-  refusedTypes.push({ identifier, message: result.error?.message ?? result.stderr.trim() });
-}
-writeFileSync(path.join(output, "device-types.log"), `${JSON.stringify(refusedTypes, null, 2)}\n`);
-if (!/^[0-9a-f-]{36}$/i.test(ownedDevice))
-  throw new Error("The selected native SDK has no available compatible phone type.");
 try {
+  for (const [identifier, name] of candidates) {
+    const result = spawnSync(
+      "xcrun",
+      [
+        "simctl",
+        "create",
+        `Vize First Host ${path.basename(output)}`,
+        identifier,
+        selectedRuntime.identifier,
+      ],
+      { encoding: "utf8" },
+    );
+    if (!result.error && result.status === 0) {
+      const created = result.stdout.trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(created))
+        throw new Error("The simulator create command did not return an owned device identifier.");
+      ownedDevice = created;
+      selectedDeviceName = name;
+      break;
+    }
+    refusedTypes.push({ identifier, message: result.error?.message ?? result.stderr.trim() });
+  }
+  writeFileSync(
+    path.join(output, "device-types.log"),
+    `${JSON.stringify(refusedTypes, null, 2)}\n`,
+  );
+  if (ownedDevice === "")
+    throw new Error("The selected native SDK has no available compatible phone type.");
   command("xcrun", ["simctl", "bootstatus", ownedDevice, "-b"], "simulator-boot.log");
   const derived = path.join(output, "DerivedData");
   const resultBundle = path.join(output, "interaction.xcresult");
@@ -172,6 +191,21 @@ try {
   const maximumBytes = 5 * 1024 * 1024;
   if (bytes > maximumBytes)
     throw new Error("The first native host application exceeds its binary contribution budget.");
+  if (currentSource() !== applicationBuild.source) {
+    throw new Error("The native qualification source changed during the run.");
+  }
+  const finalBuild = verifiedApplication();
+  const testedHash = createHash("sha256")
+    .update(readFileSync(path.join(application, "application.js")))
+    .digest("hex");
+  if (
+    finalBuild.sha256 !== applicationBuild.sha256 ||
+    finalBuild.compilerSha256 !== applicationBuild.compilerSha256 ||
+    finalBuild.compilerBuildToken !== applicationBuild.compilerBuildToken ||
+    testedHash !== applicationBuild.sha256
+  ) {
+    throw new Error("The tested native application does not match the admitted build.");
+  }
   const receipt = {
     format: "vize.native-host.simulator-qualification",
     formatVersion: 1,
@@ -193,6 +227,15 @@ try {
   console.log(JSON.stringify(receipt));
 } finally {
   // Only this invocation's new simulator is shut down and removed.
-  spawnSync("xcrun", ["simctl", "shutdown", ownedDevice], { encoding: "utf8" });
-  spawnSync("xcrun", ["simctl", "delete", ownedDevice], { encoding: "utf8" });
+  if (ownedDevice !== "") {
+    const shutdown = spawnSync("xcrun", ["simctl", "shutdown", ownedDevice], { encoding: "utf8" });
+    const deletion = spawnSync("xcrun", ["simctl", "delete", ownedDevice], { encoding: "utf8" });
+    writeFileSync(
+      path.join(output, "simulator-cleanup.log"),
+      `${shutdown.stdout ?? ""}${shutdown.stderr ?? ""}${deletion.stdout ?? ""}${deletion.stderr ?? ""}`,
+    );
+    if (deletion.error || deletion.status !== 0) {
+      throw new Error("The invocation-owned native simulator could not be removed.");
+    }
+  }
 }

@@ -14,7 +14,8 @@ negative fixture requests native images and verifies a native diagnostic.
 
 Use a macOS host with Node 24, the repository Rust toolchain, Xcode, and an installed
 iOS simulator runtime matching the selected simulator SDK. The app deployment
-target is iOS 16. Install the pinned workspace graph and run one qualification
+target is iOS 16. Use a clean tracked checkout, install the pinned workspace graph,
+and run one qualification
 command from the repository root:
 
 ```sh
