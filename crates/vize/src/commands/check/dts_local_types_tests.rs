@@ -180,3 +180,45 @@ fn members_without_local_types_carry_no_namespace() {
     );
     assert_eq!(declarations.local_types, None);
 }
+
+#[test]
+fn qualified_references_respect_comments_unicode_conditionals_and_binding_scopes() {
+    let names = ["État", "Local", "T", "Dep"].into_iter().collect();
+    let mut used = FxHashSet::default();
+    let source = "{ Local: number; a: true extends true ? Local : never; b: État; c: <T>(value: T) => T; d: { // user's prop\n value: Dep }; e: `literal ${Local}` }";
+    let result = qualify_local_references(source, &names, "NS", &mut used);
+    assert_eq!(
+        result.as_str(),
+        "{ Local: number; a: true extends true ? NS.Local : never; b: NS.État; c: <T>(value: T) => T; d: { // user's prop\n value: NS.Dep }; e: `literal ${NS.Local}` }"
+    );
+    assert_eq!(used.len(), 3);
+    assert!(!used.contains("T"));
+}
+
+#[test]
+fn merged_interfaces_keep_dependencies_from_every_declaration() {
+    let locals = collect_local_types(
+        "type A = string; type B = number; interface Shared { a: A }; interface Shared { b: B }",
+    );
+    let used = [String::from("Shared")].into_iter().collect();
+    let reached = reachable_local_types(&locals, used);
+    assert_eq!(
+        reached
+            .iter()
+            .map(|local| local.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["A", "B", "Shared", "Shared"]
+    );
+}
+
+#[test]
+fn copied_local_types_preserve_import_keys_and_generic_bindings() {
+    let result = global_component_declarations_content(
+        "import type { Ref } from 'vue'; type T = string; type Wrapper = { Ref: Ref<T>; generic: <T>() => T }; declare module 'vue' { interface GlobalComponents { Card: Wrapper } } export {}",
+        Path::new("/app/.nuxt"),
+        "NS",
+    );
+    let local = result.local_types.unwrap();
+    assert!(local.contains("type Wrapper = { Ref: import('vue').Ref<T>; generic: <T>() => T }"));
+    assert!(local.contains("type T = string"));
+}
