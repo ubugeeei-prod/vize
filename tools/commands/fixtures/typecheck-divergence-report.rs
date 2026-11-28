@@ -31,6 +31,7 @@ mod project_deadline;
 use project_deadline::ProjectContext;
 mod typecheck_dependency_preparation;
 use typecheck_dependency_preparation::read_and_validate_dependency_preparation;
+mod typecheck_input_overlays;
 
 #[derive(Debug)]
 struct Args {

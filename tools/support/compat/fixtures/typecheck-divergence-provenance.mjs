@@ -5,6 +5,10 @@ import { resolve } from "node:path";
 
 import { installArguments, qualifyLockfileBytes } from "./typecheck-package-manager.ts";
 import {
+  typecheckInputOverlays,
+  verifyTypecheckInputOverlays,
+} from "./typecheck-input-overlays.ts";
+import {
   buildSeededMutation,
   executeSeededMutationOracle,
   seededMutationDiagnostic,
@@ -69,7 +73,7 @@ export function readAndValidateDependencyPreparation({
   assertLockfile(artifact.lockfile, performance, fixtureRoot, project.id);
   assertQualificationLockfile(artifact.qualificationLockfile, performance, fixtureRoot, project.id);
   assertInstall(artifact.install, performance, fixtureRoot, project.id);
-  assertBaselinePrepare(artifact.baselinePrepare, performance, project.id);
+  assertBaselinePrepare(artifact.baselinePrepare, performance, project.id, fixtureRoot);
 
   return {
     schema: preparationSchema,
@@ -342,7 +346,7 @@ function assertInstall(install, performance, fixtureRoot, projectId) {
   }
 }
 
-function assertBaselinePrepare(baselinePrepare, performance, projectId) {
+function assertBaselinePrepare(baselinePrepare, performance, projectId, fixtureRoot) {
   const expected = performance.baseline?.prepare ?? null;
   if (expected == null) {
     if (baselinePrepare != null) {
@@ -352,9 +356,25 @@ function assertBaselinePrepare(baselinePrepare, performance, projectId) {
   }
   requireExactKeys(
     baselinePrepare,
-    ["command", "durationMs", "exitCode", "stderrSha256", "stdoutSha256"],
+    [
+      "command",
+      "durationMs",
+      "exitCode",
+      "stderrSha256",
+      "stdoutSha256",
+      ...(typecheckInputOverlays(performance.baseline?.inputOverlays).length > 0
+        ? ["inputOverlays"]
+        : []),
+    ],
     "typecheck baseline preparation evidence",
   );
+  if (
+    performance.baseline?.inputOverlays !== undefined &&
+    JSON.stringify(baselinePrepare.inputOverlays) !==
+      JSON.stringify(verifyTypecheckInputOverlays(fixtureRoot, performance.baseline.inputOverlays))
+  ) {
+    throw new Error(`Typecheck input overlay evidence is invalid for ${projectId}`);
+  }
   if (
     JSON.stringify(baselinePrepare.command) !== JSON.stringify(expected) ||
     baselinePrepare.exitCode !== 0 ||
