@@ -104,9 +104,11 @@ void OptionsWidget; void ClassWidget; void PageWidget
     assert!(class.contains("class Widget extends Vue"), "{class}");
     let page = mapped_code(&project, &package.join("Page.vue"));
     assert!(page.contains("definePageMeta({ title: 'Importer scoped SEO' })"));
+    // The project-local declaration is mirrored with the host and referenced there.
     assert!(
-        page.contains(&nuxt_types.to_string_lossy().replace('\\', "/")),
-        "Nuxt reference path missing from package page:\n{page}"
+        page.contains("/.nuxt/types/page-meta.d.ts\" />")
+            && !page.contains(&nuxt_types.to_string_lossy().replace('\\', "/")),
+        "mirrored Nuxt reference path missing from package page:\n{page}"
     );
 }
 

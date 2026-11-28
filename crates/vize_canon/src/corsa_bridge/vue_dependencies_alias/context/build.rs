@@ -84,7 +84,6 @@ pub(super) fn build_with_import_facts(
     });
 
     let mut project = VirtualProject::new(&root).map_err(bridge_error)?;
-    #[cfg(not(feature = "ambient-project-declarations"))]
     project.set_virtual_ts_options(environment.virtual_ts_options.clone());
     project.set_options_api(options.options_api);
     project.set_legacy_vue2(options.legacy_vue2);
@@ -125,8 +124,17 @@ pub(super) fn build_with_import_facts(
     );
     let imports_alias_template_ref = project.imports_alias_reexports_vue_template_ref();
     project.set_imports_alias_vue_template_ref(imports_alias_template_ref);
-    #[cfg(feature = "ambient-project-declarations")]
-    let virtual_ts_options = editor_declaration_options(&mut project, &revision, environment)?;
+    let referenced_declarations = project.referenced_project_declarations(
+        environment.virtual_ts_options,
+        overlays,
+        revision.requested_sources,
+    );
+    let virtual_ts_options = editor_declaration_options(
+        &mut project,
+        revision.requested_sources,
+        &referenced_declarations,
+        environment,
+    )?;
     project.set_editor_document_options(
         crate::batch::virtual_project::VueDocumentVirtualTsOptions {
             options_api: options.options_api,
@@ -182,6 +190,9 @@ pub(super) fn build_with_import_facts(
         }
         let source = overlays.get(&path).copied().unwrap_or(source);
         inputs.push((path, source));
+    }
+    for (path, source) in &referenced_declarations {
+        inputs.push((path.clone(), source.as_str()));
     }
     // One revision shares its dependency type sources. A workspace-wide query
     // registers every Vue file, and a per-file snapshot would read, resolve
@@ -361,9 +372,6 @@ pub(super) fn build_with_import_facts(
         refreshed_sources,
         host_facts,
         mirror,
-        #[cfg(not(feature = "ambient-project-declarations"))]
-        virtual_ts_options: environment.virtual_ts_options.clone(),
-        #[cfg(feature = "ambient-project-declarations")]
         virtual_ts_options,
         configured_global_template_ref,
         imports_alias_template_ref,
@@ -371,23 +379,30 @@ pub(super) fn build_with_import_facts(
     })
 }
 
-#[cfg(feature = "ambient-project-declarations")]
+/// Every project-local declaration registered in this revision, requested or
+/// referenced, is loaded through its mirror rather than its authored path.
 fn editor_declaration_options(
     project: &mut VirtualProject,
-    revision: &SourceRevision<'_>,
+    requested: &[(PathBuf, &str)],
+    referenced: &[(PathBuf, vize_carton::String)],
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
 ) -> Result<crate::virtual_ts::VirtualTsOptions, CorsaBridgeError> {
     let mut options = environment.virtual_ts_options.clone();
-    if environment
-        .editor_session
-        .ambient_declarations
-        .get()
-        .is_some()
-    {
-        project
-            .project_declaration_references(&mut options, revision.requested_sources)
-            .map_err(bridge_error)?;
+    if options.reference_paths.is_empty() || (referenced.is_empty() && requested.is_empty()) {
+        return Ok(options);
     }
+    let supplied = requested
+        .iter()
+        .map(|(path, text)| (path.clone(), *text))
+        .chain(
+            referenced
+                .iter()
+                .map(|(path, text)| (path.clone(), text.as_str())),
+        )
+        .collect::<Vec<_>>();
+    project
+        .project_declaration_references(&mut options, &supplied)
+        .map_err(bridge_error)?;
     project.set_virtual_ts_options(options.clone());
     Ok(options)
 }

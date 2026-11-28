@@ -8,9 +8,52 @@ use crate::{
     virtual_ts::VirtualTsOptions,
 };
 use std::path::{Path, PathBuf};
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashMap, FxHashSet};
 
 impl VirtualProject {
+    /// Project-local declarations the editor references by absolute path,
+    /// read from their open buffer or the disk. They are mirrored like the
+    /// host's imports, so a `GlobalComponents` entry importing a `.vue` file
+    /// resolves to its generated module as it does in the batch checker.
+    /// An unreadable reference keeps its authored path.
+    pub(crate) fn referenced_project_declarations(
+        &self,
+        options: &VirtualTsOptions,
+        overlays: &FxHashMap<PathBuf, &str>,
+        requested: &[(PathBuf, &str)],
+    ) -> Vec<(PathBuf, vize_carton::String)> {
+        let mut declarations = Vec::new();
+        for reference in &options.reference_paths {
+            let path = Path::new(reference.as_str());
+            if !path.is_absolute() || !is_declaration_file(path) {
+                continue;
+            }
+            let physical = vize_l0::path::physical_path(path);
+            if !physical.starts_with(self.project_root())
+                || requested
+                    .iter()
+                    .any(|(requested, _)| requested == path || *requested == physical)
+                || declarations
+                    .iter()
+                    .any(|(known, _): &(PathBuf, _)| *known == physical)
+            {
+                continue;
+            }
+            let text = match overlays.get(path).or_else(|| overlays.get(&physical)) {
+                Some(open) => vize_carton::String::from(*open),
+                None => match std::fs::read(&physical)
+                    .ok()
+                    .and_then(|bytes| vize_carton::String::from_utf8(bytes).ok())
+                {
+                    Some(text) => text,
+                    None => continue,
+                },
+            };
+            declarations.push((physical, text));
+        }
+        declarations
+    }
+
     /// Root references are explicit revision inputs. Every dependency uses
     /// the same absolute spelling, including Vue hosts in nested packages.
     pub(crate) fn project_declaration_references(
