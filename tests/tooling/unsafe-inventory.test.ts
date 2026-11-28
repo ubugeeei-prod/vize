@@ -5,8 +5,6 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
-import { isComposedCopy } from "../../tools/commands/generate/composed-copies.ts";
-
 // docs/davinci/decisions/2026-11-24-unsafe-model-checking.md: every `unsafe`
 // token in product Rust (the module trees of crates/*/src, davinci/*/src and
 // the provider packages crates/*/providers/*/src, without `#[cfg(test)]`
@@ -116,8 +114,6 @@ function productFiles(): Map<string, string> {
       const flat = path.join(childDir, `${declared[1]!}.rs`);
       const nested = path.join(childDir, declared[1]!, "mod.rs");
       const target = fs.existsSync(flat) ? flat : nested;
-      // A generated copy compiles its crate's source, whose rows cover it.
-      if (isComposedCopy(path.relative(repoRoot, target).split(path.sep).join("/"))) return;
       assert.ok(fs.existsSync(target), `${file} declares missing module ${declared[1]}`);
       const isDirOwner = path.basename(target) === "mod.rs";
       visit(target, isDirOwner ? path.dirname(target) : target.slice(0, -3));

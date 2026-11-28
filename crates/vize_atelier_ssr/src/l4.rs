@@ -232,17 +232,6 @@ pub(crate) fn as_oracle_run<R>(f: impl FnOnce() -> R) -> R {
     result
 }
 
-#[cfg(feature = "legacy-differential")]
-/// `s4` when the plan emitted, `legacy.<reason>` for a selected legacy
-/// route, `rejected` for a broken plan invariant.
-pub(crate) fn lane_label(selection: &SsrL4Selection) -> &'static str {
-    match selection {
-        SsrL4Selection::Emitted(_) => "s4",
-        SsrL4Selection::Legacy(reason) => reason.counter_suffix(),
-        SsrL4Selection::Rejected(_) => "rejected",
-    }
-}
-
 pub(super) fn record_selection(selection: &SsrL4Selection) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {

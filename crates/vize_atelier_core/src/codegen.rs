@@ -7,10 +7,11 @@
 /// anchors the read at the authored tag.
 macro_rules! push_component_binding {
     ($ctx:expr, $el:expr) => {
-        render_map_copy!(
-            plain { $ctx.push_component_binding_tag($el.tag) }
-            composed { $ctx.push_composed_component_binding($el) }
-        )
+        if $ctx.out.composes() {
+            $ctx.push_composed_component_binding($el)
+        } else {
+            $ctx.push_component_binding_tag($el.tag)
+        }
     };
 }
 
@@ -23,17 +24,10 @@ pub(crate) use element::helpers::is_dynamic_component;
 mod emit;
 mod entry;
 mod expression;
+mod for_alias_spans;
 mod generate;
-render_map_copy! {
-    plain {
-        #[cfg(test)]
-        mod for_alias_spans;
-    }
-    composed {
-        mod for_alias_spans;
-        pub use for_alias_spans::locate_for_aliases;
-    }
-}
+#[doc(hidden)]
+pub use for_alias_spans::locate_for_aliases;
 mod helpers;
 mod node;
 mod patch_flag;
@@ -74,8 +68,9 @@ pub use helpers::is_constant_simple_expression;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
 pub use entry::{
-    generate, generate_with_experimental_options, generate_with_merge_props,
-    generate_with_sections, generate_with_sections_and_experimental_options,
+    generate, generate_composed_with_sections_slot_scope_and_environment,
+    generate_with_experimental_options, generate_with_merge_props, generate_with_sections,
+    generate_with_sections_and_experimental_options,
     generate_with_sections_and_experimental_options_and_slot_scope,
     generate_with_sections_and_experimental_options_slot_scope_and_environment,
     generate_with_vnode_factory, generate_with_vnode_factory_and_child_values,

@@ -5,13 +5,14 @@
 //! additive and never selects another emitter. This compile makes the plain
 //! compile's L2 attempt and keeps its module and its diagnostics; the shipped
 //! transform and the compatibility generator then run
-//! only to supply the map. A compile without a map never reaches this file.
+//! only to supply the map, composing its links. A compile without a map
+//! never reaches this file.
 
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
-        CodegenResult, CodegenResultWithSections, locate_for_aliases,
-        generate_with_sections_and_experimental_options_slot_scope_and_environment,
+        CodegenResult, CodegenResultWithSections,
+        generate_composed_with_sections_slot_scope_and_environment, locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{
@@ -138,11 +139,7 @@ pub(in crate::compile) fn compile_composed_template_with_sections_captured<'a, C
                 capture.finish(|| CaptureOutcome::Accepted);
                 // The module and its diagnostics are the plain compile's.
                 let (_, compat) = compat_map(allocator, &mut root, source, options, inputs);
-                return (
-                    root,
-                    errors.to_vec(),
-                    with_verified_map(native, compat),
-                );
+                return (root, errors.to_vec(), with_verified_map(native, compat));
             }
             selection::record(Err(DomLegacyReason::EmitRefused));
         }
@@ -202,7 +199,7 @@ fn compat_map<'a>(
     locate_for_aliases(root, source);
     let composed = profile!(
         "atelier.dom.template.codegen_compat",
-        generate_with_sections_and_experimental_options_slot_scope_and_environment(
+        generate_composed_with_sections_slot_scope_and_environment(
             root,
             inputs.codegen_opts,
             inputs.codegen_experimental_options,
@@ -210,10 +207,7 @@ fn compat_map<'a>(
             inputs.development,
         )
     );
-    (
-        transform_errors.into_iter().collect(),
-        composed,
-    )
+    (transform_errors.into_iter().collect(), composed)
 }
 
 /// The module of an additive mapped compile: `native`, carrying the composed

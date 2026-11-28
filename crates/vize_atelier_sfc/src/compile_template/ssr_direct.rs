@@ -25,14 +25,10 @@ pub(super) fn compile(
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
     let direct = vize_atelier_ssr::sfc_direct_lane_enabled()
         && vize_atelier_dom::sfc_template_source_is_direct(source, &options.directive_contracts);
-    // A requested map is composed into the component's, and only the composed
-    // copy of the SSR compile records the links that needs.
-    let compile = if experimental_options.source_map {
-        vize_atelier_ssr::composed::compile_ssr_sfc_template
-    } else {
-        vize_atelier_ssr::compile_ssr_sfc_template
-    };
-    compile(
+    // A requested map is composed into the component's, which needs links a
+    // template's own map does not carry.
+    let context = context.with_composed_map(experimental_options.source_map);
+    vize_atelier_ssr::compile_ssr_sfc_template(
         allocator,
         source,
         options,
@@ -58,23 +54,19 @@ pub(super) fn compile_captured(
     codegen_options: &CodegenOptions,
     capture: &mut StageCapture,
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
-    // Only the composed copy of the SSR compile records the links a map
-    // composed into the component's needs.
-    let compile = if experimental_options.source_map {
-        vize_atelier_ssr::composed::compile_ssr_with_sfc_context_codegen_options_and_capture
-    } else {
-        vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture
-    };
-    let (_, errors, result) = compile(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        custom_elements,
-        experimental_options,
-        context,
-        codegen_options,
-        capture,
-    );
+    // A requested map is composed into the component's.
+    let context = context.with_composed_map(experimental_options.source_map);
+    let (_, errors, result) =
+        vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
+            allocator,
+            source,
+            options,
+            template_syntax,
+            custom_elements,
+            experimental_options,
+            context,
+            codegen_options,
+            capture,
+        );
     (errors, result)
 }

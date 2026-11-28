@@ -151,7 +151,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     };
     #[cfg(feature = "legacy-differential")]
     if lane == SsrLane::Selected {
-        crate::differential::record_verdict(l4::lane_label(&selection));
+        crate::differential::record_verdict(&selection);
     }
 
     let transform_opts = crate::stage_options::transform_options(&codegen_options);

@@ -216,38 +216,17 @@ impl<'a> SsrCodegenContext<'a> {
 
         // Value alias
         if let Some(value) = &for_node.value_alias {
-            sfc_map_copy! {
-                plain {
-                    self.push_expression(value);
-                }
-                composed {
-                    self.push_for_alias(value);
-                }
-            }
+            self.push_for_alias(value);
         }
         // Key alias
         if let Some(key) = &for_node.key_alias {
             self.push(", ");
-            sfc_map_copy! {
-                plain {
-                    self.push_expression(key);
-                }
-                composed {
-                    self.push_for_alias(key);
-                }
-            }
+            self.push_for_alias(key);
         }
         // Index alias
         if let Some(index) = &for_node.object_index_alias {
             self.push(", ");
-            sfc_map_copy! {
-                plain {
-                    self.push_expression(index);
-                }
-                composed {
-                    self.push_for_alias(index);
-                }
-            }
+            self.push_for_alias(index);
         }
 
         self.push(") => {\n");
@@ -276,23 +255,28 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    sfc_map_copy! {
-        plain {}
-        composed {
-            /// Push a `v-for` alias for a composed map. Its node has no
-            /// location, so an alias written unchanged maps to the slice of
-            /// the template it was parsed from.
-            #[cold]
-            #[inline(never)]
-            fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
-                match alias {
-                    vize_atelier_core::ExpressionNode::Simple(simple) => {
-                        let content = self.strip_ctx_for_scoped_params(simple.content);
-                        self.out.push_authored(&content, simple.content, self.source);
-                    }
-                    vize_atelier_core::ExpressionNode::Compound(_) => self.push_expression(alias),
-                }
+    /// Push a `v-for` alias. Its node has no location, so in a composed map
+    /// an alias written unchanged maps to the slice of the template it was
+    /// parsed from.
+    #[inline(always)]
+    fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+        if self.out.composes() {
+            self.push_composed_for_alias(alias);
+        } else {
+            self.push_expression(alias);
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_composed_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+        match alias {
+            vize_atelier_core::ExpressionNode::Simple(simple) => {
+                let content = self.strip_ctx_for_scoped_params(simple.content);
+                self.out
+                    .push_authored(&content, simple.content, self.source);
             }
+            vize_atelier_core::ExpressionNode::Compound(_) => self.push_expression(alias),
         }
     }
 

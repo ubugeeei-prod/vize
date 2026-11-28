@@ -18,11 +18,9 @@ use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions
 mod production;
 
 #[cfg(debug_assertions)]
-#[doc(hidden)]
-pub use production::unrecorded;
+pub(crate) use production::unrecorded;
 pub use production::{on_both_lanes, record_lanes, with_legacy_lane};
-#[doc(hidden)]
-pub use production::{production_lane, record_emitted, record_verdict};
+pub(crate) use production::{production_lane, record_emitted, record_verdict};
 
 /// One compile's output on one lane.
 #[derive(Debug)]
@@ -69,7 +67,7 @@ pub fn compare_ssr_lanes(
                 frozen: Some((&root, &frozen)),
             },
         );
-        crate::l4::lane_label(&selection)
+        production::lane_label(&selection)
     };
     let compile = |lane| {
         let allocator = Allocator::new();

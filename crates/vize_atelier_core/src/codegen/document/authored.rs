@@ -1,8 +1,11 @@
-//! Anchors for text an emitter writes without a location of its own.
+//! Links only a map composed into a Vue file carries.
 //!
-//! A `v-for` alias is the case: its node has no span. Each entry point here
-//! makes the one recording check its plain counterpart makes and does all of
-//! its work behind it, so a document that records no map does what it did.
+//! The SFC assembly composes a template's render map into the component's,
+//! and that map links more than a template's own: setup-binding reads at
+//! their tags, and text an emitter writes without a location of its own (a
+//! `v-for` alias, whose node has no span). Emitters write those links only
+//! while the document [`composes`](EmitDocument::composes), and each check
+//! here is the only work a document that records no map does.
 
 use vize_l0::Span;
 
@@ -18,6 +21,18 @@ pub fn authored_offset(authored: &str, source_text: &str) -> Option<u32> {
 }
 
 impl EmitDocument {
+    /// Whether this document's links are composed into a Vue file's map.
+    /// Only a recording document composes.
+    #[inline(always)]
+    pub fn composes(&self) -> bool {
+        self.composes
+    }
+
+    /// Compose this document's links into a Vue file's map, when it records.
+    pub fn compose(&mut self) {
+        self.composes = self.recording;
+    }
+
     /// Append `code`, written from the node text `authored`. Written
     /// unchanged from a slice of `source_text`, it maps to where that slice
     /// was authored.

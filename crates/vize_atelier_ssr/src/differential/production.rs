@@ -11,6 +11,7 @@
 use core::cell::{Cell, RefCell};
 
 use crate::compile::SsrLane;
+use crate::l4::SsrL4Selection;
 
 std::thread_local! {
     static PINNED_LEGACY: Cell<bool> = const { Cell::new(false) };
@@ -44,7 +45,7 @@ pub fn on_both_lanes<R>(compile: impl Fn() -> R) -> (R, std::vec::Vec<&'static s
 }
 
 /// The lane a production compile takes on this thread.
-pub fn production_lane() -> SsrLane {
+pub(crate) fn production_lane() -> SsrLane {
     if PINNED_LEGACY.with(Cell::get) {
         SsrLane::LegacyOnly
     } else {
@@ -52,12 +53,11 @@ pub fn production_lane() -> SsrLane {
     }
 }
 
-/// Record a selected-lane verdict, its `lane_label`, while [`record_lanes`]
-/// is active.
-pub fn record_verdict(label: &'static str) {
+/// Record a selected-lane verdict while [`record_lanes`] is active.
+pub(crate) fn record_verdict(selection: &SsrL4Selection) {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
-            verdicts.push(label);
+            verdicts.push(lane_label(selection));
         }
     });
 }
@@ -65,7 +65,7 @@ pub fn record_verdict(label: &'static str) {
 /// Run `f` without recording lane verdicts: the direct lane's debug oracle
 /// recompiles on the full path, and that compile is not a production one.
 #[cfg(debug_assertions)]
-pub fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
+pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
     let previous = VERDICTS.with(|verdicts| verdicts.replace(None));
     let result = f();
     VERDICTS.with(|verdicts| verdicts.replace(previous));
@@ -73,10 +73,20 @@ pub fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
 }
 
 /// Record the verdict of a compile the direct lane emitted.
-pub fn record_emitted() {
+pub(crate) fn record_emitted() {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push("s4");
         }
     });
+}
+
+/// `s4` when the plan emitted, `legacy.<reason>` for a selected legacy
+/// route, `rejected` for a broken plan invariant.
+pub(crate) fn lane_label(selection: &SsrL4Selection) -> &'static str {
+    match selection {
+        SsrL4Selection::Emitted(_) => "s4",
+        SsrL4Selection::Legacy(reason) => reason.counter_suffix(),
+        SsrL4Selection::Rejected(_) => "rejected",
+    }
 }

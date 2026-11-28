@@ -64,6 +64,7 @@ pub(super) fn direct_template_source(
     clippy::too_many_arguments,
     reason = "independent compile inputs and capture"
 )]
+#[inline(always)]
 pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: CaptureSink>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -76,7 +77,45 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     no_slotted: bool,
     development: bool,
     capture: &mut C,
+    preflight: Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_for_sfc_composable(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
+        no_slotted,
+        development,
+        capture,
+        preflight,
+        false,
+    )
+}
+
+/// [`compile_template_inner_for_sfc_with_sections_captured`], whose map is
+/// composed into the component's when `composed` and a map is requested.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent compile inputs and capture"
+)]
+pub(super) fn compile_template_for_sfc_composable<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+    capture: &mut C,
     mut preflight: Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
+    composed: bool,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
     let experimental_self_component = codegen_experimental_options.self_component;
@@ -179,12 +218,13 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             },
         );
     }
-    // The composed copy compiles a template whose map the SFC assembly
+    // A composed compile maps a template whose map the SFC assembly
     // composes: its map must describe the module a plain compile emits.
-    let compile = dom_map_copy!(
-        plain { super::inner::compile_template_inner_with_sections_captured }
-        composed { super::inner::compile_composed_template_with_sections_captured }
-    );
+    let compile = if composed {
+        super::inner::compile_composed_template_with_sections_captured
+    } else {
+        super::inner::compile_template_inner_with_sections_captured
+    };
     let (_, errors, result) = compile(
         allocator,
         source,

@@ -12,6 +12,7 @@ use vize_atelier_core::{
 use vize_l0::{Allocator, String};
 
 mod capture_options;
+pub(crate) mod composed_sfc;
 mod inner;
 #[cfg(feature = "legacy-differential")]
 pub(crate) mod legacy;

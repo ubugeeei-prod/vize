@@ -228,3 +228,30 @@ pub fn generate_with_sections_and_experimental_options_slot_scope_and_environmen
         false,
     )
 }
+
+/// [`generate_with_sections_and_experimental_options_slot_scope_and_environment`]
+/// for a template whose map the SFC assembly composes into the component's:
+/// the same module, with the links that composition needs when a map is
+/// recorded.
+#[doc(hidden)]
+pub fn generate_composed_with_sections_slot_scope_and_environment(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+) -> CodegenResultWithSections {
+    super::emit::generate_composable(
+        root,
+        options,
+        None,
+        true,
+        None,
+        experimental_options,
+        no_slotted,
+        development,
+        false,
+        false,
+        true,
+    )
+}

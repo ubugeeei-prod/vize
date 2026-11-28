@@ -92,26 +92,17 @@ impl CodegenContext {
         }
     }
 
-    render_map_copy! {
-        plain {}
-        composed {
-            /// [`Self::push_component_binding_tag`] for `el`, its read
-            /// anchored at the authored tag name: a resolved asset is anchored
-            /// where it is resolved, but a binding is read in place.
-            #[inline(never)]
-            pub(super) fn push_composed_component_binding(
-                &mut self,
-                el: &crate::ElementNode<'_>,
-            ) -> bool {
-                if self.resolve_component_binding(el.tag).is_none() {
-                    return false;
-                }
-                if self.out.is_recording() {
-                    self.out.anchor(el.loc.span.start + 1);
-                }
-                self.push_component_binding_tag(el.tag)
-            }
+    /// [`Self::push_component_binding_tag`] for `el` in a composed map, its
+    /// read anchored at the authored tag name: a resolved asset is anchored
+    /// where it is resolved, but a binding is read in place.
+    #[cold]
+    #[inline(never)]
+    pub(super) fn push_composed_component_binding(&mut self, el: &crate::ElementNode<'_>) -> bool {
+        if self.resolve_component_binding(el.tag).is_none() {
+            return false;
         }
+        self.out.anchor(el.loc.span.start + 1);
+        self.push_component_binding_tag(el.tag)
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {

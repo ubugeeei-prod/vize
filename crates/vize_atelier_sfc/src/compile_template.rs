@@ -327,9 +327,9 @@ pub(crate) fn compile_template_block_with_capture(
     // needs rollback to preserve the eager preflight's exact error boundary.
     let before_preflight = capture.as_deref().map(|capture| capture.options.len());
     // A requested map is composed into the component's, and only the composed
-    // copy of the DOM compile records the links that needs.
+    // DOM compile records the links that needs.
     let compile = if dom_opts.source_map {
-        vize_atelier_dom::composed::compile_sfc_template_with_preflight_and_environment
+        vize_atelier_dom::compile_composed_sfc_template_with_preflight_and_environment
     } else {
         vize_atelier_dom::compile_sfc_template_with_preflight_and_environment
     };
