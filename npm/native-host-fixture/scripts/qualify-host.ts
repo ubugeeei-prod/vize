@@ -11,13 +11,27 @@ const output = mkdtempSync(
   path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), "vize-native-first-host-"),
 );
 
+const maximumCommandMilliseconds = 10 * 60 * 1000;
+
 function command(program: string, args: readonly string[], log?: string): string {
-  const result = spawnSync(program, args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (log)
+    console.log(
+      JSON.stringify({ event: "native-qualification-phase", phase: log, state: "started" }),
+    );
+  const result = spawnSync(program, args, {
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: maximumCommandMilliseconds,
+  });
   const text = `${result.stdout ?? ""}${result.stderr ?? ""}`;
   if (log) writeFileSync(path.join(output, log), text);
   if (result.error || result.status !== 0)
     throw new Error(
       `Native host qualification failed in ${program}: ${result.error?.message ?? text.slice(-12000)}`,
+    );
+  if (log)
+    console.log(
+      JSON.stringify({ event: "native-qualification-phase", phase: log, state: "passed" }),
     );
   return result.stdout.trim();
 }
