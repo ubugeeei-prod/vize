@@ -43,6 +43,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupDirective, MarkupElement,
+    MarkupElementKind, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::url::is_unsafe_url;
 use oxc_allocator::Allocator;
@@ -50,7 +54,7 @@ use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::is_platform_tag;
-use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unsafe-url",
@@ -67,12 +71,15 @@ pub struct NoUnsafeUrl;
 /// Only inspect URLs where the browser can navigate or run active content.
 /// Component props have no known DOM destination, and image/media resource
 /// attributes do not execute `javascript:` URLs.
-fn is_unsafe_url_sink(name: &str, element: &ElementNode<'_>) -> bool {
-    if element.tag_type != ElementType::Element || !is_platform_tag(element.tag) {
+fn is_unsafe_url_sink(name: &str, element: &MarkupElement<'_>) -> bool {
+    let tag = element.tag();
+    if element.kind() != MarkupElementKind::Element
+        || !is_platform_tag(tag)
+        || !element.is_unqualified_tag_exact(tag)
+    {
         return false;
     }
 
-    let tag = element.tag;
     if name.eq_ignore_ascii_case("href") || name.eq_ignore_ascii_case("xlink:href") {
         matches!(tag, "a" | "area" | "base")
             || (tag == "script" && name.eq_ignore_ascii_case("xlink:href"))
@@ -95,26 +102,6 @@ fn is_router_link_tag(tag: &str) -> bool {
 
 fn is_slot_tag(tag: &str) -> bool {
     tag == "slot"
-}
-
-fn is_hash_only_href_binding(attr_name: &str, directive: &DirectiveNode) -> bool {
-    if !attr_name.eq_ignore_ascii_case("href") {
-        return false;
-    }
-
-    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
-        return false;
-    };
-
-    is_hash_prefixed_expression(exp.content.trim())
-}
-
-fn is_sanitized_url_binding(directive: &DirectiveNode) -> bool {
-    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
-        return false;
-    };
-
-    expression_is_sanitizer_call(exp.content.trim())
 }
 
 fn expression_is_sanitizer_call(source: &str) -> bool {
@@ -204,67 +191,59 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
     None
 }
 
-impl Rule for NoUnsafeUrl {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn template_hooks(&self) -> crate::rule::RuleHooks {
-        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
-    }
-
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if is_router_link_tag(element.tag) {
+impl NoUnsafeUrl {
+    fn check_static(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if is_router_link_tag(element.tag()) {
             return;
         }
 
-        for prop in &element.props {
-            let PropNode::Attribute(attr) = prop else {
-                continue;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() != MarkupBindingKind::Attribute {
+                return;
+            }
+            let Some(attr_name) = binding.authored_argument(ctx.source) else {
+                return;
             };
-
-            let attr_name = attr.name;
             if !is_unsafe_url_sink(attr_name, element) {
-                continue;
+                return;
             }
-
-            let Some(value) = &attr.value else {
-                continue;
+            let Some(value) = binding.static_value() else {
+                return;
             };
-
-            if !is_unsafe_url(value.content) {
-                continue;
+            if !is_unsafe_url(value) {
+                return;
             }
 
-            ctx.warn_with_help(
+            ctx.warn_at_with_help(
                 ctx.t("vue/no-unsafe-url.static_message"),
-                &attr.loc,
+                binding.range(),
                 ctx.t("vue/no-unsafe-url.static_help"),
             );
-        }
+        });
     }
 
-    fn check_directive<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
+    fn check_dynamic(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        binding: &MarkupBinding<'_>,
     ) {
         // Only check v-bind
-        if directive.name != "bind" {
+        if binding.kind() != MarkupBindingKind::Bind {
             return;
         }
 
         // Bindings on <slot> are slot props, not URL-bearing DOM attributes.
-        if is_slot_tag(element.tag) {
+        if is_slot_tag(element.tag()) {
             return;
         }
 
         // Get the attribute name
-        let attr_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
-            _ => return,
+        let Some(attr_name) = binding.authored_argument(ctx.source) else {
+            return;
         };
+        if !binding.argument_is_static() {
+            return;
+        }
 
         // Check if this is a potentially unsafe attribute
         if !is_unsafe_url_sink(attr_name, element) {
@@ -272,15 +251,15 @@ impl Rule for NoUnsafeUrl {
         }
 
         // Skip if the element is router-link (it handles routing safely)
-        if is_router_link_tag(element.tag) {
+        if is_router_link_tag(element.tag()) {
             return;
         }
 
-        if is_hash_only_href_binding(attr_name, directive) {
-            return;
-        }
-
-        if is_sanitized_url_binding(directive) {
+        let expression = binding.source_expression(ctx.source);
+        if expression.map(str::trim).is_some_and(|expression| {
+            (attr_name.eq_ignore_ascii_case("href") && is_hash_prefixed_expression(expression))
+                || expression_is_sanitizer_call(expression)
+        }) {
             return;
         }
 
@@ -290,10 +269,73 @@ impl Rule for NoUnsafeUrl {
             ctx.t("vue/no-unsafe-url.help")
         };
 
-        ctx.warn_with_help(
+        ctx.warn_at_with_help(
             ctx.t_fmt("vue/no-unsafe-url.message", &[("attr", attr_name)]),
-            &directive.loc,
+            binding.range(),
             help_message,
+        );
+    }
+}
+
+impl MarkupRule for NoUnsafeUrl {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::ElementsAndDirectives
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !ctx.is_jsx_attribute_value() {
+            Self::check_static(ctx.lint(), element);
+        }
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        if !ctx.is_jsx_attribute_value() {
+            Self::check_dynamic(ctx.lint(), element, &directive.as_binding());
+        }
+    }
+}
+
+impl Rule for NoUnsafeUrl {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // Preserve lowering-only parser diagnostics from the original JSX lane.
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_static(ctx, &MarkupElement::new(element));
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        Self::check_dynamic(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupBinding::from_relief_directive(directive),
         );
     }
 }

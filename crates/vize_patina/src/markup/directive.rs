@@ -13,6 +13,8 @@ use oxc_ast::ast::JSXAttribute;
 use oxc_span::GetSpan;
 use vize_relief::{DirectiveNode, ExpressionNode};
 
+mod binding;
+
 #[derive(Clone, Copy)]
 enum MarkupDirectiveInner<'a> {
     Relief(&'a DirectiveNode<'a>),
