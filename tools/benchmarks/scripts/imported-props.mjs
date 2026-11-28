@@ -43,6 +43,7 @@ const report = {
     environments: 3,
     uniqueScriptsControl: true,
     uniqueDependenciesControl: true,
+    pugIncludesControl: true,
   },
   recipe: {
     profile: "ci-opt",
@@ -159,6 +160,7 @@ run(
     "@vue/compiler-sfc@3.5.46",
     "vue@3.5.46",
     "typescript@6.0.3",
+    "pug@3.0.4",
   ],
   out,
   "install-oracle",
@@ -176,6 +178,7 @@ for (const [mode, modules] of [
   ["barrel", 800],
   ["unique", 1],
   ["separate", 20],
+  ["pug", 1],
 ]) {
   const shape = `${mode}-${modules}`;
   run(
@@ -184,7 +187,7 @@ for (const [mode, modules] of [
       path.join(out, "generate.mjs"),
       "1000",
       "0",
-      mode === "unique" || mode === "separate" ? "local" : mode,
+      ["unique", "separate", "pug"].includes(mode) ? "local" : mode,
       String(modules),
     ],
     fixture,
@@ -208,6 +211,21 @@ for (const [mode, modules] of [
       );
     }
   }
+  if (mode === "pug") {
+    fs.writeFileSync(path.join(fixture, "src/shared.pug"), "div {{ props.label }}\n");
+    for (const name of fs.readdirSync(path.join(fixture, "src/components"))) {
+      const file = path.join(fixture, "src/components", name);
+      const source = fs.readFileSync(file, "utf8");
+      const start = source.indexOf("<template>");
+      assert(start >= 0);
+      const index = name.match(/Item(\d+)\.vue/u)[1];
+      fs.writeFileSync(
+        file,
+        source.slice(0, start) +
+          `<template lang="pug">\ninclude ../shared.pug\nspan ${index}\n</template>\n`,
+      );
+    }
+  }
   fs.writeFileSync(
     path.join(fixture, "tsconfig.json"),
     '{"compilerOptions":{"moduleResolution":"bundler","strict":true},"include":["src"]}\n',
@@ -222,6 +240,7 @@ for (const [mode, modules] of [
             "src/tsconfig.json",
             "src/components/tsconfig.json",
             "src/types.ts",
+            ...(mode === "pug" ? ["src/shared.pug"] : []),
             ...(mode === "barrel"
               ? [
                   "src/models/index.ts",
@@ -329,7 +348,7 @@ const lines = [
   "| :-- | --: | --: | :-- | --: | --: | --: | --: |",
 ];
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
-for (const mode of ["inline", "local", "barrel", "unique", "separate"]) {
+for (const mode of ["inline", "local", "barrel", "unique", "separate", "pug"]) {
   for (const modules of mode === "barrel" ? [200, 800] : mode === "separate" ? [20] : [1]) {
     for (const threads of report.recipe.threads) {
       for (const chunk of report.recipe.chunks) {

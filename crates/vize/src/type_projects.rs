@@ -19,6 +19,7 @@ use captured::CapturedProject;
 mod host_path;
 pub use host_path::{plain_windows_path, plain_windows_path_buf};
 
+mod dependencies;
 mod source_facts;
 pub(crate) use source_facts::{Facts, SourceFacts};
 
@@ -97,11 +98,7 @@ impl SelectedTypeProject {
 
     pub fn track(&self, mut result: SfcCompileResult) -> SfcCompileResult {
         if let Some(capture) = self.capture.as_ref() {
-            result
-                .dependencies
-                .push(capture.root.to_string_lossy().as_ref().into());
-            result.dependencies.sort();
-            result.dependencies.dedup();
+            dependencies::include_root(&mut result.dependencies, &capture.root.to_string_lossy());
         }
         result
     }

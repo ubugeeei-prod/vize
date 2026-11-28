@@ -91,6 +91,31 @@ function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8A
 function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
   bytes = dependencyOwnershipPredecessor(file, bytes);
   if (
+    file === "crates/vize/src/type_projects.rs" &&
+    blob(bytes) === "0adbbb012dba0be8ee90c36c234f0cb12ebba1f2"
+  ) {
+    // Reconstruct the complete old normalization for the existing source law.
+    // Current watch-list behavior is compared to it by the Rust differential
+    // test; this source inverse grants no execution or comparison credit.
+    let text = Buffer.from(bytes).toString("utf8");
+    for (const [current, reference] of [
+      ["mod dependencies;\n", ""],
+      [
+        "            dependencies::include_root(&mut result.dependencies, &capture.root.to_string_lossy());\n",
+        "            result\n" +
+          "                .dependencies\n" +
+          "                .push(capture.root.to_string_lossy().as_ref().into());\n" +
+          "            result.dependencies.sort();\n" +
+          "            result.dependencies.dedup();\n",
+      ],
+    ]) {
+      assert.equal(text.split(current!).length, 2, "unique reviewed watch-list normalization edit");
+      text = text.replace(current!, reference!);
+    }
+    bytes = Buffer.from(text);
+    assert.equal(blob(bytes), "4d567c1bf5eff482c9ce78d02d30761514973cc1");
+  }
+  if (
     file === "crates/vize_atelier_sfc/src/compile/script_context.rs" &&
     blob(bytes) === "def91c11cd7e5c5f5c0531f0a0de67db2c300352"
   ) {

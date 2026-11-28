@@ -11,6 +11,8 @@ on {
       "crates/vize_atelier_sfc/src/script/context/external_types/**"
       "crates/vize_vitrine/src/napi/sfc/**"
       "crates/vize_vitrine/src/napi/sfc.rs"
+      "crates/vize/src/type_projects.rs"
+      "crates/vize/src/type_projects/dependencies.rs"
     }
   }
   workflow_dispatch {
@@ -99,6 +101,10 @@ jobs {
       new Dynamic {
         name = "Test measurement controls"
         run = "node --test tools/benchmarks/scripts/imported-props-worker.test.mjs"
+      }
+      new Dynamic {
+        name = "Test config membership against the previous normalization"
+        run = "cargo test --locked -p vize --lib type_projects::dependencies"
       }
       new Dynamic {
         name = "Compare exact source images across threads and chunk sizes"

@@ -11,6 +11,8 @@ on:
       - crates/vize_atelier_sfc/src/script/context/external_types/**
       - crates/vize_vitrine/src/napi/sfc/**
       - crates/vize_vitrine/src/napi/sfc.rs
+      - crates/vize/src/type_projects.rs
+      - crates/vize/src/type_projects/dependencies.rs
   workflow_dispatch:
     inputs:
       base_sha:
@@ -75,6 +77,8 @@ jobs:
         run: cargo test --locked -p vize_atelier_sfc --lib script::context::external_types
       - name: Test measurement controls
         run: node --test tools/benchmarks/scripts/imported-props-worker.test.mjs
+      - name: Test config membership against the previous normalization
+        run: cargo test --locked -p vize --lib type_projects::dependencies
       - name: Compare exact source images across threads and chunk sizes
         shell: bash
         run: node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props"
