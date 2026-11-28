@@ -4,10 +4,7 @@
   "sha256": "5440cd4c4a2e10effd6b9eafc8d7a283258884b91eae1feef76988ca6760490e",
   "source_function_count": 260,
   "functions": 258,
-  "omitted_unreachable": [
-    "walk_argument",
-    "walk_spans"
-  ],
+  "omitted_unreachable": ["walk_argument", "walk_spans"],
   "chunks": 7,
   "function_names": [
     "walk_program",

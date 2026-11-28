@@ -1,7 +1,7 @@
 /**
  * Generate Patina's lifetime-carrying walk from checksum-pinned OXC source.
  * --source defaults to the pinned checkout in CARGO_HOME. --check generates
- * in a temporary directory and compares every output byte after rustfmt.
+ * in a temporary directory and compares every output byte after formatting.
  * Rust tests compare the generated traversal's observable hooks with OXC.
  */
 import { createHash } from "node:crypto";
@@ -29,7 +29,13 @@ const expectedOmissions = ["walk_argument", "walk_spans"];
 type Token = { text: string; start: number; end: number };
 type Edit = { start: number; end: number; replacement: string };
 type Walk = { name: string; body: string };
-type Options = { source?: string; outputDir: string; rustfmt: string; check: boolean };
+type Options = {
+  source?: string;
+  outputDir: string;
+  rustfmt: string;
+  oxfmt: string;
+  check: boolean;
+};
 
 /** Skip literals/comments so their delimiters never participate in balancing. */
 function* tokens(source: string, from = 0): Generator<Token> {
@@ -279,6 +285,7 @@ function parseOptions(): Options {
   const options: Options = {
     outputDir: path.join(root, "crates/vize_patina/src/lent_walk/generated"),
     rustfmt: "rustfmt",
+    oxfmt: path.join(root, "node_modules/.bin/oxfmt"),
     check: false,
   };
   const args = process.argv.slice(2);
@@ -287,19 +294,20 @@ function parseOptions(): Options {
     if (argument === "--check") options.check = true;
     else if (argument === "--help" || argument === "-h") {
       process.stdout.write(
-        "Usage: node tools/commands/generate/patina-lent-walk.ts [--source PATH] [--output-dir PATH] [--rustfmt COMMAND] [--check]\n",
+        "Usage: node tools/commands/generate/patina-lent-walk.ts [--source PATH] [--output-dir PATH] [--rustfmt COMMAND] [--oxfmt COMMAND] [--check]\n",
       );
       process.exit(0);
     } else {
       const equal = argument.indexOf("=");
       const key = equal < 0 ? argument : argument.slice(0, equal);
-      if (!["--source", "--output-dir", "--rustfmt"].includes(key))
+      if (!["--source", "--output-dir", "--rustfmt", "--oxfmt"].includes(key))
         throw new Error("unknown argument: " + argument);
       const value = equal < 0 ? args[++at] : argument.slice(equal + 1);
       if (!value || value.startsWith("--")) throw new Error("missing value for " + key);
       if (key === "--source") options.source = path.resolve(value);
       else if (key === "--output-dir") options.outputDir = path.resolve(value);
-      else options.rustfmt = value;
+      else if (key === "--rustfmt") options.rustfmt = value;
+      else options.oxfmt = value;
     }
   }
   return options;
@@ -476,6 +484,11 @@ ${declarations}
       2,
     ) + "\n",
   );
+  const metadata = spawnSync(options.oxfmt, [path.join(outputDir, "provenance.json")], {
+    stdio: "inherit",
+  });
+  if (metadata.error) throw metadata.error;
+  if (metadata.status !== 0) throw new Error(`oxfmt failed: ${metadata.signal ?? metadata.status}`);
   return {
     functions: retained.length,
     chunks: chunks.length,
