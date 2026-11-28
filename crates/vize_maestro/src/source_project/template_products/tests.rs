@@ -36,7 +36,9 @@ fn original_buffer_products_keep_complete_public_script_bytes_uris_and_mappings(
         "&fjlig;"
     );
     let script = products.script_setup.unwrap();
-    let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+    let descriptor = crate::server::ServerState::new()
+        .sfc_descriptor(&uri, &source)
+        .unwrap();
     let expected = VirtualCodeGenerator::new()
         .generate(&descriptor, uri.as_str())
         .script_setup
