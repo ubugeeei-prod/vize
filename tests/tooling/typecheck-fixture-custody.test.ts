@@ -12,6 +12,8 @@ import {
   verifyTypecheckProviderSource,
 } from "../../tools/support/compat/fixtures/typecheck-baseline-provider.mjs";
 import { typecheckPreparationIdentity } from "../../tools/support/compat/fixtures/typecheck-input-overlays.ts";
+import { readAndValidateDependencyPreparation } from "../../tools/support/compat/fixtures/typecheck-divergence-provenance.mjs";
+import { installArguments } from "../../tools/support/compat/fixtures/typecheck-package-manager.ts";
 
 import { processResultArgs } from "./support/program-path.ts";
 import { retainFixtureCommand } from "./support/typecheck-fixture-custody.ts";
@@ -180,6 +182,96 @@ test("source-provider verification still executes through a linked tooling direc
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Expected provider verify inputs/);
     assert.equal(result.stdout, "");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("preparation provenance accepts sealed optional fields and rejects unknown evidence", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-optional-preparation-"));
+  const hash = (bytes: string) => createHash("sha256").update(bytes).digest("hex");
+  try {
+    const lockfile = "{}\n";
+    fs.writeFileSync(path.join(root, "package-lock.json"), lockfile);
+    const schema = "type Query { answer: Int! }\n";
+    fs.writeFileSync(path.join(root, "schema.gql"), schema);
+    const input = {
+      source: "tests/_fixtures/typecheck-inputs/project/schema.gql",
+      target: "schema.gql",
+      sha256: hash(schema),
+    };
+    const baseline = { prepare: ["npm", "run", "codegen"], inputOverlays: [input] };
+    const project = {
+      id: "fixture",
+      revision: "b".repeat(40),
+      typecheckPerformance: {
+        packageManager: "npm",
+        packageManagerVersion: "11.0.0",
+        lockfile: "package-lock.json",
+        baseline,
+      },
+    };
+    const preparation = {
+      command: baseline.prepare,
+      durationMs: 1,
+      exitCode: 0,
+      stdoutSha256: hash(""),
+      stderrSha256: hash(""),
+      inputOverlays: [{ ...input, sizeBytes: Buffer.byteLength(schema) }],
+    };
+    const artifact = {
+      schema: "vize.fixtureTypecheckDependencyInstall",
+      version: 3,
+      project: project.id,
+      revision: project.revision,
+      evidence: { commitSha: "a".repeat(40) },
+      packageManager: { name: "npm", version: "11.0.0" },
+      lockfile: {
+        path: "package-lock.json",
+        sizeBytes: Buffer.byteLength(lockfile),
+        sha256: hash(lockfile),
+      },
+      qualificationLockfile: null,
+      install: {
+        command: ["npm", ...installArguments("npm", root)],
+        durationMs: 1,
+        exitCode: 0,
+        stdoutSha256: hash(""),
+        stderrSha256: hash(""),
+      },
+      baselinePrepare: preparation,
+    };
+    const verify = (baselinePrepare: unknown, provider?: string) => {
+      fs.writeFileSync(
+        path.join(root, "fixture-typecheck-dependencies.json"),
+        JSON.stringify({ ...artifact, baselinePrepare }),
+      );
+      return readAndValidateDependencyPreparation({
+        reportDir: root,
+        fixtureRoot: root,
+        commitSha: artifact.evidence.commitSha,
+        project: {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            baseline: { ...baseline, ...(provider === undefined ? {} : { provider }) },
+          },
+        },
+      });
+    };
+    assert.deepEqual(verify(preparation).baselinePrepare, {
+      command: baseline.prepare,
+      exitCode: 0,
+      stdoutSha256: hash(""),
+      stderrSha256: hash(""),
+    });
+    assert.throws(() => verify({ ...preparation, provider: {} }, "unknown"), {
+      message: "Unknown pinned typecheck baseline provider",
+    });
+    assert.throws(() => verify({ ...preparation, unexpected: true }), {
+      message:
+        "typecheck baseline preparation evidence keys must be command, durationMs, exitCode, inputOverlays, stderrSha256, stdoutSha256; received command, durationMs, exitCode, inputOverlays, stderrSha256, stdoutSha256, unexpected",
+    });
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
