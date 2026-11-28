@@ -12,9 +12,11 @@ function fixture() {
     id: name,
     name,
     manifest_path: `/fixture/davinci/${name}/Cargo.toml`,
-    dependencies: (stageDependencies[name] ?? []).map(
-      (target): CargoDependency => ({ name: target, kind: null, target: null }),
-    ),
+    dependencies: (stageDependencies[name] ?? []).map((target): CargoDependency => ({
+      name: target,
+      kind: null,
+      target: null,
+    })),
   }));
   const metadata = {
     workspace_root: "/fixture",
