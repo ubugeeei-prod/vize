@@ -2,8 +2,9 @@
 //!
 //! Adapted from OXC fc702c1fa9f0412d06ec6908b58cd395b826cf7f, `crates/oxc_ast_visit/src/generated/visit.rs`.
 //! Original source SHA-256: `5440cd4c4a2e10effd6b9eafc8d7a283258884b91eae1feef76988ca6760490e`.
-//! The walk order and AST matches come from that pinned source. Only the
-//! three LentNodes hooks are observable; OXC's other hooks were no-ops for
+//! The 258 walk bodies reachable from the three entry points retain the
+//! order and AST matches of the pinned source's 260 walk bodies. Only the
+//! five LentNodes hooks are observable; OXC's other hooks were no-ops for
 //! the former Lending visitor. Every node input now borrows for `'a`, so
 //! rustc proves that the hooks may retain it for the root's borrow.
 //!

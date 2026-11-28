@@ -13,7 +13,7 @@ use super::{
     walk_ts_type_parameter_instantiation, walk_v8_intrinsic_expression, walk_yield_expression,
 };
 use oxc_ast::ast::{
-    Argument, ArrayAssignmentTarget, ArrayExpression, ArrayExpressionElement, AssignmentExpression,
+    ArrayAssignmentTarget, ArrayExpression, ArrayExpressionElement, AssignmentExpression,
     AssignmentTarget, AssignmentTargetPattern, AssignmentTargetRest, BinaryExpression,
     BindingIdentifier, CallExpression, ComputedMemberExpression, ConditionalExpression, Elision,
     Expression, IdentifierName, IdentifierReference, ImportMeta, LabelIdentifier,
@@ -315,15 +315,6 @@ pub(crate) fn walk_spread_element<'a, V: LentNodes<'a>>(
 ) {
     walk_span(visitor, &it.span);
     walk_expression(visitor, &it.argument);
-}
-
-#[inline]
-pub(crate) fn walk_argument<'a, V: LentNodes<'a>>(visitor: &mut V, it: &'a Argument<'a>) {
-    // No `AstKind` for this type
-    match it {
-        Argument::SpreadElement(it) => walk_spread_element(visitor, it),
-        match_expression!(Argument) => walk_expression(visitor, it.to_expression()),
-    }
 }
 
 #[inline]

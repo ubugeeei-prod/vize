@@ -2,7 +2,12 @@
   "revision": "fc702c1fa9f0412d06ec6908b58cd395b826cf7f",
   "source": "crates/oxc_ast_visit/src/generated/visit.rs",
   "sha256": "5440cd4c4a2e10effd6b9eafc8d7a283258884b91eae1feef76988ca6760490e",
-  "functions": 260,
+  "source_function_count": 260,
+  "functions": 258,
+  "omitted_unreachable": [
+    "walk_argument",
+    "walk_spans"
+  ],
   "chunks": 7,
   "function_names": [
     "walk_program",
@@ -31,7 +36,6 @@
     "walk_import_meta",
     "walk_new_target",
     "walk_spread_element",
-    "walk_argument",
     "walk_update_expression",
     "walk_unary_expression",
     "walk_binary_expression",
@@ -263,18 +267,17 @@
     "walk_ts_type_parameters",
     "walk_ts_interface_heritages",
     "walk_ts_signatures",
-    "walk_ts_index_signature_names",
-    "walk_spans"
+    "walk_ts_index_signature_names"
   ],
   "outputs": {
     "LICENSE": "95ced5ecf1133fbf41d409b5555c86c344f83f3b019926057ddbc07cfdcc27b3",
-    "mod.rs": "8f27efd27e4792cab525416ae247b5d2e7209b936c173e342a6f12b6f90f81fd",
-    "part_01.rs": "71c4ce3a99acd621c19a017e0b8803de313fd8c7a651b8fefcf93808b9feddb3",
+    "mod.rs": "ef2e9c7b651fe65bb6e8044aeb5c210da6220a5e066f6fca6bd1a9c3230e114b",
+    "part_01.rs": "f686d37419279f7e7d3e62a6c55d02942b850ddadb2a32f4f1669675d87fa532",
     "part_02.rs": "cce4c32a82b1c5af718c92667f8e1d58d051e166cfc58d6d2550d81bd16c90f4",
     "part_03.rs": "4279f8e2fd358a3db2ddd2cb5f688fe26b63ea13135def26b2c05d1965ccdf30",
     "part_04.rs": "9b7d57fbdc0c1537a9d8c2e3586ded3c7baef82d653c57977db9970d5dfc0a87",
     "part_05.rs": "50e6044a162e6effe8b8246539c9a1109a9fe8f49e5e0bc0df864790ec3f62c6",
     "part_06.rs": "8935124bfde1c4e162159aa372bdfa219b740e1bd27cef9ceb8392612f464370",
-    "part_07.rs": "2aa381369807995fdfbdb7130f5ec2f6ecfac475846c6b7d636ca8beabb11acf"
+    "part_07.rs": "39a011ee84f304135df707613ee8fafe3ff99011bda3be9de42ef1bca02ea3c9"
   }
 }

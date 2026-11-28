@@ -91,7 +91,7 @@ const SOURCES: &[&str] = &[
     "class View extends base(make()) { field = <field>{read()}</field>; method(value = init(<input />)) { return <method>{value}</method>; } static { register(<static />); } }",
     "const view = async () => { for (const value of values()) { await visit(<item key={key(value)} />); } try { return <ok />; } catch ({ message = getMessage() }) { throw failure(<error>{message}</error>); } finally { cleanup(); } };",
     "const { [compute()]: value = defaultValue(<fallback />), ...rest } = source(); ({ [key()]: target.field } = resolve()); const result = render?.(<optional />)?.value ?? fallback(<empty />);",
-    "namespace UI { export class Widget { get view() { return <getter />; } set view(value = create()) { save(<setter>{value}</setter>); } } } const typed = (<type /> satisfies JSX.Element) as JSX.Element;",
+    "namespace UI { export class Widget { get view() { return <getter />; } set view(value) { const initialized = create(); save(<setter>{value}{initialized}</setter>); } } } const typed = (<type /> satisfies JSX.Element) as JSX.Element;",
     "const view = <UI.Widget {...props()} event={() => dispatch(<event />)}>{items.map(value => <>{format(value)}<leaf /></>)}</UI.Widget>;",
 ];
 
