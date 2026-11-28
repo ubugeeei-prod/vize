@@ -7,6 +7,8 @@ Admission requires the owning workflow and repository-required checks to pass
 for the exact candidate source. The [checked stability table](../content/stability.md#package-support-tiers)
 and package metadata continue to own release maturity.
 
+The matrices below execute on Linux with the listed consumer versions.
+
 | Adapter                | Semantic owner                                             | Public maturity                                                       | Executable host matrix                                                                                                                                                            |
 | ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `prettier-plugin-vize` | [formatter/vize_glyph](../../crates/vize_glyph)            | Experimental; independent formatter v0 line                           | [Prettier consumer](../../.github/workflows/09-prettier-plugin.yml): Prettier 3.9.10 on Node 22.0.0 and 24.14.0                                                                   |
