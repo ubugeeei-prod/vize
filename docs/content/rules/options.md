@@ -71,6 +71,7 @@ export default defineConfig({}).withVue({
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[], ignores?: string[] }` | Defaults to `PascalCase`, registered components only, no literal globals and no ignored names. `ignores` leaves a tag alone whether or not it is registered; an entry is the exact authored tag name or a `/pattern/flags` value using Rust regex syntax. |
 | `script/custom-event-name-casing` | `{ casing?: "lowercase" \| "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
 | `script/consistent-type-imports` | `{ prefer?: "type-imports" \| "no-type-imports"; fixStyle?: "separate-type-imports" \| "inline-type-imports"; disallowTypeAnnotations?: boolean; emitDecoratorMetadata?: boolean }` | Defaults to `type-imports`, `separate-type-imports`, `true` and `true`. The first three are the typescript-eslint options. `emitDecoratorMetadata` says whether the project emits decorator metadata, which lint does not read from `tsconfig.json`; with `true`, a type that a decorated signature serializes counts as a value use. |
+| `vue/component-definition-name-casing` | `"PascalCase" \| "kebab-case"` | Defaults to `"PascalCase"`, the eslint-plugin-vue option. Checks the static `name` of a component definition and the first argument of `app.component()`; the file name is `vue/component-file-name-casing`. Options do not enable the rule. |
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | Defaults to `camelCase`. Checks declared prop names; options do not enable the rule or rename its public API. |
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | Defaults to `camelCase`. Checks static names on rendered `<slot>` outlets; provider-side `v-slot` and `#name` syntax is outside this rule. |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
@@ -284,6 +285,45 @@ Good with this policy: `Item.vue`
 ```vue
 <template><p>Item</p></template>
 ```
+
+## `vue/component-definition-name-casing`
+
+The option is eslint-plugin-vue's: `"PascalCase"` (the default) or `"kebab-case"`. It
+applies to the static `name` of `export default {}`, `defineComponent({})` and the other
+component definitions, to `defineOptions({ name })`, and to the first argument of
+`app.component(name, component)`. The file name is checked by
+`vue/component-file-name-casing`, which takes no option.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/component-definition-name-casing": "warn" },
+    ruleOptions: { "vue/component-definition-name-casing": "kebab-case" },
+  },
+});
+```
+
+Bad with this config:
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
+```
+
+Good with this config:
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "my-component" });
+</script>
+```
+
+A computed name is not checked. The rule does not rewrite the name, because renaming a
+component changes how `<KeepAlive include>` and recursive self-references find it; the help
+names the converted spelling. Options configure the rule without enabling it.
 
 ## `vue/no-use-v-if-with-v-for`
 

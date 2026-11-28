@@ -252,7 +252,7 @@ pub(super) fn emit_dom_observed<'f, P>(
     let patch_fact_entries = cx.patch_facts.materialized_len();
     let (preamble, imports_len) = cx.buf.preamble_with_imports_len(options);
     let helpers = cx.buf.helpers();
-    let code = cx.buf.code;
+    let code = cx.buf.code.into_compact();
     Ok(DomEmitObservation {
         emit: DomEmit {
             preamble,

@@ -1,0 +1,14 @@
+export type ColorName = "pink" | "blue";
+
+export interface Box<T, Label = string> {
+  value: T;
+  label?: Label;
+}
+
+export class Token {
+  private readonly brand = "token";
+
+  describe(): string {
+    return this.brand;
+  }
+}

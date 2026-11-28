@@ -24,6 +24,13 @@ export const vue0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/component-definition-name-casing",
+    "The name my_component declared through defineOptions separates its words with an underscore instead of using PascalCase.",
+    "The declared name MyComponent uses PascalCase, the default casing.",
+    "defineOptions で宣言した名前 my_component は単語をアンダースコアで区切っており、PascalCase になっていません。",
+    "宣言した名前 MyComponent は既定の PascalCase です。",
+  ],
+  [
+    "vue/component-file-name-casing",
     "The filename myComponent.vue mixes a lowercase initial with an internal uppercase letter instead of using PascalCase or kebab-case.",
     "Renaming the file to MyComponent.vue uses PascalCase; its template content is unchanged.",
     "ファイル名 myComponent.vue が先頭の小文字と途中の大文字を混在させ、PascalCase / kebab-case のどちらにもなっていません。",

@@ -1,0 +1,102 @@
+[
+  {
+    "method": "textDocument/prepareRename",
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 54
+      }
+    },
+    "result": {
+      "end": {
+        "character": 56,
+        "line": 10
+      },
+      "start": {
+        "character": 53,
+        "line": 10
+      }
+    }
+  },
+  {
+    "method": "textDocument/rename",
+    "params": {
+      "position": {
+        "line": 10,
+        "character": 54
+      },
+      "newName": "panel"
+    },
+    "result": {
+      "changes": {
+        "${workspace}/App.vue": [
+          {
+            "newText": "panel",
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 3
+              },
+              "start": {
+                "character": 15,
+                "line": 3
+              }
+            }
+          },
+          {
+            "newText": "panel",
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 4
+              },
+              "start": {
+                "character": 16,
+                "line": 4
+              }
+            }
+          },
+          {
+            "newText": "panel",
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 10
+              },
+              "start": {
+                "character": 12,
+                "line": 10
+              }
+            }
+          },
+          {
+            "newText": "panel",
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 10
+              },
+              "start": {
+                "character": 31,
+                "line": 10
+              }
+            }
+          },
+          {
+            "newText": "panel",
+            "range": {
+              "end": {
+                "character": 56,
+                "line": 10
+              },
+              "start": {
+                "character": 53,
+                "line": 10
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

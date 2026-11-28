@@ -16,6 +16,7 @@
 //! - [`extract`] - Props/emits extraction and reactivity detection
 //! - [`walk`] - Scope walking functions
 
+mod art_target;
 mod async_components;
 mod define_art;
 mod execution_facts;
@@ -45,6 +46,7 @@ mod walk;
 pub use value_binding_origins::ValueBindingOrigins;
 pub(crate) use value_binding_origins::component_binding_reference;
 
+pub use art_target::{ArtTarget, infer_art_target, template_uses_component};
 pub use define_art::{parse_define_art, parse_define_art_meta};
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;

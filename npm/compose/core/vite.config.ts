@@ -198,6 +198,9 @@ export default defineConfig({
       "window-size": "src/window-size.ts",
     },
     format: "esm",
+    // Keep API docs in declarations; runtime comments retain legal notices and
+    // tree-shaking annotations without shipping duplicate JSDoc prose.
+    outputOptions: { comments: { jsdoc: false, legal: true, annotation: true } },
     dts: true,
     clean: true,
     deps: {

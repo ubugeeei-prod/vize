@@ -23,14 +23,20 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
       string,
       {
         permissions: Record<string, string>;
-        uses: string;
-        with: Record<string, string>;
-        needs?: string;
+        outputs?: Record<string, string>;
+        steps: Array<{
+          name?: string;
+          uses?: string;
+          run?: string;
+          with?: Record<string, unknown>;
+        }>;
+        needs?: string | string[];
         if?: string;
       }
     >;
   };
-  const job = parsed.jobs["native-plugin-packages"];
+  const matrix = parsed.jobs["native-plugin-matrix"]!;
+  const publish = parsed.jobs["native-plugin-publish"]!;
 
   assert.deepEqual(parsed.on.push.tags, ["v*"]);
   assert.ok(parsed.on.pull_request);
@@ -44,22 +50,48 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
     type: "string",
     default: "",
   });
-  assert.equal(job.permissions["id-token"], "write");
+  // Only the publish job can mint the npm trusted-publishing token.
+  for (const [id, job] of Object.entries(parsed.jobs)) {
+    assert.equal(
+      job.permissions?.["id-token"],
+      id === "native-plugin-publish" ? "write" : undefined,
+    );
+  }
+  assert.deepEqual(publish.needs, ["native-plugin-matrix", "native-plugin-pack"]);
   assert.equal(
-    job.uses,
-    "parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222",
+    publish.if,
+    "${{ !cancelled() && needs.native-plugin-pack.result == 'success' && needs.native-plugin-matrix.outputs.publish == 'true' }}",
   );
-  assert.equal(job.with.paths, "npm/builder/parcel-native");
   assert.equal(
-    job.with.publish,
+    matrix.outputs?.publish,
     "${{ github.repository == 'ubugeeei-prod/vize' && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish == true && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))) }}",
   );
-  assert.equal(job.with.version, "${{ inputs.version }}");
+  // Packaging runs Parcel's scripts from the commit the reusable workflow was pinned to.
+  const scripts = matrix.steps.find((step) => step.name === "Check out packaging scripts");
+  assert.equal(scripts?.with?.repository, "parcel-bundler/parcel");
+  assert.equal(scripts?.with?.ref, "2bcfb43e725b2688b787e497e0b0b4105c353222");
+  assert.match(
+    publish.steps.find((step) => step.name === "Update npm")?.run ?? "",
+    /^npm install -g npm@\d+\.\d+\.\d+$/u,
+  );
+});
+
+test("every Parcel native job runs only commit-pinned actions", () => {
+  const parsed = parse(workflow) as {
+    jobs: Record<string, { uses?: string; steps?: Array<{ uses?: string }> }>;
+  };
+  for (const [id, job] of Object.entries(parsed.jobs)) {
+    assert.equal(job.uses, undefined, `${id} calls a reusable workflow`);
+    for (const step of job.steps ?? []) {
+      if (step.uses === undefined || step.uses.startsWith("./")) continue;
+      assert.match(step.uses, /^[\w.-]+\/[\w./-]+@[0-9a-f]{40}$/u, `${id}: ${step.uses}`);
+    }
+  }
 });
 
 test("native Parcel packages publish only from this repository's v* tags or a dispatch on main", () => {
-  const parsed = parse(workflow) as { jobs: Record<string, { with: Record<string, string> }> };
-  const condition = parsed.jobs["native-plugin-packages"].with.publish.slice(3, -2).trim();
+  const parsed = parse(workflow) as { jobs: Record<string, { outputs: Record<string, string> }> };
+  const condition = parsed.jobs["native-plugin-matrix"].outputs.publish.slice(3, -2).trim();
   const startsWith = (value: string, prefix: string) => value.startsWith(prefix);
   const publishes = (
     event: string,
@@ -110,7 +142,7 @@ test("pull requests build per-platform packages only for native plugin changes",
   assert.deepEqual(parsed.on.schedule, [{ cron: "37 2 * * *" }]);
   const plan = parsed.jobs["packaging-changes"]!;
   assert.equal(plan.if, "${{ github.event_name == 'pull_request' }}");
-  assert.equal(plan["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(plan["runs-on"], "blacksmith-4vcpu-ubuntu-2404");
   assert.deepEqual(plan.outputs, { packages: "${{ steps.changes.outputs.packages }}" });
   const [detect] = plan.steps ?? [];
   assert.equal(detect?.uses, "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706");
@@ -118,7 +150,7 @@ test("pull requests build per-platform packages only for native plugin changes",
     detect?.with?.filters,
     "packages:\n  - 'npm/builder/parcel-native/**'\n  - 'crates/vize_parcel_transformer/**'\n  - '.github/workflows/parcel-transformer.yml'\n",
   );
-  const packages = parsed.jobs["native-plugin-packages"]!;
+  const packages = parsed.jobs["native-plugin-matrix"]!;
   assert.equal(packages.needs, "packaging-changes");
   assert.equal(
     packages.if,

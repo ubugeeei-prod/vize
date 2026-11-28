@@ -167,6 +167,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           run-install: false
@@ -285,6 +286,7 @@ jobs:
       - name: Run voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1.3.2
         with:
+          version: 1.8.0
           node-version-file: package.json
           cache: true
           run-install: false

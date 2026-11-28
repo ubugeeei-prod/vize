@@ -1,0 +1,218 @@
+//! Component definitions and their static names in one SFC script block.
+//!
+//! These are eslint-plugin-vue's component sites: `export default {}` in
+//! `<script>`, objects passed last to `defineComponent`, `defineNuxtComponent`,
+//! `createApp`, `component`, `*.component`, `*.mixin` and `Vue.extend`,
+//! `new Vue({})`, and `defineOptions({})` in `<script setup>`. Each object is
+//! one definition, even without a static name. The first argument of a
+//! two-argument `*.component(name, ...)` is a name without being a definition.
+//! A name is a string literal or a template literal without expressions.
+
+pub(super) mod casing;
+
+use oxc_ast::ast::{
+    Argument, CallExpression, ExportDefaultDeclaration, Expression, MemberExpression,
+    NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_export_default_declaration, walk_new_expression},
+};
+use oxc_parser::ParserReturn;
+use oxc_span::Span;
+use vize_atelier_sfc::SfcScriptBlock;
+
+/// What a scan reports. Offsets are SFC byte offsets of the name literal,
+/// quotes included.
+pub(super) trait DefinitionSink {
+    /// One component definition object.
+    fn definition(&mut self);
+    /// One static component name.
+    fn name(&mut self, name: &str, start: u32, end: u32);
+}
+
+pub(super) fn scan_block(
+    block: &SfcScriptBlock<'_>,
+    parsed: &ParserReturn<'_>,
+    setup: bool,
+    sink: &mut impl DefinitionSink,
+) {
+    if block.src.is_some() || block.content.is_empty() {
+        return;
+    }
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return;
+    }
+    let mut scanner = Scanner {
+        setup,
+        offset: block.loc.start as u32,
+        sink,
+    };
+    scanner.visit_program(&parsed.program);
+}
+
+struct Scanner<'scan, S> {
+    setup: bool,
+    offset: u32,
+    sink: &'scan mut S,
+}
+
+impl<S: DefinitionSink> Scanner<'_, S> {
+    fn count_object(&mut self, object: &ObjectExpression<'_>) {
+        self.sink.definition();
+        self.verify_name_property(object);
+    }
+
+    fn verify_name_property(&mut self, object: &ObjectExpression<'_>) {
+        for property in &object.properties {
+            let ObjectPropertyKind::ObjectProperty(property) = property else {
+                continue;
+            };
+            if !is_name_key(property.computed, &property.key) {
+                continue;
+            }
+            if let Some((name, span)) = static_name(&property.value) {
+                self.consider(name, span);
+            }
+            return;
+        }
+    }
+
+    fn consider(&mut self, name: &str, span: Span) {
+        self.sink
+            .name(name, self.offset + span.start, self.offset + span.end);
+    }
+
+    fn note_identifier_call(&mut self, name: &str, call: &CallExpression<'_>) {
+        if self.setup && name == "defineOptions" {
+            self.sink.definition();
+            if let Some(argument) = call.arguments.first()
+                && let Some(object) = object_argument(argument)
+            {
+                self.verify_name_property(object);
+            }
+            return;
+        }
+        if matches!(
+            name,
+            "defineComponent" | "defineNuxtComponent" | "createApp" | "component"
+        ) && let Some(object) = call.arguments.last().and_then(object_argument)
+        {
+            self.count_object(object);
+        }
+    }
+
+    fn note_member_call(&mut self, call: &CallExpression<'_>) {
+        let Some(member) = call.callee.get_inner_expression().as_member_expression() else {
+            return;
+        };
+        let Some(object_name) = identifier_name(member.object()) else {
+            return;
+        };
+        // Upstream's registration visitor selects an Identifier property,
+        // including `app[component]`, but not `app['component']`. Component
+        // definition objects below use static names independently.
+        let registration = match member {
+            MemberExpression::StaticMemberExpression(member) => member.property.name == "component",
+            MemberExpression::ComputedMemberExpression(member) => {
+                matches!(&member.expression, Expression::Identifier(name) if name.name == "component")
+            }
+            MemberExpression::PrivateFieldExpression(_) => false,
+        };
+        if registration && call.arguments.len() == 2 {
+            self.verify_argument(call.arguments.first());
+        }
+        let Some(prop) = member.static_property_name() else {
+            return;
+        };
+        let defines_component = if object_name == "Vue" {
+            matches!(prop, "component" | "mixin" | "extend")
+        } else {
+            matches!(prop, "component" | "mixin")
+        };
+        if defines_component && let Some(object) = call.arguments.last().and_then(object_argument) {
+            self.count_object(object);
+        }
+    }
+
+    fn verify_argument(&mut self, argument: Option<&Argument<'_>>) {
+        let Some(argument) = argument else {
+            return;
+        };
+        if let Some((name, span)) = argument
+            .as_expression()
+            .and_then(|expression| static_name(expression))
+        {
+            self.consider(name, span);
+        }
+    }
+}
+
+impl<'a, S: DefinitionSink> Visit<'a> for Scanner<'_, S> {
+    fn visit_export_default_declaration(&mut self, it: &ExportDefaultDeclaration<'a>) {
+        if !self.setup
+            && let Some(Expression::ObjectExpression(object)) = it
+                .declaration
+                .as_expression()
+                .map(Expression::get_inner_expression)
+        {
+            self.count_object(object);
+        }
+        walk_export_default_declaration(self, it);
+    }
+
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        match it.callee.get_inner_expression() {
+            Expression::Identifier(identifier) => {
+                self.note_identifier_call(identifier.name.as_str(), it);
+            }
+            _ => self.note_member_call(it),
+        }
+        walk_call_expression(self, it);
+    }
+
+    fn visit_new_expression(&mut self, it: &NewExpression<'a>) {
+        if identifier_name(&it.callee) == Some("Vue")
+            && let Some(object) = it.arguments.first().and_then(object_argument)
+        {
+            self.count_object(object);
+        }
+        walk_new_expression(self, it);
+    }
+}
+
+fn object_argument<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpression<'a>> {
+    match argument.as_expression()?.get_inner_expression() {
+        Expression::ObjectExpression(object) => Some(object),
+        _ => None,
+    }
+}
+
+fn static_name<'a>(expression: &Expression<'a>) -> Option<(&'a str, Span)> {
+    match expression.get_inner_expression() {
+        Expression::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
+        Expression::TemplateLiteral(template) => {
+            let value = template.single_quasi()?;
+            Some((value.as_str(), template.span))
+        }
+        _ => None,
+    }
+}
+
+fn identifier_name<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    match expression.get_inner_expression() {
+        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+        _ => None,
+    }
+}
+
+fn is_name_key(computed: bool, key: &PropertyKey<'_>) -> bool {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) if !computed => identifier.name == "name",
+        PropertyKey::StringLiteral(literal) => literal.value == "name",
+        PropertyKey::TemplateLiteral(template) => template
+            .single_quasi()
+            .is_some_and(|value| value.as_str() == "name"),
+        _ => false,
+    }
+}

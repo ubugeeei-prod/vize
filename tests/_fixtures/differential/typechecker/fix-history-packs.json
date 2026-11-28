@@ -184,6 +184,13 @@
     "test": "fix_history_cases::dynamic_component_v_for_scope::dynamic_is_on_v_for_elements_preserves_batch_diagnostics",
     "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4"
   },
+  "dynamic-component-v-for-scope-strict": {
+    "test": "fix_history_cases::dynamic_component_v_for_scope_strict::dynamic_is_on_v_for_elements_reads_aliases_through_the_strict_context",
+    "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
+    "checkerOptions": {
+      "strictInstanceGlobals": true
+    }
+  },
   "dynamic-directive-names-2797": {
     "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
     "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da"

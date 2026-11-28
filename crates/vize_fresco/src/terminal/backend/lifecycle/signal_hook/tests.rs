@@ -1,4 +1,7 @@
-#![expect(clippy::unreachable, reason = "tests assert by panicking")]
+#![cfg_attr(
+    unix,
+    expect(clippy::unreachable, reason = "tests assert by panicking")
+)]
 use super::*;
 
 #[cfg(unix)]
@@ -49,9 +52,7 @@ static OBSERVED_ERRNO: AtomicI32 = AtomicI32::new(0);
 #[cfg(unix)]
 extern "C" fn simple_handler(_: libc::c_int) {
     SIMPLE_HANDLER_CALLS.fetch_add(1, Ordering::Relaxed);
-    // SAFETY: this test runs only on platforms accepted by the production
-    // installer, where `errno_location` returns this thread's live errno slot.
-    OBSERVED_ERRNO.store(unsafe { *errno_location() }, Ordering::Relaxed);
+    OBSERVED_ERRNO.store(errno::errno().0, Ordering::Relaxed);
 }
 
 #[cfg(unix)]
@@ -106,6 +107,14 @@ fn windows_signal_hook_installation_is_supported_and_idempotent() {
         install_terminal_signal_hook().unwrap(),
         TerminalSignalHookInstallation::AlreadyInstalled
     );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_control_handler_passes_unsupervised_events_to_the_next_routine() {
+    use windows_sys::Win32::Foundation::FALSE;
+
+    assert_eq!(terminal_control_handler(u32::MAX), FALSE);
 }
 
 #[test]
@@ -223,9 +232,7 @@ fn signal_hook_restores_and_preserves_existing_actions() {
     );
 
     let backend = active_backend();
-    // SAFETY: this platform is accepted by the installer and exposes a live
-    // thread-local errno slot.
-    unsafe { *errno_location() = libc::E2BIG };
+    errno::set_errno(errno::Errno(libc::E2BIG));
     // SAFETY: the three signals have valid actions installed above.
     assert_eq!(unsafe { libc::raise(libc::SIGTERM) }, 0);
     assert_eq!(unsafe { libc::raise(libc::SIGINT) }, 0);

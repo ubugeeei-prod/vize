@@ -1,46 +1,69 @@
 //! vue/component-definition-name-casing
 //!
-//! Enforce specific casing for the component definition name.
+//! Enforce a casing for the name a component definition declares.
 //!
-//! Component file names use PascalCase or kebab-case; this checks the filename
-//! of .vue files. Both are conventional in Vue, and a project that settles on
-//! kebab-case for its single-file components is not doing anything the style
-//! guide argues against, so neither is reported.
+//! The checked names are the ones eslint-plugin-vue checks: the `name` option
+//! of `export default {}` in `<script>`, of an object passed to
+//! `defineComponent`, `defineNuxtComponent`, `createApp`, `app.component`,
+//! `app.mixin`, `Vue.extend` or `new Vue`, of `defineOptions({})` in
+//! `<script setup>`, and the first argument of `app.component(name, ...)`
+//! (any object, not only `createApp` results). A name is checked when it is a
+//! string literal or a template literal without expressions; computed names
+//! are left alone.
 //!
-//! Mixed shapes stay reported, because they are neither convention: camelCase
-//! (`myComponent`), names with underscores, and anything mixing a capital into
-//! a hyphenated name (`my-Component`).
+//! The option is eslint-plugin-vue's: `"PascalCase"` (the default) or
+//! `"kebab-case"`, set as `ruleOptions["vue/component-definition-name-casing"]`.
+//! Renaming a component changes how `<KeepAlive include>`, recursive
+//! self-references and devtools find it, so the rule does not rewrite the
+//! name; the help names the converted one when there is one.
 //!
-//! Nuxt's mode suffixes (`.client`, `.server`, `.global`, `.island`) are not
-//! part of the component name, so they are removed before the check. Other
-//! dots stay part of the name and are reported.
+//! The file name is `vue/component-file-name-casing`.
 //!
 //! ## Examples
 //!
 //! ### Invalid
-//! ```text
-//! myComponent.vue      -> should be MyComponent.vue or my-component.vue
-//! my-Component.vue     -> should be MyComponent.vue or my-component.vue
-//! myComponent.client.vue
-//! page.block.vue
+//! ```vue
+//! <script>
+//! export default {
+//!   name: 'my_component'
+//! }
+//! </script>
+//! ```
+//!
+//! ```vue
+//! <script setup>
+//! defineOptions({ name: 'myComponent' })
+//! </script>
 //! ```
 //!
 //! ### Valid
-//! ```text
-//! MyComponent.vue
-//! UI.vue
-//! my-component.vue
-//! index.vue
-//! App.vue
-//! ClientBox.client.vue
-//! ServerTime.server.vue
-//! GlobalThing.global.vue
+//! ```vue
+//! <script>
+//! export default {
+//!   name: 'MyComponent'
+//! }
+//! </script>
+//! ```
+//!
+//! ```vue
+//! <script setup>
+//! defineOptions({ name: 'MyComponent' })
+//! </script>
 //! ```
 
+#[cfg(test)]
+mod tests;
+
+use super::component_definitions::{
+    DefinitionSink,
+    casing::{is_kebab, is_pascal, kebab_case, pascal_case},
+    scan_block,
+};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::RootNode;
+use vize_l0::String;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/component-definition-name-casing",
@@ -50,13 +73,72 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Enforce PascalCase component definition names
-#[derive(Default)]
-pub struct ComponentDefinitionNameCasing;
+/// Casing a component definition name must use.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ComponentDefinitionNameCasingOption {
+    /// `MyComponent`.
+    #[default]
+    PascalCase,
+    /// `my-component`.
+    KebabCase,
+}
 
-use crate::component_name::{
-    EXCEPTION_NAMES, definition_name_stem, is_kebab_case, is_nuxt_route_file, is_pascal_case,
-};
+impl ComponentDefinitionNameCasingOption {
+    const fn label(self) -> &'static str {
+        match self {
+            Self::PascalCase => "PascalCase",
+            Self::KebabCase => "kebab-case",
+        }
+    }
+
+    fn accepts(self, name: &str) -> bool {
+        match self {
+            Self::PascalCase => is_pascal(name),
+            Self::KebabCase => is_kebab(name),
+        }
+    }
+
+    /// Upstream's exact converter: the converted name, when it passes.
+    fn convert(self, name: &str) -> Option<String> {
+        let converted = match self {
+            Self::PascalCase => pascal_case(name),
+            Self::KebabCase => kebab_case(name),
+        };
+        self.accepts(&converted).then_some(converted)
+    }
+}
+
+/// Enforce a casing for component definition names.
+#[derive(Debug, Default)]
+pub struct ComponentDefinitionNameCasing {
+    /// The accepted casing; PascalCase unless configured.
+    pub casing: ComponentDefinitionNameCasingOption,
+}
+
+struct Finding {
+    name: String,
+    start: u32,
+    end: u32,
+}
+
+struct Findings {
+    casing: ComponentDefinitionNameCasingOption,
+    found: Vec<Finding>,
+}
+
+impl DefinitionSink for Findings {
+    fn definition(&mut self) {}
+
+    fn name(&mut self, name: &str, start: u32, end: u32) {
+        if !self.casing.accepts(name) {
+            self.found.push(Finding {
+                name: name.into(),
+                start,
+                end,
+            });
+        }
+    }
+}
 
 impl Rule for ComponentDefinitionNameCasing {
     fn meta(&self) -> &'static RuleMeta {
@@ -64,268 +146,114 @@ impl Rule for ComponentDefinitionNameCasing {
     }
 
     fn template_hooks(&self) -> crate::rule::RuleHooks {
-        crate::rule::RuleHooks::TEMPLATE
+        crate::rule::RuleHooks::NONE
     }
 
-    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
-        Some(self)
-    }
-
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        let filename = ctx.filename;
-        // Musea Art files describe variants, not component definitions.
-        if !filename.ends_with(".vue") || filename.ends_with(".art.vue") {
-            return;
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let mut findings = Findings {
+            casing: self.casing,
+            found: Vec::new(),
+        };
+        {
+            let (Some(descriptor), Some(scripts)) = (ctx.sfc_descriptor(), ctx.sfc_scripts())
+            else {
+                return;
+            };
+            if let Some(script) = descriptor.script.as_ref()
+                && may_name_component(script.content.as_bytes())
+                && let Some(parsed) = scripts.script()
+            {
+                scan_block(script, parsed, false, &mut findings);
+            }
+            if let Some(script) = descriptor.script_setup.as_ref()
+                && may_name_component(script.content.as_bytes())
+                && let Some(parsed) = scripts.script_setup()
+            {
+                scan_block(script, parsed, true, &mut findings);
+            }
         }
-
-        if is_nuxt_route_file(filename) {
-            return;
-        }
-
-        let stem = definition_name_stem(filename);
-
-        // Skip exception names
-        if EXCEPTION_NAMES.contains(&stem) {
-            return;
-        }
-
-        // Skip names starting with [ (dynamic routes)
-        if stem.starts_with('[') {
-            return;
-        }
-
-        // Skip single-word lowercase names (index, test, app, main, etc.)
-        if stem.chars().all(|c| c.is_ascii_lowercase()) {
-            return;
-        }
-
-        if !is_pascal_case(stem) && !is_kebab_case(stem) {
-            ctx.warn_with_help(
-                ctx.t_fmt(
-                    "vue/component-definition-name-casing.message",
-                    &[("name", stem)],
+        let casing = self.casing.label();
+        for finding in findings.found {
+            let message = ctx.t_fmt(
+                "vue/component-definition-name-casing.message",
+                &[("name", finding.name.as_str()), ("casing", casing)],
+            );
+            let help = match self.casing.convert(&finding.name) {
+                Some(suggestion) => ctx.t_fmt(
+                    "vue/component-definition-name-casing.help",
+                    &[("suggestion", suggestion.as_str())],
                 ),
-                &root.loc,
-                ctx.t("vue/component-definition-name-casing.help"),
+                None => ctx.t_fmt(
+                    "vue/component-definition-name-casing.help_unconvertible",
+                    &[("casing", casing)],
+                ),
+            };
+            ctx.warn_at_with_help(
+                message,
+                ByteRange {
+                    start: finding.start,
+                    end: finding.end,
+                },
+                help,
             );
         }
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::ComponentDefinitionNameCasing;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(ComponentDefinitionNameCasing));
-        Linter::with_registry(registry)
+/// Whether a script can hold a checked name, before it is parsed or walked:
+/// a `name` key followed by `:` (quoted or computed keys included), or a
+/// `component` member after a `.`. Comments may sit where whitespace may.
+fn may_name_component(source: &[u8]) -> bool {
+    // Both identifiers and string keys can encode any checked character.
+    // Leave decoding (including string line continuations) to the parser.
+    if memchr::memchr(b'\\', source).is_some() {
+        return true;
     }
+    let mut has_line_comment = None;
+    memchr::memmem::find_iter(source, b"name").any(|at| is_name_key_end(source, at + "name".len()))
+        || memchr::memmem::find_iter(source, b"component").any(|at| {
+            is_member_name(source, at)
+                // A reverse byte scan cannot distinguish a line comment's
+                // text from code. Admit it without rescanning for every name.
+                || *has_line_comment
+                    .get_or_insert_with(|| memchr::memmem::find(source, b"//").is_some())
+        })
+}
 
-    #[test]
-    fn test_valid_pascal_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "MyComponent.vue");
-        assert_eq!(result.warning_count, 0);
+fn is_name_key_end(source: &[u8], mut at: usize) -> bool {
+    if matches!(source.get(at), Some(b'\'' | b'"' | b'`')) {
+        at += 1;
     }
-
-    #[test]
-    fn test_valid_single_letter_and_initialisms() {
-        let linter = create_linter();
-        for stem in ["A", "UI", "Foo2", "TheH1Title"] {
-            let result = linter.lint_template(r#"<div>Content</div>"#, &format!("{stem}.vue"));
-            assert_eq!(result.warning_count, 0, "{stem} must be valid PascalCase");
+    loop {
+        match source.get(at) {
+            Some(byte) if byte.is_ascii_whitespace() => at += 1,
+            // A computed string key can have trivia before its closing bracket.
+            Some(b']') => at += 1,
+            // A non-ASCII boundary may be JavaScript whitespace. The AST
+            // remains authoritative, so conservatively admit it.
+            Some(byte) if !byte.is_ascii() => return true,
+            Some(b':') => return true,
+            // A comment before the colon; let the parse decide.
+            Some(b'/') => return matches!(source.get(at + 1), Some(b'*' | b'/')),
+            _ => return false,
         }
     }
+}
 
-    #[test]
-    fn test_invalid_underscored_uppercase_name() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "MY_COMPONENT.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_index() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "index.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_app() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "App.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_kebab_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "my-component.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_nuxt_pages_route_kebab_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "pages/job-board.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_nuxt_app_pages_route_kebab_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "app/pages/job-board.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_nuxt_src_pages_route_kebab_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "src/pages/job-board.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_camel_case() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "myComponent.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_with_path() {
-        let linter = create_linter();
-        let result =
-            linter.lint_template(r#"<div>Content</div>"#, "src/components/MyComponent.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_component_kebab_case_with_path() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "src/components/job-board.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_kebab_case_with_digits() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "grid-2-col.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    // Neither convention: a capital inside a hyphenated name is not kebab-case,
-    // and the hyphen keeps it out of PascalCase.
-    #[test]
-    fn test_invalid_mixed_kebab_and_pascal() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "my-Component.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    // An empty segment leaves a name that is neither convention.
-    #[test]
-    fn test_invalid_hyphen_boundaries() {
-        let linter = create_linter();
-        for stem in ["-my-component", "my-component-", "my--component"] {
-            let result = linter.lint_template(r#"<div>Content</div>"#, &format!("{stem}.vue"));
-            assert_eq!(result.warning_count, 1, "{stem} must stay reported");
-        }
-    }
-
-    // Still reported: dots are neither convention, and these appear in real
-    // fixtures (`page.block.vue`).
-    #[test]
-    fn test_invalid_dotted_name() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "page.block.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    // Nuxt registers `ClientBox.client.vue` as `ClientBox`; the mode suffix is
-    // not part of the name.
-    #[test]
-    fn test_valid_nuxt_mode_suffixes() {
-        let linter = create_linter();
-        for filename in [
-            "components/ClientBox.client.vue",
-            "components/ServerTime.server.vue",
-            "components/GlobalThing.global.vue",
-            "components/IslandCard.island.vue",
-            "components/Counter.client.global.vue",
-            "components/Panel.server.island.global.vue",
-            "components/account-menu.client.vue",
-            "components/card/index.client.vue",
-        ] {
-            let result = linter.lint_template(r#"<div>Content</div>"#, filename);
-            assert_eq!(result.warning_count, 0, "{filename} must be valid");
-        }
-    }
-
-    // The stripped name is still checked, and is the name the message shows.
-    #[test]
-    fn test_invalid_name_before_nuxt_mode_suffix() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "myComponent.client.vue");
-        let messages: Vec<&str> = result
-            .diagnostics
-            .iter()
-            .map(|diagnostic| diagnostic.message.as_str())
-            .collect();
-        assert_eq!(
-            messages,
-            ["Component file name 'myComponent' should be PascalCase or kebab-case"]
-        );
-    }
-
-    // Only Nuxt's mode suffixes are removed, and only in Nuxt's order: a mode
-    // after `.global`, a doubled mode, or any other dotted part stays reported.
-    #[test]
-    fn test_invalid_other_dotted_suffixes() {
-        let linter = create_linter();
-        for filename in [
-            "Foo.bar.vue",
-            "Foo.Client.vue",
-            "Foo.global.client.vue",
-            "Foo.client.client.vue",
-            "Foo.client.bar.vue",
-        ] {
-            let result = linter.lint_template(r#"<div>Content</div>"#, filename);
-            assert_eq!(result.warning_count, 1, "{filename} must stay reported");
-        }
-    }
-
-    #[test]
-    fn pinned_nuxt_mode_suffix_filenames() {
-        let linter = create_linter();
-        let source = include_str!(
-            "../../../../../tests/_fixtures/differential/linter/component-definition-nuxt-mode-suffixes/Component.vue.txt"
-        );
-        let cases = include_str!(
-            "../../../../../tests/_fixtures/differential/linter/component-definition-nuxt-mode-suffixes/filenames.txt"
-        );
-        let mut checked = 0;
-        for line in cases.lines() {
-            let (expected, filename) = line.split_once(' ').unwrap();
-            let result = linter.lint_sfc(source, filename);
-            assert_eq!(
-                result.warning_count,
-                expected.parse::<usize>().unwrap(),
-                "{filename}"
-            );
-            checked += 1;
-        }
-        assert_eq!(checked, 11);
-    }
-
-    #[test]
-    fn test_valid_non_vue_file() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>Content</div>"#, "test.html");
-        assert_eq!(result.warning_count, 0);
+fn is_member_name(source: &[u8], at: usize) -> bool {
+    let before = source.get(..at).unwrap_or_default();
+    let mut rest = before
+        .iter()
+        .rev()
+        .skip_while(|byte| byte.is_ascii_whitespace());
+    match rest.next() {
+        // `.component` and `?.component`.
+        Some(b'.') => true,
+        // Upstream also selects the identifier in `app[component](...)`.
+        Some(b'[') => true,
+        // A block comment before it; let the parse decide.
+        Some(b'/') => rest.next() == Some(&b'*'),
+        Some(byte) if !byte.is_ascii() => true,
+        _ => false,
     }
 }

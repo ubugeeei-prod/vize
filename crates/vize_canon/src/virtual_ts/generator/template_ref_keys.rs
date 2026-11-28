@@ -111,6 +111,15 @@ impl TemplateRefUsage {
         }
     }
 
+    /// A parse repaired around a syntax error can miss a call or a function
+    /// setup runs. Its calls stay inferred; none of their keys is checked.
+    pub(super) fn without_key_checks(mut self) -> Self {
+        for call in &mut self.calls {
+            call.literal = None;
+        }
+        self
+    }
+
     pub(super) fn needs_registry(&self) -> bool {
         !self.calls.is_empty()
     }

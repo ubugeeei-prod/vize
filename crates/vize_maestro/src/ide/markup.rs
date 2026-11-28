@@ -84,6 +84,45 @@ pub(crate) fn link(label: &str, url: &str) -> String {
     format!("[{}]({})", label, url)
 }
 
+/// Append `text` so that Markdown shows it as written.
+///
+/// Code spans (text between matching backtick runs) are copied as they are,
+/// since their content is already literal. Elsewhere `\\`, `[` and `]` are
+/// backslash-escaped, so the text cannot open a link or an image.
+pub(crate) fn push_markdown_text(output: &mut String, text: &str) {
+    let mut rest = text;
+    while let Some(at) = rest.find(['\\', '[', ']', '`']) {
+        let (before, from) = rest.split_at(at);
+        output.push_str(before);
+        if from.starts_with('`') {
+            let fence = from.len() - from.trim_start_matches('`').len();
+            let (ticks, body) = from.split_at(fence);
+            let span_end = body
+                .match_indices(ticks)
+                .find(|&(end, _)| {
+                    !body.get(..end).unwrap_or_default().ends_with('`')
+                        && !body.get(end + fence..).unwrap_or_default().starts_with('`')
+                })
+                .map(|(end, _)| end + fence);
+            let Some(span_end) = span_end else {
+                // An unclosed run is literal text: keep it and go on.
+                output.push_str(ticks);
+                rest = body;
+                continue;
+            };
+            let (span, after) = from.split_at(fence + span_end);
+            output.push_str(span);
+            rest = after;
+        } else {
+            output.push('\\');
+            let (ch, after) = from.split_at(1);
+            output.push_str(ch);
+            rest = after;
+        }
+    }
+    output.push_str(rest);
+}
+
 pub(crate) fn markdown_content(value: String) -> MarkupContent {
     MarkupContent {
         kind: MarkupKind::Markdown,
@@ -137,7 +176,7 @@ pub(crate) fn snippet_for_docs(snippet: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{Markdown, snippet_for_docs};
+    use super::{Markdown, push_markdown_text, snippet_for_docs};
 
     #[test]
     fn snippet_for_docs_keeps_examples_readable() {
@@ -158,5 +197,30 @@ mod tests {
         assert!(doc.contains("**Example**"));
         assert!(doc.contains("```vue"));
         assert!(doc.contains("**Docs**"));
+    }
+
+    fn shown(text: &str) -> String {
+        let mut output = String::new();
+        push_markdown_text(&mut output, text);
+        output
+    }
+
+    #[test]
+    fn markdown_text_keeps_brackets_and_tags_as_written() {
+        assert_eq!(
+            shown("Rename [x](https://example.com) and ![a](b.png)"),
+            "Rename \\[x\\](https://example.com) and !\\[a\\](b.png)"
+        );
+        assert_eq!(shown("Wrap it in <template>"), "Wrap it in <template>");
+        assert_eq!(shown(r"C:\dir"), r"C:\\dir");
+    }
+
+    #[test]
+    fn markdown_text_copies_code_spans() {
+        assert_eq!(shown("Use `<a [x]>` here"), "Use `<a [x]>` here");
+        assert_eq!(shown("A ``b ` [c]`` d"), "A ``b ` [c]`` d");
+        assert_eq!(shown("open ` [x]"), "open ` \\[x\\]");
+        assert_eq!(shown("a `b`` [c]` d"), "a `b`` [c]` d");
+        assert_eq!(shown("plain text"), "plain text");
     }
 }

@@ -1158,6 +1158,51 @@
       "import": "./dist/media-source.mjs",
       "default": "./dist/media-source.mjs"
     },
+    "./chat": {
+      "types": "./dist/chat.d.mts",
+      "import": "./dist/chat.mjs",
+      "default": "./dist/chat.mjs"
+    },
+    "./color-wheel": {
+      "types": "./dist/color-wheel.d.mts",
+      "import": "./dist/color-wheel.mjs",
+      "default": "./dist/color-wheel.mjs"
+    },
+    "./descriptions": {
+      "types": "./dist/descriptions.d.mts",
+      "import": "./dist/descriptions.mjs",
+      "default": "./dist/descriptions.mjs"
+    },
+    "./diff-view": {
+      "types": "./dist/diff-view.d.mts",
+      "import": "./dist/diff-view.mjs",
+      "default": "./dist/diff-view.mjs"
+    },
+    "./input-group": {
+      "types": "./dist/input-group.d.mts",
+      "import": "./dist/input-group.mjs",
+      "default": "./dist/input-group.mjs"
+    },
+    "./result": {
+      "types": "./dist/result.d.mts",
+      "import": "./dist/result.mjs",
+      "default": "./dist/result.mjs"
+    },
+    "./segmented": {
+      "types": "./dist/segmented.d.mts",
+      "import": "./dist/segmented.mjs",
+      "default": "./dist/segmented.mjs"
+    },
+    "./statistic": {
+      "types": "./dist/statistic.d.mts",
+      "import": "./dist/statistic.mjs",
+      "default": "./dist/statistic.mjs"
+    },
+    "./watermark": {
+      "types": "./dist/watermark.d.mts",
+      "import": "./dist/watermark.mjs",
+      "default": "./dist/watermark.mjs"
+    },
     "./window-manager": {
       "types": "./dist/window-manager.d.mts",
       "import": "./dist/window-manager.mjs",

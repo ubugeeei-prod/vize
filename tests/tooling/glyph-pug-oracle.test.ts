@@ -17,6 +17,7 @@ import {
 } from "./support/pug-template-equivalence.ts";
 import { diagnosticSignatures, sha256 } from "./support/pug/oracle-runtime.ts";
 import type { CapturedDiagnostic } from "./support/pug/oracle-runtime.ts";
+import { compareCorpusFile, makeSyntheticProject } from "./support/glyph-corpus-sweep.ts";
 
 const pugMutationBaseline = `<template lang="pug">
 main
@@ -84,6 +85,80 @@ function temporaryPugContext() {
   };
 }
 
+test("Pug templates use the project's Vue 2 compiler and record its provenance", () => {
+  const { basedir, context } = temporaryPugContext();
+  const original = `<template lang="pug">
+div
+  template(v-for="item in items")
+    span(:key="item.id") {{ item.name }}
+</template>
+`;
+  const formatted = original.replace(/^(div|  template|    span)/gm, "  $1");
+  try {
+    assert.equal(comparePugTemplateEquivalence(original, formatted, context).baselineUsable, false);
+    for (const dialect of ["2", "2.7"] as const) {
+      const selected = { ...context, dialect };
+      const comparison = comparePugTemplateEquivalence(original, formatted, selected);
+      assert.equal(comparison.baselineUsable, true, JSON.stringify(comparison.differences));
+      assert.deepEqual(comparison.differences, []);
+      assert.equal(comparison.evidence.dialect, dialect);
+      assert.equal(comparison.evidence.baseline.id, dialect === "2" ? "vue2.6" : "vue2.7");
+      assert.equal(comparison.evidence.pristine.sourceMapSha256, null);
+      assert.equal(comparison.evidence.sourceMapMoved, null);
+      assert.equal(
+        comparison.evidence.pristine.normalizedRenderSha256,
+        comparison.evidence.formatted.normalizedRenderSha256,
+      );
+      const changed = comparePugTemplateEquivalence(
+        original,
+        formatted.replace("item.name", "item.label"),
+        selected,
+      );
+      assert.ok(changed.differences.includes("Pug dialect render program changed"));
+      const invalid = original.replace('v-for="item in items"', 'v-if="item +"');
+      assert.equal(comparePugTemplateEquivalence(invalid, invalid, selected).baselineUsable, false);
+    }
+  } finally {
+    fs.rmSync(basedir, { recursive: true, force: true });
+  }
+});
+
+test("the corpus carries its dialect route into the Pug oracle", () => {
+  const source = `<template lang="pug">
+div
+  template(v-for="item in items")
+    span(:key="item.id") {{ item.name }}
+</template>
+`;
+  const project = makeSyntheticProject([["src/Legacy.vue", source]]);
+  try {
+    const comparison = compareCorpusFile(source, source, project, "src/Legacy.vue", {
+      routeId: "vue2",
+      dialect: "2",
+    });
+    assert.deepEqual(comparison.differences, []);
+    assert.equal(comparison.pug?.baselineUsable, true);
+    assert.equal(comparison.pug?.evidence.dialect, "2");
+    assert.equal(comparison.pug?.evidence.baseline.id, "vue2.6");
+    const invalid = `<template lang="pug">
+App
+  template(v-slot:actions="v-slot:actions")
+    span {{ item.name }}
+</template>
+`;
+    const rejected = comparePugTemplateEquivalence(invalid, invalid, {
+      filename: path.join(project.fixtureDir, "src/Legacy.vue"),
+      displayFilename: "synthetic/Legacy.vue",
+      basedir: project.fixtureDir,
+      dialect: "2",
+    });
+    assert.equal(rejected.baselineUsable, false);
+    assert.match(rejected.evidence.pristine.error ?? "", /semantic-normalize/);
+  } finally {
+    fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+  }
+});
+
 test("Pug routing reads only the top-level template start tag", () => {
   assert.equal(isPugSfc('<template LANG="PUG">\nmain\n</template>\n', "App.vue"), true);
   assert.equal(isPugSfc("<template lang='pug'>\nmain\n</template>\n", "App.vue"), true);
@@ -141,7 +216,7 @@ test("Pug oracle pins provenance and accepts only an opaque outer-indent rebase"
         integrity:
           "sha512-k+bprkXxuqhVajgTx5mUHuir7TwQzUKOWR40ng1ncAqQRPnrLngGGgqVEEhOnTMlc8btHYVKmrP8s5Qyg0hvYA==",
       },
-      dialectContext: "fixed-vue3",
+      dialectContext: "registry-project-dialect",
       mapBasis: "preprocessed-html",
       authoredPugMapAvailable: false,
       executionPolicy: "static-pug-only-with-explicit-filters",

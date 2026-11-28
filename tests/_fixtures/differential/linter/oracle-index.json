@@ -145,35 +145,35 @@
   },
   "linter/component-name/valid-kebab-case": {
     "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case.snap",
-    "sha256": "42d8377c91e3cb886a517f19d8b5d500042547ee2ee1656a4489d8d152f3094e"
+    "sha256": "933a3fa4c436404164e6fba68adc6fb3cc7137111f56e8a24426c26481c3b36e"
   },
   "linter/component-name/valid-kebab-case-with-path": {
     "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case-with-path.snap",
-    "sha256": "afb7d832936c0c267ef2124e0b210ac20a7d93374b8f9092ee6e131bc250539f"
+    "sha256": "107d792642f45e84fa03417da2c8ad86837708c47674b62fd6fdff96439fa5bb"
   },
   "linter/component-name/valid-kebab-case-with-digits": {
     "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case-with-digits.snap",
-    "sha256": "21c16ca3d6aac6145aaedd0040a4f5922073dca8a652d856f7cad50911818261"
+    "sha256": "27c7da76d339c9ebdcd89c2ff3efcbcc7917837e17cea4a92f668ae7b350f5cf"
   },
   "linter/component-name/invalid-mixed-kebab-and-pascal": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-mixed-kebab-and-pascal.snap",
-    "sha256": "2aeb2b134c6c45a2fff93b7296c5aff84c6354d22736db0a3c1c2c26bb3649c3"
+    "sha256": "96270ac31fdc82a3bde8610618ca2546b53f4aca2898788e82039538767076c8"
   },
   "linter/component-name/invalid-leading-hyphen": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-leading-hyphen.snap",
-    "sha256": "d7b2b0298c4de1b9f37fa494830dedf4e91a9bb9752a1088b731017e11fc4bd1"
+    "sha256": "fa3395e075e29518f5b533f89e795f03846b229f70e9371a1a83fb505b787674"
   },
   "linter/component-name/invalid-trailing-hyphen": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-trailing-hyphen.snap",
-    "sha256": "f80ddc6569f7550c2da4082bae74a92bde34d83f34204744803e5c1799520102"
+    "sha256": "15465a808deb460ad29e187316e0ffafe87eae2fd38f367564e439d7e880ca60"
   },
   "linter/component-name/invalid-doubled-hyphen": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-doubled-hyphen.snap",
-    "sha256": "db54e3388486a8500ed924c40b722e24c84b7407b05280d29359785ca93f45a7"
+    "sha256": "e0093898ec213d526397e4ad35f5168726a8d05b5055b318464c974a526416f1"
   },
   "linter/component-name/invalid-dotted-name": {
     "path": "tests/_fixtures/differential/linter/component-name/invalid-dotted-name.snap",
-    "sha256": "ba8a8b32879d5126004d06b86fa7ec8971360afd5b9fd00ae34fb9abd045b3fd"
+    "sha256": "96164a25d1d8afd18f7d4fd5ea21d267e2ed2804181bdc9ea92ea2b9285feefa"
   },
   "linter/current-api/valid-v-else-autofix-preserves-directive": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__valid-v-else-autofix-preserves-directive.snap",
@@ -513,15 +513,15 @@
   },
   "linter/current-api/h1-definition-name-initialism-filename-6698": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h1-definition-name-initialism-filename-6698.snap",
-    "sha256": "d4c6a373e63eb6d7a1dee8e85ea6fa40948bd1cd9f3f5b6c9593a1d54bc9528d"
+    "sha256": "45f101fedcb224fa0cb42adf0aa0a1d3284c5a4a0a19e919bc257a44904c6210"
   },
   "linter/current-api/h1-definition-name-single-letter-filename-6698": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h1-definition-name-single-letter-filename-6698.snap",
-    "sha256": "732d22dbd2cc297cb99181af60a8d3019ef53eb6a40cc7ccfeee0fc724ebf156"
+    "sha256": "c43be7401a1f08bfe05117ee0a533bb51d51eb4d4d562ec7e4a42e989da81d89"
   },
   "linter/current-api/h1-definition-name-underscored-uppercase-filename-6698": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h1-definition-name-underscored-uppercase-filename-6698.snap",
-    "sha256": "3ae668ce2b9da166ab6c1c192967f7aebba903fdbefb808c947cd2787039d545"
+    "sha256": "5bfd452523d073da8499ed171caea2ac8c02a7f28d138272f5a9c8bf6eebdf73"
   },
   "linter/current-api/h3-inline-style-dynamic-binding-5989": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h3-inline-style-dynamic-binding-5989.snap",
@@ -3161,23 +3161,23 @@
   },
   "linter/current-api/h11-name-casing-nuxt-pages-route-939": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-name-casing-nuxt-pages-route-939.snap",
-    "sha256": "5d155de497e513fe527e89806493dbbd7a3c891740ca4ffbb23fc7297db839a5"
+    "sha256": "67ac76f7e4c453677be2f4ce43475af9f3fba220aa350b88f52d57d11d7d2cb9"
   },
   "linter/current-api/h11-name-casing-nuxt-app-pages-route-939": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-name-casing-nuxt-app-pages-route-939.snap",
-    "sha256": "5224ff3a4d4bdd07f7e8182a1d4cf4cf7b74b2f365c2eef866c12344492a2641"
+    "sha256": "149e258f48c780b8ef9c34ad200fa6e113b1b45f653e7fae0cdd17da9be14f1f"
   },
   "linter/current-api/h11-name-casing-nuxt-src-pages-route-939": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-name-casing-nuxt-src-pages-route-939.snap",
-    "sha256": "8e7e38a15da3b243005b09531f8b95163322097ae8db3ec38208fbd9d494f721"
+    "sha256": "5cbfb33bcddee7b07b4c906967723b8fc5ccdddaf71822b07af8c8525df7c872"
   },
   "linter/current-api/h11-name-casing-components-kebab-control-939": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-name-casing-components-kebab-control-939.snap",
-    "sha256": "b7ca997072e62d0adfbc37246795b9c248de9a56e7d51e100e8b3ee7a98feebe"
+    "sha256": "63e7bc22c3b2e08038ae76c605f71991be4c205776992228ba593092a1642546"
   },
   "linter/current-api/h11-name-casing-camel-filename-control-939": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-name-casing-camel-filename-control-939.snap",
-    "sha256": "21807ffc411a5d6e956d2b43929645455414928ef1d53842f432ee7926dd4fb2"
+    "sha256": "5cb36830abe0d5d6bf7bd799672c0cfcc9648ad6a2f31abb6afed1a9553ac346"
   },
   "linter/current-api/h11-valid-static-aria-label-1249": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-valid-static-aria-label-1249.snap",

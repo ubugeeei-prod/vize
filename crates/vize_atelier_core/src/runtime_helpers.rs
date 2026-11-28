@@ -1,13 +1,31 @@
 //! Runtime helper registration and lookup.
 
 use crate::RuntimeHelper;
-use vize_l0::FxHashMap;
+
+/// One use count per `u8` discriminant, so every helper indexes in bounds.
+const SLOTS: usize = 1 << u8::BITS;
 
 /// Runtime helper set for tracking used helpers
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct RuntimeHelpers {
-    helpers: FxHashMap<RuntimeHelper, u32>,
+    /// Use counts indexed by the helper's discriminant: a registration is a
+    /// load and a store, with no hashing and no out-of-line map probe.
+    counts: [u32; SLOTS],
     order: std::vec::Vec<RuntimeHelper>,
+}
+
+impl Default for RuntimeHelpers {
+    fn default() -> Self {
+        Self {
+            counts: [0; SLOTS],
+            order: std::vec::Vec::new(),
+        }
+    }
+}
+
+#[inline(always)]
+fn slot(helper: RuntimeHelper) -> usize {
+    usize::from(helper as u8)
 }
 
 impl RuntimeHelpers {
@@ -16,32 +34,32 @@ impl RuntimeHelpers {
     }
 
     /// Register a helper usage
+    #[inline]
     pub fn add(&mut self, helper: RuntimeHelper) {
-        match self.helpers.entry(helper) {
-            std::collections::hash_map::Entry::Occupied(mut entry) => {
-                *entry.get_mut() += 1;
-            }
-            std::collections::hash_map::Entry::Vacant(entry) => {
+        if let Some(count) = self.counts.get_mut(slot(helper)) {
+            if *count == 0 {
                 self.order.push(helper);
-                entry.insert(1);
             }
+            *count += 1;
         }
     }
 
     /// Remove a helper usage
     pub fn remove(&mut self, helper: RuntimeHelper) {
-        if let Some(count) = self.helpers.get_mut(&helper) {
-            *count = count.saturating_sub(1);
+        if let Some(count) = self.counts.get_mut(slot(helper))
+            && *count != 0
+        {
+            *count -= 1;
             if *count == 0 {
-                self.helpers.remove(&helper);
                 self.order.retain(|ordered| *ordered != helper);
             }
         }
     }
 
     /// Check if a helper is used
+    #[inline]
     pub fn contains(&self, helper: RuntimeHelper) -> bool {
-        self.helpers.contains_key(&helper)
+        self.count(helper) != 0
     }
 
     /// Get all used helpers
@@ -52,13 +70,14 @@ impl RuntimeHelpers {
     }
 
     /// Get the count of a helper usage
+    #[inline]
     pub fn count(&self, helper: RuntimeHelper) -> u32 {
-        self.helpers.get(&helper).copied().unwrap_or(0)
+        self.counts.get(slot(helper)).copied().unwrap_or(0)
     }
 
     /// Clear all helpers
     pub fn clear(&mut self) {
-        self.helpers.clear();
+        self.counts = [0; SLOTS];
         self.order.clear();
     }
 }

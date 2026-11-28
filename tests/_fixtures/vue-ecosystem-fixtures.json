@@ -9264,6 +9264,15 @@
       "vueGlobs": [
         "src/**/*.vue"
       ],
+      "sfcDialectRoutes": [
+        {
+          "id": "vue2",
+          "dialect": "2",
+          "globs": [
+            "src/**/*.vue"
+          ]
+        }
+      ],
       "note": "Pug-template Quasar application (211 of 215 pinned SFCs use <template lang=\"pug\">).",
       "coverage": [
         "compiler",

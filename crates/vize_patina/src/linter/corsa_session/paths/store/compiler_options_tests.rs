@@ -1,32 +1,24 @@
 //! Authored effective options keep their native indexed-access semantics.
 use super::{nearest_tsconfig, session_tsconfig_contents, validate_tsconfig};
 use serde_json::{Value, json};
-use std::{fs, path::PathBuf, time::SystemTime};
+use std::fs;
 
-struct Project(PathBuf);
+struct Project(tempfile::TempDir);
 
 impl Project {
     fn new() -> Self {
-        let nonce = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let path =
-            std::env::temp_dir().join(format!("vize-lint-options-{}-{nonce}", std::process::id()));
-        fs::create_dir(&path).unwrap();
-        Self(path)
+        Self(
+            tempfile::Builder::new()
+                .prefix("vize-lint-options-")
+                .tempdir()
+                .unwrap(),
+        )
     }
 
     fn write(&self, path: &str, contents: &str) {
-        let path = self.0.join(path);
+        let path = self.0.path().join(path);
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         fs::write(path, contents).unwrap();
-    }
-}
-
-impl Drop for Project {
-    fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.0);
     }
 }
 
@@ -134,9 +126,9 @@ fn native_session_retains_whole_config_for_authored_index_access_options() {
         if let Some(flag) = flag {
             expected["compilerOptions"]["noUncheckedIndexedAccess"] = json!(flag);
         }
-        let source = project.0.join("src/MyTouch.vue");
+        let source = project.0.path().join("src/MyTouch.vue");
         let tsconfig = nearest_tsconfig(&source.to_string_lossy()).unwrap();
-        let rendered = session_tsconfig_contents(&project.0, Some(&tsconfig));
+        let rendered = session_tsconfig_contents(project.0.path(), Some(&tsconfig));
         assert_eq!(
             serde_json::from_str::<Value>(&rendered).unwrap(),
             expected,
@@ -149,7 +141,7 @@ fn native_session_retains_whole_config_for_authored_index_access_options() {
         );
         for &(path, contents) in files {
             assert_eq!(
-                fs::read_to_string(project.0.join(path)).unwrap(),
+                fs::read_to_string(project.0.path().join(path)).unwrap(),
                 contents,
                 "{name}"
             );
@@ -160,14 +152,14 @@ fn native_session_retains_whole_config_for_authored_index_access_options() {
 #[test]
 fn type_aware_project_validation_rejects_and_recovers_missing_extends() {
     let project = Project::new();
-    let tsconfig = project.0.join("tsconfig.json");
+    let tsconfig = project.0.path().join("tsconfig.json");
     project.write(
         "tsconfig.json",
         r#"{"extends":"./.generated/tsconfig.base.json","compilerOptions":{"strict":true}}"#,
     );
 
     assert_eq!(
-        validate_tsconfig(&project.0, &tsconfig).unwrap_err(),
+        validate_tsconfig(project.0.path(), &tsconfig).unwrap_err(),
         format!(
             "Cannot load type-aware project configuration {}:\n- File './.generated/tsconfig.base.json' not found.",
             tsconfig.display()
@@ -178,5 +170,5 @@ fn type_aware_project_validation_rejects_and_recovers_missing_extends() {
         ".generated/tsconfig.base.json",
         r#"{"compilerOptions":{"moduleResolution":"Bundler"}}"#,
     );
-    assert_eq!(validate_tsconfig(&project.0, &tsconfig), Ok(()));
+    assert_eq!(validate_tsconfig(project.0.path(), &tsconfig), Ok(()));
 }

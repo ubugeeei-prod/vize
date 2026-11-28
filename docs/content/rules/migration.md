@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 200 mapped, 2 intentional divergences, and 54 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 201 mapped, 1 intentional divergences, and 54 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -21,7 +21,7 @@ Enable Vize rules under `linter.rules` inside `withVue`. Keep JS/TS rules handle
 
 Remove only the overlapping Vue rule after checking the linked Bad/Good examples. Run `vp run lint`; if an existing package script occupies that task name, the generated task is `vp run vize:lint`. Explicit task configuration takes precedence.
 
-`vue/component-definition-name-casing` has a deliberate scope difference: Vize checks the SFC filename, while ESLint checks the component definition name. The mapping below retains this distinction.
+`vue/component-definition-name-casing` checks the component definition name, as ESLint does. Vize's SFC file-name check is the separate `vue/component-file-name-casing`, which has no ESLint counterpart.
 
 The `vue/comment-directive` row tracks the ESLint rule migration, not Vize's opt-in unused-comment reporting. The native check is available through `reportUnusedDisableDirectives`; see [unused disable comments](../guide/lint-execution.md#unused-disable-directives). This bounded check does not establish full ESLint rule parity.
 
@@ -46,7 +46,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/comma-style` | — | unimplemented |
 | `vue/comment-directive` | [`vue/comment-directive`](./reference/vue-comment-directive.md) | mapped |
 | `vue/component-api-style` | — | unimplemented |
-| `vue/component-definition-name-casing` | — | intentional-divergence |
+| `vue/component-definition-name-casing` | [`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | mapped |
 | `vue/component-name-in-template-casing` | [`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | mapped |
 | `vue/component-options-name-casing` | [`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | mapped |
 | `vue/custom-event-name-casing` | [`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | mapped |

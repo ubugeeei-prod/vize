@@ -193,6 +193,8 @@ export const chineseVueNotes = {
     "类型断言不会改变它包裹的值，因此模板中的 `(rows as string[]).push(x)` 和 `rows!.push(x)` 也会作为对 prop `rows` 的修改报告；eslint-plugin-vue 会在断言处停止追踪。",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
     "检查渲染的插槽出口的静态名称。父组件侧的 v-slot 和 #name 提供语法不在此规则范围内。",
+  "Checks the static name of a component definition: the name option, defineOptions({ name }) and the first argument of app.component(). The file name is vue/component-file-name-casing.":
+    "检查组件定义的静态名称：name 选项、defineOptions({ name }) 和 app.component() 的第一个参数。文件名由 vue/component-file-name-casing 检查。",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "检查的是组件文件名。接受 PascalCase 和 kebab-case；混合大小写会被报告。",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":

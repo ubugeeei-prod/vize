@@ -28,14 +28,14 @@ const instructionWorkflow = parse(
   readAutomationPrograms(".github", "workflows", "level-instruction-counts.yml"),
 ) as Workflow;
 
-test("instruction ceilings are required in the queue and scheduled qualification", () => {
+test("instruction ceilings are required on pull requests, in the queue and in qualification", () => {
   const caller = workflow.jobs?.["instruction-counts"];
   assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
   assert.equal(caller?.["continue-on-error"], undefined);
   assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], undefined);
   assert.equal(
     caller?.if,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   for (const name of ["test-report", "full-js-report"])
     assert.ok(workflow.jobs?.[name]?.needs?.includes("instruction-counts"), name);
@@ -44,10 +44,8 @@ test("instruction ceilings are required in the queue and scheduled qualification
   assert.equal(gate?.if, undefined);
   for (const step of gate?.steps ?? [])
     assert.equal(step["continue-on-error"], undefined, step.name);
-  assert.equal(
-    gate?.env?.MEASURE,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}",
-  );
+  // Every caller measures; no event may skip the measurement steps.
+  assert.equal(gate?.env?.MEASURE, undefined);
   assert.equal(instructionWorkflow.name, "Level instruction counts");
   const verify = gate?.steps?.find(
     (step) => step.name === "Verify pinned registry and immutable base ratchet",
@@ -61,12 +59,12 @@ test("instruction ceilings are required in the queue and scheduled qualification
   ]) {
     const step = gate?.steps?.find((candidate) => candidate.name === name);
     assert.ok(step);
-    assert.equal(step.if, "env.MEASURE == 'true'");
+    assert.equal(step.if, undefined);
     assert.doesNotMatch(step.run ?? "", /hashFiles|continue-on-error/);
   }
 });
 
-test("required outer report rejects absent instructions and permits only the PR skip", () => {
+test("required outer report rejects absent or skipped instructions on every event", () => {
   for (const event of ["pull_request", "merge_group", "schedule", "workflow_dispatch"]) {
     assert.throws(
       () => aggregateCheckReportResults({ "check-js": { result: "success" } }, event),
@@ -78,11 +76,7 @@ test("required outer report rejects absent instructions and permits only the PR 
     );
     for (const result of ["success", "failure", "cancelled", "skipped"]) {
       const decision = aggregateCheckReportResults({ "instruction-counts": { result } }, event);
-      assert.equal(
-        decision.exitCode,
-        result === "success" || (event === "pull_request" && result === "skipped") ? 0 : 1,
-        `${event}: ${result}`,
-      );
+      assert.equal(decision.exitCode, result === "success" ? 0 : 1, `${event}: ${result}`);
     }
     // The instruction exception must not permit a missing product check.
     assert.equal(
@@ -128,11 +122,7 @@ test("the actual required Check report command fails a red or missing instructio
     assert.equal(run(event, green()).status, 0);
     for (const result of ["failure", "cancelled", "skipped"]) {
       const observation = run(event, { ...green(), "instruction-counts": { result } });
-      assert.equal(
-        observation.status,
-        event === "pull_request" && result === "skipped" ? 0 : 1,
-        `${event}: ${result}`,
-      );
+      assert.equal(observation.status, 1, `${event}: ${result}`);
     }
     const missing = green();
     delete missing["instruction-counts"];
@@ -175,7 +165,7 @@ test("original formatter calibration preserves level enforcement and retains its
     (step) =>
       step.name === "Measure original formatter routines three times without Criterion sampling",
   );
-  assert.equal(formatter?.if, "env.MEASURE == 'true'");
+  assert.equal(formatter?.if, undefined);
   assert.match(
     formatter?.run ?? "",
     /--formatter --collect --out "\$\{RUNNER_TEMP\}\/formatter-instruction-counts"/,
@@ -186,7 +176,7 @@ test("original formatter calibration preserves level enforcement and retains its
       step.with?.name ===
       "formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}",
   );
-  assert.equal(upload?.if, "${{ always() && env.MEASURE == 'true' }}");
+  assert.equal(upload?.if, "always()");
   assert.equal(upload?.with?.path, "${{ runner.temp }}/formatter-instruction-counts");
   assert.equal(upload?.with?.["if-no-files-found"], "error");
   assert.equal(upload?.["continue-on-error"], undefined);
@@ -215,7 +205,7 @@ test("formatter caps fail closed on every source and are enforced for every actu
   );
   assert.match(verify?.run ?? "", /--formatter --verify-budgets "\$\{FORMATTER_BASE_ARGS\[@\]\}"/);
   const enforce = steps.find((step) => step.name === "Enforce original formatter ceilings");
-  assert.equal(enforce?.if, "env.MEASURE == 'true'");
+  assert.equal(enforce?.if, undefined);
   assert.match(enforce?.run ?? "", /--formatter --check/);
   assert.match(
     enforce?.run ?? "",

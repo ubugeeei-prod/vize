@@ -13,6 +13,7 @@ steps = new Listing {
   new Dynamic {
     uses = ci.setupVp
     with {
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = false
       `run-install` = false

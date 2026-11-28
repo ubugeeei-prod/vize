@@ -2,8 +2,8 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Level instruction counts"
 
-// Check calls the measurement once per queue candidate and scheduled run.
-// Avoid a second standalone PR run of the same instruction campaign.
+// Check calls the measurement once per pull request, queue candidate and
+// scheduled run. Avoid a second standalone PR run of the same campaign.
 on {
   workflow_dispatch = null
   workflow_call = null
@@ -29,7 +29,6 @@ jobs {
     // Reusable workflows retain the caller's workflow name.
     env {
       VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/level-instruction-counts"
-      MEASURE = "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}"
     }
     steps = new Listing {
       new Dynamic {
@@ -39,28 +38,25 @@ jobs {
       new Dynamic {
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }
       }
       new Dynamic {
         name = "Install pinned measurement Rust"
-        `if` = "env.MEASURE == 'true'"
         run = "rustup toolchain install 1.100.0 --profile minimal"
       }
       new Dynamic {
         name = "Install Callgrind and matching client request headers"
-        `if` = "env.MEASURE == 'true'"
         run = ci.workflowScript("install-callgrind-and-matching-client-request-headers.sh")
       }
       new Dynamic {
         uses = "./.github/actions/setup-wild-http-recovery"
-        `if` = "env.MEASURE == 'true'"
         with { `wild-version` = "0.9.0" }
       }
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
-        `if` = "env.MEASURE == 'true'"
         with {
           // v2: benchmark builds pin SOURCE_DATE_EPOCH, so no cached mimalloc
           // object keeps a wall clock banner.
@@ -74,17 +70,14 @@ jobs {
       }
       new Dynamic {
         name = "Test default harness and client request windows"
-        `if` = "env.MEASURE == 'true'"
         run = ci.workflowScript("test-default-harness-and-client-request-windows.sh")
       }
       new Dynamic {
         name = "Measure original formatter routines three times without Criterion sampling"
-        `if` = "env.MEASURE == 'true'"
         run = #"node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts""#
       }
       new Dynamic {
         name = "Measure each stage three times without Criterion sampling"
-        `if` = "env.MEASURE == 'true'"
         run = #"node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts""#
       }
       new Dynamic {
@@ -96,17 +89,15 @@ jobs {
       }
       new Dynamic {
         name = "Enforce pinned ceilings"
-        `if` = "env.MEASURE == 'true'"
         run = ci.workflowScript("enforce-pinned-ceilings.sh")
       }
       new Dynamic {
         name = "Enforce original formatter ceilings"
-        `if` = "env.MEASURE == 'true'"
         run = ci.workflowScript("enforce-original-formatter-ceilings.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
-        `if` = "${{ always() && env.MEASURE == 'true' }}"
+        `if` = "always()"
         with {
           name = "instruction-counts-${{ github.sha }}-${{ github.run_attempt }}"
           path = "${{ runner.temp }}/instruction-counts"
@@ -116,7 +107,7 @@ jobs {
       }
       new Dynamic {
         uses = ci.uploadArtifact
-        `if` = "${{ always() && env.MEASURE == 'true' }}"
+        `if` = "always()"
         with {
           name = "formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}"
           path = "${{ runner.temp }}/formatter-instruction-counts"

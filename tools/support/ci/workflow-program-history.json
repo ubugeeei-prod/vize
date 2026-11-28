@@ -23,11 +23,11 @@
       "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-targeted-source.sh",
       "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-upstream-content-mapper-protocol-regressions.sh"
     ],
-    "closure": "f84b88f556abc844032558c39537e36934deee49c8233a0f048ff5978ada75c4"
+    "closure": "2f4ba790ffb9a9a2c02532027bed5d713602a13163f8a572137b5d885a90fab2"
   },
   "06-native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
-    "workflow": "9b164e99171d77e81ba2ead0adf2b5687a44c2ec470d87b5e31dea7bdd10c350",
+    "workflow": "7426f02f7cba1c051cd1e425b03b1a49656b0ca7168d8fd6279fdfc4c09d19a4",
     "programs": [
       "tools/ci/workflows/06-native-smoke/scripts/build-npm-runtime-packages.sh",
       "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-in-alpine.sh",
@@ -53,7 +53,7 @@
       ".github/scripts/workflows/native-beta-diagnostic-dto/install-exact-official-sdk-into-an-isolated-consumer.sh",
       ".github/scripts/workflows/native-beta-diagnostic-dto/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
     ],
-    "closure": "131742160cf23a0b3e8776b94b0332cec7777ef4c634c3b8bde6fbacddc54f77"
+    "closure": "0aff4532023192c17d3b86927d6a225b0163b1bf4ee5c2a08398db4061b18af3"
   },
   "release-contracts": {
     "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",
@@ -80,11 +80,11 @@
       ".github/scripts/workflows/typescript-plugin/package-the-same-canonical-plugin-in-a-production-vsix.sh",
       ".github/scripts/workflows/typescript-plugin/retain-the-attempted-source-even-if-setup-fails.sh"
     ],
-    "closure": "da46740acb52ca5a4d9b8a386423c16a069452dbdbed598be40467e95a60e8f1"
+    "closure": "37c5235d3290b73f08177d060016b3b6f6975356e06a003338a2dcaaf89d27e6"
   },
   "typescript-provider-vsix": {
     "before": "d22338f949d4e20c373c8a7feab76b19d07c2a297858b2336a41e3401ec9e46e",
-    "workflow": "474a4b8070052cbd3e819b504fb064b311fb933ea8f3efafcdfc544f8af4d6ee",
+    "workflow": "b68eae8b42b0a45b776fe00b06d5f05b54271fc7c1f851f7931cbef5cdc7511c",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
@@ -99,6 +99,6 @@
       ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh",
       "tools/ci/lib/scripts/files.ts"
     ],
-    "closure": "b9dbe94593be5629ea57d9ad1ec6e0b29981c7ecb79555a267faa6e87927de18"
+    "closure": "7f4501bce7208fb035ca47bdb5f4d7ce133e292fb269c76b8fd7826f5290a4d6"
   }
 }

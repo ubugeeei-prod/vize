@@ -244,6 +244,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/block-lang`
 - `vue/comment-directive`
 - `vue/component-definition-name-casing`
+- `vue/component-file-name-casing`
 - `vue/component-name-in-template-casing`
 - `vue/enforce-style-attribute`
 - `vue/html-button-has-type`

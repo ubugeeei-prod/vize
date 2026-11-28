@@ -27,7 +27,4 @@ ignore = [
   # why: only the non-published Python example reaches this archived parser dependency
   # tracking: #13091
   "RUSTSEC-2025-0100",
-  # why: only the lightningcss fork's never-enabled browserslist/cli features reach chrono; no product builds it
-  # tracking: #13267
-  "RUSTSEC-2026-0543",
 ]

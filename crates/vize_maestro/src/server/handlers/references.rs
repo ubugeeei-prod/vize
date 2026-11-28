@@ -51,7 +51,10 @@ pub(super) async fn references(
         {
             return Ok(response);
         }
-        let response = if let Some(locations) =
+        // A template-ref key is a string no checker symbol connects.
+        let response = if let Some(key) = crate::ide::template_ref::keys::key_at_offset(&ctx) {
+            Some(key.locations(&ctx))
+        } else if let Some(locations) =
             ReferencesService::setup_local_references(&ctx, include_declaration)
         {
             Some(locations)

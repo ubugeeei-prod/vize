@@ -81,6 +81,17 @@ export function getSfcBaselineProvenance(dialect: SfcDialect): SfcBaselineProven
   return loadBaseline(dialect).provenance;
 }
 
+/** Compile one preprocessed SFC with the same pinned dialect adapter as the corpus. */
+export function compileSfcWithDialectBaseline(
+  source: string,
+  filename: string,
+  dialect: SfcDialect,
+): SideResult {
+  const baseline = loadBaseline(dialect);
+  if ("failure" in baseline) return { ok: false, ...baseline.failure };
+  return baseline.compile(source, filename);
+}
+
 /** Preserve the selected route and compiler provenance when the comparison harness itself fails. */
 export function comparisonHarnessFailure(
   dialect: SfcDialect,

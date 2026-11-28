@@ -1,8 +1,8 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Create GitHub Release"
-needs = List("version", "tag", "publish-npm", "build-editor-platforms", "publication-quota")
-`if` = "${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}"
+needs = List("version", "tag", "publish-npm", "build-editor-platforms", "publication-quota", "release-sbom")
+`if` = "${{ always() && needs.publication-quota.result == 'success' && needs.version.result == 'success' && needs.publish-npm.result == 'success' && needs.release-sbom.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}"
 `runs-on` = "ubuntu-24.04"
 `timeout-minutes` = 15
 // id-token mints the keyless cosign certificate.
@@ -83,22 +83,8 @@ steps = new Listing {
     }
   }
   new Dynamic {
-    uses = "anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a"  // v0.17.8
-    with {
-      `artifact-name` = "vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json"
-      format = "cyclonedx-json"
-      `output-file` = "vize-${{ needs.version.outputs.tag }}-cyclonedx.sbom.json"
-      `upload-artifact` = false
-    }
-  }
-  new Dynamic {
-    uses = "anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a"  // v0.17.8
-    with {
-      `artifact-name` = "vize-${{ needs.version.outputs.tag }}-spdx.sbom.json"
-      format = "spdx-json"
-      `output-file` = "vize-${{ needs.version.outputs.tag }}-spdx.sbom.json"
-      `upload-artifact` = false
-    }
+    uses = ci.downloadArtifact
+    with { name = "release-sbom" }
   }
   new Dynamic {
     uses = "sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da"  // v3.7.0

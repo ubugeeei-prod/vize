@@ -263,6 +263,7 @@ mod lint_rpc_profile_cli;
 mod lint_rule_execution_cli;
 mod lint_rule_option_extensions_cli;
 mod lint_rule_options_casing_cli;
+mod lint_rule_options_component_definition_name_casing_cli;
 mod lint_rule_options_real_project_cli;
 mod lint_rule_options_slot_name_casing_cli;
 mod lint_rule_severity_cli;

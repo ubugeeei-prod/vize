@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+import Meter from "./Meter.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Composition">
+    <Counter :initial="0" />
+    <Meter :value="0" />
+  </variant>
+</art>

@@ -1,5 +1,6 @@
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import { restoreWorkflowNames } from "./support/ci-library-paths.ts";
+import { restoreVpVersionPin } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -22,6 +23,9 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   const current = parse(
     restoreWorkflowNames(readAutomationPrograms(".github/workflows/real-project-matrix.yml")),
   );
+  // Every setup-vp step now passes the pinned Vite+ CLI version.
+  for (const [id, job] of Object.entries(current.jobs))
+    restoreVpVersionPin(job.steps ?? [], original.jobs[id]?.steps);
   // Core tools and the divergence report qualify Vize on the checker the LSP
   // step pins, never on a fixture's own declared native preview.
   const pinnedChecker =

@@ -1,7 +1,57 @@
 use super::super::{
-    ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
-    CustomEventNameCasingOptions, TemplateComponentNameCasing,
+    ComponentDefinitionNameCasingStyle, ComponentNameInTemplateCasingOptions,
+    ConfigLintRuleOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
+    TemplateComponentNameCasing,
 };
+
+#[test]
+fn component_definition_name_casing_is_a_validated_direct_style_option() {
+    let empty = ConfigLintRuleOptions::default();
+    assert_eq!(empty.component_definition_name_casing(), None);
+    assert!(
+        serde_json::to_value(&empty)
+            .unwrap()
+            .get("vue/component-definition-name-casing")
+            .is_none()
+    );
+
+    let mut options: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/component-definition-name-casing":"kebab-case"}"#).unwrap();
+    assert!(!options.is_empty());
+    assert_eq!(
+        options.component_definition_name_casing(),
+        Some(ComponentDefinitionNameCasingStyle::KebabCase)
+    );
+    options.merge_from(&ConfigLintRuleOptions::default());
+    assert_eq!(
+        options.component_definition_name_casing(),
+        Some(ComponentDefinitionNameCasingStyle::KebabCase)
+    );
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"vue/component-definition-name-casing":"PascalCase"}"#).unwrap();
+    options.merge_from(&overlay);
+    assert_eq!(
+        options.component_definition_name_casing(),
+        Some(ComponentDefinitionNameCasingStyle::PascalCase)
+    );
+    assert_eq!(
+        serde_json::to_value(&options).unwrap()["vue/component-definition-name-casing"],
+        serde_json::json!("PascalCase")
+    );
+
+    for invalid in [
+        r#"{"vue/component-definition-name-casing":"camelCase"}"#,
+        r#"{"vue/component-definition-name-casing":"pascalcase"}"#,
+        r#"{"vue/component-definition-name-casing":false}"#,
+        r#"{"vue/component-definition-name-casing":{}}"#,
+        r#"{"vue/component-definition-name-casing":{"casing":"kebab-case"}}"#,
+    ] {
+        assert!(
+            serde_json::from_str::<ConfigLintRuleOptions>(invalid).is_err(),
+            "{invalid}"
+        );
+    }
+}
 
 #[test]
 fn deserializes_casing_options() {

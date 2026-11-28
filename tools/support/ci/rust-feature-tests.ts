@@ -7,6 +7,8 @@
 // `--locked` and `--profile ci` (unless a command names its own profile) and
 // `-- -D warnings` to Clippy. Ignored tests stay out of the lane: they read
 // corpora selected outside the repository or measure time and allocations.
+import { rustFeatureMatrix } from "./rust-feature-batches.ts";
+import type { RustFeatureMatrix } from "./rust-feature-batches.ts";
 
 export interface RustFeatureRow {
   readonly id: string;
@@ -498,30 +500,15 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
 /** Files whose change can alter what any row runs. */
 export const rustFeatureLaneInputs: readonly string[] = [
   "tools/support/ci/rust-feature-tests.ts",
+  "tools/support/ci/rust-feature-batches.ts",
   "tools/ci/commands/rust-feature-tests.ts",
-  "tools/config/pkl/parts/rust-feature-tests/job.pkl",
+  "tools/ci/lib/RustFeatureTests.pkl",
   ".github/workflows/pr-rust-products.yml",
   ".github/workflows/01-rust-feature-tests.yml",
 ];
 
-export interface RustFeatureMatrix {
-  readonly include: readonly { readonly row: string; readonly runner: string }[];
-}
-
-const linuxRunner = "blacksmith-32vcpu-ubuntu-2404";
-const windowsRunner = "blacksmith-32vcpu-windows-2025";
-
-function matrixOf(rows: readonly RustFeatureRow[]): RustFeatureMatrix {
-  return {
-    include: rows.map((row) => ({
-      row: row.id,
-      runner: row.windows ? windowsRunner : linuxRunner,
-    })),
-  };
-}
-
 export function allRustFeatureRows(): RustFeatureMatrix {
-  return matrixOf(rustFeatureRows);
+  return rustFeatureMatrix(rustFeatureRows);
 }
 
 /**
@@ -535,7 +522,9 @@ export function selectRustFeatureRows(
   if (paths.length === 0 || paths.some((file) => rustFeatureLaneInputs.includes(file)))
     return allRustFeatureRows();
   const affected = new Set(affectedPackages ?? []);
-  return matrixOf(rustFeatureRows.filter((row) => row.packages.some((name) => affected.has(name))));
+  return rustFeatureMatrix(
+    rustFeatureRows.filter((row) => row.packages.some((name) => affected.has(name))),
+  );
 }
 
 export function rustFeatureRow(id: string): RustFeatureRow {
