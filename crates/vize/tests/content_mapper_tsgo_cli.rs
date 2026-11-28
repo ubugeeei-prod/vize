@@ -65,6 +65,7 @@ mod runtime_required_wrappers;
 mod semantic_compile_errors_12522;
 mod setup_local_public_types;
 mod setup_verbatim_lines_12481;
+mod sfc_failure_isolation;
 mod shipped_declarations_12968;
 mod solution_tsconfig_imported_props;
 mod support;
