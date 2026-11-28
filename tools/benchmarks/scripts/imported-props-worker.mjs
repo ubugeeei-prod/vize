@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
+import { compatibility } from "./imported-props-compat.mjs";
 
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 
@@ -285,6 +286,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         ...phases,
         targetParity: targetParity(native, files),
         prototypeIsolation: prototypeIsolation(native, files),
+        compatibility: compatibility(native, fixture),
         freshness: freshness(native, fixture),
       }),
     );

@@ -69,7 +69,10 @@ await test("the dependency miss control retains distinct complete module lists",
     for (const [file, dependencies] of entries) {
       assert.equal(dependencies.length, 26);
       assert.equal(new Set(dependencies).size, 26);
-      assert.deepEqual(dependencies, [...dependencies].sort());
+      assert.deepEqual(
+        dependencies,
+        [...dependencies].sort((left, right) => (left === right ? 0 : left < right ? -1 : 1)),
+      );
       assert(fs.readFileSync(file, "utf8").includes('"./types"'));
       for (const dependency of dependencies.filter(
         (dependency) => !dependency.endsWith("tsconfig.json"),

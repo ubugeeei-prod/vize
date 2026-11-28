@@ -144,8 +144,11 @@ assert.deepEqual(
 );
 const provider = path.join(out, "provider");
 run(
-  process.platform === "win32" ? "npm.cmd" : "npm",
+  process.platform === "win32" ? process.execPath : "npm",
   [
+    ...(process.platform === "win32"
+      ? [path.join(path.dirname(process.execPath), "node_modules/npm/bin/npm-cli.js")]
+      : []),
     "install",
     "--prefix",
     provider,
@@ -275,6 +278,15 @@ for (const [mode, modules] of [
             "all threads, chunks and source images must return identical complete results",
           );
           outputs.set(shape, expected);
+          const compatibilityKey = `${shape}-compatibility`;
+          const expectedCompatibility =
+            outputs.get(compatibilityKey) ?? sample.compatibility.sha256;
+          assert.equal(
+            sample.compatibility.sha256,
+            expectedCompatibility,
+            "both public APIs must retain optional metadata and complete error rows",
+          );
+          outputs.set(compatibilityKey, expectedCompatibility);
           report.samples.push({
             mode,
             modules,

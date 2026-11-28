@@ -25,12 +25,18 @@ on {
         type = "boolean"
         ["default"] = false
       }
+      platform {
+        description = "Native host for the exact-source comparison"
+        type = "choice"
+        options = List("linux", "windows")
+        ["default"] = "linux"
+      }
     }
   }
 }
 permissions { contents = "read" }
 concurrency {
-  group = "imported-props-${{ github.ref }}-${{ inputs.base_sha }}"
+  group = "imported-props-${{ github.ref }}-${{ inputs.base_sha }}-${{ inputs.platform }}"
   `cancel-in-progress` = false
 }
 env {
@@ -43,7 +49,7 @@ env {
 }
 jobs {
   measure {
-    `runs-on` = ci.linuxValidation
+    `runs-on` = "${{ inputs.platform == 'windows' && '\(ci.windows)' || '\(ci.linuxValidation)' }}"
     `timeout-minutes` = 50
     steps = new Listing {
       new Dynamic {
@@ -63,7 +69,10 @@ jobs {
         }
       }
       ci.rust("1.100.0")
-      ci.use("./.github/actions/setup-wild-http-recovery")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        `if` = "${{ runner.os == 'Linux' }}"
+      }
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
         with {
@@ -80,7 +89,7 @@ jobs {
       }
       new Dynamic {
         name = "Prepare optional CPU sampling"
-        `if` = "${{ inputs.profile == true }}"
+        `if` = "${{ inputs.profile == true && runner.os == 'Linux' }}"
         run = "bash tools/ci/workflows/03-imported-props/scripts/prepare-cpu-sampling.sh"
       }
       new Dynamic {
@@ -93,6 +102,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare exact source images across threads and chunk sizes"
+        shell = "bash"
         run = #"node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props""#
       }
       new Dynamic {
