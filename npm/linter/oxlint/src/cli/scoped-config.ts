@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -7,6 +6,7 @@ import { prepareWorkaroundSource } from "../workaround.ts";
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
 import { registerLocationVariants, registerPathReplacementVariants } from "./workaround-files.ts";
 import type { BridgeLocations } from "./locations.js";
+import { createOwnedScratch, userTemporaryRoot } from "./owned-scratch.ts";
 
 type Config = Record<string, unknown>;
 
@@ -143,7 +143,7 @@ export function validateSelectionPaths(
 }
 
 export function createScopedMirror(cwd: string, config: ScopedConfig, files: readonly string[]) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vize-"));
+  const root = createOwnedScratch(userTemporaryRoot("vize-oxlint"), "oxlint-vize-");
   const configDir = path.dirname(config.file);
   const sibling = path.join(configDir, `${path.basename(root)}.${config.module ? "mts" : "json"}`);
   let ownsSibling = false;
