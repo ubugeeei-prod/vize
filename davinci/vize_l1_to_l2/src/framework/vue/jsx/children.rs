@@ -30,7 +30,7 @@ enum Tag<'a> {
 }
 
 pub(super) fn element<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     element: &JSXElement<'_>,
 ) -> Result<Op<'a>, JsxRefusal> {
     cx.mint();
@@ -92,7 +92,7 @@ pub(super) fn element<'a>(
         Tag::Value(_) => DYNAMIC_COMPONENT,
     };
     cx.observe(OpFamily::SlotCarrier);
-    Ok(Op::Component(Box::new_in(
+    let component = Box::new_in(
         ComponentOp {
             name,
             attributes: lowered.attributes,
@@ -101,10 +101,17 @@ pub(super) fn element<'a>(
             span: element_span,
         },
         &cx.allocator,
-    )))
+    );
+    if matches!(tag, Tag::Element(_)) {
+        cx.syntax.intrinsic_component(&component);
+    }
+    Ok(Op::Component(component))
 }
 
-fn tag<'a>(cx: &Cx<'a, '_>, name: &JSXElementName<'_>) -> Result<Tag<'a>, JsxRefusal> {
+fn tag<'a>(
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    name: &JSXElementName<'_>,
+) -> Result<Tag<'a>, JsxRefusal> {
     match name {
         JSXElementName::Identifier(identifier) => {
             let name = cx.slice(identifier.span)?;
@@ -140,7 +147,7 @@ fn tag<'a>(cx: &Cx<'a, '_>, name: &JSXElementName<'_>) -> Result<Tag<'a>, JsxRef
 /// An intrinsic element's children. A sole expression child that is not
 /// control flow is a JSX child value, which the renderer normalizes.
 fn element_children<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     children: &[JSXChild<'_>],
     ops: &mut Vec<'a, Op<'a>>,
 ) -> Result<(), JsxRefusal> {
@@ -179,7 +186,7 @@ fn element_children<'a>(
 /// Children in document order. A child fragment is spliced: it carries no
 /// props and no key, so its children are the parent's at that position.
 pub(super) fn push_children<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     children: &[JSXChild<'_>],
     ops: &mut Vec<'a, Op<'a>>,
 ) -> Result<(), JsxRefusal> {
@@ -215,7 +222,11 @@ pub(super) fn push_children<'a>(
     Ok(())
 }
 
-fn text_op<'a>(cx: &Cx<'a, '_>, content: &'a str, at: oxc_span::Span) -> Op<'a> {
+fn text_op<'a>(
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    content: &'a str,
+    at: oxc_span::Span,
+) -> Op<'a> {
     Op::Text(Box::new_in(
         TextOp {
             content,

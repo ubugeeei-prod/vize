@@ -25,7 +25,7 @@ use super::{Cx, Depth, JsxRefusal, span};
 /// Lower an expression child at `at` (its container, or the expression itself
 /// inside a branch) as control flow. `None` when it is not structural.
 pub(super) fn control_flow<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     expression: &Expression<'_>,
     at: oxc_span::Span,
 ) -> Result<Option<Op<'a>>, JsxRefusal> {
@@ -44,7 +44,7 @@ pub(super) fn control_flow<'a>(
 
 /// `c && <A/>`: one `ui.if` branch when `c` is provably boolean.
 fn logical_and<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     logical: &LogicalExpression<'_>,
     at: oxc_span::Span,
 ) -> Result<Op<'a>, JsxRefusal> {
@@ -64,7 +64,7 @@ fn logical_and<'a>(
 /// `a ? <A/> : b ? <B/> : <C/>`: one `ui.if`, a nested alternate ternary
 /// adding an else-if branch.
 fn conditional_chain<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     conditional: &ConditionalExpression<'_>,
     at: oxc_span::Span,
 ) -> Result<Op<'a>, JsxRefusal> {
@@ -91,7 +91,11 @@ fn conditional_chain<'a>(
     Ok(if_op(cx, branches, at))
 }
 
-fn if_op<'a>(cx: &mut Cx<'a, '_>, branches: Vec<'a, IfBranch<'a>>, at: oxc_span::Span) -> Op<'a> {
+fn if_op<'a>(
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    branches: Vec<'a, IfBranch<'a>>,
+    at: oxc_span::Span,
+) -> Op<'a> {
     cx.observe(OpFamily::If);
     Op::If(Box::new_in(
         IfOp {
@@ -105,7 +109,7 @@ fn if_op<'a>(cx: &mut Cx<'a, '_>, branches: Vec<'a, IfBranch<'a>>, at: oxc_span:
 /// `xs.map((x, i) => <A/>)`: `ui.for` over `xs` with value `x` and key `i`,
 /// iterated as `v-for` does.
 fn map_call<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     call: &CallExpression<'_>,
     at: oxc_span::Span,
 ) -> Result<Op<'a>, JsxRefusal> {
@@ -174,7 +178,10 @@ fn map_call<'a>(
 /// A ternary arm: an element, nested control flow at the arm itself, or a
 /// value rendered as text. A fragment, or a value holding markup, waits for
 /// its region op.
-fn branch_region<'a>(cx: &mut Cx<'a, '_>, arm: &Expression<'_>) -> Result<Region<'a>, JsxRefusal> {
+fn branch_region<'a>(
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    arm: &Expression<'_>,
+) -> Result<Region<'a>, JsxRefusal> {
     let inner = unwrap_parens(arm);
     if let Expression::JSXElement(_) = inner {
         return render_region(cx, inner);
@@ -188,7 +195,10 @@ fn branch_region<'a>(cx: &mut Cx<'a, '_>, arm: &Expression<'_>) -> Result<Region
 /// A value arm as text. Kept out of line: element arms, the common case,
 /// never reach it.
 #[inline(never)]
-fn value_arm<'a>(cx: &mut Cx<'a, '_>, value: &Expression<'_>) -> Result<Region<'a>, JsxRefusal> {
+fn value_arm<'a>(
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    value: &Expression<'_>,
+) -> Result<Region<'a>, JsxRefusal> {
     if contains_jsx(value) {
         return Err(JsxRefusal::Child);
     }
@@ -207,7 +217,7 @@ fn value_arm<'a>(cx: &mut Cx<'a, '_>, value: &Expression<'_>) -> Result<Region<'
 /// What an `&&` right side or a `.map` callback returns: an element or
 /// nested control flow. A fragment waits for its region op.
 fn render_region<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     rendered: &Expression<'_>,
 ) -> Result<Region<'a>, JsxRefusal> {
     let op = match unwrap_parens(rendered) {
@@ -218,7 +228,7 @@ fn render_region<'a>(
     Ok(single(cx, op))
 }
 
-fn single<'a>(cx: &Cx<'a, '_>, op: Op<'a>) -> Region<'a> {
+fn single<'a>(cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>, op: Op<'a>) -> Region<'a> {
     let mut ops = Vec::new_in(&cx.allocator);
     ops.push(op);
     Region { ops }

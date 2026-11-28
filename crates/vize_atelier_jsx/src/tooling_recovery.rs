@@ -60,7 +60,11 @@ pub fn lower_source_for_typecheck<'a>(
     .visit_program(&mut parsed.program);
     let mapper = SpanMapper::new(source);
     let mut lowerer = Lowerer::new(bump, &mapper).with_slot_parameter_types(true);
-    output.roots = finder::lower_program_roots(&parsed.program, &mut lowerer, JsxOutputMode::Vdom);
+    output.roots = finder::lower_program_roots::<crate::syntax::PlainRoots>(
+        &parsed.program,
+        &mut lowerer,
+        JsxOutputMode::Vdom,
+    );
     output.analysis = analyze::analyze_program(&parsed.program, source);
     output.diagnostics.extend(lowerer.into_diagnostics());
     output

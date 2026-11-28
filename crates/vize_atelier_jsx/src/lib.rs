@@ -42,8 +42,10 @@ pub mod lower;
 pub mod mode;
 pub mod parse;
 pub mod scoped;
+mod source;
 pub mod span;
 pub mod ssr;
+mod syntax;
 pub mod vapor;
 pub mod vdom;
 
@@ -57,7 +59,6 @@ pub use tooling_recovery::lower_source_for_typecheck;
 
 pub use analyze::analyze_program as analyze_jsx_program;
 
-use oxc_semantic::SemanticBuilder;
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
 use vize_l0::{Allocator, String};
@@ -80,6 +81,7 @@ pub use parse::{ParsedModule, parse_module};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
 pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
+pub use syntax::{SyntaxLowerOutput, SyntaxRoot, lower_source_with_lint_syntax};
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 
@@ -277,30 +279,13 @@ fn lower_source_with_options<'a>(
     lang: JsxLang,
     options: LoweringOptions<'_>,
 ) -> (LowerOutput<'a>, std::vec::Vec<(u32, u32)>) {
-    let parse_source = parse::prepare_source_for_parse(source, lang);
-    let parsed = parse::parse_module(allocator, parse_source.as_ref(), lang);
-    let scoping = Some({
-        SemanticBuilder::new()
-            .build(&parsed.program)
-            .semantic
-            .into_scoping()
-    });
-    let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::with_compat(bump, &mapper, options.compat, options.babel, scoping)
-        .with_slot_parameter_types(options.preserve_slot_parameter_types);
-    lowerer.collect_boolean_bindings(&parsed.program);
-    for diagnostic in parsed.diagnostics {
-        lowerer.report(diagnostic);
-    }
-    let roots = finder::lower_program_roots(&parsed.program, &mut lowerer, options.default_mode);
-    let analysis = analyze::analyze_program(&parsed.program, source);
-    let (diagnostics, custom_element_spans) = lowerer.into_compat_parts();
+    let parts = source::lower_parts::<syntax::PlainRoots>(bump, allocator, source, lang, options);
     (
         LowerOutput {
-            roots,
-            analysis,
-            diagnostics,
+            roots: parts.roots,
+            analysis: parts.analysis,
+            diagnostics: parts.diagnostics,
         },
-        custom_element_spans,
+        parts.custom_element_spans,
     )
 }

@@ -27,7 +27,7 @@ pub(super) fn lower_slot_content<'a>(
     allocator: &'a Allocator,
     directive: &DirectiveNode<'a>,
     node: Option<NodeId>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
 ) -> Result<BindingOp<'a>, L2Refusal> {
     if !directive.modifiers.is_empty() {
         return Err(L2Refusal::Directive);
@@ -62,7 +62,11 @@ pub(super) fn lower_slot_content<'a>(
     )))
 }
 
-fn attach_slot_scope(cx: &mut ProjectCx, node: Option<NodeId>, params: &ExprRef<'_>) {
+fn attach_slot_scope(
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
+    node: Option<NodeId>,
+    params: &ExprRef<'_>,
+) {
     let tag = cx.mint_scope();
     let mut bindings = StdVec::new();
     if let Some(name) = simple_identifier(params) {

@@ -23,7 +23,7 @@ use super::{Cx, JsxRefusal, span};
 
 /// Lower the `v-*` attribute `attribute` of `owner` into `out`.
 pub(super) fn directive<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     attribute: &JSXAttribute<'_>,
     owner: Owner<'a, '_, '_>,
     out: &mut Props<'a>,
@@ -107,7 +107,7 @@ fn is_built_in(name: &str) -> bool {
 }
 
 fn required<'a>(
-    cx: &Cx<'a, '_>,
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
     value: Option<&Expression<'_>>,
 ) -> Result<vize_l2::expr::ExprRef<'a>, JsxRefusal> {
     cx.expr(value.ok_or(JsxRefusal::Attribute)?.span())
@@ -118,7 +118,7 @@ fn required<'a>(
 /// literals spells the value, argument and modifiers; any other array is
 /// the value itself.
 fn custom_directive<'a>(
-    cx: &Cx<'a, '_>,
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
     name: &'a str,
     argument: Option<&'a str>,
     value: Option<&Expression<'_>>,
@@ -184,12 +184,19 @@ impl<'e, 'x> ArraySpelling<'e, 'x> {
         })
     }
 
-    pub(super) fn argument<'a>(&self, cx: &Cx<'a, '_>) -> Option<&'a str> {
+    pub(super) fn argument<'a>(
+        &self,
+        cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    ) -> Option<&'a str> {
         self.argument
             .map(|argument| cx.allocator.alloc_str(argument.value.as_str()))
     }
 
-    pub(super) fn modifiers<'a>(&self, cx: &Cx<'a, '_>, out: &mut Vec<'a, &'a str>) {
+    pub(super) fn modifiers<'a>(
+        &self,
+        cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+        out: &mut Vec<'a, &'a str>,
+    ) {
         for modifier in self.modifiers.iter().flat_map(|listed| &listed.elements) {
             if let ArrayExpressionElement::StringLiteral(modifier) = modifier {
                 out.push(cx.allocator.alloc_str(modifier.value.as_str()));
