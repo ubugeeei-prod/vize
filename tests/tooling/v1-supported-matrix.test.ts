@@ -10,6 +10,11 @@ import {
   V1_TOPOLOGIES,
 } from "../../tools/support/compat/v1/support-matrix.ts";
 import { CONTENT_MAPPER_PROTOCOL_FEATURES } from "../../tools/support/compat/v1/content-mapper-qualification.ts";
+import {
+  CONTENT_MAPPER_V1_BINDINGS,
+  type ContentMapperV1Binding,
+  validateContentMapperV1Bindings,
+} from "../../tools/support/compat/v1/content-mapper-bindings.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const output = path.join(root, "docs/release/v1-supported-matrix.json");
@@ -146,7 +151,9 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
   assert.equal(qualification.counts.lifecycle, 1);
   assert.equal(qualification.counts.performance, 1);
   assert.equal(qualification.counts.runtimeAndCorpus, 2);
-  assert.equal(qualification.counts.unbound, 44);
+  assert.equal(qualification.counts.unbound, 24);
+  assert.equal(qualification.counts.bound, 20);
+  assert.equal(qualification.counts.complete, 0);
 
   const obligations = [
     ...qualification.semantic,
@@ -161,10 +168,22 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
     assert.ok(!ids.has(obligation.id), `duplicate Content Mapper obligation ${obligation.id}`);
     ids.add(obligation.id);
     assert.deepEqual(obligation.requiredCases, V1_CASES, obligation.id);
-    assert.equal(obligation.candidateSource, null, obligation.id);
-    assert.equal(obligation.candidateRun, null, obligation.id);
-    assert.deepEqual(obligation.receipts, [], obligation.id);
-    assert.equal(obligation.qualification, "unbound", obligation.id);
+    if (obligation.qualification === "unbound") {
+      assert.equal(obligation.candidateSource, null, obligation.id);
+      assert.deepEqual(obligation.candidateRuns, [], obligation.id);
+      assert.deepEqual(obligation.receipts, [], obligation.id);
+    } else {
+      assert.equal(obligation.qualification, "bound", obligation.id);
+      assert.match(obligation.candidateSource ?? "", /^[0-9a-f]{40}$/u, obligation.id);
+      assert.ok(obligation.receipts.length > 0, obligation.id);
+      assert.deepEqual(
+        obligation.candidateRuns.map(({ runId, runAttempt }) => `${runId}/${runAttempt}`),
+        [...new Set(obligation.receipts.map(({ runId, runAttempt }) => `${runId}/${runAttempt}`))],
+        obligation.id,
+      );
+      for (const receipt of obligation.receipts)
+        assert.match(receipt.digest, /^sha256:[0-9a-f]{64}$/u, obligation.id);
+    }
     assert.ok(obligation.issues.length > 0, obligation.id);
     assert.ok(obligation.evidenceCandidates.length > 0, obligation.id);
     for (const evidence of obligation.evidenceCandidates)
@@ -209,6 +228,35 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
   assert.ok(qualification.producerProtocol.evidenceCandidates.length > 0);
   for (const evidence of qualification.producerProtocol.evidenceCandidates)
     assert.ok(existsSync(path.join(root, evidence)), `producer protocol: missing ${evidence}`);
+});
+
+void test("Content Mapper bindings carry an exact source, run and artifact digest", () => {
+  assert.deepEqual(
+    matrix.contentMapper.protocolFeatures.map(({ qualification }) => qualification),
+    CONTENT_MAPPER_PROTOCOL_FEATURES.map(() => "bound"),
+  );
+  const ids = new Set(["Hover", "Rename"]);
+  const receipt = CONTENT_MAPPER_V1_BINDINGS[0].receipts[0];
+  const binding = (change: Partial<ContentMapperV1Binding>): ContentMapperV1Binding => ({
+    obligations: ["Hover"],
+    candidateSource: "0".repeat(40),
+    receipts: [receipt],
+    ...change,
+  });
+  const rejects = (bindings: ContentMapperV1Binding[], message: RegExp) =>
+    assert.throws(() => validateContentMapperV1Bindings(root, bindings, ids), message);
+
+  assert.equal(validateContentMapperV1Bindings(root, [binding({})], ids).size, 1);
+  rejects([binding({ candidateSource: "main" })], /not an exact commit/u);
+  rejects([binding({ obligations: ["Unknown"] })], /unknown obligation/u);
+  rejects([binding({}), binding({})], /bound twice/u);
+  rejects([binding({ receipts: [] })], /no receipt/u);
+  rejects([binding({ receipts: [{ ...receipt, digest: "sha256:abc" }] })], /digest/u);
+  rejects([binding({ receipts: [{ ...receipt, runId: 0 }] })], /run ID/u);
+  rejects(
+    [binding({ receipts: [{ ...receipt, workflow: ".github/workflows/x.yml" }] })],
+    /workflow/u,
+  );
 });
 
 void test("Content Mapper protocol features match the pinned Rust protocol contract", () => {

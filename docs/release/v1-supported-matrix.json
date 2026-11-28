@@ -24700,7 +24700,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24714,7 +24714,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24728,7 +24728,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24742,7 +24742,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24756,7 +24756,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24770,7 +24770,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24784,7 +24784,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24798,7 +24798,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24809,7 +24809,7 @@
         "evidenceCandidates": ["tests/tooling/canon-css-module-contracts.test.ts"],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24823,7 +24823,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24837,7 +24837,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24851,7 +24851,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24865,7 +24865,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24879,7 +24879,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24893,7 +24893,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -24904,7 +24904,7 @@
         "evidenceCandidates": ["crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       }
@@ -24918,10 +24918,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "SignatureHelp",
@@ -24931,10 +24953,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "Completion",
@@ -24944,10 +24988,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "Definition",
@@ -24957,10 +25023,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "TypeDefinition",
@@ -24970,10 +25058,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "Implementation",
@@ -24983,10 +25093,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "References",
@@ -24996,10 +25128,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "DocumentHighlights",
@@ -25009,10 +25163,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "Rename",
@@ -25022,10 +25198,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "CallHierarchy",
@@ -25035,10 +25233,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "CodeActions",
@@ -25048,10 +25268,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "Formatting",
@@ -25061,10 +25303,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "InlayHints",
@@ -25074,10 +25338,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "SemanticTokens",
@@ -25087,10 +25373,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "FoldingRanges",
@@ -25100,10 +25408,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "SelectionRanges",
@@ -25113,10 +25443,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "LinkedEditing",
@@ -25126,10 +25478,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "AutoInsert",
@@ -25139,10 +25513,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "DocumentSymbols",
@@ -25152,10 +25548,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       },
       {
         "id": "CodeLens",
@@ -25165,10 +25583,32 @@
           "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
-        "candidateSource": null,
-        "candidateRun": null,
-        "receipts": [],
-        "qualification": "unbound"
+        "candidateSource": "9be6799ade47abf2a2e43de2dd540c8b44f8f92d",
+        "candidateRuns": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1
+          }
+        ],
+        "receipts": [
+          {
+            "workflow": ".github/workflows/check.yml",
+            "runId": 46124973647,
+            "runAttempt": 1,
+            "job": "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+            "steps": [],
+            "artifact": "test-cases-rust-typechecker-1",
+            "digest": "sha256:a1b99ab89796745e8f55229f1d2a2b8462c88820560e4b5d6254feffdeb8b16c",
+            "cases": [
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::protocol_v1_feature_constants_match_the_pinned_upstream_shape",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::feature_masks_have_positive_and_negative_bit_oracles",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::emits_protocol_v1_spans_with_honest_features_and_without_forbidden_overlaps",
+              "vize_canon batch::virtual_project::content_mapper::tests::protocol::transform_declares_its_virtual_extension_on_every_response"
+            ]
+          }
+        ],
+        "qualification": "bound"
       }
     ],
     "diagnostics": [
@@ -25182,7 +25622,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -25196,7 +25636,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -25210,7 +25650,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -25224,7 +25664,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       }
@@ -25241,7 +25681,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       }
@@ -25260,7 +25700,7 @@
         "baseHeadComparison": "required",
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       }
@@ -25275,7 +25715,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       },
@@ -25288,7 +25728,7 @@
         ],
         "requiredCases": ["positive", "negative", "boundary", "malformed-edit", "repair"],
         "candidateSource": null,
-        "candidateRun": null,
+        "candidateRuns": [],
         "receipts": [],
         "qualification": "unbound"
       }
@@ -25320,7 +25760,9 @@
       "lifecycle": 1,
       "performance": 1,
       "runtimeAndCorpus": 2,
-      "unbound": 44
+      "unbound": 24,
+      "bound": 20,
+      "complete": 0
     }
   },
   "environments": {

@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import {
+  CONTENT_MAPPER_V1_BINDINGS,
+  type ContentMapperV1Binding,
+  type ContentMapperV1Receipt,
+  validateContentMapperV1Bindings,
+} from "./content-mapper-bindings.ts";
+
 export const CONTENT_MAPPER_PROTOCOL_FEATURES = [
   "Hover",
   "SignatureHelp",
@@ -243,14 +250,37 @@ function pinnedTypeScriptRevision(root: string): string {
   return revision;
 }
 
+export type ContentMapperV1QualificationState = "unbound" | "bound" | "complete";
+
 function unbound<T extends object>(obligation: T, requiredCases: readonly string[]) {
   return {
     ...obligation,
     requiredCases: [...requiredCases],
-    candidateSource: null,
-    candidateRun: null,
-    receipts: [] as string[],
-    qualification: "unbound",
+    candidateSource: null as string | null,
+    candidateRuns: [] as { workflow: string; runId: number; runAttempt: number }[],
+    receipts: [] as ContentMapperV1Receipt[],
+    qualification: "unbound" as ContentMapperV1QualificationState,
+  };
+}
+
+function bind<T extends ReturnType<typeof unbound>>(
+  obligation: T,
+  binding: ContentMapperV1Binding | undefined,
+): T {
+  if (!binding) return obligation;
+  const runs = new Map<string, { workflow: string; runId: number; runAttempt: number }>();
+  for (const { workflow, runId, runAttempt } of binding.receipts)
+    runs.set(`${runId}:${runAttempt}`, { workflow, runId, runAttempt });
+  return {
+    ...obligation,
+    candidateSource: binding.candidateSource,
+    candidateRuns: [...runs.values()],
+    receipts: binding.receipts.map((receipt) => ({
+      ...receipt,
+      steps: [...receipt.steps],
+      cases: [...receipt.cases],
+    })),
+    qualification: "bound",
   };
 }
 
@@ -326,14 +356,26 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
       requiredCases,
     ),
   ];
-  const obligations = [
-    ...semantic,
-    ...protocolFeatures,
-    ...diagnostics,
-    ...lifecycle,
-    ...performance,
-    ...runtimeAndCorpus,
-  ];
+  const groups = {
+    semantic,
+    protocolFeatures,
+    diagnostics,
+    lifecycle,
+    performance,
+    runtimeAndCorpus,
+  };
+  const bindings = validateContentMapperV1Bindings(
+    root,
+    CONTENT_MAPPER_V1_BINDINGS,
+    new Set(Object.values(groups).flatMap((group) => group.map(({ id }) => id))),
+  );
+  const bound = Object.fromEntries(
+    Object.entries(groups).map(([name, group]) => [
+      name,
+      group.map((obligation) => bind(obligation, bindings.get(obligation.id))),
+    ]),
+  ) as { [K in keyof typeof groups]: (typeof groups)[K] };
+  const obligations = Object.values(bound).flat();
 
   return {
     schema: "vize.content-mapper-v1-qualification.v1",
@@ -364,12 +406,7 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         state: "blocked-upstream",
       },
     ],
-    semantic,
-    protocolFeatures,
-    diagnostics,
-    lifecycle,
-    performance,
-    runtimeAndCorpus,
+    ...bound,
     boundaryExamples,
     counts: {
       semantic: semantic.length,
@@ -378,7 +415,9 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
       lifecycle: lifecycle.length,
       performance: performance.length,
       runtimeAndCorpus: runtimeAndCorpus.length,
-      unbound: obligations.filter(({ qualification }) => qualification !== "complete").length,
+      unbound: obligations.filter(({ qualification }) => qualification === "unbound").length,
+      bound: obligations.filter(({ qualification }) => qualification === "bound").length,
+      complete: obligations.filter(({ qualification }) => qualification === "complete").length,
     },
   };
 }
