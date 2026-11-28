@@ -63400,7 +63400,7 @@
       "id": "typechecker/editor-retained-native-owner-gc-race/stale-marker-observation",
       "state": "active",
       "targets": [
-        "editor-session-storage"
+        "batch"
       ],
       "test": "corsa_bridge::editor_session::retained_tests::stale_sweep_observation_keeps_retention_armed_before_owner_unlock",
       "inputs": [
