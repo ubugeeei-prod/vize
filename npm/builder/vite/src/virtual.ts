@@ -108,8 +108,12 @@ function stripPluginVisibleVueVirtualSuffix(path: string): string {
   return path.endsWith(".vue.ts") ? path.slice(0, -3) : path;
 }
 
-export function isPluginVisibleSsrVirtualId(id: string): boolean {
-  const request = classifyVitePluginRequest(id);
+/** `classified`, when supplied, must describe this exact `id`. */
+export function isPluginVisibleSsrVirtualId(
+  id: string,
+  classified?: ReturnType<typeof classifyVitePluginRequest>,
+): boolean {
+  const request = classified ?? classifyVitePluginRequest(id);
   return request.querySuffix
     ? new URLSearchParams(request.querySuffix.slice(1)).has("vize-ssr")
     : false;

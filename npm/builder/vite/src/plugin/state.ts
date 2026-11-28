@@ -5,6 +5,7 @@
  */
 
 import type { ViteDevServer } from "vite";
+import type { classifyVitePluginRequest } from "@vizejs/native";
 
 import type { VizeOptions, CompiledModule } from "../types.ts";
 import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
@@ -49,6 +50,8 @@ export interface VizePluginState {
   ssrPrecompileMetadata?: Map<string, PrecompileFileMetadata>;
   pendingHmrUpdateTypes: Map<string, HmrUpdateType>;
   viteResolveCache?: Map<string, Promise<{ id: string; external?: boolean } | null>>;
+  /** One classification for adjacent dev imports from the same module. */
+  viteImporterRequest?: { id: string; request: ReturnType<typeof classifyVitePluginRequest> };
   isProduction: boolean;
   /**
    * Whether Vite's own `build.sourcemap` asks for source maps (#3399).

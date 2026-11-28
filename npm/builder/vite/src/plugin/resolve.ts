@@ -16,6 +16,7 @@ import {
 
 import { isHeldByBuild, type VizePluginState } from "./state.ts";
 import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
+import { classifyImporterRequest } from "./importer-request.ts";
 import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
 import { resolvePageMacroRequest } from "./resolve-page-macro.ts";
@@ -693,12 +694,6 @@ export function isPotentialVizeResolveId(id: string): boolean {
   );
 }
 
-function classifyImporterRequest(
-  importer: string | undefined,
-): ReturnType<typeof classifyVitePluginRequest> | null {
-  return importer ? classifyVitePluginRequest(importer) : null;
-}
-
 export function isPotentialVizeImporter(importer: string | undefined): boolean {
   if (importer === undefined) {
     return false;
@@ -782,7 +777,7 @@ async function resolveAliasedVueImport(
     return null;
   }
 
-  if (state.cache.has(realPath) || fs.existsSync(realPath)) {
+  if (isHeldByBuild(state, realPath) || fs.existsSync(realPath)) {
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
     // Vite scans raw .vue files for imports before our load hook compiles them.
     return preserveQueryAsPath
@@ -802,7 +797,7 @@ function resolvePackageVueModuleId(
   isDependencyScan: boolean,
 ): string | null {
   const realPath = normalizeResolvedVuePath(resolvedId);
-  if (!realPath || (!state.cache.has(realPath) && !fs.existsSync(realPath))) return null;
+  if (!realPath || (!isHeldByBuild(state, realPath) && !fs.existsSync(realPath))) return null;
   if (state.filter && !realPath.includes("node_modules") && !state.filter(realPath)) {
     return null;
   }
@@ -827,14 +822,16 @@ export async function resolveIdHook(
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }
-  const importerRequest = classifyImporterRequest(importer);
+  const importerRequest = classifyImporterRequest(state, importer);
 
   const isBuild = state.server === null;
   const isDependencyScan = !!options?.scan;
   const isSsrRequest =
     !!options?.ssr ||
     (importerRequest?.isVizeSsrVirtual ?? false) ||
-    (importer ? isPluginVisibleSsrVirtualId(importer) : false);
+    (importer
+      ? isPluginVisibleSsrVirtualId(importer, isBuild ? undefined : (importerRequest ?? undefined))
+      : false);
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 
@@ -1259,7 +1256,7 @@ export async function resolveIdHook(
 
     // Keep the source path during dependency scans: Vite's HTML scanner reads
     // <script> blocks from .vue files, but externalizes \0 virtual IDs.
-    if (hasCache || fileExists) {
+    if (fileExists) {
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
