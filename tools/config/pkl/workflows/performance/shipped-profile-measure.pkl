@@ -1,5 +1,5 @@
-// Temporary driver for the actual Fresco signal handler; not a product source change.
-`name` = "Fresco signal dispatch comparison"
+// Temporary driver for the actual L2 text rebuild function; not a product source change.
+`name` = "L2 text rebuild comparison"
 `on` = new Dynamic {
   `workflow_dispatch` = new Dynamic {
     `inputs` = new Dynamic {
@@ -35,7 +35,7 @@
         `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
         `with` = new Dynamic {
           `ref` = "${{ inputs.base_sha }}"
-          `path` = "signal-base"
+          `path` = "rebuild-base"
           `persist-credentials` = false
         }
       }
@@ -43,7 +43,7 @@
         `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
         `with` = new Dynamic {
           `ref` = "${{ inputs.head_sha }}"
-          `path` = "signal-head"
+          `path` = "rebuild-head"
           `persist-credentials` = false
         }
       }
@@ -64,25 +64,25 @@
         `run` = ". \".github/scripts/workflows/shipped-profile-measure/install-callgrind.sh\""
       }
       new Dynamic {
-        `name` = "Build, verify native behavior, and compare instructions and static storage"
+        `name` = "Build, verify native behavior, and compare instructions"
         `env` = new Dynamic {
-          `SIGNAL_PROBE_ROOT` = "${{ github.workspace }}"
-          `SIGNAL_PROBE_BASE_SHA` = "${{ inputs.base_sha }}"
-          `SIGNAL_PROBE_HEAD_SHA` = "${{ inputs.head_sha }}"
+          `REBUILD_PROBE_ROOT` = "${{ github.workspace }}"
+          `REBUILD_PROBE_BASE_SHA` = "${{ inputs.base_sha }}"
+          `REBUILD_PROBE_HEAD_SHA` = "${{ inputs.head_sha }}"
         }
-        `run` = "node tools/benchmarks/probes/fresco-signal-dispatch/driver.ts"
+        `run` = "node tools/benchmarks/probes/text-rebuild/driver.ts"
       }
       new Dynamic {
         `name` = "Retain raw dumps, actual ELFs, source, dependency identity and receipt"
         `if` = "always()"
         `uses` = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
         `with` = new Dynamic {
-          `name` = "fresco-signal-dispatch-${{ inputs.head_sha }}"
+          `name` = "text-rebuild-${{ inputs.head_sha }}"
           `if-no-files-found` = "error"
-          `path` = "signal-evidence/measurement.json\nsignal-evidence/environment.json\nsignal-evidence/authored/**\nsignal-evidence/*/package/**\nsignal-evidence/*/metadata.json\nsignal-evidence/*/build.jsonl\nsignal-evidence/*/symbols.txt\nsignal-evidence/*/sections.txt\nsignal-evidence/*/elf-symbols.txt\nsignal-evidence/*/default.stdout\nsignal-evidence/*/default.stderr\nsignal-evidence/*/run-*/**\nsignal-evidence/*/fresco_signal_dispatch_probe\n"
+          `path` = "rebuild-evidence/measurement.json\nrebuild-evidence/environment.json\nrebuild-evidence/authored/**\nrebuild-evidence/*/package/**\nrebuild-evidence/*/metadata.json\nrebuild-evidence/*/build.jsonl\nrebuild-evidence/*/symbols.txt\nrebuild-evidence/*/sections.txt\nrebuild-evidence/*/elf-symbols.txt\nrebuild-evidence/*/run-*/**\nrebuild-evidence/*/text_rebuild_probe\n"
         }
       }
     }
   }
 }
-`run-name` = "Fresco native signal comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}"
+`run-name` = "L2 text rebuild instruction comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}"

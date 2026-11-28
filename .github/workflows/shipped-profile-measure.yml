@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/shipped-profile-measure.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
-name: Fresco signal dispatch comparison
+name: L2 text rebuild comparison
 on:
   workflow_dispatch:
     inputs:
@@ -25,12 +25,12 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ inputs.base_sha }}
-          path: signal-base
+          path: rebuild-base
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ inputs.head_sha }}
-          path: signal-head
+          path: rebuild-head
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
@@ -40,30 +40,28 @@ jobs:
           toolchain: 1.100.0
       - name: Install existing Callgrind identity
         run: . ".github/scripts/workflows/shipped-profile-measure/install-callgrind.sh"
-      - name: Build, verify native behavior, and compare instructions and static storage
+      - name: Build, verify native behavior, and compare instructions
         env:
-          SIGNAL_PROBE_ROOT: ${{ github.workspace }}
-          SIGNAL_PROBE_BASE_SHA: ${{ inputs.base_sha }}
-          SIGNAL_PROBE_HEAD_SHA: ${{ inputs.head_sha }}
-        run: node tools/benchmarks/probes/fresco-signal-dispatch/driver.ts
+          REBUILD_PROBE_ROOT: ${{ github.workspace }}
+          REBUILD_PROBE_BASE_SHA: ${{ inputs.base_sha }}
+          REBUILD_PROBE_HEAD_SHA: ${{ inputs.head_sha }}
+        run: node tools/benchmarks/probes/text-rebuild/driver.ts
       - name: Retain raw dumps, actual ELFs, source, dependency identity and receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: fresco-signal-dispatch-${{ inputs.head_sha }}
+          name: text-rebuild-${{ inputs.head_sha }}
           if-no-files-found: error
           path: |
-            signal-evidence/measurement.json
-            signal-evidence/environment.json
-            signal-evidence/authored/**
-            signal-evidence/*/package/**
-            signal-evidence/*/metadata.json
-            signal-evidence/*/build.jsonl
-            signal-evidence/*/symbols.txt
-            signal-evidence/*/sections.txt
-            signal-evidence/*/elf-symbols.txt
-            signal-evidence/*/default.stdout
-            signal-evidence/*/default.stderr
-            signal-evidence/*/run-*/**
-            signal-evidence/*/fresco_signal_dispatch_probe
-run-name: Fresco native signal comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}
+            rebuild-evidence/measurement.json
+            rebuild-evidence/environment.json
+            rebuild-evidence/authored/**
+            rebuild-evidence/*/package/**
+            rebuild-evidence/*/metadata.json
+            rebuild-evidence/*/build.jsonl
+            rebuild-evidence/*/symbols.txt
+            rebuild-evidence/*/sections.txt
+            rebuild-evidence/*/elf-symbols.txt
+            rebuild-evidence/*/run-*/**
+            rebuild-evidence/*/text_rebuild_probe
+run-name: L2 text rebuild instruction comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}

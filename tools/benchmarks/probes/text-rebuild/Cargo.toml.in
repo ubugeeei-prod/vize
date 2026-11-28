@@ -1,0 +1,21 @@
+[workspace]
+
+[package]
+name = "text_rebuild_probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[features]
+default = ["instruction-counts"]
+instruction-counts = []
+
+[dependencies]
+vize_l0 = { path = "@REPO@/davinci/vize_l0" }
+vize_l2 = { path = "@REPO@/davinci/vize_l2" }
+serde_json = "=1.0.154"
+mimalloc = "=0.1.52"
+stacker = "=0.1.25"
+valgrind-requests = { version = "=1.2.0", default-features = false, features = ["act"] }
+
+# The driver appends the unchanged repository release and ci-opt profiles.
