@@ -20,6 +20,8 @@ pub mod steps;
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 
+#[doc(hidden)]
+pub use compile::composed_sfc::compile_composed_sfc_template_with_preflight_and_environment;
 pub use compile::custom_elements::{
     compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
     compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options,

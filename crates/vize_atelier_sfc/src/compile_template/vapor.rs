@@ -119,6 +119,7 @@ pub(crate) fn compile_template_block_vapor(
         map: None,
         warnings,
         sections: None,
+        render_at: 0,
     })
 }
 

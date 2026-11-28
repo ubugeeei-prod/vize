@@ -9,6 +9,7 @@ mod duplicates;
 mod error_list;
 mod extraction;
 mod plugin_outputs;
+mod render_map;
 mod ssr_direct;
 mod string_tracking;
 mod vapor;
@@ -19,7 +20,10 @@ mod section_offsets_tests;
 mod tests;
 
 pub use error_list::{TEMPLATE_ERRORS_PREFIX, template_error_details};
-pub(crate) use extraction::{extract_template_parts, slice_template_parts, template_parts_full};
+pub(crate) use extraction::{
+    extract_template_parts, render_fn_runs, slice_template_parts, slice_template_parts_runs,
+    template_parts_full,
+};
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -29,7 +33,7 @@ use vize_l0::Allocator;
 use vize_atelier_core::CompilerErrorWithSource;
 use vize_l1_to_l2::lower::pug::PugSourceMap;
 
-use crate::module_map::{Runs, source_map_points};
+use crate::module_map::Runs;
 use crate::types::{
     BindingMetadata, BlockLocation, SfcError, SfcTemplateBlock, TemplateCompileOptions,
 };
@@ -38,14 +42,16 @@ use vize_l4::module::OutputModule;
 
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
-    /// Generated-module byte positions mapped into `template.content`.
-    /// The enclosing SFC assembly composes these with the authored Pug map.
+    /// Bytes of `code` mapped to the authored SFC bytes they were generated
+    /// from, when the compile asked for a source map and the lane records one.
     pub(crate) map: Option<Runs>,
     pub(crate) warnings: std::vec::Vec<SfcError>,
     /// Section boundaries of `code`, recorded while the render module was
     /// emitted. `None` for the SSR/Vapor lanes (they re-scan via
     /// `extract_template_parts_full`) and for codegen error paths.
     pub(crate) sections: Option<TemplateCodeSections>,
+    /// Where the render function starts in `code`, for placing `map`.
+    pub(crate) render_at: usize,
 }
 
 /// Byte ranges into [`TemplateBlockCompileResult::code`] marking the sections
@@ -82,8 +88,6 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
     pub(crate) script_tables: Option<vize_atelier_core::lane::ScriptTables>,
-    /// Whether the caller will compose the backend template map into its result.
-    pub(crate) collect_map: bool,
     /// The complete authored SFC, used only when a template diagnostic needs
     /// an exact host-file location.
     pub(crate) authored_source: Option<&'a str>,
@@ -148,7 +152,6 @@ pub(crate) fn compile_template_block_with_capture(
         experimental_self_component,
         bindings,
         script_tables,
-        collect_map,
         authored_source,
         pug_source_map,
     } = ctx;
@@ -186,6 +189,7 @@ pub(crate) fn compile_template_block_with_capture(
         let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
             component_name: component_name.map(|name| name.to_compact_string()),
             self_component: experimental_self_component,
+            source_map: codegen_options.source_map,
             ..vize_atelier_ssr::SsrCompilerExperimentalOptions::default()
         };
         // SFC callers own the build target (Vite forwards isProduction here).
@@ -198,19 +202,17 @@ pub(crate) fn compile_template_block_with_capture(
         let (errors, result) = profile!(
             "atelier.sfc.template.ssr",
             if let Some(capture) = capture {
-                let (_, errors, result) =
-                    vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
-                        allocator,
-                        &template.content,
-                        ssr_opts,
-                        template_syntax,
-                        custom_elements.clone(),
-                        ssr_experimental_options,
-                        ssr_context,
-                        codegen_options,
-                        capture,
-                    );
-                (errors, result)
+                ssr_direct::compile_captured(
+                    allocator,
+                    &template.content,
+                    ssr_opts,
+                    template_syntax,
+                    custom_elements.clone(),
+                    ssr_experimental_options,
+                    ssr_context,
+                    codegen_options,
+                    capture,
+                )
             } else {
                 ssr_direct::compile(
                     allocator,
@@ -249,10 +251,12 @@ pub(crate) fn compile_template_block_with_capture(
             });
         }
 
-        let output = OutputModule::from_render_chunks(result.preamble, result.code).into_code();
+        let output = OutputModule::from_render_chunks(result.preamble, result.code);
+        let map = render_map::render_map(result.map.as_deref(), &output, template, pug_source_map);
         return Ok(TemplateBlockCompileResult {
-            code: output,
-            map: None,
+            render_at: output.function_base_offset(),
+            code: output.into_code(),
+            map,
             warnings: recoverable_template_warnings(&errors),
             sections: None,
         });
@@ -262,11 +266,8 @@ pub(crate) fn compile_template_block_with_capture(
     let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
     dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
     dom_opts.prefix_identifiers = true;
-    // Template-only assembly composes these anchors into the complete SFC map.
-    // Script-bearing assembly owns its map separately and does not consume this map.
-    if collect_map {
-        dom_opts.source_map = codegen_options.source_map;
-    }
+    // Every SFC assembly composes these anchors into the complete module map.
+    dom_opts.source_map = codegen_options.source_map;
     // Vue applies SFC scope IDs at runtime. Only module-level hoisted VNodes
     // need an explicit scope attr baked into their props.
     dom_opts.scope_id = None;
@@ -325,9 +326,16 @@ pub(crate) fn compile_template_block_with_capture(
     // result stops before the legacy entry. Only appended option metadata
     // needs rollback to preserve the eager preflight's exact error boundary.
     let before_preflight = capture.as_deref().map(|capture| capture.options.len());
+    // A requested map is composed into the component's, and only the composed
+    // DOM compile records the links that needs.
+    let compile = if dom_opts.source_map {
+        vize_atelier_dom::compile_composed_sfc_template_with_preflight_and_environment
+    } else {
+        vize_atelier_dom::compile_sfc_template_with_preflight_and_environment
+    };
     let (errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_sfc_template_with_preflight_and_environment(
+        compile(
             allocator,
             &template.content,
             dom_opts,
@@ -375,15 +383,7 @@ pub(crate) fn compile_template_block_with_capture(
         });
     }
 
-    let template_map = if collect_map {
-        result
-            .result
-            .map
-            .as_deref()
-            .and_then(|map| source_map_points(map, &result.result.code, &template.content))
-    } else {
-        None
-    };
+    let template_map = result.result.map;
 
     // Translate the emission-recorded section offsets into the concatenated
     // output: `output = preamble + '\n' + code + '\n'`, where `preamble` is
@@ -393,11 +393,12 @@ pub(crate) fn compile_template_block_with_capture(
     let preamble_len = output_module.imports.len();
     let fn_base = output_module.function_base_offset();
     let fn_end = fn_base + output_module.functions.len();
-    let map = template_map.map(|map| {
-        let mut placed = Runs::default();
-        placed.append(fn_base, &map);
-        placed
-    });
+    let map = render_map::render_map(
+        template_map.as_deref(),
+        &output_module,
+        template,
+        pug_source_map,
+    );
     let sections = result.sections.map(|s| TemplateCodeSections {
         imports: (0, s.imports_len),
         hoisted: if preamble_len > s.imports_len {
@@ -416,6 +417,7 @@ pub(crate) fn compile_template_block_with_capture(
         map,
         warnings: recoverable_template_warnings(&errors),
         sections,
+        render_at: fn_base,
     })
 }
 

@@ -16,6 +16,8 @@ use crate::module_map::{Runs, edit_runs, module_map_value};
 use crate::rewrite_default::rewrite_default_traced;
 use crate::types::{SfcDescriptor, SfcScriptBlock};
 
+use super::output_module::{rewrite_client_render_for_sfc_main, rewrite_client_render_traced};
+
 /// A script block's content after the lazy-hydration and artifact-macro
 /// passes, and (when `trace`) that content's provenance in `.vue` offsets.
 pub(super) fn prepared_script(
@@ -94,6 +96,19 @@ pub(super) fn demoted(runs: Option<Runs>, len: usize, starts: &[usize]) -> Optio
     runs.map(|runs| edit_runs(len, &edits).compose(&runs))
 }
 
+/// A normal-script component's client render block: the template's render
+/// function renamed for `_sfc_main`, and the template map (`None` when the
+/// compile records none) carried through the rename.
+pub(super) fn client_render(template_code: &str, map: Option<Runs>) -> (String, Option<Runs>) {
+    match map {
+        Some(map) => {
+            let (renamed, rename) = rewrite_client_render_traced(template_code);
+            (renamed, Some(rename.compose(&map)))
+        }
+        None => (rewrite_client_render_for_sfc_main(template_code), None),
+    }
+}
+
 /// The `SfcCompileResult.map` of `code`, given the provenance of the module
 /// before `finalize_output_mode` (`output`, placed at byte `at`) and that
 /// pass's own provenance (`rewrite`, `None` when it kept the module).
@@ -105,11 +120,29 @@ pub(super) fn module_map(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) -> Option<serde_json::Value> {
+    module_map_with_render(code, output, at, None, rewrite, descriptor, filename)
+}
+
+/// [`module_map`] for a module that also holds a render block the script's
+/// provenance does not cover: `render` is that block's offset in the module
+/// before `finalize_output_mode` and its template provenance.
+pub(super) fn module_map_with_render(
+    code: &str,
+    output: Option<Runs>,
+    at: usize,
+    render: Option<(usize, Runs)>,
+    rewrite: Option<Runs>,
+    descriptor: &SfcDescriptor<'_>,
+    filename: &str,
+) -> Option<serde_json::Value> {
     let mut placed = Runs::default();
     // Some generated SFC shapes trim trailing newlines before building the
     // map. Clip a verbatim script run to the emitted module so validation
     // keeps the remaining authored bytes instead of discarding the whole run.
     placed.append(at, &output?.slice(0, code.len().saturating_sub(at)));
+    if let Some((at, render)) = render {
+        placed.append(at, &render);
+    }
     let provenance = match rewrite {
         Some(rewrite) => rewrite.compose(&placed),
         None => placed,

@@ -169,7 +169,7 @@ try {
       name: file.name,
       official: null,
       current: null,
-      currentDisposition: "script-provenance-only",
+      currentDisposition: "script-and-template-provenance",
       completeOfficialMapParity: false,
       templateArgumentAnchorCoverage: false,
     };

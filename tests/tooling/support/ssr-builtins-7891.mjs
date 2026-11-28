@@ -148,20 +148,16 @@ try {
     assert.deepEqual(parsed.errors, []);
     const hasScript = Boolean(parsed.descriptor.script || parsed.descriptor.scriptSetup);
     assert.equal(hasScript, !scriptless.includes(file.name));
-    let current = null;
-    if (hasScript) {
-      assert.ok(file.current.map && typeof file.current.map.mappings === "string");
-      assert.deepEqual(file.current.map.sources, [`${file.name}.vue`]);
-      assert.deepEqual(file.current.map.sourcesContent, [file.source]);
-      current = mapGraph(file.current.code, file.current.map, file.source);
-    } else {
-      assert.equal(file.current.map, null);
-    }
+    // The server render maps back to its template, so a component
+    // without a script is mapped as well.
+    assert.ok(file.current.map && typeof file.current.map.mappings === "string");
+    assert.deepEqual(file.current.map.sources, [`${file.name}.vue`]);
+    assert.deepEqual(file.current.map.sourcesContent, [file.source]);
     maps.push({
       name: file.name,
       official: mapGraph(result.code, result.map, file.source),
-      current,
-      currentDisposition: hasScript ? "script-provenance-only" : "scriptless-unavailable",
+      current: mapGraph(file.current.code, file.current.map, file.source),
+      currentDisposition: hasScript ? "script-and-template-provenance" : "template-provenance",
     });
   }
   let sequence = 0;

@@ -1,6 +1,6 @@
 //! Shared SFC render output assembly.
 
-use crate::module_map::Runs;
+use crate::module_map::{Runs, apply_edits};
 use crate::types::{CssModuleMapping, SfcCompileOptions, SfcError, css_modules_object_literal};
 use vize_atelier_core::CodegenOptions;
 use vize_carton::{String, ToCompactString, cstr};
@@ -121,7 +121,8 @@ fn rewrite_module_sfc_to_standalone(
         }
         if let Some(runs) = runs.as_deref_mut() {
             if rewritten == line {
-                runs.copy(output.len(), start, line.len());
+                // With its newline, so unchanged lines stay one run.
+                runs.copy_line(output.len(), code, line);
             } else {
                 runs.point(output.len(), start);
             }
@@ -176,6 +177,20 @@ pub(crate) fn rewrite_client_render_for_sfc_main(template_code: &str) -> String 
     template_code.to_compact_string()
 }
 
+/// [`rewrite_client_render_for_sfc_main`] with the result's provenance in
+/// `template_code`: the renamed signature is anchored where the signature it
+/// replaced starts, which is where the template codegen anchors the render
+/// function, and everything else is a copy.
+pub(crate) fn rewrite_client_render_traced(template_code: &str) -> (String, Runs) {
+    let signature = ["export function render(", "function render("]
+        .into_iter()
+        .find_map(|authored| {
+            let start = template_code.find(authored)?;
+            Some((start, start + authored.len(), "function _sfc_render("))
+        });
+    apply_edits(template_code, signature)
+}
+
 pub(crate) fn append_css_modules_assignment(
     code: &mut String,
     target: &str,
@@ -211,7 +226,36 @@ pub(crate) fn append_component_render_export(
 
 #[cfg(test)]
 mod tests {
-    use super::{RenderFunctionName, String, append_component_render_export};
+    use super::{
+        RenderFunctionName, String, append_component_render_export,
+        rewrite_client_render_for_sfc_main, rewrite_client_render_traced,
+    };
+
+    #[test]
+    fn traced_client_render_rewrite_emits_the_untraced_bytes() {
+        for code in [
+            "import { h } from \"vue\"\nexport function render(_ctx, _cache) {\n  return h(\"p\")\n}\n",
+            "function render(_ctx, _cache) {\n  return null\n}\n",
+            "const render = 1\n",
+            "",
+        ] {
+            let (traced, runs) = rewrite_client_render_traced(code);
+            assert_eq!(traced, rewrite_client_render_for_sfc_main(code));
+            assert_eq!(runs.clone().verified(&traced, code), runs);
+        }
+        // The signature keeps the anchor of the one it replaced.
+        let (traced, runs) = rewrite_client_render_traced("\nexport function render() {}\n");
+        assert_eq!(traced, "\nfunction _sfc_render() {}\n");
+        assert_eq!(
+            [
+                runs.lookup(0),
+                runs.lookup(1),
+                runs.lookup(2),
+                runs.lookup(22)
+            ],
+            [Some(0), Some(1), None, Some(24)]
+        );
+    }
 
     #[test]
     fn shared_render_vocabulary_preserves_all_legacy_module_bytes() {

@@ -184,9 +184,10 @@ pub(super) fn compile_script_setup_inline_body(
     } else {
         None
     };
-    // The render or setup-state return closes `setup`; it has no provenance.
+    // The render or setup-state return closes `setup`. Only the template
+    // parts an inline render copies have provenance.
     let mut render_return = TextBuf::new();
-    emit_render_return(
+    let render_layout = emit_render_return(
         &mut render_return,
         &template,
         SetupBindingInputs {
@@ -199,6 +200,9 @@ pub(super) fn compile_script_setup_inline_body(
         vapor_render_alias.as_deref(),
         ctx,
     );
+    let render_runs = tracer
+        .trace()
+        .map(|trace| render_layout.provenance(render_return.as_str(), &template, &trace.template));
 
     let (ts_declarations, declaration_runs) = {
         let runs = tracer
@@ -344,6 +348,7 @@ pub(super) fn compile_script_setup_inline_body(
     );
 
     output.push('\n');
+    tracer.copy(output.len(), render_runs.as_ref());
     output.push_str(&render_return);
 
     output.push_str("}\n");

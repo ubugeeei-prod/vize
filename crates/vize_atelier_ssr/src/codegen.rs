@@ -3,6 +3,18 @@
 //! SSR code generation produces JavaScript that uses template literals and `_push()` calls
 //! to build HTML strings on the server side.
 
+/// Write a component's setup binding read. A composed map anchors it at the
+/// authored byte `source`.
+macro_rules! push_setup_binding {
+    ($ctx:expr, $binding:expr, $source:expr) => {
+        if $ctx.out.composes() {
+            $ctx.push_anchored($binding, $source)
+        } else {
+            $ctx.push($binding)
+        }
+    };
+}
+
 mod children;
 mod component_binding;
 mod component_resolution;
@@ -46,6 +58,9 @@ pub struct SsrSfcContext {
     pub(crate) slotted: bool,
     pub(crate) development: bool,
     pub(crate) jsx_closure: bool,
+    /// The SFC assembly composes a recorded map into the component's, which
+    /// needs links a template's own map does not carry.
+    pub(crate) composed_map: bool,
 }
 
 impl SsrSfcContext {
@@ -56,6 +71,7 @@ impl SsrSfcContext {
             slotted,
             development: false,
             jsx_closure: false,
+            composed_map: false,
         }
     }
 
@@ -73,6 +89,13 @@ impl SsrSfcContext {
     #[must_use]
     pub const fn with_development(mut self, development: bool) -> Self {
         self.development = development;
+        self
+    }
+
+    /// The SFC assembly composes a recorded map into the component's.
+    #[must_use]
+    pub const fn with_composed_map(mut self, composed_map: bool) -> Self {
+        self.composed_map = composed_map;
         self
     }
 }
@@ -185,6 +208,9 @@ impl<'a> SsrCodegenContext<'a> {
         self.slotted = context.slotted;
         self.development = context.development;
         self.jsx_closure = context.jsx_closure;
+        if context.composed_map {
+            self.out.compose();
+        }
     }
 
     pub(crate) fn conditional_comment_vnode(&self) -> &'static str {
@@ -259,8 +285,12 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            self.out
-                .source_map(self.source_map_filename.as_str(), self.source)
+            let filename = self.source_map_filename.as_str();
+            if self.out.composes() {
+                self.out.composed_source_map(filename, self.source)
+            } else {
+                self.out.source_map(filename, self.source)
+            }
         });
         let code = self.out.into_string();
 

@@ -176,9 +176,13 @@ impl CodegenContext {
 
     /// Serialize the document's links as a v3 map, when it records.
     pub(super) fn source_map(&self, filename: &str, source: &str) -> Option<String> {
-        self.out
-            .is_recording()
-            .then(|| self.out.source_map(filename, source))
+        self.out.is_recording().then(|| {
+            if self.out.composes() {
+                self.out.composed_source_map(filename, source)
+            } else {
+                self.out.source_map(filename, source)
+            }
+        })
     }
 
     /// Byte length of the code generated so far.

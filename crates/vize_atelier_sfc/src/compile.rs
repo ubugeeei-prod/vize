@@ -28,6 +28,7 @@ mod targets;
 pub(crate) mod targets_tests;
 mod template_context;
 mod template_only;
+mod template_parts;
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;

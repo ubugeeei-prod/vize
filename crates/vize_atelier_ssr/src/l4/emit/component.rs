@@ -212,6 +212,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
         // The resolved name maps to the authored tag, as the AST walker's does.
         let callee = match binding {
+            // A composed map anchors a setup binding read at the tag.
+            Some(binding) if self.ctx.out.composes() => {
+                EmitDocument::mapped(&binding, component.span.start + 1)
+            }
             Some(binding) => EmitDocument::from(binding),
             None => self
                 .ctx

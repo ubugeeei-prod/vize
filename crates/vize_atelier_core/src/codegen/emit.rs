@@ -22,6 +22,7 @@ use super::root::{
     clippy::too_many_arguments,
     reason = "codegen inputs remain explicit across the internal SFC environment boundary"
 )]
+#[inline(always)]
 pub(super) fn generate_with_sections_and_options(
     root: &RootNode<'_>,
     options: CodegenOptions,
@@ -34,6 +35,40 @@ pub(super) fn generate_with_sections_and_options(
     untracked_children: bool,
     jsx_class: bool,
 ) -> CodegenResultWithSections {
+    generate_composable(
+        root,
+        options,
+        vnode_factory,
+        merge_props,
+        source_text,
+        experimental_options,
+        no_slotted,
+        development,
+        untracked_children,
+        jsx_class,
+        false,
+    )
+}
+
+/// [`generate_with_sections_and_options`], whose document composes its links
+/// into a Vue file's map when `composed` and a map is recorded.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "codegen inputs remain explicit across the internal SFC environment boundary"
+)]
+pub(super) fn generate_composable(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    vnode_factory: Option<&str>,
+    merge_props: bool,
+    source_text: Option<&str>,
+    experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+    untracked_children: bool,
+    jsx_class: bool,
+    composed: bool,
+) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
         vnode_factory,
@@ -41,6 +76,9 @@ pub(super) fn generate_with_sections_and_options(
         experimental_options,
         no_slotted,
     );
+    if composed {
+        ctx.out.compose();
+    }
     ctx.development = development;
     ctx.untracked_children = untracked_children;
     ctx.jsx_class = jsx_class;

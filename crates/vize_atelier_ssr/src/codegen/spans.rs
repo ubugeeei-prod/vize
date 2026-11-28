@@ -41,6 +41,15 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
+    /// Write `text` directly, anchored at the authored byte `source`, in a
+    /// composed map.
+    #[cold]
+    #[inline(never)]
+    pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+        self.out.anchor(source);
+        self.push(text);
+    }
+
     /// Write `text` directly, anchored at `source` when there is one.
     pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
         match source {
