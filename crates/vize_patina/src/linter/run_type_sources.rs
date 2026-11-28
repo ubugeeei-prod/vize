@@ -60,5 +60,49 @@ impl RunTypeSources {
     }
 }
 
+/// Reads the modules an SFC's imports name through one disk view, for rules
+/// that follow an import into the module it resolves to.
+#[derive(Clone, Copy)]
+pub(crate) struct ModuleReader<'s> {
+    snapshot: &'s TypeSourceSnapshot,
+}
+
+impl ModuleReader<'_> {
+    /// `specifier` resolved from `importer` the way imported macro types
+    /// resolve: relative paths, tsconfig `paths` and package entries.
+    pub(crate) fn resolve(&self, importer: &Path, specifier: &str) -> Option<PathBuf> {
+        self.snapshot.resolve_import(importer, specifier)
+    }
+
+    /// Run `read` on the text of `path`, when it can be read.
+    pub(crate) fn with_source<R>(&self, path: &Path, read: impl FnOnce(&str) -> R) -> Option<R> {
+        let source = self.snapshot.read(path)?;
+        Some(read(&source))
+    }
+}
+
+/// Run `read` with `filename` as the importer and the run's view, or a fresh
+/// view when the linter holds none.
+pub(crate) fn with_module_reader<R>(
+    sources: Option<&RunTypeSources>,
+    filename: &str,
+    read: impl FnOnce(&Path, ModuleReader<'_>) -> R,
+) -> R {
+    match sources {
+        Some(sources) => read(
+            Path::new(sources.importer(filename).as_ref()),
+            ModuleReader {
+                snapshot: &sources.snapshot,
+            },
+        ),
+        None => read(
+            Path::new(filename),
+            ModuleReader {
+                snapshot: &TypeSourceSnapshot::default(),
+            },
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests;

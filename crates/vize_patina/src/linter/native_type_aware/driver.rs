@@ -157,6 +157,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             linter,
             descriptor,
             &scripts,
+            filename,
             &mut result,
             None,
         );

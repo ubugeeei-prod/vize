@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { shallowRef } from 'vue'
+const input = shallowRef<HTMLInputElement>()
+function set(value: string) {
+  const input = document.createElement('input')
+  input.value = value
+}
+function clear(input: HTMLInputElement) {
+  input.value = ''
+}
+</script>
+<template><input ref="input" /></template>

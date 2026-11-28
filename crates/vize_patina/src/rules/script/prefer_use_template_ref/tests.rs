@@ -366,6 +366,62 @@ function reset(): void {
 }
 
 #[test]
+fn reports_a_ref_whose_name_only_a_nested_binding_writes() {
+    // The helper's own `input` (a DOM element) and its parameter shadow the
+    // template ref; their `.value` writes never reach the ref.
+    let sfc = include_str!(
+        "../../../../../../tests/_fixtures/differential/linter/prefer-use-template-ref-identity/ShadowedValueWrite.vue.txt"
+    );
+    let result = lint_sfc(sfc);
+    let call = sfc
+        .find("shallowRef<HTMLInputElement>()")
+        .expect("declaration");
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.rule_name, diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>(),
+        vec![(
+            "script/prefer-use-template-ref",
+            call as u32,
+            (call + "shallowRef<HTMLInputElement>()".len()) as u32
+        )]
+    );
+}
+
+#[test]
+fn a_write_through_the_ref_binding_inside_a_nested_scope_keeps_it() {
+    let sfc = r#"<script>
+import { defineComponent, ref } from 'vue'
+export default defineComponent({
+  setup() {
+    const input = ref(null)
+    const other = ref(null)
+    function set() {
+      const other = { value: '' }
+      other.value = 'x'
+      input.value = null
+    }
+    return { input, other, set }
+  },
+})
+</script>
+<template><input ref="input" /><input ref="other" /></template>
+"#;
+    let result = lint_sfc(sfc);
+    let other = sfc.find("const other = ref(null)").expect("other") + "const other = ".len();
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.rule_name, diagnostic.start))
+            .collect::<Vec<_>>(),
+        vec![("script/prefer-use-template-ref", other as u32)]
+    );
+}
+
+#[test]
 fn the_suggestion_keeps_the_keyword_and_element_type() {
     let sfc = r#"<script setup lang="ts">
 import { shallowRef } from 'vue'

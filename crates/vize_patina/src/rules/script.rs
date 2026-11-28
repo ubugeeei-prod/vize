@@ -113,7 +113,7 @@ pub use no_dupe_keys::NoDupeKeysModuleScript;
 pub use props_emits::EmitsModuleScript;
 pub(crate) use props_emits::collect_options_props;
 pub use sfc_context::SfcScriptContext;
-pub(crate) use sfc_context::{TemplateSideReads, UnboundRead};
+pub(crate) use sfc_context::{ImportingFile, TemplateSideReads, UnboundRead};
 pub use template_component_bindings::TemplateComponentBindings;
 
 /// Metadata for a script-level rule

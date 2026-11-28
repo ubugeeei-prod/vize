@@ -24,6 +24,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
     scripts: &ScriptSemantics<'_, '_>,
+    filename: &str,
     result: &mut LintResult,
     template_ast: Option<(&crate::markup::LintInput<'_>, u32)>,
 ) {
@@ -31,6 +32,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         linter,
         descriptor,
         scripts,
+        filename,
         result,
         template_ast,
         None,
@@ -41,6 +43,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
     scripts: &ScriptSemantics<'_, '_>,
+    filename: &str,
     result: &mut LintResult,
     template_ast: Option<(&crate::markup::LintInput<'_>, u32)>,
     mut template_context: Option<&mut crate::context::LintContext<'_>>,
@@ -350,6 +353,10 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             .as_ref()
             .and_then(|block| block.attrs.get("generic"))
             .map(|generic| generic.as_ref()),
+        importing_file: Some(crate::rules::script::ImportingFile {
+            filename,
+            sources: linter.run_type_sources(),
+        }),
     };
 
     let setup_program = script_setup_parsed
