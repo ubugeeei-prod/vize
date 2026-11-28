@@ -80,6 +80,9 @@ fn legacy_resolution_keeps_existing_subpath_declarations_without_export_source_f
                 std::iter::empty::<&str>(),
             ),
         );
-        assert!(modern.route().unwrap().source_paths.contains(&source));
+        assert_eq!(
+            modern.route().unwrap().source_paths,
+            [source.clone(), declaration.clone()]
+        );
     }
 }
