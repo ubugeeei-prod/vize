@@ -241,7 +241,7 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | ----- | ----------------------------- | -------------------------------------------------------------------------- |
 | 11.01 | Docs build                    | [`11-docs-build.yml`](./11-docs-build.yml)                                 |
 | 11.02 | Fuzz                          | [`11-fuzz.yml`](./11-fuzz.yml)                                             |
-| 11.03 | Miri                          | [`11-miri.yml`](./11-miri.yml)                                             |
+| 11.03 | Unsafe source Miri evidence   | [`11-miri.yml`](./11-miri.yml)                                             |
 | 11.04 | Sticky disk maintenance       | [`11-sticky-disk.yml`](./11-sticky-disk.yml)                               |
 | 11.05 | Zizmor                        | [`11-zizmor.yml`](./11-zizmor.yml)                                         |
 | 11.06 | Clean obsolete merge groups   | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |

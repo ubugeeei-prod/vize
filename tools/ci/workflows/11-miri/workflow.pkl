@@ -1,124 +1,101 @@
-import "../../lib/Actions.pkl" as ci
-
-name = "Miri"
-`run-name` = "${{ github.event_name == 'workflow_dispatch' && format('Miri @ {0}', github.sha) || format('Miri scheduled @ {0}', github.sha) }}"
-
-on {
-  workflow_dispatch = null
-  schedule = new Listing {
-    new Dynamic { cron = "41 3 * * *" }
+// Temporary source-bound verifier driver; production Miri configuration is unchanged.
+`name` = "Unsafe source Miri evidence"
+`on` = new Dynamic {
+  `workflow_dispatch` = new Dynamic {
+    `inputs` = new Dynamic {
+      `source_sha` = new Dynamic {
+        `required` = true
+        `type` = "string"
+      }
+      `package` = new Dynamic {
+        `required` = true
+        `type` = "choice"
+        `options` = new Listing {
+          "vize_patina"
+          "vize_fresco"
+        }
+      }
+    }
   }
 }
-concurrency {
-  group = "miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"
-  `cancel-in-progress` = true
+`permissions` = new Dynamic { `contents` = "read" }
+`env` = new Dynamic {
+  `CARGO_TERM_COLOR` = "always"
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` = true
+  `MIRIFLAGS` = "-Zmiri-ignore-leaks"
+  `CARGO_TARGET_DIR` = "${{ github.workspace }}/source/target/miri"
+  `PRODUCT_SOURCE_SHA` = "${{ inputs.source_sha }}"
+  `PRODUCT_PACKAGE` = "${{ inputs.package }}"
 }
-
-permissions { contents = "read" }
-
-env {
-  CARGO_TERM_COLOR = "always"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
-  MIRIFLAGS = "-Zmiri-ignore-leaks"
-}
-
-jobs {
-  miri {
-    `runs-on` = ci.linux
+`jobs` = new Dynamic {
+  `verify` = new Dynamic {
+    `name` = "Actual ${{ inputs.package }} kernel and tests"
+    `runs-on` = "blacksmith-16vcpu-ubuntu-2404"
     `timeout-minutes` = 20
-    steps = new Listing {
-      ci.use(ci.checkout)
+    `steps` = new Listing {
       new Dynamic {
-        uses = ci.setupRust
-        with {
-          toolchain = "nightly"
-          components = "miri,rust-src"
+        `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+        `with` = new Dynamic {
+          `ref` = "${{ github.workflow_sha }}"
+          `persist-credentials` = false
         }
       }
       new Dynamic {
-        uses = "./.github/actions/setup-rust-sticky-cache"
-        with {
-          key = "miri"
+        `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+        `with` = new Dynamic {
+          `ref` = "${{ inputs.source_sha }}"
+          `path` = "source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        `uses` = "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38"
+        `with` = new Dynamic { `node-version` = "24" }
+      }
+      new Dynamic {
+        `uses` = "dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0"
+        `with` = new Dynamic {
+          `toolchain` = "nightly"
+          `components` = "miri,rust-src"
+        }
+      }
+      new Dynamic {
+        `uses` = "./source/.github/actions/setup-rust-sticky-cache"
+        `with` = new Dynamic {
+          `key` = "miri"
           `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
-          `target-path` = "target/miri"
-        }
-      }
-      ci.command("Setup Miri", "cargo +nightly miri setup")
-      ci.command("Test VDOM transform with Miri", "cargo +nightly miri test -p vize_atelier_core --test scoped_slot_shadowing")
-      new Dynamic {
-        name = "Test DOM transform with Miri"
-        run = #"cargo +nightly miri test -p vize_atelier_dom --test integration "setup_component_unref::""#
-      }
-      new Dynamic {
-        name = "Test SFC transform with Miri"
-        run = "cargo +nightly miri test -p vize_atelier_sfc --test setup_component_unref --no-default-features"
-      }
-      // Davinci P1-11: the batch pool hands one arena to file after file, so a
-      // value that outlived its compile would read recycled bytes. Miri is the
-      // lane that reports that for real — it caught a Stacked Borrows violation
-      // in the first draft of `Allocator::alloc_owned`.
-      ci.command("Test the batch arena pool with Miri", "cargo +nightly miri test -p vize_carton --lib -- allocator pool")
-      new Dynamic {
-        name = "Test pooled SFC compiles with Miri"
-        run = "cargo +nightly miri test -p vize_atelier_sfc --test davinci_arena_pool --no-default-features"
-      }
-    }
-  }
-  // The lent walk restores oxc's callback borrows to the walked root's
-  // lifetime (`vize_patina/src/lent_walk.rs`). Its tests keep every lent node
-  // past the walk, so Miri checks each widened reference under the aliasing
-  // model. Only the `lent_walk::tests` module runs.
-  `patina-lent-walk` {
-    `runs-on` = ci.linux
-    `timeout-minutes` = 10
-    steps = new Listing {
-      ci.use(ci.checkout)
-      new Dynamic {
-        uses = ci.setupRust
-        with {
-          toolchain = "nightly"
-          components = "miri,rust-src"
+          `target-path` = "source/target/miri"
         }
       }
       new Dynamic {
-        uses = "./.github/actions/setup-rust-sticky-cache"
-        with {
-          key = "miri-patina"
-          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
-          `target-path` = "target/miri"
-        }
-      }
-      ci.command("Setup Miri", "cargo +nightly miri setup")
-      ci.command("Test the lent walk with Miri", "cargo +nightly miri test -p vize_patina --lib -- lent_walk::tests")
-    }
-  }
-  // Shared script parses (`vize_croquis/src/script_parser/shared.rs`) live in
-  // an arena the handle borrows, so the borrow checker proves their lifetimes.
-  // The tests keep parses past nested reads, list growth and the handle's
-  // drop; Miri runs them as a check of safe code. Only the
-  // `script_parser::shared::tests` module runs.
-  `croquis-shared-parse` {
-    `runs-on` = ci.linux
-    `timeout-minutes` = 10
-    steps = new Listing {
-      ci.use(ci.checkout)
-      new Dynamic {
-        uses = ci.setupRust
-        with {
-          toolchain = "nightly"
-          components = "miri,rust-src"
-        }
+        `name` = "Setup Miri"
+        `working-directory` = "source"
+        `run` = "cargo miri setup"
       }
       new Dynamic {
-        uses = "./.github/actions/setup-rust-sticky-cache"
-        with {
-          key = "miri-croquis"
-          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
-          `target-path` = "target/miri"
+        `name` = "Bind immutable source and verifier before execution"
+        `run` = "node tools/ci/commands/unsafe-miri-source.ts before"
+      }
+      new Dynamic {
+        `name` = "Run the original Miri command on the actual selected tests"
+        `run` = "node tools/ci/commands/unsafe-miri-source.ts run"
+      }
+      new Dynamic {
+        `name` = "Verify unchanged source and verifier after execution"
+        `if` = "always()"
+        `run` = "node tools/ci/commands/unsafe-miri-source.ts after"
+      }
+      new Dynamic {
+        `name` = "Retain source and verifier receipts"
+        `if` = "always()"
+        `uses` = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+        `with` = new Dynamic {
+          `name` = "miri-${{ inputs.package }}-${{ inputs.source_sha }}"
+          `path` = "miri-evidence/**"
+          `if-no-files-found` = "error"
         }
       }
-      ci.command("Setup Miri", "cargo +nightly miri setup")
-      ci.command("Test shared script parses with Miri", "cargo +nightly miri test -p vize_croquis --lib -- script_parser::shared::tests")
     }
   }
 }
+`run-name` = "Miri ${{ inputs.package }} source ${{ inputs.source_sha }}"

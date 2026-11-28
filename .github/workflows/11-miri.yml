@@ -1,15 +1,19 @@
 # DO NOT EDIT. Generated from tools/ci/workflows/11-miri/workflow.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
-name: Miri
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('Miri @ {0}', github.sha) || format('Miri scheduled @ {0}', github.sha) }}
+name: Unsafe source Miri evidence
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "41 3 * * *"
-concurrency:
-  group: miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+    inputs:
+      source_sha:
+        required: true
+        type: string
+      package:
+        required: true
+        type: choice
+        options:
+          - vize_patina
+          - vize_fresco
 
 permissions:
   contents: read
@@ -18,78 +22,52 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   MIRIFLAGS: "-Zmiri-ignore-leaks"
+  CARGO_TARGET_DIR: ${{ github.workspace }}/source/target/miri
+  PRODUCT_SOURCE_SHA: ${{ inputs.source_sha }}
+  PRODUCT_PACKAGE: ${{ inputs.package }}
 
 jobs:
-  miri:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+  verify:
+    name: Actual ${{ inputs.package }} kernel and tests
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.source_sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
           toolchain: nightly
           components: miri,rust-src
-
-      - uses: ./.github/actions/setup-rust-sticky-cache
+      - uses: ./source/.github/actions/setup-rust-sticky-cache
         with:
           key: miri
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: target/miri
-
+          target-path: source/target/miri
       - name: Setup Miri
-        run: cargo +nightly miri setup
-
-      - name: Test VDOM transform with Miri
-        run: cargo +nightly miri test -p vize_atelier_core --test scoped_slot_shadowing
-
-      - name: Test DOM transform with Miri
-        run: cargo +nightly miri test -p vize_atelier_dom --test integration "setup_component_unref::"
-
-      - name: Test SFC transform with Miri
-        run: cargo +nightly miri test -p vize_atelier_sfc --test setup_component_unref --no-default-features
-
-      # Davinci P1-11: the batch pool hands one arena to file after file, so a
-      # value that outlived its compile would read recycled bytes. Miri is the
-      # lane that reports that for real — it caught a Stacked Borrows violation
-      # in the first draft of `Allocator::alloc_owned`.
-      - name: Test the batch arena pool with Miri
-        run: cargo +nightly miri test -p vize_carton --lib -- allocator pool
-
-      - name: Test pooled SFC compiles with Miri
-        run: cargo +nightly miri test -p vize_atelier_sfc --test davinci_arena_pool --no-default-features
-  patina-lent-walk:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        working-directory: source
+        run: cargo miri setup
+      - name: Bind immutable source and verifier before execution
+        run: node tools/ci/commands/unsafe-miri-source.ts before
+      - name: Run the original Miri command on the actual selected tests
+        run: node tools/ci/commands/unsafe-miri-source.ts run
+      - name: Verify unchanged source and verifier after execution
+        if: always()
+        run: node tools/ci/commands/unsafe-miri-source.ts after
+      - name: Retain source and verifier receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          toolchain: nightly
-          components: miri,rust-src
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: miri-patina
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: target/miri
-      - name: Setup Miri
-        run: cargo +nightly miri setup
-      - name: Test the lent walk with Miri
-        run: cargo +nightly miri test -p vize_patina --lib -- lent_walk::tests
-  croquis-shared-parse:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with:
-          toolchain: nightly
-          components: miri,rust-src
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: miri-croquis
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: target/miri
-      - name: Setup Miri
-        run: cargo +nightly miri setup
-      - name: Test shared script parses with Miri
-        run: cargo +nightly miri test -p vize_croquis --lib -- script_parser::shared::tests
+          name: miri-${{ inputs.package }}-${{ inputs.source_sha }}
+          path: miri-evidence/**
+          if-no-files-found: error
+run-name: Miri ${{ inputs.package }} source ${{ inputs.source_sha }}
