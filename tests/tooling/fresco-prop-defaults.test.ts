@@ -23,6 +23,9 @@ const cases = [
   { component: "Diff", count: 17, file: "components/Diff.ts" },
   { component: "AsciiFont", count: 3, file: "ascii-font/index.ts" },
   { component: "QrCode", count: 8, file: "qr-code/index.ts" },
+  { component: "Form", count: 11, file: "components/Form.ts" },
+  { component: "Stepper", count: 9, file: "components/Stepper.ts" },
+  { component: "Tree", count: 12, file: "components/Tree.ts" },
 ] as const;
 
 function source(component: string): { filename: string; text: string } {
@@ -56,6 +59,52 @@ void test("quoted default literals preserve whitespace and refuse duplicate tags
   assert.throws(() => componentPropDefaults(filename, duplicate, "SelectProps", "Select"), {
     message: "Duplicate public prop default: indicatorEmpty",
   });
+});
+
+void test("default factories require fresh empty containers and unambiguous Vue invocation", () => {
+  const { filename, text } = source("Form");
+  for (const factory of [
+    "() => {}",
+    "async () => []",
+    "(props) => []",
+    "() => sharedFields",
+    "() => [1]",
+  ]) {
+    const changed = text.replace("default: () => [],", `default: ${factory},`);
+    assert.notEqual(changed, text);
+    assert.throws(() => componentPropDefaults(filename, changed, "FormProps", "Form"), {
+      message: `Unsupported Vue default factory: ${factory}`,
+    });
+  }
+  const functionValue = text.replace(
+    "type: Array as PropType<FormField[]>",
+    "type: Function as PropType<FormField[]>",
+  );
+  assert.notEqual(functionValue, text);
+  assert.throws(() => componentPropDefaults(filename, functionValue, "FormProps", "Form"), {
+    message: "Unsupported Vue default factory: () => []",
+  });
+  const skipped = text.replace("default: () => [],", "skipFactory: true, default: () => [],");
+  assert.notEqual(skipped, text);
+  assert.throws(() => componentPropDefaults(filename, skipped, "FormProps", "Form"), {
+    message: "Unsupported Vue default factory: () => []",
+  });
+  const wrongContainer = text.replace("default: () => ({}),", "default: () => [],");
+  assert.notEqual(wrongContainer, text);
+  assert.throws(() => componentPropDefaults(filename, wrongContainer, "FormProps", "Form"), {
+    message: "Unsupported Vue default factory: () => []",
+  });
+  for (const constructor of ["Array", "Boolean", "undefined"]) {
+    for (const declaration of [
+      `const ${constructor} = Function;`,
+      `if (true) { var ${constructor} = Function; }`,
+    ]) {
+      const shadowed = `${declaration}\n${text}`;
+      assert.throws(() => componentPropDefaults(filename, shadowed, "FormProps", "Form"), {
+        message: `Shadowed Vue prop builtin: ${constructor}`,
+      });
+    }
+  }
 });
 
 void test("changing a runtime default cannot leave its documentation stale", () => {

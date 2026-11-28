@@ -35,27 +35,49 @@ export interface FormSlotProps {
 
 /** Public props for the focus- and validation-aware Form container. */
 export interface FormProps {
-  /** Form fields metadata */
+  /** Field metadata; omission creates a fresh array per component instance.
+   * @default []
+   */
   fields?: FormField[];
-  /** Label width */
+  /** Label width
+   * @default 15
+   */
   labelWidth?: number;
-  /** Gap between fields */
+  /** Gap between fields
+   * @default 1
+   */
   gap?: number;
-  /** Label position */
+  /** Label position
+   * @default "left"
+   */
   labelPosition?: "left" | "top";
-  /** Label foreground color */
+  /** Label foreground color
+   * @default undefined
+   */
   labelFg?: string;
-  /** Required indicator */
+  /** Required indicator
+   * @default "*"
+   */
   requiredIndicator?: string;
-  /** Hint foreground color */
+  /** Hint foreground color
+   * @default "gray"
+   */
   hintFg?: string;
-  /** Validation error foreground color */
+  /** Validation error foreground color
+   * @default "red"
+   */
   errorFg?: string;
-  /** Current field values keyed by field key */
+  /** Field values by key; omission creates a fresh object per component instance.
+   * @default {}
+   */
   modelValue?: FormValues;
-  /** Field key that owns focus */
+  /** Field key that owns focus
+   * @default undefined
+   */
   focusedKey?: string;
-  /** Whether the form owns keyboard focus navigation and submission */
+  /** Whether the form owns keyboard focus navigation and submission
+   * @default false
+   */
   focused?: boolean;
 }
 

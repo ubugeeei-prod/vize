@@ -12,6 +12,74 @@ export interface ComponentPropDefault {
   readonly runtime: string;
 }
 
+const propBuiltins = new Set([
+  "String",
+  "Number",
+  "Boolean",
+  "Function",
+  "Object",
+  "Array",
+  "Date",
+  "Symbol",
+  "BigInt",
+  "undefined",
+]);
+
+function bindingNames(name: ts.BindingName): readonly string[] {
+  return ts.isIdentifier(name)
+    ? [name.text]
+    : name.elements.flatMap((element) =>
+        ts.isOmittedExpression(element) ? [] : bindingNames(element.name),
+      );
+}
+
+function requireGlobalPropBuiltins(source: ts.SourceFile): void {
+  const names = source.statements.flatMap((statement): readonly string[] => {
+    if (ts.isVariableStatement(statement))
+      return statement.declarationList.declarations.flatMap((declaration) =>
+        bindingNames(declaration.name),
+      );
+    if (ts.isImportDeclaration(statement)) {
+      const clause = statement.importClause;
+      if (!clause || clause.isTypeOnly) return [];
+      const bindings = clause.namedBindings;
+      return [
+        ...(clause.name ? [clause.name.text] : []),
+        ...(bindings && ts.isNamespaceImport(bindings) ? [bindings.name.text] : []),
+        ...(bindings && ts.isNamedImports(bindings)
+          ? bindings.elements
+              .filter((binding) => !binding.isTypeOnly)
+              .map((binding) => binding.name.text)
+          : []),
+      ];
+    }
+    if (
+      ts.isFunctionDeclaration(statement) ||
+      ts.isClassDeclaration(statement) ||
+      ts.isEnumDeclaration(statement) ||
+      ts.isModuleDeclaration(statement) ||
+      ts.isImportEqualsDeclaration(statement)
+    )
+      return statement.name ? [statement.name.text] : [];
+    return [];
+  });
+  const collectHoisted = (node: ts.Node): void => {
+    if (
+      ts.isFunctionLike(node) ||
+      ts.isClassDeclaration(node) ||
+      ts.isClassExpression(node) ||
+      ts.isModuleDeclaration(node)
+    )
+      return;
+    if (ts.isVariableDeclarationList(node) && !(node.flags & ts.NodeFlags.BlockScoped))
+      for (const declaration of node.declarations) names.push(...bindingNames(declaration.name));
+    ts.forEachChild(node, collectHoisted);
+  };
+  collectHoisted(source);
+  for (const name of names)
+    if (propBuiltins.has(name)) throw new Error(`Shadowed Vue prop builtin: ${name}`);
+}
+
 function unwrap(node: ts.Expression): ts.Expression {
   while (
     ts.isAsExpression(node) ||
@@ -56,20 +124,7 @@ function constructorDefault(node: ts.Expression | undefined): string {
   node = unwrap(node);
   if (ts.isIdentifier(node)) {
     if (node.text === "Boolean") return "false";
-    if (
-      [
-        "String",
-        "Number",
-        "Function",
-        "Object",
-        "Array",
-        "Date",
-        "Symbol",
-        "BigInt",
-        "undefined",
-      ].includes(node.text)
-    )
-      return "undefined";
+    if (propBuiltins.has(node.text)) return "undefined";
   }
   if (node.kind === ts.SyntaxKind.NullKeyword) return "undefined";
   if (ts.isArrayLiteralExpression(node)) {
@@ -84,7 +139,37 @@ function runtimeDefault(node: ts.Expression): string {
   if (ts.isObjectLiteralExpression(node)) {
     const descriptor = properties(node);
     const value = descriptor.get("default");
-    if (value !== undefined) return literalDefault(value);
+    if (value !== undefined) {
+      const expression = unwrap(value);
+      if (ts.isArrowFunction(expression)) {
+        const type = descriptor.get("type");
+        const constructor = type && unwrap(type);
+        const result = ts.isBlock(expression.body) ? undefined : unwrap(expression.body);
+        if (
+          expression.parameters.length === 0 &&
+          !expression.modifiers?.length &&
+          !descriptor.has("skipFactory") &&
+          constructor &&
+          ts.isIdentifier(constructor) &&
+          result
+        ) {
+          if (
+            constructor.text === "Array" &&
+            ts.isArrayLiteralExpression(result) &&
+            result.elements.length === 0
+          )
+            return "[]";
+          if (
+            constructor.text === "Object" &&
+            ts.isObjectLiteralExpression(result) &&
+            result.properties.length === 0
+          )
+            return "{}";
+        }
+        throw new Error(`Unsupported Vue default factory: ${expression.getText()}`);
+      }
+      return literalDefault(expression);
+    }
     return constructorDefault(descriptor.get("type"));
   }
   return constructorDefault(node);
@@ -102,9 +187,10 @@ function documentedDefault(member: ts.PropertySignature): string | null {
 /**
  * Read optional input defaults from a declared interface and its real component.
  *
- * Literal defaults and Vue's absent-Boolean rule are checked without evaluating
- * application code. Explicit `default: undefined` takes precedence over Boolean
- * casting. Undeclared runtime props and unsupported declaration shapes fail.
+ * Literal defaults, fresh empty Array/Object factories, and Vue's absent-Boolean
+ * rule are checked without evaluating application code. Explicit `default:
+ * undefined` takes precedence over Boolean casting. Undeclared runtime props and
+ * unsupported declaration shapes fail.
  * Optional event-listener fields default to absence; event delivery is a separate
  * runtime contract.
  */
@@ -115,6 +201,7 @@ export function componentPropDefaults(
   componentName: string,
 ): readonly ComponentPropDefault[] {
   const source = ts.createSourceFile(filename, sourceText, ts.ScriptTarget.Latest, true);
+  requireGlobalPropBuiltins(source);
   const vueFactory = source.statements.some((statement) => {
     if (
       !ts.isImportDeclaration(statement) ||
