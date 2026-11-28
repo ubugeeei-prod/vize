@@ -16,7 +16,9 @@ fn store(source: &str) -> (DocumentStore, SourceSnapshotCache, Url) {
 }
 
 fn assert_script(source: &str, uri: &Url, products: &TemplateOperandProducts) {
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let descriptor = crate::server::ServerState::new()
+        .sfc_descriptor(uri, source)
+        .unwrap();
     let expected = VirtualCodeGenerator::new()
         .generate(&descriptor, uri.as_str())
         .script_setup
