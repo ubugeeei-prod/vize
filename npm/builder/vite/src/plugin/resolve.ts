@@ -782,7 +782,7 @@ async function resolveAliasedVueImport(
     return null;
   }
 
-  if (state.cache.has(realPath) || fs.existsSync(realPath)) {
+  if (isHeldByBuild(state, realPath) || fs.existsSync(realPath)) {
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
     // Vite scans raw .vue files for imports before our load hook compiles them.
     return preserveQueryAsPath
@@ -802,7 +802,7 @@ function resolvePackageVueModuleId(
   isDependencyScan: boolean,
 ): string | null {
   const realPath = normalizeResolvedVuePath(resolvedId);
-  if (!realPath || (!state.cache.has(realPath) && !fs.existsSync(realPath))) return null;
+  if (!realPath || (!isHeldByBuild(state, realPath) && !fs.existsSync(realPath))) return null;
   if (state.filter && !realPath.includes("node_modules") && !state.filter(realPath)) {
     return null;
   }
@@ -1259,7 +1259,7 @@ export async function resolveIdHook(
 
     // Keep the source path during dependency scans: Vite's HTML scanner reads
     // <script> blocks from .vue files, but externalizes \0 virtual IDs.
-    if (hasCache || fileExists) {
+    if (fileExists) {
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
