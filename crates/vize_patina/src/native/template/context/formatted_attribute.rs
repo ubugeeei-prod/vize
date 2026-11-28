@@ -1,8 +1,7 @@
 //! Formatted help retains the same checked-attribute reporting authority.
 
-use super::{NativeTemplateAttribute, NativeTemplateLintContext, NativeTemplateLintRefusal};
+use super::{NativeTemplateAttribute, NativeTemplateLintContext, NativeTemplateLintRefusal, t_fmt};
 use crate::Severity;
-use vize_carton::i18n::t_fmt;
 
 impl<'a> NativeTemplateLintContext<'_, 'a> {
     /// Report an original checked attribute with independently formatted message
