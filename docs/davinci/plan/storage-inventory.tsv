@@ -215,7 +215,7 @@ l4	emit	davinci/vize_l4/src/targets/dom/artifact/buf/helper_order.rs	1	5	1	1	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/buf/helper_order/tests.rs	0	0	1	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/buf/preamble.rs	0	0	1	3	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/cache_slots.rs	1	2	0	0	0	0	0	0
-l4	-	davinci/vize_l4/src/targets/dom/artifact/component/binding.rs	0	0	1	6	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/dom/artifact/component/binding.rs	0	0	1	8	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/component/call_props.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/component/preamble.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/constant_expr.rs	1	5	1	2	0	0	0	0
