@@ -730,6 +730,53 @@
       }
     },
     {
+      "id": "linter/component-name-nuxt-mode-suffixes",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "component-name-nuxt-mode-suffixes",
+        "files": [
+          {
+            "path": "Anonymous.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "83b7836d5e86ce18c11c3a934624325db0def94677e135261632d45d1101b94e"
+          },
+          {
+            "path": "Named.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "9db41daa4bcd0b5d5dbefffcb9434d3e44139f8afbfef8f4eeb3818fca780e0f"
+          },
+          {
+            "path": "match-component-file-name.txt",
+            "role": "authored-filenames",
+            "sha256": "aac3e69f8bfdac82e1a2f17be1d6ae14b63e3b9167a71234061d790bff9d7b64"
+          },
+          {
+            "path": "multi-word-component-names.txt",
+            "role": "authored-filenames",
+            "sha256": "d41afb578aec27dad6e170dd2ada010bb7452769937baea1eb4ecb4452be3c06"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/component-name/invalid-dotted-name",
       "state": "active",
       "targets": [
@@ -22059,6 +22106,42 @@
       }
     },
     {
+      "id": "linter/musea-inferred-target-several-imports",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "musea-inferred-target-several-imports",
+        "files": [
+          {
+            "path": "Composition.art.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "fb366fa746c92d1fbcc5a6283217722fda2019b0c85887ca03643ba64758a9b0"
+          },
+          {
+            "path": "Counter.art.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "0ed54da748a09d34ca5b312f206c909b394fa9a95e5e8121660238d7d20f55dc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/native-boolean-tsrs-11147",
       "state": "active",
       "targets": [
@@ -23055,6 +23138,49 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/no-undefined-refs-unresolved-members",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-undefined-refs-unresolved-members",
+        "files": [
+          {
+            "path": "MapHelpers.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "5069e951597d2e8fcc0638f8c84b8c2e2163a2b303315f62cdc57b5089daad07"
+          },
+          {
+            "path": "Mixins.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "3b823d9f266842b42b2320561336c61ef95abbedaaba275cabe0f41f4f32dad3"
+          },
+          {
+            "path": "NuxtComponent.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "6c9d433a2a7713107ab79db2ceec6a65699a77505c87ac77cfcf29ac9b5c70b6"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

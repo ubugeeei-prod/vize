@@ -110,7 +110,10 @@ fn checked_stem(filename: &str) -> Option<&str> {
     if stem.is_empty() || !matches!(extension, "vue" | "jsx") {
         return None;
     }
-    Some(stem)
+    // Nuxt registers `Foo.client.vue` as `Foo`; a stem that is only a mode
+    // suffix keeps its spelling.
+    let name = crate::component_name::strip_nuxt_mode_suffixes(stem);
+    Some(if name.is_empty() { stem } else { name })
 }
 
 #[cfg(test)]
@@ -205,6 +208,42 @@ mod tests {
             assert_eq!(result.warning_count, 0, "{filename}\n{source}");
             assert!(result.diagnostics.is_empty(), "{filename}");
         }
+    }
+
+    // Nuxt registers `SearchBox.client.vue` as `SearchBox`, so its mode
+    // suffixes are not part of the compared stem.
+    #[test]
+    fn nuxt_mode_suffixes_are_not_part_of_the_file_name() {
+        let source = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/Named.vue.txt"
+        );
+        let cases = include_str!(
+            "../../../../../tests/_fixtures/differential/linter/component-name-nuxt-mode-suffixes/match-component-file-name.txt"
+        );
+        let mut checked = 0;
+        for line in cases.lines() {
+            let (expected, filename) = line.split_once(' ').unwrap();
+            let result = lint(source, filename);
+            assert_eq!(
+                result.warning_count,
+                expected.parse::<usize>().unwrap(),
+                "{filename}"
+            );
+            checked += 1;
+        }
+        assert_eq!(checked, 9);
+
+        let result = lint(source, "app/components/Other.client.vue");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            message("SearchBox", "Other")
+        );
+        // A stem that is only a mode suffix keeps its spelling.
+        let result = lint(source, ".client.vue");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            message("SearchBox", ".client")
+        );
     }
 
     #[test]

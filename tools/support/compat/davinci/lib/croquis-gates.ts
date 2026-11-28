@@ -11,7 +11,6 @@ export const GATES: Record<string, readonly string[]> = {
     "ImportStatementInfo",
     "InvalidExport",
     "OptionKey",
-    "OptionsDescriptor",
     "ReExportForward",
     "ReExportInfo",
   ],

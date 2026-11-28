@@ -1,6 +1,8 @@
 //! A tag's fact-table ids in all three namespaces with one lookup — the
 //! skeleton builder asks this for every element.
 
+use std::borrow::Borrow;
+use std::hash::{Hash, Hasher};
 use std::sync::LazyLock;
 
 use vize_l0::{CompactString, FxHashMap};
@@ -11,8 +13,28 @@ const NAMESPACES: [Ns; 3] = [Ns::Html, Ns::Svg, Ns::MathMl];
 
 /// Every table name, ASCII-lowercased, to [`Facts::id`] of that lowercase tag
 /// in each namespace.
-static BY_TAG: LazyLock<FxHashMap<CompactString, [Option<ElemId>; 3]>> =
-    LazyLock::new(|| by_tag(facts()));
+static BY_TAG: LazyLock<FxHashMap<TagKey, [Option<ElemId>; 3]>> = LazyLock::new(|| by_tag(facts()));
+
+/// A lowercase table name. It hashes exactly as its `str` does, so lookups
+/// borrow a `&str`, and the hash is always inlined into the table build:
+/// whether LLVM inlines `CompactString`'s own hash there depends on what
+/// else shares the codegen unit.
+#[derive(Debug, PartialEq, Eq)]
+struct TagKey(CompactString);
+
+impl Hash for TagKey {
+    #[inline(always)]
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.as_str().hash(state);
+    }
+}
+
+impl Borrow<str> for TagKey {
+    #[inline(always)]
+    fn borrow(&self) -> &str {
+        self.0.as_str()
+    }
+}
 
 /// [`BY_TAG`] for `table`, in one pass over its universe.
 ///
@@ -21,8 +43,8 @@ static BY_TAG: LazyLock<FxHashMap<CompactString, [Option<ElemId>; 3]>> =
 /// the name equal to the key (an exact `ids` hit) wins, and otherwise the
 /// first uppercase-bearing name, since `cased` holds those in id order — the
 /// order the universe yields them.
-fn by_tag(table: &Facts) -> FxHashMap<CompactString, [Option<ElemId>; 3]> {
-    let mut map: FxHashMap<CompactString, [Option<ElemId>; 3]> =
+fn by_tag(table: &Facts) -> FxHashMap<TagKey, [Option<ElemId>; 3]> {
+    let mut map: FxHashMap<TagKey, [Option<ElemId>; 3]> =
         FxHashMap::with_capacity_and_hasher(table.universe().count(), Default::default());
     for (id, ns, name) in table.universe() {
         let exact = !name.bytes().any(|byte| byte.is_ascii_uppercase());
@@ -30,7 +52,7 @@ fn by_tag(table: &Facts) -> FxHashMap<CompactString, [Option<ElemId>; 3]> {
         if !exact {
             lower.make_ascii_lowercase();
         }
-        let [html, svg, math] = map.entry(lower).or_default();
+        let [html, svg, math] = map.entry(TagKey(lower)).or_default();
         let slot = match ns {
             Ns::Html => html,
             Ns::Svg => svg,
@@ -84,11 +106,11 @@ mod tests {
              svg:Zed svg:zED svg:zed math:Zed\n",
         );
         let map = by_tag(&table);
-        let mut keys: Vec<&str> = map.keys().map(|key| key.as_str()).collect();
+        let mut keys: Vec<&str> = map.keys().map(|key| key.0.as_str()).collect();
         keys.sort_unstable();
         assert_eq!(keys, ["b", "foobar", "mx", "q", "zed"]);
         for (key, ids) in &map {
-            assert_eq!(*ids, NAMESPACES.map(|ns| table.id(ns, key)), "{key}");
+            assert_eq!(*ids, NAMESPACES.map(|ns| table.id(ns, &key.0)), "{key:?}");
         }
         let id = |ns, name| {
             table

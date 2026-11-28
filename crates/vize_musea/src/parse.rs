@@ -25,6 +25,7 @@ mod divergence_tests;
 mod golden_tests;
 
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, SourceLocation};
+use vize_croquis::script_parser::ArtTarget;
 use vize_l0::Allocator;
 
 /// Parse an Art file (*.art.vue) into an ArtDescriptor.
@@ -101,6 +102,11 @@ pub fn parse_art<'a>(
     })
 }
 
+/// Musea's target inference, shared with the Musea lint rules. Kept out of
+/// line so a file with an explicit target parses through the same code as
+/// before the inference was shared.
+#[cold]
+#[inline(never)]
 fn infer_art_target<'a>(
     allocator: &'a Allocator,
     script: &'a str,
@@ -111,65 +117,22 @@ fn infer_art_target<'a>(
         return Ok(());
     }
     let parsed = vize_croquis::script_parser::parse_script_setup(script);
-    let shared = parsed
-        .import_sources
-        .iter()
-        .filter(|(name, _)| {
-            variants
-                .iter()
-                .all(|variant| template_uses_component(variant.template, name.as_str()))
-        })
-        .collect::<std::vec::Vec<_>>();
-    let candidates = if shared.is_empty() {
-        parsed
-            .import_sources
-            .iter()
-            .filter(|(name, _)| {
-                variants
-                    .iter()
-                    .any(|variant| template_uses_component(variant.template, name.as_str()))
-            })
-            .collect::<std::vec::Vec<_>>()
-    } else {
-        shared
-    };
-    if candidates.len() > 1 {
-        let mut names = candidates
-            .iter()
-            .map(|(name, _)| name.as_str())
-            .collect::<std::vec::Vec<_>>();
-        names.sort_unstable();
-        return Err(ArtParseError::AmbiguousTarget {
+    match vize_croquis::script_parser::infer_art_target(
+        &parsed.import_sources,
+        variants,
+        |variant| variant.template,
+    ) {
+        ArtTarget::None => Ok(()),
+        ArtTarget::Ambiguous(names) => Err(ArtParseError::AmbiguousTarget {
             candidates: names.join(", ").into(),
-        });
-    }
-    let Some((name, source)) = candidates.first().copied() else {
-        return Ok(());
-    };
-    let metadata = metadata.get_or_insert_with(|| DefineArtMetadata::new(allocator));
-    metadata.component_name = Some(allocator.alloc_str(name.as_str()));
-    metadata.component = Some(allocator.alloc_str(source.as_str()));
-    Ok(())
-}
-
-fn template_uses_component(template: &str, name: &str) -> bool {
-    let mut cursor = 0;
-    while let Some(relative) = template.get(cursor..).and_then(|rest| rest.find('<')) {
-        let start = cursor + relative + 1;
-        let Some(rest) = template.get(start..) else {
-            return false;
-        };
-        if rest.starts_with(name)
-            && rest
-                .as_bytes()
-                .get(name.len())
-                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
-        {
-            return true;
+        }),
+        ArtTarget::One { name, source } => {
+            let metadata = metadata.get_or_insert_with(|| DefineArtMetadata::new(allocator));
+            metadata.component_name = Some(allocator.alloc_str(name));
+            metadata.component = Some(allocator.alloc_str(source));
+            Ok(())
         }
-        cursor = start;
     }
-    false
 }
 
 /// Unknown-`status` warnings of the `<art>` attributes, or an empty list if

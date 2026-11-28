@@ -1,0 +1,9 @@
+0 app/components/SearchBox.client.vue
+0 app/components/SearchBox.server.vue
+0 app/components/search-box.client.vue
+0 app/components/SearchBox.client.global.vue
+0 app/components/SearchBox.island.vue
+1 app/components/SearchBox.bar.vue
+1 app/components/SearchBox.Client.vue
+1 app/components/SearchBox.global.client.vue
+1 app/components/Other.client.vue
