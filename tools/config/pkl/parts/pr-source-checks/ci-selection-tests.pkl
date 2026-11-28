@@ -2,7 +2,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "CI selection tests"
 needs = "pr-source-plan"
-`runs-on` = "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`runs-on` = "${{ needs.pr-source-plan.outputs.tooling == 'true' && '\(ci.linuxSmall)' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 5
 steps = new Listing {
   ...ci.stageWorkflowScripts("pr-source-checks")

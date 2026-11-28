@@ -200,7 +200,7 @@ jobs:
         run: node tools/ci/commands/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan
-    runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -249,7 +249,7 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs.sh"
   node-engine-compat:
     needs: iteration-plan
-    runs-on: ${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false

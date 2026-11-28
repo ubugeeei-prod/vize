@@ -61,7 +61,7 @@ export const sourceRunnerChanges = [
     "before":
       "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
     "after":
-      "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
+      "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
   },
   {
     "workflow": ".github/workflows/pr-source-checks.yml",
@@ -113,7 +113,7 @@ export const sourceRunnerChanges = [
     "before":
       "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
     "after":
-      "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
+      "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
   },
   {
     "workflow": ".github/workflows/check.yml",
@@ -121,7 +121,7 @@ export const sourceRunnerChanges = [
     "before":
       "${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
     "after":
-      "${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
+      "${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}",
   },
   {
     "workflow": ".github/workflows/check.yml",
@@ -157,15 +157,20 @@ export const sourceRunnerChanges = [
   },
 ] as const;
 
+/** The 16-vCPU validation pool, or the 4-vCPU class for build-free Node checks. */
+const sourceRunnerClasses = ["blacksmith-16vcpu-ubuntu-2404", "blacksmith-4vcpu-ubuntu-2404"];
+
 /** Unowned workflows and every field other than these exact selectors pass through. */
 export function sourceRunnersBefore(file: string, source: string): string {
   const rows = sourceRunnerChanges.filter((row) => row.workflow === file);
   if (rows.length === 0) return source;
   assert.equal([...source.matchAll(/^jobs:\n/gm)].length, 1, `one jobs map: ${file}`);
   for (const row of rows) {
-    assert.equal(
-      row.after,
-      row.before.replaceAll("blacksmith-32vcpu-ubuntu-2404", "blacksmith-16vcpu-ubuntu-2404"),
+    assert.ok(
+      sourceRunnerClasses.some(
+        (runner) => row.after === row.before.replaceAll("blacksmith-32vcpu-ubuntu-2404", runner),
+      ),
+      `reviewed runner class: ${file}/${row.job}`,
     );
     const header = `  ${row.job}:\n`;
     assert.equal(source.split(header).length, 2, `one recorded job: ${file}/${row.job}`);
