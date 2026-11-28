@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   typecheckProvider,
@@ -166,4 +167,20 @@ test("provider descriptors participate in fixture preparation custody", () => {
       prepare: ["pnpm", "run", "other"],
     }),
   );
+});
+
+test("source-provider verification still executes through a linked tooling directory", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-provider-linked-cli-"));
+  try {
+    const tools = fileURLToPath(new URL("../../tools", import.meta.url));
+    const link = path.join(root, "tools");
+    fs.symlinkSync(tools, link, process.platform === "win32" ? "junction" : "dir");
+    const executable = path.join(link, "support/compat/fixtures/typecheck-baseline-provider.mjs");
+    const result = spawnSync(process.execPath, [executable, "invalid"], { encoding: "utf8" });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Expected provider verify inputs/);
+    assert.equal(result.stdout, "");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

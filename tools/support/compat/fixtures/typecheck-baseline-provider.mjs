@@ -205,7 +205,10 @@ export function verifyPreparedTypecheckProvider(fixtureRoot, value, evidence) {
   return { path: join(root, executable), identity: { ...actual, typescriptRuntime: compiler } };
 }
 
-if (process.argv[1] != null && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] != null &&
+  realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
+) {
   const [command, fixtureRoot, provider, artifactPath] = process.argv.slice(2);
   if (command !== "verify" || artifactPath == null)
     throw new Error("Expected provider verify inputs");
