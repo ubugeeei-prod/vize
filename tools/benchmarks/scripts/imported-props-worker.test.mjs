@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
-import { measureNative } from "./imported-props-worker.mjs";
+import { freshness, measureNative } from "./imported-props-worker.mjs";
 
 test("measurements compile every input for all three targets inside one closed window", () => {
   const files = Array.from({ length: 1000 }, (_, index) => ({
@@ -64,4 +67,51 @@ test("failed compilation closes the stability window", () => {
     /compiler failure/u,
   );
   assert.equal(closed, true);
+});
+
+function freshnessFixture(check) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-imported-props-control-"));
+  fs.mkdirSync(path.join(root, "src/models"), { recursive: true });
+  const file = path.join(root, "src/models/Model0.ts");
+  const source = "export interface Model0 { field0: string }";
+  fs.writeFileSync(file, source);
+  try {
+    check(root, file, source);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function fakeNative(file, metadataOnly) {
+  let previous;
+  return {
+    beginTypeResolutionBatch() {
+      return { close() {} };
+    },
+    compileSfcBatchWithResults() {
+      const stamp = fs.statSync(file, { bigint: true });
+      const key = `${stamp.mtimeNs}:${stamp.size}`;
+      if (metadataOnly && previous?.key === key) return previous.result;
+      const type = fs.readFileSync(file, "utf8").match(/field0: (string|number|boolean)/u)[1];
+      const constructor = { string: "String", number: "Number", boolean: "Boolean" }[type];
+      const result = { results: [{ errors: [], code: `field0: { type: ${constructor} }` }] };
+      previous = { key, result };
+      return result;
+    },
+  };
+}
+
+test("freshness controls retain exact timestamps and restore remounted sources", () => {
+  freshnessFixture((root, file, original) => {
+    const receipt = freshness(fakeNative(file, false), root);
+    assert.equal(receipt.restoredMtimeNs, receipt.editedMtimeNs);
+    assert.equal(fs.readFileSync(file, "utf8"), original);
+    assert.equal(fs.existsSync(path.join(root, "src/retired-models")), false);
+  });
+});
+
+test("freshness controls reject a cache using only length and timestamp", () => {
+  freshnessFixture((root, file) => {
+    assert.throws(() => freshness(fakeNative(file, true), root), /Number/u);
+  });
 });

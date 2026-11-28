@@ -74,24 +74,6 @@ struct ScriptFacts {
     facts: OnceLock<Facts>,
 }
 
-struct ScriptCache {
-    buckets: FxHashMap<ScriptHashes, Vec<Arc<ScriptFacts>>>,
-    bytes: usize,
-    limit: usize,
-}
-
-impl Default for ScriptCache {
-    fn default() -> Self {
-        Self {
-            buckets: FxHashMap::default(),
-            bytes: 0,
-            // Classification is only a boolean query. Bound its retained keys
-            // within each request; large unique scripts need no extra copy.
-            limit: 1 << 20,
-        }
-    }
-}
-
 impl ScriptFacts {
     fn matches(&self, scripts: [Option<&SfcScriptBlock<'_>>; 2]) -> bool {
         self.inputs
@@ -109,8 +91,9 @@ impl ScriptFacts {
 pub(crate) struct SourceFacts {
     entries: Mutex<FxHashMap<(u64, usize), Cell>>,
     /// Hashes select a bucket only; a hit compares every script input exactly.
-    /// Hits borrow the current descriptor and allocate no script keys.
-    scripts: Mutex<ScriptCache>,
+    /// Hits borrow the current descriptor and allocate no script keys. These
+    /// keys live only for the API request that owns ImportedTypeProjects.
+    scripts: Mutex<FxHashMap<ScriptHashes, Vec<Arc<ScriptFacts>>>>,
     #[cfg(test)]
     analyses: std::sync::atomic::AtomicUsize,
 }
@@ -132,45 +115,15 @@ impl SourceFacts {
                 .scripts
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
-            match cached
-                .buckets
-                .get(&key)
-                .and_then(|bucket| bucket.iter().find(|entry| entry.matches(scripts)))
-            {
+            let bucket = cached.entry(key).or_default();
+            match bucket.iter().find(|entry| entry.matches(scripts)) {
                 Some(entry) => Arc::clone(entry),
                 None => {
-                    let bytes = size_of::<ScriptFacts>()
-                        + size_of::<ScriptHashes>()
-                        + scripts
-                            .iter()
-                            .flatten()
-                            .map(|script| {
-                                script.content.len()
-                                    + script.lang.as_ref().map_or(0, |lang| lang.len())
-                                    + script.src.as_ref().map_or(0, |src| src.len())
-                                    + script
-                                        .attrs
-                                        .iter()
-                                        .map(|(name, value)| {
-                                            name.len() + value.len() + 2 * size_of::<String>()
-                                        })
-                                        .sum::<usize>()
-                            })
-                            .sum::<usize>();
-                    if cached.bytes.saturating_add(bytes) > cached.limit {
-                        drop(cached);
-                        return self.derive_descriptor(descriptor);
-                    }
                     let entry = Arc::new(ScriptFacts {
                         inputs: scripts.map(|script| script.map(ScriptInput::of)),
                         facts: OnceLock::new(),
                     });
-                    cached.bytes += bytes;
-                    cached
-                        .buckets
-                        .entry(key)
-                        .or_default()
-                        .push(Arc::clone(&entry));
+                    bucket.push(Arc::clone(&entry));
                     entry
                 }
             }
@@ -298,18 +251,17 @@ mod tests {
     }
 
     #[test]
-    fn script_classification_keeps_its_result_when_key_storage_is_full() {
-        let source = cstr!("<script setup lang=\"ts\">{SCRIPT}</script>");
+    fn repeated_large_script_is_classified_once() {
+        let padding = " ".repeat((1 << 20) + 1);
+        let source = cstr!("<script setup lang=\"ts\">/*{padding}*/{SCRIPT}</script>");
         let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
         let cache = SourceFacts::default();
-        cache.scripts.lock().unwrap().limit = 0;
         for _ in 0..2 {
             let facts = cache.for_descriptor(&descriptor);
             assert!(facts.needs_project);
             assert!(facts.importer_sensitive);
         }
-        assert_eq!(cache.analyses.load(std::sync::atomic::Ordering::Relaxed), 2);
-        assert!(cache.scripts.lock().unwrap().buckets.is_empty());
+        assert_eq!(cache.analyses.load(std::sync::atomic::Ordering::Relaxed), 1);
     }
 
     #[test]

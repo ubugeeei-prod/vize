@@ -261,11 +261,15 @@ for (const [mode, modules] of [
               wallMs: sample.cold.wallMs,
               cpuMs: sample.cold.cpuMs,
               calls: sample.cold.calls,
+              rssBytes: sample.cold.rssBytes,
+              maxRssKiB: sample.cold.maxRssKiB,
             },
             warm: {
               wallMs: sample.warm.wallMs,
               cpuMs: sample.warm.cpuMs,
               calls: sample.warm.calls,
+              rssBytes: sample.warm.rssBytes,
+              maxRssKiB: sample.warm.maxRssKiB,
             },
           });
           retain();

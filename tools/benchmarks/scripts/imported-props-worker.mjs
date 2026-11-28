@@ -39,7 +39,14 @@ export function measureNative(native, files, chunkSize) {
   }
   const wallMs = performance.now() - start;
   const cpu = process.cpuUsage(startCpu);
-  return { wallMs, cpuMs: (cpu.user + cpu.system) / 1000, calls, packets };
+  return {
+    wallMs,
+    cpuMs: (cpu.user + cpu.system) / 1000,
+    calls,
+    packets,
+    rssBytes: process.memoryUsage().rss,
+    maxRssKiB: process.resourceUsage().maxRSS,
+  };
 }
 
 function validate(packets, files, expectedDependencies) {
@@ -79,7 +86,13 @@ export function freshness(native, root) {
     '<script setup lang="ts">import type { Model0 } from "./src/models/Model0"; defineProps<Model0>();</script><template><div /></template>';
   const file = path.join(root, "src/models/Model0.ts");
   const original = fs.readFileSync(file, "utf8");
-  const stamp = fs.statSync(file);
+  const originalStamp = fs.statSync(file);
+  // Normalize to an exactly representable second before the first compile.
+  // Passing a Date back to utimes would discard submillisecond precision and
+  // could make a metadata-only cache observe a different timestamp.
+  const second = Math.floor(originalStamp.mtimeMs / 1000);
+  fs.utimesSync(file, second, second);
+  const stamp = fs.statSync(file, { bigint: true });
   const compile = () => {
     const window = native.beginTypeResolutionBatch();
     try {
@@ -99,7 +112,10 @@ export function freshness(native, root) {
   assert.notEqual(changed, original);
   assert.equal(Buffer.byteLength(changed), Buffer.byteLength(original));
   fs.writeFileSync(file, changed);
-  fs.utimesSync(file, stamp.atime, stamp.mtime);
+  fs.utimesSync(file, second, second);
+  const editedStamp = fs.statSync(file, { bigint: true });
+  assert.equal(editedStamp.mtimeNs, stamp.mtimeNs, "the edit retains the exact timestamp");
+  assert.equal(editedStamp.size, stamp.size);
   const after = compile();
   assert.match(after.code, /field0:\s*\{\s*type:\s*Number/u);
   fs.renameSync(path.join(root, "src/models"), path.join(root, "src/retired-models"));
@@ -110,8 +126,15 @@ export function freshness(native, root) {
   fs.rmSync(path.join(root, "src/models"), { recursive: true });
   fs.renameSync(path.join(root, "src/retired-models"), path.join(root, "src/models"));
   fs.writeFileSync(file, original);
-  fs.utimesSync(file, stamp.atime, stamp.mtime);
-  return { before, after, remounted, sameLength: true, restoredMtime: stamp.mtime.toISOString() };
+  fs.utimesSync(file, originalStamp.atime, originalStamp.mtime);
+  return {
+    before,
+    after,
+    remounted,
+    sameLength: true,
+    restoredMtimeNs: stamp.mtimeNs.toString(),
+    editedMtimeNs: editedStamp.mtimeNs.toString(),
+  };
 }
 
 function measureVue(compiler, files) {
