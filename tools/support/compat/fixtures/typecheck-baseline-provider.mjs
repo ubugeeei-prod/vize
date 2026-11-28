@@ -1,4 +1,5 @@
 /** Authenticated upstream checker builds, separate from the fixture and published oracle. */
+import { Buffer } from "node:buffer";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -68,14 +69,16 @@ function providerOutputs(root, provider) {
   };
   collect("packages/tsc");
   collect("packages/language-core");
-  return [...paths].sort().map((path) => {
-    const file = join(root, path);
-    const stat = lstatSync(file);
-    if (!stat.isFile() || stat.isSymbolicLink() || stat.size === 0) {
-      throw new Error(`Typecheck provider output is not a nonempty regular file: ${path}`);
-    }
-    return { path, sizeBytes: stat.size, sha256: sha256(readFileSync(file)) };
-  });
+  return [...paths]
+    .sort((left, right) => Buffer.compare(Buffer.from(left), Buffer.from(right)))
+    .map((path) => {
+      const file = join(root, path);
+      const stat = lstatSync(file);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.size === 0) {
+        throw new Error(`Typecheck provider output is not a nonempty regular file: ${path}`);
+      }
+      return { path, sizeBytes: stat.size, sha256: sha256(readFileSync(file)) };
+    });
 }
 
 function runtimeCompiler(provider) {

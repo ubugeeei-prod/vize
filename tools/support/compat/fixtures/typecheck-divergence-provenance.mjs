@@ -397,8 +397,8 @@ function requireExactKeys(value, expected, label) {
   if (value == null || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`${label} must be an object`);
   }
-  const actual = Object.keys(value).sort();
-  const sortedExpected = [...expected].sort();
+  const actual = Object.keys(value).sort(byteOrder);
+  const sortedExpected = [...expected].sort(byteOrder);
   if (JSON.stringify(actual) !== JSON.stringify(sortedExpected)) {
     throw new Error(
       `${label} keys must be ${sortedExpected.join(", ")}; received ${actual.join(", ")}`,
