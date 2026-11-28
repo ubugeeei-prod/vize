@@ -13,6 +13,8 @@ fn intersection_props_match_the_vue_tsc_negative_controls() {
         "Authored.vue",
         "Child.vue",
         "Empty.vue",
+        "Emit.vue",
+        "Fresh.vue",
         "Second.vue",
         "Generic.vue",
         "lazy.ts",

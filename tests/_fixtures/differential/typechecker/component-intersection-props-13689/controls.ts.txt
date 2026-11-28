@@ -62,3 +62,11 @@ import Authored from './Authored.vue';
 import type { $ComponentRawProps as Raw } from 'vize:virtual-ts';
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 const authoredRawPrecedence: Equal<Raw<typeof Authored>, Props<typeof Authored>> = true;
+
+import Emit from './Emit.vue';
+import Fresh from './Fresh.vue';
+import type { DefineComponent } from 'vue';
+type Mixed = typeof Emit | DefineComponent<{ hydrateOnIdle?: number | true }>;
+const mixedRawPrecedence: Equal<Raw<Mixed>, Props<Mixed>> = true;
+const mixedListener: Props<Mixed> = { label: 'Ready', onSave: (value: number) => {} };
+const freshSelf: Equal<ReturnType<NonNullable<typeof Fresh.__vizeComponentSelf>>, typeof Fresh> = true;

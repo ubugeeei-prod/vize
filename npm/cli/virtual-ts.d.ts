@@ -287,15 +287,17 @@ type $StaticRawKeys<C> = C extends { readonly __vizeRawProps?: infer P }
 type $AdditionalComponentProps<C, P, K, U = $ComponentPublicOverloads<C>> = [K] extends [never]
   ? P
   : P & Pick<U, Extract<K, keyof U>>;
-type $ExpandedComponentUsageProps<C> = C extends {
-  readonly __vizeComponentMarker: true;
-  setup?: {
-    (this: void, props: infer A, ...args: any[]): any;
-    (this: void, props: infer B, ...args: any[]): any;
-    (this: void, props: infer D, ...args: any[]): any;
-    (this: void, props: infer E, ...args: any[]): any;
-  };
-}
+type $ExpandedComponentUsageProps<C> = [C] extends [
+  {
+    readonly __vizeComponentMarker: true;
+    setup?: {
+      (this: void, props: infer A, ...args: any[]): any;
+      (this: void, props: infer B, ...args: any[]): any;
+      (this: void, props: infer D, ...args: any[]): any;
+      (this: void, props: infer E, ...args: any[]): any;
+    };
+  },
+]
   ? $IsAny<A | B | D | E> extends true
     ? $ComponentRawProps<C>
     : $AdditionalComponentProps<
@@ -309,11 +311,13 @@ type $ExpandedComponentUsageProps<C> = C extends {
   : $ComponentRawProps<C>;
 export type $ComponentUsageProps<
   C,
-  __P = C extends {
-    readonly __vizeComponentMarker: true;
-    readonly __vizeComponentSelf?: () => infer S;
-    readonly __vizeRawProps?: infer P;
-  }
+  __P = [C] extends [
+    {
+      readonly __vizeComponentMarker: true;
+      readonly __vizeComponentSelf?: () => infer S;
+      readonly __vizeRawProps?: infer P;
+    },
+  ]
     ? $IsAny<S> extends true
       ? $ExpandedComponentUsageProps<C>
       : (<T>() => T extends S ? 1 : 2) extends <T>() => T extends C ? 1 : 2

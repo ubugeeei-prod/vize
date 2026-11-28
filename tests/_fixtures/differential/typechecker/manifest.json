@@ -66099,8 +66099,18 @@
           "role": "regression-reproduction"
         },
         {
+          "path": "component-intersection-props-13689/Emit.vue.txt",
+          "sha256": "ae8d2b8d9cc555d91acbb6a32d0f6151f37e14def7c93fe67538f40e5cdf701c",
+          "role": "regression-reproduction"
+        },
+        {
           "path": "component-intersection-props-13689/Empty.vue.txt",
           "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Fresh.vue.txt",
+          "sha256": "ebafb5f7f274ec7b0d2922b0dfb0efc7a89d7701169f14f2e60bade13adf55e3",
           "role": "regression-reproduction"
         },
         {
@@ -66125,7 +66135,7 @@
         },
         {
           "path": "component-intersection-props-13689/controls.ts.txt",
-          "sha256": "79139c71951862ba63e0a9e76487c5b986851a609ea13858aa40ce770c0da5e8",
+          "sha256": "4db52e7dcfe73a94bce80e88caf76a3e19937f671b20566665dec3df24072cf1",
           "role": "regression-control"
         },
         {

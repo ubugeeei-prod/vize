@@ -16,6 +16,8 @@ const FILES: &[&str] = &[
     "Authored.vue",
     "Child.vue",
     "Empty.vue",
+    "Emit.vue",
+    "Fresh.vue",
     "Second.vue",
     "Generic.vue",
     "lazy.ts",

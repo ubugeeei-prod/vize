@@ -1,0 +1,2 @@
+<script setup lang="ts">const __vize_component__ = 0;void __vize_component__;defineProps<{ label: string }>();</script>
+<template><div /></template>
