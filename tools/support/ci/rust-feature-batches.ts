@@ -10,7 +10,10 @@ export interface RustFeatureMatrix {
   readonly include: readonly { readonly rows: string; readonly runner: string }[];
 }
 
-const linuxRunner = "blacksmith-32vcpu-ubuntu-2404";
+// Most of a row's Cargo work walks the workspace crate chain one crate at a
+// time, which leaves a 32-vCPU runner mostly idle; Linux rows take the 16-vCPU
+// validation pool instead.
+const linuxRunner = "blacksmith-16vcpu-ubuntu-2404";
 const windowsRunner = "blacksmith-32vcpu-windows-2025";
 
 /** Separates the row ids of one job, in the job name and on the `run` command line. */

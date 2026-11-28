@@ -119,7 +119,7 @@ test("only the Windows row leaves the Linux runner, in a job of its own", () => 
     if (ids.includes("windows-project-paths")) {
       assert.deepEqual(ids, ["windows-project-paths"]);
       assert.equal(runner, "blacksmith-32vcpu-windows-2025");
-    } else assert.equal(runner, "blacksmith-32vcpu-ubuntu-2404", rows);
+    } else assert.equal(runner, "blacksmith-16vcpu-ubuntu-2404", rows);
   }
   assert.equal(rustFeatureRow("windows-project-paths").runtime, true);
   assert.throws(() => rustFeatureRow("missing"), /Unknown Rust feature row/u);
