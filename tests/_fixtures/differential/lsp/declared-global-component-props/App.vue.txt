@@ -1,0 +1,1 @@
+<template><GlobalBadge :level="'x'" /></template>

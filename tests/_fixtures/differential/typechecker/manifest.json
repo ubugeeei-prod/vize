@@ -63507,6 +63507,51 @@
       }
     },
     {
+      "id": "typechecker/editor-referenced-global-components/declared-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::virtual_project::ambient_declarations::tests::referenced_local_declarations_are_read_from_open_buffers_or_disk",
+      "inputs": [
+        {
+          "path": "editor-referenced-global-components/tsconfig.json.txt",
+          "role": "tsconfig.json",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "path": "editor-referenced-global-components/components.d.ts.txt",
+          "role": "src/components.d.ts",
+          "sha256": "923df81dc62303337013a6ddb2c9234659cdd820f080cfc56237b746399647cf"
+        },
+        {
+          "path": "editor-referenced-global-components/GlobalBadge.vue.txt",
+          "role": "src/GlobalBadge.vue",
+          "sha256": "05ad8b37f1ba5796b7a42effabe1fd67e0aa93cddf98368763fbe31c5a0bace3"
+        },
+        {
+          "path": "editor-referenced-global-components/App.vue.txt",
+          "role": "src/App.vue",
+          "sha256": "0638e5cd8b78608921345075779c9e400e234b6ef034c4503b700bec1db21b75"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "The ordinary Rust regression test reads the pinned declaration bytes and checks that an editor revision registers project-local referenced declarations from their open buffer or the disk; the maestro editor tests replay the same project through the shipped diagnostics path. Input-only registration; no batch parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/editor-retained-native-owner-gc-race/stale-marker-observation",
       "state": "active",
       "targets": [

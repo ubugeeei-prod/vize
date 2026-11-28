@@ -1995,6 +1995,112 @@
       }
     },
     {
+      "id": "lsp/regression/declared-global-component-props",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "declared-global-component-props",
+        "files": [
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+          },
+          {
+            "path": "components.d.ts.txt",
+            "sha256": "923df81dc62303337013a6ddb2c9234659cdd820f080cfc56237b746399647cf"
+          },
+          {
+            "path": "GlobalBadge.vue.txt",
+            "sha256": "05ad8b37f1ba5796b7a42effabe1fd67e0aa93cddf98368763fbe31c5a0bace3"
+          },
+          {
+            "path": "App.vue.txt",
+            "sha256": "0638e5cd8b78608921345075779c9e400e234b6ef034c4503b700bec1db21b75"
+          }
+        ]
+      },
+      "case": {
+        "path": "declared-global-component-props/case.json",
+        "sha256": "cabf17b443224edbc948e81be33d2fa4a1e8a6837e7e41be64934db92e62054d"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/declared-global-slot-host",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "declared-global-slot-host",
+        "files": [
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+          },
+          {
+            "path": "components.d.ts.txt",
+            "sha256": "e5ed2b0825e8dc4ad711486c1f7cbca22c0c721f88411c6f4e50358511ae309f"
+          },
+          {
+            "path": "ElBadge.vue.txt",
+            "sha256": "cf3747f4a9f6b209adf5bfe76eee60dab8624745e312b643f654f073e8eefaab"
+          },
+          {
+            "path": "App.vue.txt",
+            "sha256": "e5a3fad8256f6c881b4af3a97c37867aa133c63c9eeca0a788b2583ffa722ff4"
+          }
+        ]
+      },
+      "case": {
+        "path": "declared-global-slot-host/case.json",
+        "sha256": "5f2395829b06f24e760be868f17008755b8cbe578b67bcd2f86587e183e22c7a"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/default-log-installation-custody-11145",
       "state": "active",
       "targets": [

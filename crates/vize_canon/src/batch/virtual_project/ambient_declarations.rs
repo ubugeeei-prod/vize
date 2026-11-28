@@ -115,6 +115,54 @@ impl VirtualProject {
 mod tests {
     use super::*;
 
+    fn fixture(name: &str) -> std::string::String {
+        std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../tests/_fixtures/differential/typechecker/editor-referenced-global-components")
+                .join(name),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn referenced_local_declarations_are_read_from_open_buffers_or_disk() {
+        let local = tempfile::tempdir().unwrap();
+        let external = tempfile::tempdir().unwrap();
+        let storage = tempfile::tempdir().unwrap();
+        let root = vize_l0::path::physical_path(local.path());
+        let mut project = VirtualProject::new(&root).unwrap();
+        project.scope_editor_namespace(storage.path(), 1);
+        let provider = fixture("components.d.ts.txt");
+        let closed = root.join("src/components.d.ts");
+        let open = root.join("src/open.d.ts");
+        let requested = root.join("src/requested.d.ts");
+        let missing = root.join("src/missing.d.ts");
+        let outside = external.path().join("outside.d.ts");
+        std::fs::create_dir_all(closed.parent().unwrap()).unwrap();
+        std::fs::write(&closed, &provider).unwrap();
+        std::fs::write(&open, "export {}\n").unwrap();
+        std::fs::write(&requested, "export {}\n").unwrap();
+        std::fs::write(&outside, &provider).unwrap();
+        let mut options = VirtualTsOptions::default();
+        for path in [&closed, &open, &requested, &missing, &outside, &closed] {
+            options.reference_paths.push(path.to_str().unwrap().into());
+        }
+        let overlays = FxHashMap::from_iter([(open.clone(), "declare const unsaved: 1\n")]);
+        let requested_sources = [(requested.clone(), "export {}\n")];
+        let declarations =
+            project.referenced_project_declarations(&options, &overlays, &requested_sources);
+        assert_eq!(
+            declarations
+                .iter()
+                .map(|(path, text)| (path.as_path(), text.as_str()))
+                .collect::<Vec<_>>(),
+            vec![
+                (closed.as_path(), provider.as_str()),
+                (open.as_path(), "declare const unsaved: 1\n"),
+            ]
+        );
+    }
+
     #[test]
     fn only_explicit_original_local_declarations_move_to_the_private_project() {
         let local = tempfile::tempdir().unwrap();
