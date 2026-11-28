@@ -109,11 +109,11 @@ test("the philosophy page defers to the documented drop-in boundary", () => {
 
 test("release notes retain the evergreen drop-in scope before the explicit version range", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const createRelease = workflow.slice(workflow.indexOf("name: Create Release"));
-  assert.notEqual(createRelease, "", "the release workflow must create a GitHub release");
-
-  const inputs = createRelease.slice(0, createRelease.indexOf("files:"));
+  const upload = workflow.indexOf("id: draft-release");
+  assert.ok(upload >= 0, "the release workflow must upload the draft's assets");
+  const inputs = workflow.slice(upload, workflow.indexOf("files:", upload));
   assert.match(inputs, /body_path: \$\{\{ runner\.temp \}\}\/release-notes\.md/u);
+  assert.match(inputs, /draft: true/u);
   assert.match(
     inputs,
     /generate_release_notes: false/u,
