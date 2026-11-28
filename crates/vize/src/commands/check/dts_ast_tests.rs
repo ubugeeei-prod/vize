@@ -6,6 +6,41 @@ use super::dts::{
 use super::dts_ast::parse_global_component_members_content;
 
 #[test]
+fn large_member_index_retains_augmentation_and_inheritance_precedence() {
+    let mut content = vize_l0::String::from("interface GlobalComponents extends Base, Other {\n");
+    for index in 0..20 {
+        content.push_str(vize_l0::cstr!("C{index}: {index};\n").as_str());
+    }
+    content.push_str(
+        "Keep: true; }\n\
+         interface GlobalComponents { C0: false; C23: 23; }\n\
+         interface Base extends Grand { C0: false; C20: 20; Keep: false; }\n\
+         interface Grand { C21: 21; }\n\
+         interface Other { C20: false; C22: 22; }\n",
+    );
+    let members = parse_global_component_members_content(content.as_str());
+    assert_eq!(members.len(), 25);
+    for (index, (name, annotation)) in members.iter().take(20).enumerate() {
+        assert_eq!(name, &vize_l0::cstr!("C{index}"));
+        assert_eq!(annotation, &vize_l0::cstr!("{index}"));
+    }
+    assert_eq!(
+        members
+            .iter()
+            .skip(20)
+            .map(|(name, annotation)| (name.as_str(), annotation.as_str()))
+            .collect::<Vec<_>>(),
+        vec![
+            ("Keep", "true"),
+            ("C23", "23"),
+            ("C20", "20"),
+            ("C21", "21"),
+            ("C22", "22")
+        ]
+    );
+}
+
+#[test]
 fn parses_interface_members_with_multiline_types() {
     let content = r#"
 declare module 'vue' {

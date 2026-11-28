@@ -55,3 +55,12 @@ pub(super) fn references(text: &str) -> Vec<TypeReference> {
     references.dedup_by_key(|reference| reference.span.start);
     references
 }
+
+/// A conservative lexical rejection before scoped parsing. Escaped identifiers
+/// always take the parser path; strings/comments may cause harmless false hits.
+pub(super) fn may_reference(text: &str, mut named: impl FnMut(&str) -> bool) -> bool {
+    text.contains('\\')
+        || text
+            .split(|ch| !oxc_syntax::identifier::is_identifier_part(ch))
+            .any(|word| !word.is_empty() && named(word))
+}

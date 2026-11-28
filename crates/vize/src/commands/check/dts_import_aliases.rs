@@ -44,7 +44,11 @@ pub(super) fn rewrite_import_type_aliases(
     type_annotation: &str,
     aliases: &ImportTypeAliases,
 ) -> String {
-    if aliases.aliases.is_empty() && aliases.values.is_empty() {
+    if (aliases.aliases.is_empty() && aliases.values.is_empty())
+        || !super::dts_type_references::may_reference(type_annotation, |name| {
+            aliases.aliases.contains_key(name) || aliases.values.contains_key(name)
+        })
+    {
         return type_annotation.to_compact_string();
     }
 
@@ -309,6 +313,19 @@ import type DefaultThing, {
         assert_eq!(
             rewritten.as_str(),
             "import('/workspace/app/types/user').default | import('/workspace/app/types/user').User | import('/workspace/app/types/user').Wrapped"
+        );
+    }
+
+    #[test]
+    fn lexical_rejection_keeps_escaped_import_bindings() {
+        let aliases = collect_import_type_aliases(
+            r"import type { Item as \u0041lias } from './types'",
+            Path::new("/workspace"),
+        );
+        let rewritten = rewrite_import_type_aliases(r"Box<\u0041lias> & { Alias: 1 }", &aliases);
+        assert_eq!(
+            rewritten.as_str(),
+            "Box<import('/workspace/types').Item> & { Alias: 1 }"
         );
     }
 }
