@@ -132,6 +132,8 @@ pub(super) struct TypeOnlyImportPlan<'a> {
     pub(super) script_content: Option<&'a str>,
     /// Some(empty) is a completed extraction, distinct from the late fallback.
     pub(super) prepared: Option<FxHashSet<CompactString>>,
+    #[cfg(feature = "original-import-products")]
+    pub(super) original: Option<&'a OriginalImportFacts<'a>>,
 }
 
 pub(super) struct ImportNames<'a> {
@@ -168,6 +170,8 @@ impl<'a> ImportNames<'a> {
             type_only: TypeOnlyImportPlan {
                 script_content,
                 prepared,
+                #[cfg(feature = "original-import-products")]
+                original: None,
             },
         }
     }

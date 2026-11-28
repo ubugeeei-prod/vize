@@ -125,7 +125,7 @@ impl<'a> OriginalImportFacts<'a> {
         self.names(summary, false)
     }
 
-    pub(super) fn type_names<'f>(
+    pub(in crate::virtual_ts::generator) fn type_names<'f>(
         &'f self,
         summary: &'f Croquis,
     ) -> impl Iterator<Item = &'a str> + 'f {
@@ -138,15 +138,19 @@ impl<'a> ImportNames<'a> {
         summary: &Croquis,
         script_content: &'a str,
         usage: &IdentifierUsage,
-        original: &OriginalImportFacts<'a>,
+        original: &'a OriginalImportFacts<'a>,
     ) -> Self {
-        let bindings = crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
-            original
-                .value_names(summary)
-                .filter(|name| bindings.contains_binding(name))
-                .map(CompactString::new)
-                .collect::<FxHashSet<_>>()
-        });
+        let mut names = original.value_names(summary).peekable();
+        let bindings = if names.peek().is_none() {
+            FxHashSet::default()
+        } else {
+            crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                names
+                    .filter(|name| bindings.contains_binding(name))
+                    .map(CompactString::new)
+                    .collect::<FxHashSet<_>>()
+            })
+        };
         let without_script_value_use = bindings
             .iter()
             .filter(|name| !usage.value_refs.contains(*name))
@@ -159,12 +163,13 @@ impl<'a> ImportNames<'a> {
             },
             type_only: TypeOnlyImportPlan {
                 script_content: Some(script_content),
-                prepared: Some(
+                prepared: summary.macros.define_props().is_some().then(|| {
                     original
                         .type_names(summary)
                         .map(CompactString::new)
-                        .collect(),
-                ),
+                        .collect()
+                }),
+                original: Some(original),
             },
         }
     }

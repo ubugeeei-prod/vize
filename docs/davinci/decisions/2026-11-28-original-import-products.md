@@ -17,6 +17,9 @@ native File.
 `generate_virtual_ts_with_original_imports` consumes those facts for value
 imports, syntactic type-only imports, and component-name shadowing. It keeps the
 existing binding filter, script value-use filter, generation, and mapping model.
+Type-only sets keep their existing demand gates, and scripts without value
+imports keep their allocation-free binding lookup. The resource screen covers
+props demand, unused mixed imports, and unused type-only imports separately.
 The default generator and its recovery/retry paths retain their current readers.
 The new input is scoped to its actual script buffer: a synthetic merged script
 cannot claim the coordinates or ownership of an authored SFC block.
