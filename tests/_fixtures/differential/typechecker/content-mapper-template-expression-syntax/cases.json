@@ -82,6 +82,63 @@
           "message": "Type expected."
         }
       ]
+    },
+    {
+      "id": "template-value-operators",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/TemplateValueOperators.vue", "source": "template-value-operators.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 8,
+          "column": 16,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 9,
+          "column": 22,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 10,
+          "column": 21,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 11,
+          "column": 25,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 12,
+          "column": 28,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        },
+        {
+          "file": "src/TemplateValueOperators.vue",
+          "line": 13,
+          "column": 26,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        }
+      ]
     }
   ]
 }

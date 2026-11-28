@@ -1,0 +1,14 @@
+<script setup lang="ts">
+const count = 1;
+const ready = true;
+const items = [1];
+</script>
+
+<template>
+  <p>{{ count + }}</p>
+  <p v-show="ready &&"></p>
+  <p v-if="count ==="></p>
+  <p v-else-if="ready ||"></p>
+  <p v-for="item in items +" :key="item"></p>
+  <button @click="count +">{{ count + 1 }}</button>
+</template>

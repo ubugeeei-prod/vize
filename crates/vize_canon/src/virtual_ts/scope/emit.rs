@@ -221,11 +221,28 @@ pub(super) fn emit_v_for_loop_open<M>(
                     let source_text = rewritten_source
                         .as_ref()
                         .map_or(data.source.as_str(), |source| source.as_str());
-                    let isolated_source =
-                        crate::virtual_ts::expressions::isolate_incomplete_expression(source_text);
+                    // The mapped loop owns the source's syntax errors; a
+                    // replay keeps the repair so they are reported once.
+                    let (isolated_source, kept_syntax_error) =
+                        if map_aliases && source_offset.is_some() {
+                            crate::virtual_ts::expressions::isolate_diagnostic_expression_reporting(
+                                source_text,
+                            )
+                        } else {
+                            (
+                                crate::virtual_ts::expressions::isolate_incomplete_expression(
+                                    source_text,
+                                ),
+                                false,
+                            )
+                        };
                     ts.push_str(isolated_source.as_str());
                     let (mapped_start, mapped_len) = isolated_source.mapped_bounds();
-                    let source_gen_end = source_gen_start + mapped_start + mapped_len;
+                    // TypeScript reports a dangling operator at the `)` after it.
+                    let source_gen_end = source_gen_start
+                        + mapped_start
+                        + mapped_len
+                        + usize::from(kept_syntax_error);
                     if let Some(source_offset) = source_offset {
                         let source_start = (template_offset + source_offset) as usize;
                         mappings.as_mappings().push(VizeMapping {

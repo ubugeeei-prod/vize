@@ -7,6 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, cstr};
+use vize_croquis::croquis::TemplateExpressionKind;
 
 pub(crate) enum IsolatedExpression<'a> {
     Borrowed(&'a str),
@@ -90,19 +91,62 @@ pub(crate) fn isolate_incomplete_expression(source: &str) -> IsolatedExpression<
 /// repairing `count +` to `count` silently turned a syntax error into a
 /// misleading type error (#10188).
 pub(crate) fn isolate_diagnostic_expression(source: &str) -> IsolatedExpression<'_> {
+    isolate_diagnostic_expression_reporting(source).0
+}
+
+/// [`isolate_diagnostic_expression`], also telling whether it kept an
+/// expression the repair had rejected, so a caller can map TypeScript's
+/// recovery diagnostic without parsing every valid expression again.
+pub(crate) fn isolate_diagnostic_expression_reporting(
+    source: &str,
+) -> (IsolatedExpression<'_>, bool) {
     let isolated = isolate_incomplete_expression(source);
     if !isolated.is_owned() {
-        return isolated;
+        return (isolated, false);
     }
     let trimmed = source.trim();
-    let preserves_editor_recovery = trimmed.ends_with('.') || delimiter_imbalance(trimmed);
+    let preserves_editor_recovery = ends_with_member_dot(trimmed) || delimiter_imbalance(trimmed);
     if preserves_editor_recovery {
-        isolated
+        (isolated, false)
     } else if ends_with_dangling_operator(trimmed) || has_trailing_keyword_before_closers(trimmed) {
-        IsolatedExpression::Borrowed(source)
+        (IsolatedExpression::Borrowed(source), true)
     } else {
-        isolated
+        (isolated, false)
     }
+}
+
+/// Whether the `void (...)` projection of a template value of this kind owns
+/// its syntax errors, as a native prop does: repairing `count +` to `count`
+/// in an interpolation or `v-show` reported nothing. Listener, directive and
+/// dynamic-argument projections keep the editor-safe repair.
+pub(super) fn owns_syntax_diagnostics(kind: TemplateExpressionKind) -> bool {
+    !matches!(
+        kind,
+        TemplateExpressionKind::VOn
+            | TemplateExpressionKind::CustomDirective
+            | TemplateExpressionKind::DynamicDirectiveArgument
+            | TemplateExpressionKind::DynamicEventArgument
+    )
+}
+
+/// Whether `source`, emitted verbatim, carries the dangling-operator syntax
+/// error [`isolate_diagnostic_expression`] keeps, which TypeScript reports at
+/// the generated token after it. The tail checks come first, so only an
+/// expression ending in an operator or keyword is scanned or parsed.
+pub(crate) fn keeps_authored_syntax_error(source: &str) -> bool {
+    let trimmed = source.trim();
+    (ends_with_dangling_operator(trimmed) || has_trailing_keyword_before_closers(trimmed))
+        && !ends_with_member_dot(trimmed)
+        && !delimiter_imbalance(trimmed)
+        && !expression_parses(trimmed)
+}
+
+/// An unfinished member access, also inside the parentheses a v-if guard
+/// adds, keeps its completion repair.
+fn ends_with_member_dot(trimmed: &str) -> bool {
+    trimmed
+        .trim_end_matches(|ch: char| ch.is_whitespace() || matches!(ch, ')' | ']' | '}'))
+        .ends_with('.')
 }
 
 fn repair_incomplete(trimmed: &str) -> (String, usize, usize) {
@@ -428,5 +472,28 @@ mod tests {
             assert!(!isolated.has_unrepaired_syntax_error(), "{source}");
         }
         assert!(!super::isolate_diagnostic_expression("count + 1").has_unrepaired_syntax_error());
+    }
+
+    #[test]
+    fn kept_syntax_errors_match_the_diagnostic_isolation() {
+        for (source, kept) in [
+            ("count +", true),
+            (" ready && ", true),
+            ("value as", true),
+            ("(count ===)", true),
+            ("count + 1", false),
+            ("count++", false),
+            ("foo.", false),
+            ("(foo.)", false),
+            ("foo(", false),
+            ("", false),
+        ] {
+            assert_eq!(super::keeps_authored_syntax_error(source), kept, "{source}");
+            assert_eq!(
+                super::isolate_diagnostic_expression_reporting(source).1,
+                kept,
+                "{source}"
+            );
+        }
     }
 }
