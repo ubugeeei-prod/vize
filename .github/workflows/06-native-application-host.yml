@@ -74,7 +74,7 @@ jobs:
       - name: Check the native application adapter types
         run: vp run --filter './npm/native-host-fixture' check:types
       - name: Compile canonical SFCs and verify native tree interactions
-        run: vp run --filter './npm/native-host-fixture' test
+        run: node --test npm/native-host-fixture/test/application.test.ts
       - name: Verify packet admission and real simulator interactions
         run: node npm/native-host-fixture/scripts/qualify-host.ts
       - name: Retain first-host qualification artifacts

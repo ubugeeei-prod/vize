@@ -98,7 +98,7 @@ jobs {
       }
       new Dynamic {
         name = "Compile canonical SFCs and verify native tree interactions"
-        run = "vp run --filter './npm/native-host-fixture' test"
+        run = "node --test npm/native-host-fixture/test/application.test.ts"
       }
       new Dynamic {
         name = "Verify packet admission and real simulator interactions"
