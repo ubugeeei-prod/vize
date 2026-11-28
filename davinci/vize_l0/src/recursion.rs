@@ -73,9 +73,39 @@ pub fn ensure_sufficient_stack<R>(f: impl FnOnce() -> R) -> R {
     stacker::maybe_grow(RED_ZONE, SEGMENT_SIZE, f)
 }
 
+/// Stack one byte of authored `<script>` may cost a whole compile.
+///
+/// Measured on N-API at the deepest shapes that compile on an 8 MiB thread,
+/// the OXC parser uses up to ~710 bytes of stack per script byte (nested
+/// parentheses, two bytes per level), and the AST passes after it (semantic
+/// analysis, TypeScript stripping, codegen, module-shape visitors) up to ~180.
+/// 1 KiB leaves room for shapes and targets not measured.
+const STACK_PER_SCRIPT_BYTE: usize = 1024;
+
+/// Stack a compile moves to when the caller's thread may be too small: the
+/// 64 MiB the CLI gives each of its worker threads.
+const SCRIPT_STACK_SIZE: usize = 64 * 1024 * 1024;
+
+/// Run a compile whose `<script>` blocks hold `script_len` bytes, on a
+/// [`SCRIPT_STACK_SIZE`] stack when the current one may not hold it.
+///
+/// For entry points that run on a thread they do not own (N-API calls on the
+/// host's thread). Template nesting is bounded and grows on its own, so only
+/// script bytes count. The common case is one remaining-stack read and a
+/// compare; only scripts too large for the remaining stack pay for a fresh
+/// segment.
+#[inline]
+pub fn with_stack_for_script<R>(script_len: usize, f: impl FnOnce() -> R) -> R {
+    let needed = script_len.saturating_mul(STACK_PER_SCRIPT_BYTE);
+    if stacker::remaining_stack().is_some_and(|remaining| remaining >= needed) {
+        return f();
+    }
+    stacker::grow(SCRIPT_STACK_SIZE, f)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::ensure_sufficient_stack;
+    use super::{SCRIPT_STACK_SIZE, ensure_sufficient_stack, with_stack_for_script};
 
     /// A frame big enough that unguarded recursion overflows a small stack long
     /// before the recursion count below is reached.
@@ -99,5 +129,29 @@ mod tests {
             .spawn(|| deep(20_000))
             .expect("spawn");
         assert_eq!(handle.join().expect("join"), 512);
+    }
+
+    #[test]
+    fn a_script_larger_than_the_stack_runs_on_a_sized_stack() {
+        let remaining = || stacker::remaining_stack().unwrap_or(0);
+        let handle = std::thread::Builder::new()
+            .stack_size(1024 * 1024)
+            .spawn(move || {
+                let thread = remaining();
+                let small = with_stack_for_script(64, remaining);
+                let large = with_stack_for_script(4 * 1024, remaining);
+                (thread, small, large)
+            })
+            .expect("spawn");
+        let (thread, small, large) = handle.join().expect("join");
+        assert!(thread < SCRIPT_STACK_SIZE / 2);
+        assert!(
+            small <= thread,
+            "a small script stays on the thread's stack"
+        );
+        assert!(
+            large > SCRIPT_STACK_SIZE / 2,
+            "a large script moves to a sized stack"
+        );
     }
 }

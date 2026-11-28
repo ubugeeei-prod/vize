@@ -11,9 +11,11 @@ import { beforeSharedTemplateRefTargetsSource } from "../../tools/support/compat
 import { beforeCheckModeGenerator } from "../../tools/support/compat/content-mapper/check-mode-successor.ts";
 import { beforeComponentHoverGaps } from "../../tools/support/compat/content-mapper/component-hover-gaps-transition.ts";
 import { beforeLibTypeShadowingAudit } from "../../tools/support/compat/content-mapper/lib-type-shadowing-audit-transition.ts";
+import { reviewedSource } from "../../tools/support/compat/content-mapper/reviewed-source.ts";
 
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => readFileSync(new URL(path, root), "utf8");
+const reviewed = (path: string) => readFileSync(reviewedSource(path), "utf8");
 const identity = (text: string) => ({
   bytes: Buffer.byteLength(text),
   sha256: createHash("sha256").update(text).digest("hex"),
@@ -42,7 +44,7 @@ void test("default export projection restores the exact pinned generator and rou
     file.before,
     predecessor.files.find((entry: { path: string }) => entry.path === path).after,
   );
-  const current = read(path);
+  const current = reviewed(path);
   assert.deepEqual(identity(current), file.after);
   const previous = beforeDefaultExportProjection(path, current);
   assert.deepEqual(identity(previous), file.before);
@@ -87,9 +89,9 @@ void test("the actual verifier rejects every changed, missing, and moved support
   for (const source of record.supportingSources) {
     const target = new URL(source.path, sourceRoot);
     mkdirSync(new URL(".", target), { recursive: true });
-    writeFileSync(target, readFileSync(new URL(source.path, root)));
+    writeFileSync(target, readFileSync(reviewedSource(source.path)));
   }
-  const current = read(path);
+  const current = reviewed(path);
   const expected = beforeDefaultExportProjection(path, current);
   assert.equal(beforeDefaultExportProjection(path, current, sourceRoot), expected);
   for (const source of record.supportingSources) {
@@ -113,7 +115,7 @@ void test("the actual verifier rejects every changed, missing, and moved support
 });
 
 void test("the new generator edge preserves every older authenticated source transition", () => {
-  const current = read(path);
+  const current = reviewed(path);
   for (const [name, before] of [
     ["generic-hoisted-alias-forwarding", beforeGenericHoistedAlias],
     ["shared-template-ref-targets", beforeSharedTemplateRefTargetsSource],

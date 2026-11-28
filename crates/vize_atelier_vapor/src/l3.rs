@@ -181,7 +181,6 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
                 source,
                 SurfaceParseOptions {
                     experimental_in_tag_comments: options.experimental_in_tag_comments,
-                    html_tree_construction: true,
                     ..SurfaceParseOptions::default()
                 },
             )
@@ -193,9 +192,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         });
         let s2 = bridge_profile!(
             "atelier.vapor.bridge.s1_to_s2",
-            // Vapor templates are parsed again by `innerHTML`: keep the
-            // `tbody`/`tr` owners the legacy Vapor parse implies too. A tag
-            // in a `v-pre` subtree stays a plain element, as Vue keeps it.
+            // A tag in a `v-pre` subtree stays a plain element, as Vue keeps it.
             vize_l1_to_l2::lower::lower_with_caps_and_comment_policy::<
                 std::vec::Vec<vize_l2::provenance::ProvenanceRecord>,
             >(
@@ -203,9 +200,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
                 &tree,
                 &errors,
                 vize_l1_to_l2::lower::LegacyCaps::VUE3,
-                vize_l1_to_l2::lower::LowerPolicy::compile(false)
-                    .with_implied_table_sections()
-                    .with_literal_v_pre_tags(),
+                vize_l1_to_l2::lower::LowerPolicy::compile(false).with_literal_v_pre_tags(),
                 &[],
                 None,
             )

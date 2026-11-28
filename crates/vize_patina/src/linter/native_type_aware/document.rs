@@ -95,6 +95,7 @@ fn project<'a>(
         &allocator,
         descriptor,
         vize_atelier_sfc::croquis::SfcScriptParses::compile_language,
+        None,
     );
     let analysis = analyze_sfc_descriptor_with_lint_template_context(
         &scripts,

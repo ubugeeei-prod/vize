@@ -50,6 +50,7 @@ crates/vize_atelier_dom/tests/l2_patch_flags.rs	@keyup.enter.stop
 crates/vize_atelier_dom/tests/l2_patch_flags.rs	@click.stop
 crates/vize_atelier_dom/tests/l2_prefix_identifiers.rs	@click.stop
 crates/vize_atelier_dom/tests/l2_prefix_identifiers.rs	@keyup.enter
+crates/vize_atelier_dom/tests/quoted_name_backslashes.rs	@keyup.a\b
 crates/vize_atelier_dom/tests/support/battery/dom.rs	@click.stop
 crates/vize_atelier_dom/tests/support/battery/dom.rs	@click.prevent.stop
 crates/vize_atelier_dom/tests/support/battery/dom.rs	@click.capture

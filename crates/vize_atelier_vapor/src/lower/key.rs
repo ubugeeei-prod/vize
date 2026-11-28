@@ -182,7 +182,7 @@ pub(super) fn element<'a>(
         super::element::transform_slot(ctx, el, block);
         return;
     }
-    let directives = classify(el, ctx.is_key_non_reactive(), own_key);
+    let directives = classify(el, ctx.is_key_non_reactive(), own_key, ctx.split_nesting);
     if let Some(value) = directives.key {
         transform(
             ctx,

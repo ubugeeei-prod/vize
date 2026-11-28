@@ -23,6 +23,7 @@ use vapor_runtime_contracts::process_evidence;
 
 mod vapor_runtime_contracts {
     mod events;
+    mod invalid_nesting;
     mod model_arguments;
     mod models;
     pub(super) mod process_evidence;

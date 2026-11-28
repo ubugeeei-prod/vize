@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { lstatSync, readFileSync } from "node:fs";
+import { reviewedSource } from "./reviewed-source.ts";
 
 type Identity = { bytes: number; sha256: string };
 type FileTransition = {
@@ -48,7 +49,7 @@ export function beforeDefaultExportProjection(
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.deepEqual(identity(current), file.after);
   for (const source of record.supportingSources) {
-    const path = new URL(source.path, sourceRoot);
+    const path = reviewedSource(source.path, sourceRoot);
     assert.equal(lstatSync(path).isFile(), true);
     const bytes = readFileSync(path);
     assert.equal(bytes.length, source.bytes);

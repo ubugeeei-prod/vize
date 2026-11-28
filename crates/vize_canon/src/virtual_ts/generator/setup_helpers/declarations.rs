@@ -10,13 +10,17 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
-use vize_croquis::script_parser::{with_shared_parse, with_shared_program_for_analysis};
+use vize_croquis::script_parser::{
+    ScriptParses, with_shared_parse, with_shared_program_for_analysis,
+};
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
     pub(crate) macro_results: Vec<CompactString>,
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
     pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
+    /// Native JSX refs of a script whose calls the registry types.
+    pub(super) script_jsx_refs: Vec<super::script_jsx_refs::ScriptJsxRef>,
     active_template_ref: bool,
     /// Editor projections keep authored prop JSDoc on `withDefaults` results.
     pub(super) with_defaults_docs: bool,
@@ -25,13 +29,32 @@ pub(crate) struct SetupHelperPlan {
 }
 
 impl SetupHelperPlan {
+    #[cfg(test)]
     pub(crate) fn collect(
         summary: &Croquis,
         source: Option<&str>,
         preserve_event_navigation: bool,
         configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
     ) -> Self {
+        Self::collect_with_parses(
+            None,
+            summary,
+            source,
+            preserve_event_navigation,
+            configured_global_template_ref,
+        )
+    }
+
+    /// [`Self::collect`] reading `source` through the projection's shared parses.
+    pub(crate) fn collect_with_parses(
+        parses: Option<&ScriptParses<'_>>,
+        summary: &Croquis,
+        source: Option<&str>,
+        preserve_event_navigation: bool,
+        configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
+    ) -> Self {
         shadowed_helpers(
+            parses,
             summary,
             source,
             preserve_event_navigation,
@@ -43,11 +66,13 @@ impl SetupHelperPlan {
     /// or a named content-mapper component) also keep authored prop JSDoc on
     /// `withDefaults` results; batch and native projections keep their bytes.
     pub(in crate::virtual_ts::generator) fn for_generation(
+        parses: Option<&ScriptParses<'_>>,
         summary: &Croquis,
         source: Option<&str>,
         options: crate::virtual_ts::VirtualTsGenerationOptions<'_>,
     ) -> Self {
-        let mut plan = Self::collect(
+        let mut plan = Self::collect_with_parses(
+            parses,
             summary,
             source,
             options.preserve_event_navigation,
@@ -191,6 +216,7 @@ pub(super) fn emit(
 }
 
 fn shadowed_helpers(
+    parses: Option<&ScriptParses<'_>>,
     summary: &Croquis,
     source: Option<&str>,
     preserve_event_navigation: bool,
@@ -201,6 +227,7 @@ fn shadowed_helpers(
         macro_results: Vec::new(),
         emit_calls: Vec::new(),
         template_refs: TemplateRefUsage::default(),
+        script_jsx_refs: Vec::new(),
         // Escapes may spell the identifier or imported name without its literal
         // bytes. Keep this conservative even when recovery cannot build an AST.
         active_template_ref: source.is_some_and(|source| {
@@ -229,6 +256,7 @@ fn shadowed_helpers(
     }
     let read = |parsed: &ParserReturn<'_>| {
         read_helpers(
+            parses,
             plan,
             parsed,
             summary,
@@ -237,9 +265,9 @@ fn shadowed_helpers(
             configured_global_template_ref,
         )
     };
-    with_shared_parse(source, SourceType::ts(), |parsed| {
+    with_shared_parse(parses, source, SourceType::ts(), |parsed| {
         if parsed.panicked || !parsed.diagnostics.is_empty() {
-            with_shared_parse(source, SourceType::tsx(), read)
+            with_shared_parse(parses, source, SourceType::tsx(), read)
         } else {
             read(parsed)
         }
@@ -247,6 +275,7 @@ fn shadowed_helpers(
 }
 
 fn read_helpers(
+    parses: Option<&ScriptParses<'_>>,
     mut plan: SetupHelperPlan,
     parsed: &ParserReturn<'_>,
     summary: &Croquis,
@@ -256,7 +285,8 @@ fn read_helpers(
 ) -> SetupHelperPlan {
     if parsed.panicked {
         if plan.active_template_ref {
-            plan.template_refs = recovered_template_refs(source, configured_global_template_ref);
+            plan.template_refs =
+                recovered_template_refs(parses, source, configured_global_template_ref);
         }
         return plan;
     }
@@ -280,6 +310,10 @@ fn read_helpers(
             source,
             configured_global_template_ref,
         );
+        // Only the TSX parse of a script can hold JSX.
+        if plan.template_refs.needs_registry() && parsed.program.source_type.is_jsx() {
+            plan.script_jsx_refs = super::script_jsx_refs::collect(&parsed.program);
+        }
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
     if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {
@@ -297,10 +331,11 @@ fn read_helpers(
 /// While the script has a syntax error, infer the `useTemplateRef` calls of
 /// the parse the analyzer recovers, as its other script facts do.
 fn recovered_template_refs(
+    parses: Option<&ScriptParses<'_>>,
     source: &str,
     ownership: crate::virtual_ts::TemplateRefOwnership,
 ) -> TemplateRefUsage {
-    with_shared_program_for_analysis(source, SourceType::ts(), |parsed| {
+    with_shared_program_for_analysis(parses, source, SourceType::ts(), |parsed| {
         if parsed.panicked {
             return TemplateRefUsage::default();
         }

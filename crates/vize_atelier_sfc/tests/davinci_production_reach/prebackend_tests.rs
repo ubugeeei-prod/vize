@@ -11,18 +11,11 @@ use vize_atelier_sfc::dom_differential::shapes::{Shape, compile};
 #[test]
 fn original_vapor_parser_rejections_keep_their_identity_and_complete_diagnostics() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
-    let cases = [
-        (
-            "davinci-html-nesting/Page.vue",
-            include_str!("../../../../tests/_fixtures/davinci-html-nesting/Page.vue"),
-            "Vapor template compilation errors: [\"Invalid end tag.\"]",
-        ),
-        (
-            "davinci-ts40-projection/parse-recovery.vue",
-            include_str!("../../../../tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"),
-            "Vapor template compilation errors: [\"Element is missing end tag.\"]",
-        ),
-    ];
+    let cases = [(
+        "davinci-ts40-projection/parse-recovery.vue",
+        include_str!("../../../../tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"),
+        "Vapor template compilation errors: [\"Element is missing end tag.\"]",
+    )];
     for (name, source, message) in cases {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
         let profiler = global_profiler();
@@ -52,6 +45,41 @@ fn original_vapor_parser_rejections_keep_their_identity_and_complete_diagnostics
         };
         assert_eq!(format!("{actual:?}"), format!("{expected:?}"), "{name}");
     }
+}
+
+/// A `<div>` written in a `<p>` used to be a Vapor parser rejection ("Invalid
+/// end tag."). Vapor now keeps the authored tree and gives the `<div>` a
+/// template of its own on the legacy lane, as Vue 3.6 Vapor does.
+#[test]
+fn authored_html_nesting_compiles_on_the_legacy_vapor_lane() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let name = "davinci-html-nesting/Page.vue";
+    let source = include_str!("../../../../tests/_fixtures/davinci-html-nesting/Page.vue");
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let selected = compile(&descriptor, name, Shape::Vapor).unwrap();
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+    assert_eq!(
+        classify(Shape::Vapor, &counters),
+        Ok(Lane::Legacy("structure".to_owned()))
+    );
+    assert!(selected.errors.is_empty(), "{:?}", selected.errors);
+    // The `<div>` comes from its own template, inserted into the `<p>`.
+    assert_eq!(
+        selected.code.as_str(),
+        include_str!("../fixtures/davinci_production_reach/html_nesting.vapor.expected.txt")
+    );
+
+    let mut actual = Tally::default();
+    crate::measure(&descriptor, name, Shape::Vapor, &mut actual);
+    assert_eq!(actual.templates, 1);
+    assert_eq!(actual.legacy, BTreeMap::from([("structure".to_owned(), 1)]));
+    assert!(actual.prebackend_rejections.is_empty());
+    assert!(actual.sfc_errors.is_empty());
 }
 
 #[test]

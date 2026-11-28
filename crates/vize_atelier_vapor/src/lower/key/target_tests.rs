@@ -51,7 +51,7 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
             panic!("the complete original control must own its element");
         };
         assert_eq!(el.tag_type, expected_type, "{source}");
-        let facts = classify(el, false, true);
+        let facts = classify(el, false, true, false);
         assert_eq!(facts.key.map(|key| key.content), None, "{source}");
         assert_eq!(value(el, false).map(|key| key.content), None, "{source}");
         assert_eq!(facts.should_lower_as_once, expected_once, "{source}");

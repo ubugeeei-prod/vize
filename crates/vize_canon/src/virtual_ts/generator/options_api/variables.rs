@@ -11,7 +11,9 @@ use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
 /// Emit the profiled Options API variables without growing the root generator.
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     enabled: bool,
     output: (
         &mut crate::virtual_ts::TextBuf,
@@ -31,6 +33,7 @@ pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
     vize_carton::profile!(
         "canon.virtual_ts.generate_options_api_variables",
         links.extend(generate_options_api_variables(
+            parses,
             ts,
             summary,
             options,
@@ -55,7 +58,9 @@ pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
 // instance, so the untyped `any` fallback is kept only for the names that pass
 // cannot declare; a second `const` for a declared name would redeclare it
 // (`TS2451`) and win with `any`.
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn generate_options_api_variables(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     mut ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
@@ -115,7 +120,7 @@ fn generate_options_api_variables(
     );
     if authored_instance_declares_unknowns
         && !inherited_unknown_names.is_empty()
-        && authored_instance_declares_unknown_names(script)
+        && authored_instance_declares_unknown_names(parses, script)
     {
         // The undefined-reference pass declares each of these names from the
         // authored instance with the member's type; a second `const` here would

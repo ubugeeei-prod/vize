@@ -58,7 +58,7 @@ fn every_original_script_parser_diagnostic_matches_at_its_authored_offset() {
             let start = u32::try_from(block.loc.start).unwrap();
             let text = source.get(block.loc.start..block.loc.end).unwrap();
             assert_eq!(text, block.content.as_ref(), "{name}");
-            let expected = collect_script_parse_diagnostics(&block.content, start, lang);
+            let expected = collect_script_parse_diagnostics(None, &block.content, start, lang);
             let profile = ScriptDiagnosticProfile::for_language(lang);
             let arena = Allocator::default();
             let syntax = AuthoredProgram::parse(

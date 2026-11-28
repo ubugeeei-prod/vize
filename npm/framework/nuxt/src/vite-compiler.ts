@@ -2,6 +2,7 @@ import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import type { VizeNuxtOptions } from "./options.ts";
 import { splitNuxtCompilerDefaults } from "./compiler-option-bridge.ts";
 import { placeVizeCompileStage } from "./host-vue-bridge.ts";
+import { setupNuxtTemplateDiagnostics } from "./template-diagnostics.ts";
 import { resolve } from "node:path";
 
 type NuxtCompilerHost = {
@@ -11,6 +12,7 @@ type NuxtCompilerHost = {
     typesDir?: string;
     vue?: { compilerOptions?: Record<string, unknown> };
     vite?: { plugins?: unknown[] };
+    experimental?: { templateDiagnostics?: boolean };
   };
   hook(name: string, callback: (...args: unknown[]) => unknown): void;
 };
@@ -59,6 +61,8 @@ export async function setupNuxtViteCompiler(
     "nuxt",
   );
   host.vite.plugins.push(plugins);
+  // The host compiler's node transforms report Nuxt's template diagnostics.
+  setupNuxtTemplateDiagnostics(nuxt, host.vite.plugins);
   const stage = plugins.find((plugin) => plugin.name === "vite-plugin-vize:sfc");
   if (!stage) return;
   nuxt.hook("vite:configResolved", (config) => {

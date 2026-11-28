@@ -12,6 +12,7 @@ pub(crate) mod helpers;
 mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
+pub(crate) use spans::push_escaped_bound_name;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};

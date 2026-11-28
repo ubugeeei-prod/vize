@@ -63,6 +63,8 @@ mod linter_options;
 #[cfg(feature = "native")]
 mod native;
 pub(in crate::ide) mod patina;
+#[cfg(all(test, feature = "native"))]
+mod project_global_components_tests;
 mod service;
 mod severity;
 #[expect(

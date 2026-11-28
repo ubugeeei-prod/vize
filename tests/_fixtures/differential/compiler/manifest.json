@@ -3000,6 +3000,59 @@
       }
     },
     {
+      "id": "compiler/sfc/quoted-name-backslashes",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "quoted-name-backslashes",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "43dfb8b24c48f9d70237f33cea0a25e3159147226560987a8f169b6be9f1be3e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "quoted-name-backslashes/module.expected.txt",
+        "sha256": "8d0bf0cd20ffbe6754d8b70ec5777e0dcc0abbf3aa4e3be9aae53805e195f529",
+        "source": "crates/vize_atelier_ssr/tests/quoted_name_backslashes.rs:quoted_names_are_escaped_on_both_lanes; DOM: crates/vize_atelier_dom/tests/quoted_name_backslashes.rs:quoted_names_are_escaped_in_both_lanes; Vapor: crates/vize_atelier_vapor/src/tests_authored_string_literals.rs:a_static_slot_name_is_a_string_literal"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/real-project-lint-scopes-12069",
       "state": "active",
       "targets": [
@@ -6841,6 +6894,59 @@
       "provenance": {
         "issue": "https://github.com/ubugeeei-prod/vize/issues/11622",
         "reporter": "ubugeeei"
+      }
+    },
+    {
+      "id": "compiler/sfc/vapor-invalid-nesting-templates",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "vapor-invalid-nesting-templates",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "326dd5215a3a461656dd58defa42a187d794b6b24866205ec5cdf49cb94b61cf",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-invalid-nesting-templates/module.expected.txt",
+        "sha256": "941bd311a641cad3dc4a0163289452d24586960f4110385caf69b4faf793f3b9",
+        "source": "Baseline be02098ce7cd44f3a162017a465062f136c8246c, compiler-cli-ssr-v1 on Layout.vue: the server render keeps every authored nesting. The Vapor module of the same fixture, with each invalid child in a template of its own as @vue/compiler-vapor 3.6 emits it, is pinned by crates/vize_atelier_sfc/tests/vapor_invalid_nesting.rs."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The SSR CLI provides this whole-module reference. The Vapor split of the same nestings is checked in the SFC and Vapor Rust tests and mounted against the VDOM in the Vapor runtime contracts."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
       }
     },
     {

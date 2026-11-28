@@ -4,9 +4,6 @@ use super::drawer::{
     analyze_scripts, analyze_scripts_with_empty_module_exports, analyze_scripts_with_occurrences,
     apply_options_api_mode,
 };
-use super::resolved::{
-    merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
-};
 use super::{
     SfcCroquisAnalysis, SfcCroquisOptions, script_content_for_descriptor, template_reads, unused,
 };
@@ -61,7 +58,7 @@ pub(super) struct DescriptorObservation<'a> {
 }
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
-    scripts: &super::SfcScriptParses<'_>,
+    scripts: &super::SfcScriptParses<'_, '_>,
     template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
@@ -109,15 +106,13 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         )
     };
     if let Some(filename) = resolve_filename {
-        match sources {
-            Some(sources) => merge_resolved_props_into_croquis_with_sources(
-                &mut summary,
-                descriptor,
-                filename,
-                sources,
-            ),
-            None => merge_resolved_props_into_croquis(&mut summary, descriptor, filename),
-        }
+        super::resolved::merge_resolved(
+            scripts.shared(),
+            &mut summary,
+            descriptor,
+            filename,
+            sources,
+        );
     }
     let drawer = Drawer::with_summary(drawer_options, summary, script_analyzed);
     let drawer = if let Some(reuse) = template_semantic_reuse {

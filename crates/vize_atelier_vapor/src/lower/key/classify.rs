@@ -4,7 +4,7 @@ use vize_atelier_core::{
     ElementNode, ElementType, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
 
-use super::super::element::template::{RootAttributes, is_static_element};
+use super::super::element::template::{RootAttributes, is_split_child, is_static};
 
 mod scope;
 pub(in crate::lower) use scope::ScopeDirectives;
@@ -24,21 +24,42 @@ impl<'a, 'b> DirectiveAnalysis<'a, 'b> {
     }
 }
 
+/// `split`: a child its parent's template string cannot hold counts as
+/// dynamic (see [`crate::nesting`]).
 pub(in crate::lower) fn classify<'a, 'b>(
+    el: &'b ElementNode<'a>,
+    inherited: bool,
+    own_key: bool,
+    split: bool,
+) -> DirectiveAnalysis<'a, 'b> {
+    if split {
+        return classify_split(el, inherited, own_key);
+    }
+    if own_key && !inherited && matches!(el.tag_type, ElementType::Element | ElementType::Component)
+    {
+        classify_role::<true, false>(el, inherited)
+    } else {
+        classify_role::<false, false>(el, inherited)
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn classify_split<'a, 'b>(
     el: &'b ElementNode<'a>,
     inherited: bool,
     own_key: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
     if own_key && !inherited && matches!(el.tag_type, ElementType::Element | ElementType::Component)
     {
-        classify_role::<true>(el, inherited)
+        classify_role::<true, true>(el, inherited)
     } else {
-        classify_role::<false>(el, inherited)
+        classify_role::<false, true>(el, inherited)
     }
 }
 
 // The original key must exist before its complete target policy is needed.
-fn classify_role<'a, 'b, const READ_KEY: bool>(
+fn classify_role<'a, 'b, const READ_KEY: bool, const SPLIT: bool>(
     el: &'b ElementNode<'a>,
     inherited: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
@@ -52,9 +73,10 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
             .any(|c| matches!(c, TemplateChildNode::If(_) | TemplateChildNode::For(_)));
     let has_dynamic_element_children = el.tag_type == ElementType::Element
         && !has_control_flow_children
-        && el.children.iter().any(
-            |c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)),
-        );
+        && el.children.iter().any(|c| {
+            matches!(c, TemplateChildNode::Element(child_el)
+                if !is_static::<SPLIT>(child_el) || SPLIT && is_split_child(el, child_el))
+        });
 
     let needs_writer = el.tag_type == ElementType::Element
         && (has_control_flow_children || has_dynamic_element_children || el.tag != "component");

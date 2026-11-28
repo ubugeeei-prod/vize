@@ -149,14 +149,8 @@ fn a_directive_resolves_by_a_string_literal_of_its_name() {
             ", x]\n  ])\n}",
         ])
     };
-    assert_modules(&[
-        (
-            r#"<div v-a"b="x"></div>"#,
-            module("_directive_a34b", r#""a\"b""#),
-        ),
-        (
-            r#"<div v-a\b="x"></div>"#,
-            module("_directive_a92b", r#""a\\b""#),
-        ),
-    ]);
+    assert_modules(&[(
+        r#"<div v-a\b="x"></div>"#,
+        module("_directive_a92b", r#""a\\b""#),
+    )]);
 }

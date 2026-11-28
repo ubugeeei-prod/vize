@@ -149,7 +149,9 @@ fn closes_paragraph(tag: &str) -> bool {
 /// item scope, and closes a paragraph before a block in button scope. The
 /// legacy parser reads authored markup, so the guard follows authored
 /// nesting, not template strings; components and outlets bound the scoped
-/// cases, and branches and loops are transparent. Parents precede children.
+/// cases, and branches and loops are transparent. An element its parent
+/// element cannot hold directly (`isValidHTMLNesting`) needs a template of
+/// its own, which only the legacy lane emits. Parents precede children.
 pub(super) fn check_nesting(
     nodes: &[Node<'_>],
     parents: &[Option<usize>],
@@ -162,8 +164,13 @@ pub(super) fn check_nesting(
             Some(parent) => *at(&open, parent)?,
             None => (0, 0),
         };
+        let tag = match node.content {
+            Content::Element { tag, .. } => tag,
+            _ => "",
+        };
         if let Some(parent) = parent {
-            match at(nodes, parent)?.content {
+            let parent = &at(nodes, parent)?.content;
+            match *parent {
                 Content::Element {
                     tag: "ul" | "ol", ..
                 } => flags &= !ITEM,
@@ -173,11 +180,17 @@ pub(super) fn check_nesting(
                 }
                 _ => {}
             }
+            // A child its parent's template string cannot hold is emitted as
+            // a template of its own by the legacy lane (`crate::nesting`).
+            if let Content::Element {
+                tag: parent_tag, ..
+            } = *parent
+                && !tag.is_empty()
+                && !crate::nesting::is_valid_html_nesting(parent_tag, tag)
+            {
+                return Err(LegacyReason::Structure.into());
+            }
         }
-        let tag = match node.content {
-            Content::Element { tag, .. } => tag,
-            _ => "",
-        };
         let own = match tag {
             "button" => BUTTON,
             "li" => ITEM,

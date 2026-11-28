@@ -1,11 +1,12 @@
-import { template as _template } from 'vue';
-const t0 = _template("<a href=\"/x\"></a>")
-const t1 = _template("<a href=\"/y\">y</a>")
+import { insert as _insert, template as _template } from 'vue';
+const t0 = _template("<a href=\"/y\">y</a>")
+const t1 = _template("<a href=\"/x\"></a>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n0 = t0()
   const n1 = t1()
-  return [n0, n1]
+  const n0 = t0()
+  _insert(n0, n1)
+  return n1
 }
 const _sfc_main = { __vapor: true }
 _sfc_main.render = render

@@ -82,6 +82,9 @@ fn repaired_nestings_select_the_legacy_lane() {
         r#"<a><span><a>x</a></span></a>"#,
         r#"<a><MyComp><a>x</a></MyComp></a>"#,
         r#"<form><div><form></form></div></form>"#,
+        // A child the direct parent rejects gets its own template there.
+        r#"<a href="/x"><a href="/y">y</a></a>"#,
+        r#"<section><h1><h2>{{ x }}</h2></h1></section>"#,
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());

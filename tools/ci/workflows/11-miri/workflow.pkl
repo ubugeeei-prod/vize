@@ -92,11 +92,11 @@ jobs {
       ci.command("Test the lent walk with Miri", "cargo +nightly miri test -p vize_patina --lib -- lent_walk::tests")
     }
   }
-  // A shared script parse stores its oxc tree with the lifetime erased next
-  // to the boxed text and arena it borrows (`vize_croquis/src/script_parser/
-  // shared.rs`). Its tests keep parses past nested reads, list growth and the
-  // scope's drop, so Miri checks the erased borrow, the owned source pointer
-  // and the drop order. Only the `script_parser::shared::tests` module runs.
+  // Shared script parses (`vize_croquis/src/script_parser/shared.rs`) live in
+  // an arena the handle borrows, so the borrow checker proves their lifetimes.
+  // The tests keep parses past nested reads, list growth and the handle's
+  // drop; Miri runs them as a check of safe code. Only the
+  // `script_parser::shared::tests` module runs.
   `croquis-shared-parse` {
     `runs-on` = ci.linux
     `timeout-minutes` = 10

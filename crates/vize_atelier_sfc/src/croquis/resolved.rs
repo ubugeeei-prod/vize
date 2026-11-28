@@ -2,6 +2,7 @@ use crate::script::{ScriptCompileContext, TypeSourceSnapshot};
 use crate::types::SfcDescriptor;
 use vize_carton::FxHashSet;
 use vize_croquis::Croquis;
+use vize_croquis::script_parser::ScriptParses;
 
 /// Merge props resolved by the script compile context — which performs
 /// cross-file and node_modules type resolution — into a Croquis summary.
@@ -16,16 +17,19 @@ pub fn merge_resolved_props_into_croquis(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) {
-    merge_resolved(croquis, descriptor, filename, None);
+    merge_resolved(None, croquis, descriptor, filename, None);
 }
 
+/// [`merge_resolved_props_into_croquis`] against `sources`, reading the
+/// root script through the projection's shared parses when given.
 pub fn merge_resolved_props_into_croquis_with_sources(
+    parses: Option<&ScriptParses<'_>>,
     croquis: &mut Croquis,
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
     sources: &TypeSourceSnapshot,
 ) {
-    merge_resolved(croquis, descriptor, filename, Some(sources));
+    merge_resolved(parses, croquis, descriptor, filename, Some(sources));
 }
 
 /// The scoped type world of a descriptor's scripts, read from disk, without
@@ -34,7 +38,7 @@ pub fn resolve_descriptor_type_world(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) -> Option<vize_croquis::types::ResolvedTypeWorld> {
-    descriptor_world(descriptor, filename, &TypeSourceSnapshot::default())
+    descriptor_world(None, descriptor, filename, &TypeSourceSnapshot::default())
 }
 
 /// [`resolve_descriptor_type_world`] against a disk view shared across calls.
@@ -43,12 +47,13 @@ pub fn resolve_descriptor_type_world_with_sources(
     filename: &str,
     sources: &TypeSourceSnapshot,
 ) -> Option<vize_croquis::types::ResolvedTypeWorld> {
-    descriptor_world(descriptor, filename, sources)
+    descriptor_world(None, descriptor, filename, sources)
 }
 
 // The scoped world reads the current setup/normal text directly. The
 // compatibility collector and context analysis do not contribute to it.
 fn descriptor_world(
+    parses: Option<&ScriptParses<'_>>,
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
     sources: &TypeSourceSnapshot,
@@ -59,7 +64,8 @@ fn descriptor_world(
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         let script = descriptor.script.as_ref()?;
         return Some(
-            ScriptCompileContext::new(&script.content).resolve_type_world_with_sources(
+            ScriptCompileContext::new(&script.content).resolve_type_world_with_parses(
+                parses,
                 filename,
                 None,
                 tsx(Some(script)),
@@ -68,7 +74,8 @@ fn descriptor_world(
         );
     };
     Some(
-        ScriptCompileContext::new(&script_setup.content).resolve_type_world_with_sources(
+        ScriptCompileContext::new(&script_setup.content).resolve_type_world_with_parses(
+            parses,
             filename,
             descriptor
                 .script
@@ -80,7 +87,8 @@ fn descriptor_world(
     )
 }
 
-fn merge_resolved(
+pub(super) fn merge_resolved(
+    parses: Option<&ScriptParses<'_>>,
     croquis: &mut Croquis,
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
@@ -90,7 +98,7 @@ fn merge_resolved(
     let disk_sources = TypeSourceSnapshot::default();
     let world_sources = sources.unwrap_or(&disk_sources);
 
-    if let Some(world) = descriptor_world(descriptor, filename, world_sources) {
+    if let Some(world) = descriptor_world(parses, descriptor, filename, world_sources) {
         croquis.types.set_resolved_world(world);
     }
     if descriptor.script_setup.is_none() {

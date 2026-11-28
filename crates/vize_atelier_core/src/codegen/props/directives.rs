@@ -5,7 +5,7 @@ use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
 use super::super::{
     context::CodegenContext,
     expression::generate_expression,
-    helpers::{camelize, escape_js_string, is_constant_simple_expression, is_valid_js_identifier},
+    helpers::{camelize, escape_js_string, is_constant_simple_expression},
 };
 use super::StaticMerge;
 use super::dynamic_arg::emit_dynamic_directive_arg;
@@ -202,17 +202,10 @@ fn generate_vbind_prop(
                 ctx.push("ref_for: true, ");
             }
 
-            let needs_quotes = !is_valid_js_identifier(&transformed_key);
-            if needs_quotes {
-                ctx.push("\"");
-            }
             // Anchor the generated prop key back to the v-bind argument in
             // source, recording the original (untransformed) symbol so it lands
             // in the v3 `names` array. No-op without `source_map`.
-            ctx.push_named(&transformed_key, exp.loc.span, exp.content);
-            if needs_quotes {
-                ctx.push("\"");
-            }
+            ctx.push_named_key(&transformed_key, exp.loc.span, exp.content);
             ctx.push(": ");
         }
     }
@@ -347,17 +340,10 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
                 dir.modifiers.iter().map(|m| m.content),
             );
 
-            let needs_quotes = !is_valid_js_identifier(&event_name);
-            if needs_quotes {
-                ctx.push("\"");
-            }
             // Anchor the generated event-handler key back to the v-on argument
             // in source, recording the original event name so it lands in the
             // v3 `names` array. No-op without `source_map`.
-            ctx.push_named(&event_name, exp.loc.span, exp.content);
-            if needs_quotes {
-                ctx.push("\"");
-            }
+            ctx.push_named_key(&event_name, exp.loc.span, exp.content);
             ctx.push(": ");
         }
     }

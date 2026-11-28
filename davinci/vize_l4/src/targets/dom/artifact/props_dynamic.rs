@@ -13,9 +13,7 @@ pub(super) fn emit_dynamic_props(cx: &mut EmitCx<'_>, names: &[String]) {
         if i > 0 {
             cx.buf.push(", ");
         }
-        cx.buf.push("\"");
-        cx.buf.push(name.as_str());
-        cx.buf.push("\"");
+        cx.push_quoted_name(name.as_str());
     }
     cx.buf.push("]");
 }

@@ -6,6 +6,7 @@ import {
   beforeScriptConsumedSlots,
   beforeTypedUseSlots,
 } from "../../tools/support/compat/content-mapper/authored-component-infer-transition.ts";
+import { reviewedSource } from "../../tools/support/compat/content-mapper/reviewed-source.ts";
 
 const root = new URL("../../", import.meta.url);
 const identity = (text: string) => ({
@@ -30,7 +31,7 @@ void test("script-consumed slot producers restore exact predecessors without his
     ],
   );
   for (const file of record.files) {
-    const current = beforeTypedUseSlots(file.path, readFileSync(new URL(file.path, root), "utf8"));
+    const current = beforeTypedUseSlots(file.path, readFileSync(reviewedSource(file.path), "utf8"));
     assert.deepEqual(identity(current), file.after);
     const previous = beforeScriptConsumedSlots(file.path, current);
     assert.deepEqual(identity(previous), file.before);
@@ -61,7 +62,7 @@ void test("the typed useSlots follow-up restores its exact script-consumed prede
     ["crates/vize_canon/src/virtual_ts/generator/setup_imports.rs"],
   );
   for (const file of typedRecord.files) {
-    const current = readFileSync(new URL(file.path, root), "utf8");
+    const current = readFileSync(reviewedSource(file.path), "utf8");
     assert.deepEqual(identity(current), file.after);
     const previous = beforeTypedUseSlots(file.path, current);
     assert.deepEqual(identity(previous), file.before);

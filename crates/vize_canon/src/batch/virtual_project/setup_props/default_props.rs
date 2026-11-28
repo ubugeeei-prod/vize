@@ -5,7 +5,7 @@ use oxc_ast::ast::{BindingPattern, Declaration, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
-use vize_croquis::{Croquis, macros::MacroKind};
+use vize_croquis::{Croquis, macros::MacroKind, script_parser::ScriptParses};
 
 use super::{
     RuntimePropResolveCache,
@@ -24,6 +24,7 @@ use collect::{collect_default_names_from_argument, collect_default_names_from_ex
 use declaration::collect_default_names_from_default_declaration;
 
 pub(super) fn merge_type_based_with_defaults_into_croquis(
+    parses: Option<&ScriptParses<'_>>,
     croquis: &mut Croquis,
     script_setup_source: &str,
     script_source: Option<&str>,
@@ -48,6 +49,7 @@ pub(super) fn merge_type_based_with_defaults_into_croquis(
             continue;
         };
         collect_type_based_with_defaults_default_names(
+            parses,
             runtime_args,
             script_setup_source,
             script_source,
@@ -61,6 +63,7 @@ pub(super) fn merge_type_based_with_defaults_into_croquis(
 }
 
 fn collect_type_based_with_defaults_default_names(
+    parses: Option<&ScriptParses<'_>>,
     runtime_args: &str,
     script_setup_source: &str,
     script_source: Option<&str>,
@@ -84,6 +87,7 @@ fn collect_type_based_with_defaults_default_names(
     };
 
     collect_default_names_with_script_context(
+        parses,
         defaults,
         script_setup_source,
         path,
@@ -94,6 +98,7 @@ fn collect_type_based_with_defaults_default_names(
 
     if let Some(script_source) = script_source {
         collect_default_names_with_script_context(
+            parses,
             defaults,
             script_source,
             path,
@@ -105,6 +110,7 @@ fn collect_type_based_with_defaults_default_names(
 }
 
 fn collect_default_names_with_script_context(
+    parses: Option<&ScriptParses<'_>>,
     defaults: &oxc_ast::ast::Argument<'_>,
     context_source: &str,
     path: &Path,
@@ -113,7 +119,7 @@ fn collect_default_names_with_script_context(
     cache: &RuntimePropResolveCache,
 ) {
     // The SFC's own script: croquis reads the same text in the same dialect.
-    parse_shared_ts(context_source, "script.ts", |program| {
+    parse_shared_ts(parses, context_source, "script.ts", |program| {
         let imports = collect_imports(program);
         let local_values = collect_top_level_values(program);
         collect_default_names_from_argument(

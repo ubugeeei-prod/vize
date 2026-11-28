@@ -27,7 +27,10 @@ pub(crate) fn generate_scope_closures(
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
-    options: ScopeGenerationOptions<'_, '_>,
+    (options, parses): (
+        ScopeGenerationOptions<'_, '_>,
+        Option<&vize_croquis::script_parser::ScriptParses<'_>>,
+    ),
 ) {
     emit_scope_closures(
         ts,
@@ -36,7 +39,7 @@ pub(crate) fn generate_scope_closures(
         summary,
         template_binding_access,
         template_offset,
-        (options, true),
+        (options, true, parses),
     );
 }
 
@@ -47,9 +50,13 @@ pub(super) fn emit_scope_closures(
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
-    options: (ScopeGenerationOptions<'_, '_>, bool),
+    options: (
+        ScopeGenerationOptions<'_, '_>,
+        bool,
+        Option<&vize_croquis::script_parser::ScriptParses<'_>>,
+    ),
 ) {
-    let (options, pack_root_owners) = options;
+    let (options, pack_root_owners, parses) = options;
     super::component_events::reset_emit_resolvers();
     super::component_slots::reset_slot_contracts();
     let check_options = options.check_options;
@@ -406,6 +413,7 @@ pub(super) fn emit_scope_closures(
     if check_options.check_template_bindings {
         profile!("canon.virtual_ts.undefined_refs", {
             generate_undefined_refs(
+                parses,
                 ts,
                 mappings,
                 summary,

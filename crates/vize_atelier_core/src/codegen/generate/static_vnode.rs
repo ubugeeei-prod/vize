@@ -4,7 +4,10 @@ use vize_l0::{String, ensure_sufficient_stack};
 
 use crate::{ElementNode, PropNode, RuntimeHelper, TemplateChildNode};
 
-use super::super::{context::CodegenContext, helpers::escape_js_string};
+use super::super::{
+    context::CodegenContext,
+    helpers::{KeySpelling, escape_js_string, key_spelling},
+};
 
 /// Serialize a fully-static element as a nested `createElementVNode(...)` for a
 /// hoisted subtree. Children recurse the same way; text children collapse to a
@@ -112,8 +115,11 @@ fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
                 buf.push_str(", ");
             }
             emitted += 1;
-            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
-            if needs_quote {
+            let spelling = key_spelling(attr.name);
+            let needs_quote = spelling != KeySpelling::Bare;
+            if spelling == KeySpelling::Escaped {
+                crate::codegen::helpers::push_escaped_name(&mut buf, attr.name);
+            } else if needs_quote {
                 buf.push('"');
                 buf.push_str(attr.name);
                 buf.push('"');

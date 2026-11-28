@@ -21,6 +21,7 @@ use runtime_props::{resolve_imported_runtime_props, resolve_inline_runtime_props
 use syntax::runtime_arg_identifier;
 
 pub(super) fn augment_type_based_props_from_script_context(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     croquis: &mut Croquis,
     descriptor: &SfcDescriptor<'_>,
     path: &Path,
@@ -39,6 +40,7 @@ pub(super) fn augment_type_based_props_from_script_context(
     {
         let path_string = path.to_string_lossy();
         merge_resolved_props_into_croquis_with_sources(
+            parses,
             croquis,
             descriptor,
             path_string.as_ref(),
@@ -53,6 +55,7 @@ pub(super) fn augment_type_based_props_from_script_context(
         .map(|script| script.content.as_ref());
     if let Some(script_setup_source) = script_setup_source {
         merge_type_based_with_defaults_into_croquis(
+            parses,
             croquis,
             script_setup_source,
             descriptor
@@ -161,6 +164,7 @@ mod tests {
             vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
         );
         augment_type_based_props_from_script_context(
+            None,
             &mut croquis,
             &descriptor,
             Path::new("/project/src/Component.vue"),

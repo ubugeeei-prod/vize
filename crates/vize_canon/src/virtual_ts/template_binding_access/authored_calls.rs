@@ -10,6 +10,7 @@ use vize_croquis::Croquis;
 
 impl<'a> TemplateBindingAccess<'a> {
     pub(crate) fn for_template(
+        parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
         summary: &'a Croquis,
         source: &ScopeGenerationOptions<'a, '_>,
     ) -> Self {
@@ -40,7 +41,7 @@ impl<'a> TemplateBindingAccess<'a> {
             return result;
         }
         let script_names = match source.script_content {
-            Some(script) => match script_top_level_binding_names(script) {
+            Some(script) => match script_top_level_binding_names(parses, script) {
                 Some(names) => names,
                 None => return result,
             },

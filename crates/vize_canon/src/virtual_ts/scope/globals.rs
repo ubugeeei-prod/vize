@@ -5,7 +5,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use std::borrow::Cow;
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 
 use vize_croquis::{Croquis, ScopeKind};
 
@@ -51,6 +51,7 @@ use {
 /// authored occurrence with the instance wording. Legacy Vue 2 and the strict
 /// instance-global form keep their own emission.
 pub(super) fn generate_undefined_refs(
+    parses: Option<&ScriptParses<'_>>,
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
@@ -106,7 +107,7 @@ pub(super) fn generate_undefined_refs(
         prepared
             .map(Cow::Borrowed)
             .or_else(|| match script_content {
-                Some(script) => script_top_level_binding_names(script).map(Cow::Owned),
+                Some(script) => script_top_level_binding_names(parses, script).map(Cow::Owned),
                 None => Some(Cow::Owned(FxHashSet::default())),
             })
     } else {
@@ -417,8 +418,11 @@ pub(super) fn resolves_on_authored_instance(
 /// diagnostics keeps the free-name emission instead. Another emitter must
 /// therefore not drop its own declarations on the strength of the instance
 /// form unless this holds as well.
-pub(crate) fn authored_instance_declares_unknown_names(script: Option<&str>) -> bool {
-    script.is_none_or(|script| script_top_level_binding_names(script).is_some())
+pub(crate) fn authored_instance_declares_unknown_names(
+    parses: Option<&ScriptParses<'_>>,
+    script: Option<&str>,
+) -> bool {
+    script.is_none_or(|script| script_top_level_binding_names(parses, script).is_some())
 }
 
 /// Whether the SFC authored a `<script setup>` block: its bindings are the
@@ -441,11 +445,14 @@ fn has_script_setup(summary: &Croquis) -> bool {
 /// plain source type is tried first and TSX second. `None` means neither parsed
 /// the script cleanly: its top-level names are then unknown, and no template
 /// name may be classified against the public instance on a partial program.
-pub(crate) fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
+pub(crate) fn script_top_level_binding_names(
+    parses: Option<&ScriptParses<'_>>,
+    script: &str,
+) -> Option<FxHashSet<String>> {
     [SourceType::ts(), SourceType::tsx()]
         .into_iter()
         .find_map(|source_type| {
-            with_shared_parse(script, source_type.with_module(true), |parsed| {
+            with_shared_parse(parses, script, source_type.with_module(true), |parsed| {
                 if parsed.panicked || !parsed.diagnostics.is_empty() {
                     return None;
                 }

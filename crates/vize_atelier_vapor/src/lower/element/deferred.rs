@@ -1,10 +1,10 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
-use crate::ir::InsertionAnchor;
+use crate::ir::{InsertNodeIRNode, InsertionAnchor};
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
-use super::template::{RootAttributes, is_static_element, transform_template_ref};
+use super::template::{RootAttributes, is_split_child, is_static, transform_template_ref};
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
     SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
@@ -34,7 +34,33 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     block: &mut BlockIRNode<'a>,
     root: RootAttributes<'a, '_>,
 ) {
-    let dynamic_child_count = count_dynamic_element_children(&el.children);
+    if ctx.split_nesting {
+        split_element_with_dynamic_children(ctx, el, block, root);
+    } else {
+        element_with_dynamic_children::<false>(ctx, el, block, root);
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn split_element_with_dynamic_children<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+    root: RootAttributes<'a, '_>,
+) {
+    element_with_dynamic_children::<true>(ctx, el, block, root);
+}
+
+/// `SPLIT`: a child its parent's template string cannot hold is inserted from
+/// a template of its own (see [`crate::nesting`]).
+fn element_with_dynamic_children<'a, const SPLIT: bool>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+    root: RootAttributes<'a, '_>,
+) {
+    let dynamic_child_count = count_dynamic_element_children::<SPLIT>(Some(el), &el.children);
     let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
 
     // Now allocate parent ID (will be higher than all child IDs)
@@ -56,7 +82,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     transform_template_ref(ctx, el, parent_id, block);
     transform_text_children(ctx, &el.children, parent_id, block);
 
-    transform_dynamic_children_with_ids(ctx, el, parent_id, block, &child_ids);
+    transform_dynamic_children_with_ids::<SPLIT>(ctx, el, parent_id, block, &child_ids);
 
     // Register template for parent
     ctx.add_element_template(parent_id, template, el);
@@ -64,20 +90,36 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     block.returns.push(parent_id);
 }
 
-fn count_dynamic_element_children(children: &[TemplateChildNode<'_>]) -> usize {
+/// Whether `child` needs an id of its own: it has runtime work, or (under
+/// `SPLIT`) `parent` cannot hold it in its template string. `parent` is
+/// `None` for the children of a transparent wrapper.
+fn needs_child_id<const SPLIT: bool>(
+    parent: Option<&ElementNode<'_>>,
+    child: &ElementNode<'_>,
+) -> bool {
+    !is_static::<SPLIT>(child)
+        || SPLIT && parent.is_some_and(|parent| is_split_child(parent, child))
+}
+
+fn count_dynamic_element_children<const SPLIT: bool>(
+    parent: Option<&ElementNode<'_>>,
+    children: &[TemplateChildNode<'_>],
+) -> usize {
     children
         .iter()
         .map(|child| match child {
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
-                ensure_sufficient_stack(|| count_dynamic_element_children(&child_el.children))
+                ensure_sufficient_stack(|| {
+                    count_dynamic_element_children::<SPLIT>(None, &child_el.children)
+                })
             }
-            TemplateChildNode::Element(child_el) if !is_static_element(child_el) => 1,
+            TemplateChildNode::Element(child_el) if needs_child_id::<SPLIT>(parent, child_el) => 1,
             _ => 0,
         })
         .sum()
 }
 
-fn transform_dynamic_children_with_ids<'a>(
+fn transform_dynamic_children_with_ids<'a, const SPLIT: bool>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     parent_id: usize,
@@ -97,10 +139,15 @@ fn transform_dynamic_children_with_ids<'a>(
         .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
         .count()
         == 1;
-    let mut placeholders =
-        super::insertion::block_placeholders(&el.children, ctx.is_key_non_reactive()).into_iter();
-    transform_dynamic_children_in_slice(
+    let mut placeholders = super::insertion::block_placeholders::<SPLIT>(
+        Some(el),
+        &el.children,
+        ctx.is_key_non_reactive(),
+    )
+    .into_iter();
+    transform_dynamic_children_in_slice::<SPLIT>(
         ctx,
+        Some(el),
         &el.children,
         parent_id,
         block,
@@ -116,8 +163,9 @@ fn transform_dynamic_children_with_ids<'a>(
 }
 
 #[expect(clippy::too_many_arguments, reason = "the walk's cursors recurse")]
-fn transform_dynamic_children_in_slice<'a>(
+fn transform_dynamic_children_in_slice<'a, const SPLIT: bool>(
     ctx: &mut TransformContext<'a>,
+    parent: Option<&ElementNode<'a>>,
     children: &[TemplateChildNode<'a>],
     parent_id: usize,
     block: &mut BlockIRNode<'a>,
@@ -163,8 +211,9 @@ fn transform_dynamic_children_in_slice<'a>(
             let previous = ctx.non_reactive_keys;
             ctx.non_reactive_keys = super::super::key::is_non_reactive(child_el, previous);
             ensure_sufficient_stack(|| {
-                transform_dynamic_children_in_slice(
+                transform_dynamic_children_in_slice::<SPLIT>(
                     ctx,
+                    None,
                     &child_el.children,
                     parent_id,
                     block,
@@ -181,7 +230,7 @@ fn transform_dynamic_children_in_slice<'a>(
             continue;
         }
 
-        if !is_static_element(child_el) {
+        if needs_child_id::<SPLIT>(parent, child_el) {
             // One id was allocated per non-static child, in this order.
             let Some(&child_id) = child_ids.get(*child_id_index) else {
                 continue;
@@ -201,6 +250,11 @@ fn transform_dynamic_children_in_slice<'a>(
                     value,
                     None,
                 );
+            } else if SPLIT && parent.is_some_and(|parent| is_split_child(parent, child_el)) {
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
+                ensure_sufficient_stack(|| {
+                    transform_split_element(ctx, child_el, child_id, parent_id, anchor, block);
+                });
             } else if child_el.tag_type == ElementType::Element {
                 let index = *rendered_index;
                 if let Some((prev_child_id, prev_index)) = *prev_template_backed_child {
@@ -221,7 +275,7 @@ fn transform_dynamic_children_in_slice<'a>(
 
                 *prev_template_backed_child = Some((child_id, index));
                 ensure_sufficient_stack(|| {
-                    transform_existing_element(ctx, child_el, child_id, block);
+                    transform_existing_element::<SPLIT>(ctx, child_el, child_id, block);
                 });
             } else if child_el.tag_type == ElementType::Slot {
                 let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
@@ -295,7 +349,39 @@ fn transform_slot_outlet_child<'a>(
     }
 }
 
-fn transform_existing_element<'a>(
+/// A child its parent's template string cannot hold, as `@vue/compiler-vapor`
+/// emits it: a template of its own, created and inserted into the parent at
+/// the block position its authored siblings leave for it.
+#[cold]
+#[inline(never)]
+fn transform_split_element<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    element_id: usize,
+    parent_id: usize,
+    anchor: InsertionAnchor,
+    block: &mut BlockIRNode<'a>,
+) {
+    let root =
+        super::super::key::classify(el, ctx.is_key_non_reactive(), false, true).into_template();
+    let template = ctx.element_template(root);
+    let mut elements = vize_carton::Vec::new_in(&ctx.allocator);
+    elements.push(element_id);
+    block
+        .operation
+        .push(OperationNode::InsertNode(InsertNodeIRNode {
+            elements,
+            parent: parent_id,
+            anchor: match anchor {
+                InsertionAnchor::Node(anchor) => Some(anchor),
+                InsertionAnchor::Index(_) => None,
+            },
+        }));
+    transform_existing_element::<true>(ctx, el, element_id, block);
+    ctx.add_element_template(element_id, template, el);
+}
+
+fn transform_existing_element<'a, const SPLIT: bool>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     element_id: usize,
@@ -303,7 +389,7 @@ fn transform_existing_element<'a>(
 ) {
     let previous = ctx.non_reactive_keys;
     ctx.non_reactive_keys = super::super::key::is_non_reactive(el, previous);
-    let dynamic_child_count = count_dynamic_element_children(&el.children);
+    let dynamic_child_count = count_dynamic_element_children::<SPLIT>(Some(el), &el.children);
 
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
@@ -316,6 +402,6 @@ fn transform_existing_element<'a>(
     transform_text_children(ctx, &el.children, element_id, block);
 
     let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
-    transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
+    transform_dynamic_children_with_ids::<SPLIT>(ctx, el, element_id, block, &child_ids);
     ctx.non_reactive_keys = previous;
 }

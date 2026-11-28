@@ -96,6 +96,7 @@ module.exports.normalizeViteRequireBase = nativeBinding.normalizeViteRequireBase
 module.exports.normalizeViteResolvedVuePath = nativeBinding.normalizeViteResolvedVuePath;
 module.exports.normalizeViteVirtualVueModuleId = nativeBinding.normalizeViteVirtualVueModuleId;
 module.exports.normalizeVizeConfig = nativeBinding.normalizeVizeConfig;
+module.exports.nuxtTemplateDiagnostics = nativeBinding.nuxtTemplateDiagnostics;
 module.exports.openPluginDocument = nativeBinding.openPluginDocument;
 module.exports.parseArt = nativeBinding.parseArt;
 module.exports.parseArtStatusWarnings = nativeBinding.parseArtStatusWarnings;

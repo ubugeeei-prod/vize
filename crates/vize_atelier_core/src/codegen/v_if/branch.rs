@@ -295,9 +295,7 @@ fn generate_if_branch_component(
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push("\"");
-            ctx.push(prop);
-            ctx.push("\"");
+            ctx.push_string_literal(prop);
         }
         ctx.push("]");
     }
@@ -387,9 +385,7 @@ fn generate_if_branch_element(
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push("\"");
-            ctx.push(prop);
-            ctx.push("\"");
+            ctx.push_string_literal(prop);
         }
         ctx.push("]");
     }

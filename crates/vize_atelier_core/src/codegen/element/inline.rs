@@ -248,9 +248,7 @@ pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push("\"");
-            ctx.push(prop);
-            ctx.push("\"");
+            ctx.push_string_literal(prop);
         }
         ctx.push("]");
     }
@@ -433,9 +431,7 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
             if i > 0 {
                 ctx.push(", ");
             }
-            ctx.push("\"");
-            ctx.push(prop);
-            ctx.push("\"");
+            ctx.push_string_literal(prop);
         }
         ctx.push("]");
     }

@@ -182,7 +182,7 @@ pub fn analyze_sfc_descriptor(
 /// consumer. Ordinary descriptor callers retain their existing allocation path.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_template_reuse(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
@@ -209,7 +209,7 @@ pub fn analyze_sfc_descriptor_with_template_reuse(
 /// Analyze a lint descriptor from its completed Davinci template artifact.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> Croquis {
@@ -234,7 +234,7 @@ pub fn analyze_sfc_descriptor_with_lint_template(
 /// shares one disk view across calls; `None` reads a fresh one.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_resolved(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     filename: &str,
@@ -260,7 +260,7 @@ pub fn analyze_sfc_descriptor_with_lint_template_resolved(
 /// return matching merged-script offsets for virtual-document generation.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_context(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     options_api: bool,
@@ -318,7 +318,12 @@ fn analyze_sfc_descriptor_with_context_impl(
     include_script_content: bool,
 ) -> SfcCroquisAnalysis {
     let allocator = oxc_allocator::Allocator::default();
-    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    let scripts = SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        SfcScriptParses::compile_language,
+        None,
+    );
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
         template_ast,
@@ -352,7 +357,12 @@ pub fn analyze_sfc_descriptor_resolved(
     filename: &str,
 ) -> SfcCroquisAnalysis {
     let allocator = oxc_allocator::Allocator::default();
-    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    let scripts = SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        SfcScriptParses::compile_language,
+        None,
+    );
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
         template_ast,
@@ -380,7 +390,12 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
     sources: &crate::script::TypeSourceSnapshot,
 ) -> SfcCroquisAnalysis {
     let allocator = oxc_allocator::Allocator::default();
-    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    let scripts = SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        SfcScriptParses::compile_language,
+        None,
+    );
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
         template_ast,
