@@ -30,7 +30,7 @@ steps = new Listing {
     name = "Measure"
     env {
       SIZES = "${{ inputs.sizes }}"
-      GIANT_BLOCKS = "${{ inputs.giant_blocks || '0' }}"
+      PROJECTS = "${{ inputs.projects }}"
       RUNS = "${{ inputs.runs }}"
       ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
       REFERENCE = "${{ inputs.reference_mapper }}"

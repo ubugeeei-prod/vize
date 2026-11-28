@@ -35,7 +35,7 @@ import {
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
-import { giantComponentProps } from "./content-mapper-pair-giant.ts";
+import { giantBlockSizes, giantComponentProps } from "./content-mapper-pair-giant.ts";
 import { COMPILER_OPTIONS, generateScaleProject, writeProject } from "./scale-project-generator.ts";
 import {
   type BurstSample,
@@ -262,7 +262,7 @@ async function main(): Promise<void> {
       root: { type: "string" },
       sizes: { type: "string", default: "1000,5000" },
       runs: { type: "string", default: "5" },
-      "giant-blocks": { type: "string", default: "0" },
+      projects: { type: "string", default: "" },
       "serial-files": { type: "string", default: "300" },
       label: { type: "string", default: process.platform },
       out: { type: "string" },
@@ -302,15 +302,12 @@ async function main(): Promise<void> {
   const runs = Number(values.runs);
   const serialFiles = Number(values["serial-files"]);
   mkdirSync(out, { recursive: true });
-  const giantBlocks = Number(values["giant-blocks"]);
-  if (!Number.isSafeInteger(giantBlocks) || giantBlocks < 0)
-    throw new Error("--giant-blocks must be a natural number");
   const shapes = values.sizes.split(",").map((size) => ({
     id: `vue-${size}`,
     sfcs: Number(size),
     giantBlocks: 0,
   }));
-  if (giantBlocks > 0)
+  for (const giantBlocks of giantBlockSizes(values.projects))
     shapes.push({ id: `giant-component-props-${giantBlocks}`, sfcs: 2, giantBlocks });
   const cells: Cell[] = [];
   for (const shape of shapes) {

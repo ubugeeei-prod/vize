@@ -147,7 +147,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
   }
   assert.match(
     workflow,
-    /WSLENV: GIANT_BLOCKS\/u:SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
+    /WSLENV: PROJECTS\/u:SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
   assert.match(workflow, /AB\+BA replicates/);
@@ -182,4 +182,13 @@ test("the giant prop workload retains every distinct script value and typed chil
   assert.match(files.get("src/Child.vue") ?? "", /count: number/);
   assert.throws(() => giantComponentProps(0), /positive integer/);
   assert.throws(() => giantComponentProps(1.5), /positive integer/);
+});
+
+test("mapper giant cells use the existing projects input without replacing ordinary sizes", async () => {
+  const { giantBlockSizes } =
+    await import("../../tools/benchmarks/scripts/content-mapper-pair-giant.ts");
+  assert.deepEqual(giantBlockSizes("vue:1000,monorepo:5000"), []);
+  assert.deepEqual(giantBlockSizes("giant:1000,giant:10000"), [1000, 10000]);
+  assert.throws(() => giantBlockSizes("giant:0"), /positive integer/);
+  assert.throws(() => giantBlockSizes("giant:1.5"), /positive integer/);
 });

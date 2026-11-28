@@ -34,7 +34,7 @@ on:
         type: boolean
         default: false
       projects:
-        description: "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        description: "generated: vue:<sfcs> or monorepo:<sfcs>; content-mapper: optional giant:<typed prop uses>"
         type: string
         default: vue:1000,vue:5000,monorepo:5000
       runtime:
@@ -91,10 +91,6 @@ on:
         description: "content-mapper: comma-separated SFC counts of the generated projects"
         type: string
         default: 1000,5000
-      giant_blocks:
-        description: "content-mapper: also measure one giant component with this many typed prop uses (0 skips)"
-        type: string
-        default: "0"
       reference_mapper:
         description: "content-mapper: also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts)"
         type: boolean
@@ -138,7 +134,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.giant_blocks }}-${{ inputs.corpora }}
+  group: typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.corpora }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -571,7 +567,7 @@ jobs:
       - name: Measure
         env:
           SIZES: ${{ inputs.sizes }}
-          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -623,9 +619,9 @@ jobs:
       - name: Measure ext4 and the Windows mount
         shell: wsl-bash {0}
         env:
-          WSLENV: GIANT_BLOCKS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
+          WSLENV: PROJECTS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
           SIZES: ${{ inputs.sizes }}
-          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -658,7 +654,7 @@ jobs:
         shell: pwsh
         env:
           SIZES: ${{ inputs.sizes }}
-          GIANT_BLOCKS: ${{ inputs.giant_blocks || '0' }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}

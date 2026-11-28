@@ -24,3 +24,16 @@ export function giantComponentProps(blocks: number): Map<string, string> {
     ],
   ]);
 }
+
+/** Existing non-giant project entries belong to the generated type-check lane. */
+export function giantBlockSizes(projects: string): number[] {
+  return projects
+    .split(",")
+    .filter((entry) => entry.startsWith("giant:"))
+    .map((entry) => {
+      const blocks = Number(entry.slice("giant:".length));
+      if (!Number.isSafeInteger(blocks) || blocks < 1)
+        throw new Error("giant component prop blocks must be a positive integer");
+      return blocks;
+    });
+}

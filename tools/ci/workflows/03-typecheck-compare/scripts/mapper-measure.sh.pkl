@@ -5,7 +5,7 @@ interpreter = "bash"
 commands {
   module.strictMode
   #"""
-  [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]] && [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
+  [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
   if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
     sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends time
   fi
@@ -18,7 +18,7 @@ commands {
   fi
   node tools/benchmarks/scripts/content-mapper-pair.ts \
     --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize "${reference[@]}" \
-    --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --giant-blocks "$GIANT_BLOCKS" --runs "$RUNS" $ALLOW \
+    --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --projects "$PROJECTS" --runs "$RUNS" $ALLOW \
     --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
   cat "$RUNNER_TEMP/pair-out/pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
   """#

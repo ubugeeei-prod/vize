@@ -46,9 +46,9 @@ steps = new Listing {
     name = "Measure ext4 and the Windows mount"
     shell = "wsl-bash {0}"
     env {
-      WSLENV = "GIANT_BLOCKS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
+      WSLENV = "PROJECTS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
       SIZES = "${{ inputs.sizes }}"
-      GIANT_BLOCKS = "${{ inputs.giant_blocks || '0' }}"
+      PROJECTS = "${{ inputs.projects }}"
       RUNS = "${{ inputs.runs }}"
       ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
       REFERENCE = "${{ inputs.reference_mapper }}"
