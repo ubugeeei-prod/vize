@@ -17,6 +17,10 @@ on {
       "npm/ui/src/**/examples/**"
       "npm/ui/scripts/generate-reference-docs.ts"
       "npm/ui/scripts/reference-docs/**"
+      "tools/support/documentation/**"
+      "tools/support/release/publish_crates/main.ts"
+      "crates/vize_glyph/Cargo.toml"
+      "crates/vize_patina/Cargo.toml"
       "tests/tooling/docs-preview-readiness-browser.test.ts"
       "playground/**"
       "examples/vite-musea/**"
@@ -78,7 +82,7 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Install JS dependencies"
-        run = "node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'"
+        run = "node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...' --filter './tools...'"
       }
       new Dynamic {
         name = "Build @vizejs/vite-plugin"

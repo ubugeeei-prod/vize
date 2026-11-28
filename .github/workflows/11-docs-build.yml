@@ -18,6 +18,10 @@ on:
       - "npm/ui/src/**/examples/**"
       - "npm/ui/scripts/generate-reference-docs.ts"
       - "npm/ui/scripts/reference-docs/**"
+      - "tools/support/documentation/**"
+      - "tools/support/release/publish_crates/main.ts"
+      - "crates/vize_glyph/Cargo.toml"
+      - "crates/vize_patina/Cargo.toml"
       - "tests/tooling/docs-preview-readiness-browser.test.ts"
       - "playground/**"
       - "examples/vite-musea/**"
@@ -69,7 +73,7 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-rust-script
       - name: Install JS dependencies
-        run: node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+        run: node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...' --filter './tools...'
 
       - name: Build @vizejs/vite-plugin
         run: node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
