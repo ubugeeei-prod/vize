@@ -142,7 +142,26 @@ void test("the sole retired WIT clause replays every complete archived Check pac
   const previousSymbolGuard = `    if (typeof eventName === "symbol")
       throw new TypeError("Cannot convert a Symbol value to a string");`;
   assert.equal(source.split(currentSymbolGuard).length, 2, "one boxed-symbol successor");
+  const currentReport = `/** The outer Check report requires measured ceilings on every event it reports. */
+export function aggregateCheckReportResults(needs: unknown, eventName: unknown): GateReport {`;
+  const previousReport = `/** The outer Check report requires measured ceilings in the queue and full qualification. */
+export function aggregateCheckReportResults(needs: unknown, eventName: unknown): GateReport {`;
+  const currentReportNeeds =
+    "  return aggregateNeedsResults(needs, {});\n}\n\n/** Full qualification";
+  const previousReportNeeds = `  return aggregateNeedsResults(
+    needs,
+    eventName === "pull_request"
+      ? { "instruction-counts": "queue and full qualification only" }
+      : {},
+  );
+}
+
+/** Full qualification`;
+  assert.equal(source.split(currentReport).length, 2, "one pull-request ceilings successor");
+  assert.equal(source.split(currentReportNeeds).length, 2, "one pull-request ceilings report");
   const historical = source
+    .replace(currentReport, previousReport)
+    .replace(currentReportNeeds, previousReportNeeds)
     .replace(currentSymbolGuard, previousSymbolGuard)
     .replace(currentClause, previousClause);
   assert.equal(

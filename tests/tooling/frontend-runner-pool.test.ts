@@ -172,10 +172,7 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
     (step) => step.uses === "./.github/actions/setup-rust-script",
   );
   assert.equal(originalSetupIndex >= 0, true);
-  assert.equal(
-    steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
-    false,
-  );
+  assert(!steps.some((step) => step.uses === "./.github/actions/setup-rust-script"));
   steps.splice(originalSetupIndex, 0, structuredClone(originalSteps[originalSetupIndex]));
 
   const publisher = steps.find((step) => step.name === "Coverage report");
@@ -188,6 +185,13 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
     run: "node tools/commands/ci/github/write-coverage-summary.ts",
   });
   publisher.run = originalPublisherRun;
+}
+
+// Pull requests also measure the instruction ceilings; the job is otherwise unchanged.
+function restoreQueueOnlyInstructionCeilings(job: Job) {
+  const pullRequest = "github.event_name == 'pull_request' || ";
+  assert.equal(String(job.if).split(pullRequest).length, 2, "one pull-request ceilings predicate");
+  job.if = String(job.if).replace(pullRequest, "");
 }
 
 test("the reviewed frontend runner transition preserves every original job contract", () => {
@@ -218,6 +222,7 @@ test("the reviewed frontend runner transition preserves every original job contr
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreQueueOnlyInstructionCeilings(restored.jobs["instruction-counts"]);
       restoreCoverageSummaryPublisher(restored.jobs.coverage, before.jobs.coverage);
       restoreTestReportComment(restored, before);
       restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
