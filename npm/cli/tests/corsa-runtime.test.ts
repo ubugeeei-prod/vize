@@ -16,7 +16,7 @@ const environmentNames = [
   "TSRS_EXECUTABLE",
 ] as const;
 
-function fixture() {
+function fixture(options: { supportsConfigStdin?: boolean } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-user-runtime-"));
   const packageRoot = path.join(root, "node_modules", "vize");
   const platformPackage = "@typescript/typescript-" + process.platform + "-" + process.arch;
@@ -56,6 +56,7 @@ function fixture() {
         import.meta.url,
       ),
       {
+        SUPPORTS_CONFIG_STDIN: Boolean(options.supportsConfigStdin),
         ENVIRONMENT_KEYS: JSON.stringify(environmentNames),
       },
     ),
@@ -117,16 +118,28 @@ test("CLI, LSP, mapper and syntax-only commands delegate without selecting a sta
   }
 });
 
-test("stdin config transport reaches the native addon unchanged", () => {
+test("stdin config transport falls back only for a native addon without the capability", () => {
   const payload = '{"vue":{"formatter":{"singleQuote":true}}}';
-  const f = fixture();
+  const stale = fixture();
+  try {
+    const result = stale.run(["fmt", "--config-stdin", "--check", "App.vue"], {}, payload);
+    const config = result.args.indexOf("--config");
+    assert.ok(config >= 0);
+    assert.equal(result.args.includes("--config-stdin"), false);
+    assert.equal(result.configPayload, payload);
+    assert.equal(fs.existsSync(result.args[config + 1]), false);
+  } finally {
+    stale.remove();
+  }
+
+  const current = fixture({ supportsConfigStdin: true });
   try {
     const args = ["fmt", "--config-stdin", "--check", "App.vue"];
-    const result = f.run(args, {}, payload);
+    const result = current.run(args, {}, payload);
     assert.deepEqual(result.args, args);
-    assert.equal(result.configPayload, payload);
+    assert.equal(result.configPayload, undefined);
   } finally {
-    f.remove();
+    current.remove();
   }
 });
 

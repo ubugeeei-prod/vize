@@ -1,11 +1,13 @@
 const fs = require("node:fs");
+if (@@SUPPORTS_CONFIG_STDIN@@) exports.supportsCliConfigStdin = () => true;
 exports.runCli = (args) => {
+  const config = args.indexOf("--config");
   const result = {
     args,
     environment: Object.fromEntries(
       @@ENVIRONMENT_KEYS@@.map((name) => [name, process.env[name] ?? null]),
     ),
   };
-  if (args.includes("--config-stdin")) result.configPayload = fs.readFileSync(0, "utf8");
+  if (config >= 0) result.configPayload = fs.readFileSync(args[config + 1], "utf8");
   process.stdout.write(JSON.stringify(result));
 };
