@@ -21,9 +21,20 @@ use raw::{
 
 const ENTRY_METADATA_KEYS: &[&str] = &["name", "basePath", "files", "ignores", "extends"];
 
+/// How deep config objects and arrays may nest.
+///
+/// Normalization copies every plain object and array it walks, one call frame
+/// per level. Real configs stay within a few levels; the bound turns a
+/// self-referencing or generated value into an error instead of exhausting the
+/// thread's stack. Checking it is one comparison per copied container.
+const MAX_CONFIG_DEPTH: u32 = 128;
+
+const TOO_DEEP: &str = "config objects and arrays may nest at most 128 levels; \
+                        found a deeper or self-referencing value";
+
 /// Normalize a raw JavaScript config export into the resolved public shape.
 pub fn normalize_vize_config(value: Unknown<'_>) -> Result<Unknown<'_>> {
-    match strip_nullish(value)? {
+    match strip_nullish(value, 0)? {
         Some(value) if is_array(value)? => normalize_config_entries(value),
         Some(value) if is_plain_object(value)? => normalize_config_object(value),
         Some(value) => empty_config(value.value().env),
@@ -69,7 +80,7 @@ fn normalize_config_entries(raw_entries: Unknown<'_>) -> Result<Unknown<'_>> {
     for index in 0..array_len(raw_entries)? {
         let entry = normalize_entry(get_element(raw_entries, index)?)?;
         if is_global_config_entry(entry)? {
-            deep_merge(global_config, strip_entry_metadata(entry)?)?;
+            deep_merge(global_config, strip_entry_metadata(entry)?, 1)?;
         }
         set_element(entries, index, entry)?;
     }
@@ -79,7 +90,7 @@ fn normalize_config_entries(raw_entries: Unknown<'_>) -> Result<Unknown<'_>> {
 }
 
 fn normalize_entry(entry: Unknown<'_>) -> Result<Unknown<'_>> {
-    match strip_nullish(entry)? {
+    match strip_nullish(entry, 1)? {
         Some(entry) if is_plain_object(entry)? => normalize_config_aliases(entry),
         Some(_) => Err(invalid_arg("config entries must be objects")),
         None => create_object(entry.value().env),
@@ -114,22 +125,35 @@ fn normalize_config_aliases(config: Unknown<'_>) -> Result<Unknown<'_>> {
     Ok(output)
 }
 
-fn strip_nullish(value: Unknown<'_>) -> Result<Option<Unknown<'_>>> {
+/// `value` without its `null` and `undefined` members, `depth` levels below the
+/// config root.
+fn strip_nullish(value: Unknown<'_>, depth: u32) -> Result<Option<Unknown<'_>>> {
     match value.get_type()? {
         ValueType::Null | ValueType::Undefined => Ok(None),
-        ValueType::Object if is_array(value)? => strip_array(value).map(Some),
-        ValueType::Object if is_plain_object(value)? => strip_object(value).map(Some),
+        ValueType::Object if is_array(value)? => strip_array(value, nested(depth)?).map(Some),
+        ValueType::Object if is_plain_object(value)? => {
+            strip_object(value, nested(depth)?).map(Some)
+        }
         _ => Ok(Some(value)),
     }
 }
 
-fn strip_array(value: Unknown<'_>) -> Result<Unknown<'_>> {
+/// The depth of a container's members, or an error past [`MAX_CONFIG_DEPTH`].
+fn nested(depth: u32) -> Result<u32> {
+    if depth < MAX_CONFIG_DEPTH {
+        Ok(depth + 1)
+    } else {
+        Err(invalid_arg(TOO_DEEP))
+    }
+}
+
+fn strip_array(value: Unknown<'_>, depth: u32) -> Result<Unknown<'_>> {
     let env = value.value().env;
     let output = create_array(env, 0)?;
     let mut next_index = 0;
 
     for index in 0..array_len(value)? {
-        if let Some(entry) = strip_nullish(get_element(value, index)?)? {
+        if let Some(entry) = strip_nullish(get_element(value, index)?, depth)? {
             set_element(output, next_index, entry)?;
             next_index += 1;
         }
@@ -138,12 +162,12 @@ fn strip_array(value: Unknown<'_>) -> Result<Unknown<'_>> {
     Ok(output)
 }
 
-fn strip_object(value: Unknown<'_>) -> Result<Unknown<'_>> {
+fn strip_object(value: Unknown<'_>, depth: u32) -> Result<Unknown<'_>> {
     let output = create_object(value.value().env)?;
 
     for key in enumerable_keys(value)? {
         let key_value = key.handle();
-        if let Some(entry) = strip_nullish(get_property(value, key_value)?)? {
+        if let Some(entry) = strip_nullish(get_property(value, key_value)?, depth)? {
             set_property(output, key_value, entry)?;
         }
     }
@@ -151,13 +175,13 @@ fn strip_object(value: Unknown<'_>) -> Result<Unknown<'_>> {
     Ok(output)
 }
 
-fn deep_merge(target: Unknown<'_>, source: Unknown<'_>) -> Result<()> {
+fn deep_merge(target: Unknown<'_>, source: Unknown<'_>, depth: u32) -> Result<()> {
     for key in enumerable_keys(source)? {
         let key_value = key.handle();
         let value = get_property(source, key_value)?;
         let current = get_property(target, key_value)?;
         if is_plain_object(current)? && is_plain_object(value)? {
-            deep_merge(current, value)?;
+            deep_merge(current, value, nested(depth)?)?;
         } else {
             set_property(target, key_value, value)?;
         }
