@@ -1646,6 +1646,9 @@ importers:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../native
+      '@vizejs/vite-plugin':
+        specifier: workspace:*
+        version: link:../builder/vite
       typescript:
         specifier: catalog:typescript
         version: 6.0.3

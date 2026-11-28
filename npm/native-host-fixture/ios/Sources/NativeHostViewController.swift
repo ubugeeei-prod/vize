@@ -4,13 +4,15 @@ import WebKit
 /// A deliberately small engine adapter: JS supplies snapshots; UIKit owns visible UI.
 ///
 /// This host provides vertical stack layout, native text, accessible buttons, and
-/// press delivery only. The hidden web view executes an offline compiler bundle;
+/// press delivery only. The hidden web view executes application JavaScript;
 /// it cannot satisfy native accessibility assertions in the UI test target.
 final class NativeHostViewController: UIViewController, WKNavigationDelegate {
   private let content = UIStackView()
   private let diagnostic = UILabel()
   private var engine: WKWebView!
-  private var indexURL: URL?
+  private var location: NativeHostLocation?
+  private var developmentDocumentCommitted = false
+  private var refusedNavigation = false
   private var acceptedSequence = 0
   private var currentButtons: Set<Int> = []
 
@@ -79,26 +81,39 @@ final class NativeHostViewController: UIViewController, WKNavigationDelegate {
     view.addSubview(engine)
     self.engine = engine
 
-    guard let index = Bundle.main.url(forResource: "index", withExtension: "html"),
-      Bundle.main.url(forResource: "application", withExtension: "js") != nil
-    else {
+    do {
+      let selected = try NativeHostLocation.forCurrentBuild(
+        environment: ProcessInfo.processInfo.environment,
+        bundledIndex: Bundle.main.url(forResource: "index", withExtension: "html"))
+      location = selected
+      switch selected {
+      case .bundled(let index):
+        guard Bundle.main.url(forResource: "application", withExtension: "js") != nil else {
+          throw NativeBridgeFailure(
+            code: "missing-resource", message: "the offline application bundle is missing")
+        }
+        engine.loadFileURL(index, allowingReadAccessTo: index.deletingLastPathComponent())
+      case .development(let root):
+        engine.load(URLRequest(url: root))
+      }
+    } catch let failure as NativeBridgeFailure {
+      show(NativeDiagnostic(code: failure.code, message: failure.message))
+    } catch {
       show(
         NativeDiagnostic(
-          code: "missing-resource", message: "the offline application bundle is missing"))
-      return
+          code: "invalid-host-location", message: "The application location could not be selected.")
+      )
     }
-    indexURL = index.standardizedFileURL
-    engine.loadFileURL(index, allowingReadAccessTo: index.deletingLastPathComponent())
   }
 
   fileprivate func receive(_ message: WKScriptMessage) {
     guard message.name == "vizeNative", message.frameInfo.isMainFrame,
-      message.webView === engine, message.frameInfo.request.url?.isFileURL == true
+      message.webView === engine, location?.permitsMainFrame(message.frameInfo.request.url) == true
     else {
       show(
         NativeDiagnostic(
           code: "untrusted-message",
-          message: "native messages must originate in the local main frame"))
+          message: "native messages must originate in the selected application main frame"))
       return
     }
     do {
@@ -198,26 +213,64 @@ final class NativeHostViewController: UIViewController, WKNavigationDelegate {
     _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
   ) {
-    let destination = navigationAction.request.url
-    let allowed =
-      navigationAction.targetFrame?.isMainFrame != false && destination?.isFileURL == true
-      && destination?.standardizedFileURL.path == indexURL?.path && destination?.query == nil
-    decisionHandler(allowed ? .allow : .cancel)
+    guard let location = location else {
+      decisionHandler(.cancel)
+      return
+    }
+    if let failure = location.navigationRefusal(
+      url: navigationAction.request.url,
+      isMainFrame: navigationAction.targetFrame?.isMainFrame == true,
+      documentAlreadyLoaded: developmentDocumentCommitted || acceptedSequence > 0
+    ) {
+      decisionHandler(.cancel)
+      refusedNavigation = true
+      show(NativeDiagnostic(code: failure.code, message: failure.message))
+      return
+    }
+    refusedNavigation = false
+    decisionHandler(.allow)
+  }
+
+  func webView(
+    _ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
+    decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+  ) {
+    // A redirected response must pass the same bound-document check before commit.
+    guard navigationResponse.isForMainFrame,
+      location?.permitsMainFrame(navigationResponse.response.url) == true
+    else {
+      decisionHandler(.cancel)
+      refusedNavigation = true
+      show(
+        NativeDiagnostic(
+          code: "native-navigation-refused",
+          message: "Navigation is restricted to the selected application document."))
+      return
+    }
+    decisionHandler(.allow)
+  }
+
+  func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+    if location?.isDevelopment == true, location?.permitsMainFrame(webView.url) == true {
+      developmentDocumentCommitted = true
+    }
   }
 
   func webView(
     _ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
     withError error: Error
   ) {
+    if refusedNavigation { return }
     show(
       NativeDiagnostic(
-        code: "engine-load-failed", message: "the offline application could not be loaded"))
+        code: "engine-load-failed", message: "the selected application could not be loaded"))
   }
 
   func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    if refusedNavigation { return }
     show(
       NativeDiagnostic(
-        code: "engine-load-failed", message: "the offline application could not be loaded"))
+        code: "engine-load-failed", message: "the selected application could not be loaded"))
   }
 
   func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {

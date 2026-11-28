@@ -12,6 +12,7 @@
         A40000000000000000000004 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000005; };
         A40000000000000000000005 /* application.js in Resources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000006; };
         A40000000000000000000006 /* NativeHostInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000007; };
+        A40000000000000000000007 /* NativeHostLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30000000000000000000010; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,8 @@
         A30000000000000000000007 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHostInteractionTests.swift; sourceTree = "<group>"; };
         A30000000000000000000008 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VizeNativeHostFixture.app; sourceTree = BUILT_PRODUCTS_DIR; };
         A30000000000000000000009 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VizeNativeHostFixtureUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+        A30000000000000000000010 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHostLocation.swift; sourceTree = "<group>"; };
+        A30000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.Debug.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,10 +47,10 @@
 /* Begin PBXGroup section */
         A20000000000000000000001 = {
             isa = PBXGroup;
-            children = (A20000000000000000000002, A20000000000000000000003, A20000000000000000000004, A30000000000000000000004, A20000000000000000000005);
+            children = (A20000000000000000000002, A20000000000000000000003, A20000000000000000000004, A30000000000000000000004, A30000000000000000000011, A20000000000000000000005);
             sourceTree = "<group>";
         };
-        A20000000000000000000002 = {isa = PBXGroup; children = (A30000000000000000000001, A30000000000000000000002, A30000000000000000000003); path = Sources; sourceTree = "<group>"; };
+        A20000000000000000000002 = {isa = PBXGroup; children = (A30000000000000000000001, A30000000000000000000002, A30000000000000000000003, A30000000000000000000010); path = Sources; sourceTree = "<group>"; };
         A20000000000000000000003 = {isa = PBXGroup; children = (A30000000000000000000005, A30000000000000000000006); path = Resources; sourceTree = "<group>"; };
         A20000000000000000000004 = {isa = PBXGroup; children = (A30000000000000000000007); path = UITests; sourceTree = "<group>"; };
         A20000000000000000000005 = {isa = PBXGroup; children = (A30000000000000000000008, A30000000000000000000009); name = Products; sourceTree = "<group>"; };
@@ -109,7 +112,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-        A50000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000001, A40000000000000000000002, A40000000000000000000003); runOnlyForDeploymentPostprocessing = 0; };
+        A50000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000001, A40000000000000000000002, A40000000000000000000003, A40000000000000000000007); runOnlyForDeploymentPostprocessing = 0; };
         A50000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A40000000000000000000006); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
@@ -157,7 +160,7 @@
             buildSettings = {
                 CODE_SIGN_STYLE = Automatic;
                 GENERATE_INFOPLIST_FILE = NO;
-                INFOPLIST_FILE = Info.plist;
+                INFOPLIST_FILE = Info.Debug.plist;
                 LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
                 PRODUCT_BUNDLE_IDENTIFIER = dev.vize.native-host-fixture;
                 PRODUCT_MODULE_NAME = VizeNativeHostFixture;

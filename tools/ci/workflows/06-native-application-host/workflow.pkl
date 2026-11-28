@@ -8,6 +8,7 @@ on {
       "npm/native-host-fixture/**"
       "npm/native/**"
       "npm/marquette/**"
+      "npm/builder/vite/**"
       "crates/vize_atelier_sfc/**"
       "crates/vize_atelier_core/**"
       "crates/vize_atelier_dom/**"
@@ -93,12 +94,16 @@ jobs {
         run = "vp run --filter './npm/marquette' build"
       }
       new Dynamic {
+        name = "Build the native development compiler integration"
+        run = "vp run --filter './npm/builder/vite' build"
+      }
+      new Dynamic {
         name = "Check the native application adapter types"
         run = "vp run --filter './npm/native-host-fixture' check:types"
       }
       new Dynamic {
         name = "Compile canonical SFCs and verify native tree interactions"
-        run = "node --test npm/native-host-fixture/test/application.test.ts"
+        run = "node --test --test-concurrency=1 npm/native-host-fixture/test/application.test.ts npm/native-host-fixture/test/development.test.ts"
       }
       new Dynamic {
         name = "Verify packet admission and real simulator interactions"
@@ -113,7 +118,8 @@ jobs {
           path = """
           npm/native-host-fixture/.build/compiler-build.json
           ${{ runner.temp }}/vize-native-first-host-*/qualification.json
-          ${{ runner.temp }}/vize-native-first-host-*/interaction-summary.json
+          ${{ runner.temp }}/vize-native-first-host-*/refresh-source.json
+          ${{ runner.temp }}/vize-native-first-host-*/*interaction-summary.json
           ${{ runner.temp }}/vize-native-first-host-*/packet-tests.xml
           ${{ runner.temp }}/vize-native-first-host-*/*.log
           ${{ runner.temp }}/vize-native-first-host-*/*.xcresult

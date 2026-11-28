@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.ts",
+    "dev": "node scripts/development.ts",
     "test": "node --test test/*.test.ts",
     "check:types": "tsc --noEmit -p tsconfig.json",
     "qualify": "node scripts/qualify.ts"
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@types/node": "catalog:typescript",
     "@vizejs/native": "workspace:*",
+    "@vizejs/vite-plugin": "workspace:*",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"
   },

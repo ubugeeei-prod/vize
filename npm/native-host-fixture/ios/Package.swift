@@ -11,7 +11,7 @@ let package = Package(
       name: "NativePacket",
       path: "Sources",
       exclude: ["AppDelegate.swift", "NativeHostViewController.swift"],
-      sources: ["NativeBridgePacket.swift"]
+      sources: ["NativeBridgePacket.swift", "NativeHostLocation.swift"]
     ),
     .testTarget(name: "NativePacketTests", dependencies: ["NativePacket"], path: "PacketTests"),
   ],
