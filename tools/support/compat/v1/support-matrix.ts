@@ -759,7 +759,8 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       owner: "release/channels",
       issues: [13016],
       state: "blocking",
-      summary: "Vue 3.6 pins and current stability tiers do not yet match the v1 target channel.",
+      summary:
+        "Vue 3.6 has no canonical pin: compiler parity and Vapor references run 3.6.0-beta.10, the Babel plugin and UI Vapor runtime need rc.11, frozen oracles and the playground hold rc.6, rc.9 and rc.10, and release lanes install vue@3.5.34 instead of the shipping 3.5.42 baseline. Stability tiers do not yet carry the v1 channel.",
       exitCondition:
         "One canonical Vue baseline and #13016 channel metadata agree across package peers, docs and release workflows.",
     },
