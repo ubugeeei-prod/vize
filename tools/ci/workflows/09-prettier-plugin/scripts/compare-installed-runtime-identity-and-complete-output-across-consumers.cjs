@@ -24,6 +24,7 @@ const identity = (value) => ({
   art: value.art,
   ignored: value.ignored,
   realProjects: value.realProjects,
+  realProjectHelperSha256: value.realProjectHelperSha256,
 });
 assert.ok(
   current.realProjects,

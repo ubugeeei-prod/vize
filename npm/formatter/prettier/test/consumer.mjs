@@ -3,10 +3,10 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import * as nodeModule from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { qualifyRealProjects } from "./real-projects.mjs";
 import {
   nativePreparationIsActive,
   readActiveNativePreparation,
@@ -246,6 +246,18 @@ assert.equal(execute(["--write", "src/App.vue"]).status, 2);
 
 const prettier = require("prettier");
 const plugin = await import(pathToFileURL(installedPlugin).href);
+let qualifyRealProjects;
+let realProjectHelperSha256 = null;
+if (mode === "source-native") {
+  const helper = path.resolve(tarballDirectory ?? output, "real-projects.mjs");
+  if (tarballDirectory === null) {
+    // Prepare once on Node 24, then execute identical emitted code on minimum Node.
+    const source = fs.readFileSync(new URL("./real-projects.ts", import.meta.url), "utf8");
+    fs.writeFileSync(helper, nodeModule.stripTypeScriptTypes(source));
+  }
+  realProjectHelperSha256 = createHash("sha256").update(fs.readFileSync(helper)).digest("hex");
+  ({ qualifyRealProjects } = await import(pathToFileURL(helper).href));
+}
 const realProjects =
   mode === "source-native"
     ? await qualifyRealProjects({
@@ -310,6 +322,7 @@ const report = {
   sourcePreparation: preparation,
   objectWrapSourceRegression: mode === "source-native",
   realProjects,
+  realProjectHelperSha256,
   nativePackage: require.resolve("@vizejs/native"),
   nativeDependencyInstalledVersion: nativeVersion,
   nativeTransport:

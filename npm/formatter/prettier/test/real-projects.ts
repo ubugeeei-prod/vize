@@ -2,15 +2,45 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import type { SpawnSyncReturns } from "node:child_process";
+import type { FormatResultNapi } from "@vizejs/native";
+import type { Plugin } from "prettier";
+
+interface FilePacket {
+  path: string;
+  source: string;
+  sourceSha256: string;
+  sourceBytes: number;
+  nativeOutput: FormatResultNapi | null;
+  output: string | null;
+  outputSha256: string | null;
+  outputBytes: number | null;
+  repeatedOutput: string | null;
+  cliOutput: string | null;
+}
+interface ProjectPacket {
+  root: string;
+  manifestSha256: string;
+  files: FilePacket[];
+}
+interface Consumer {
+  root: string;
+  consumer: string;
+  output: string;
+  prettier: Pick<typeof import("prettier"), "format">;
+  plugin: Plugin;
+  native: Pick<typeof import("@vizejs/native"), "formatSfc">;
+  execute: (parameters: string[]) => SpawnSyncReturns<string>;
+}
 
 const projects = [
   { root: "examples/vite-musea", minimumFiles: 7 },
   { root: "examples/jsx-tsx", minimumFiles: 1 },
 ];
 
-const digest = (value) => createHash("sha256").update(value).digest("hex");
+const digest = (value: string): string => createHash("sha256").update(value).digest("hex");
 
-function sfcFiles(directory) {
+function sfcFiles(directory: string): string[] {
   return fs
     .readdirSync(directory, { withFileTypes: true })
     .flatMap((entry) => {
@@ -33,14 +63,14 @@ export async function qualifyRealProjects({
   plugin,
   native,
   execute,
-}) {
+}: Consumer) {
   const options = {
     printWidth: 64,
     singleQuote: true,
     quoteProps: "preserve",
     semi: false,
     endOfLine: "lf",
-  };
+  } as const;
   const config = "real-projects.prettier.config.mjs";
   fs.writeFileSync(
     path.join(consumer, config),
@@ -54,11 +84,11 @@ export async function qualifyRealProjects({
     scope:
       "Installed adapter API and CLI equivalence to the shared native formatter on application SFCs",
     options,
-    projects: [],
+    projects: [] as ProjectPacket[],
   };
-  const timings = [];
-  const copiedFiles = [];
-  let cliMs = null;
+  const timings: { project: string; path: string; nativeMs: number; adapterMs: number }[] = [];
+  const copiedFiles: string[] = [];
+  let cliMs: number | null = null;
   try {
     for (const project of projects) {
       const projectRoot = path.join(root, project.root);
@@ -68,7 +98,11 @@ export async function qualifyRealProjects({
         files.length >= project.minimumFiles,
         `${project.root}: real application SFCs missing`,
       );
-      const row = { root: project.root, manifestSha256: digest(manifest), files: [] };
+      const row: ProjectPacket = {
+        root: project.root,
+        manifestSha256: digest(manifest),
+        files: [],
+      };
       packet.projects.push(row);
       for (const file of files) {
         const relative = path.relative(projectRoot, file).split(path.sep).join("/");
@@ -82,7 +116,7 @@ export async function qualifyRealProjects({
         fs.mkdirSync(path.dirname(filename), { recursive: true });
         fs.writeFileSync(filename, source);
         copiedFiles.push(destination);
-        const observation = {
+        const observation: FilePacket = {
           path: relative,
           source,
           sourceSha256: digest(source),
