@@ -7,8 +7,7 @@ use super::fix_history_normalization::normalize_generated_check_ordinals;
 use super::fix_history_paths::{link_vue, safe_relative};
 use std::path::Path;
 use vize_canon::{
-    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
-    PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
+    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait,
     batch::{TsconfigOwnershipCache, TsconfigSourceKind},
     virtual_ts::VirtualTsOptions,
 };
@@ -19,8 +18,10 @@ pub(crate) fn native_fixture_runtime_disabled() -> bool {
 
 mod art_native_display;
 mod capture;
+mod package_routes;
 mod required_listener_events;
 pub(crate) use capture::WorkspaceCapturePolicy;
+use package_routes::install_package_routes;
 
 /// Hand-written packs whose original tests enabled the Options API checker.
 /// Tool-written packs declare their options in the registry instead.
@@ -400,7 +401,19 @@ pub(crate) fn check_pack_with_capture_policy(
         {
             checker.set_virtual_ts_checks(checks.props, checks.template_bindings, checks.emits);
         }
-        checker.scan_project().expect("the project must scan");
+        let scan_paths = pack
+            .checker_options
+            .iter()
+            .flat_map(|options| &options.scan_paths)
+            .map(|path| project_root.join(safe_relative(path)))
+            .collect::<Vec<_>>();
+        if scan_paths.is_empty() {
+            checker.scan_project().expect("the project must scan");
+        } else {
+            checker
+                .scan_paths(&scan_paths)
+                .expect("the authored roots must scan");
+        }
         let result = checker
             .check_project()
             .expect("the production checker must finish");
@@ -451,46 +464,4 @@ pub(crate) fn check_pack_with_capture_policy(
     if let Some(capture) = capture {
         capture.finish(name, test, &fixture_pack);
     }
-}
-
-/// Install the package routes `vize check` resolves for each importer.
-fn install_package_routes(
-    checker: &mut BatchTypeChecker,
-    project_root: &Path,
-    routes: &[(&str, &str)],
-) {
-    let mut resolver = PackageRouteResolver::default();
-    let bindings = routes
-        .iter()
-        .map(|&(importer, specifier)| {
-            let importer = project_root.join(importer);
-            let (context, mut context_inputs) = resolver.resolution_context(
-                &importer,
-                PackageResolutionMode::Import,
-                Some("bundler"),
-                Some("esnext"),
-                std::iter::empty::<&str>(),
-            );
-            let (route, mut invalidation_paths) = resolver
-                .lookup_with_context(
-                    importer.parent().expect("the importer must have a parent"),
-                    specifier,
-                    PackageSourceOptions::new(false, false),
-                    context.clone(),
-                )
-                .into_parts();
-            invalidation_paths.append(&mut context_inputs);
-            PackageRouteBinding {
-                importer_path: importer.clone(),
-                specifier: specifier.into(),
-                occurrence_mode: PackageResolutionMode::Import,
-                context,
-                route: Some(route.expect("the fixture package route must resolve")),
-                invalidation_paths,
-                shared_invalidation_paths: Vec::new(),
-            }
-        })
-        .collect::<Vec<_>>();
-    checker.set_package_route_resolver(resolver);
-    checker.set_package_routes(bindings);
 }

@@ -414,6 +414,27 @@
       "legacyVue2": true
     }
   },
+  "legacy-package-declarations-13298": {
+    "test": "fix_history_cases::legacy_package_declarations_13298::legacy_package_resolution_consumes_generated_declarations",
+    "sourceRevision": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+    "checkerOptions": {
+      "packageRoutes": [
+        {
+          "importer": "src/App.vue",
+          "specifier": "sandbox/web"
+        }
+      ],
+      "workspaceLinks": [
+        {
+          "package": "packages/sandbox",
+          "link": "node_modules/sandbox"
+        }
+      ],
+      "scanPaths": [
+        "src/App.vue"
+      ]
+    }
+  },
   "legacy-vue2-branch-alias-narrowing-2544": {
     "test": "fix_history_cases::legacy_vue2_branch_alias_narrowing_2544::legacy_vue2_v_for_branch_guards_keep_alias_narrowing",
     "sourceRevision": "845356cb92313956ebb5f134f0e3f628a9d20b66",

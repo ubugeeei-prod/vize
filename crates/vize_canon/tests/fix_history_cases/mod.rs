@@ -95,6 +95,7 @@ pub(super) mod leading_semicolon_handler_3091;
 pub(super) mod legacy_inline_function_prop_any_2266;
 pub(super) mod legacy_nested_vfor_member_arrays_2259;
 pub(super) mod legacy_options_inherited_members_3627;
+pub(super) mod legacy_package_declarations_13298;
 pub(super) mod legacy_vue2_branch_alias_narrowing_2544;
 pub(super) mod legacy_vue2_event_arity_2540;
 pub(super) mod legacy_vue2_inline_component_props_helper_2256;

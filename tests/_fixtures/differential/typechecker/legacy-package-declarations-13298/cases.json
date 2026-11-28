@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 13298,
+  "regressionCommit": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+  "sourceRevision": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+  "checkerOptions": {
+    "packageRoutes": [
+      {
+        "importer": "src/App.vue",
+        "specifier": "sandbox/web"
+      }
+    ],
+    "workspaceLinks": [
+      {
+        "package": "packages/sandbox",
+        "link": "node_modules/sandbox"
+      }
+    ],
+    "scanPaths": [
+      "src/App.vue"
+    ]
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generated-declaration-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "consumer-package.json.txt"
+        },
+        {
+          "file": "packages/sandbox/package.json",
+          "source": "sandbox-package.json.txt"
+        },
+        {
+          "file": "packages/sandbox/web.d.ts",
+          "source": "web.d.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/dist/web/index.d.ts",
+          "source": "generated-index.d.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/src/web/index.ts",
+          "source": "source-index.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/src/worker.ts",
+          "source": "source-worker.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generated-declaration-invalid-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "consumer-package.json.txt"
+        },
+        {
+          "file": "packages/sandbox/package.json",
+          "source": "sandbox-package.json.txt"
+        },
+        {
+          "file": "packages/sandbox/web.d.ts",
+          "source": "web.d.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/dist/web/index.d.ts",
+          "source": "generated-index.d.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/src/web/index.ts",
+          "source": "source-index.ts.txt"
+        },
+        {
+          "file": "packages/sandbox/src/worker.ts",
+          "source": "source-worker.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

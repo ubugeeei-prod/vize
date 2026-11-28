@@ -8,6 +8,7 @@ use super::{
 };
 
 mod lifecycle;
+mod resolution_family;
 mod source;
 mod topology;
 

@@ -233,6 +233,7 @@ fn lookup_uncached(
     importer_dir: &Path,
     specifier: &str,
     options: PackageSourceOptions,
+    context: &PackageResolutionContext,
     search: &mut PackageSearchCache,
     canonical_paths: &mut PackagePathCache,
 ) -> PackageRouteLookup {
@@ -241,7 +242,13 @@ fn lookup_uncached(
     let route = resolve_uncached(
         importer_dir,
         specifier,
-        options,
+        RouteOptions {
+            sources: options,
+            package_exports: !context
+                .module_resolution
+                .as_deref()
+                .is_some_and(|resolution| matches!(resolution, "node" | "node10" | "classic")),
+        },
         &mut invalidation_paths,
         search,
         &mut watchable_negative,
@@ -260,10 +267,16 @@ fn lookup_uncached(
     }
 }
 
+#[derive(Clone, Copy)]
+struct RouteOptions {
+    sources: PackageSourceOptions,
+    package_exports: bool,
+}
+
 fn resolve_uncached(
     importer_dir: &Path,
     specifier: &str,
-    options: PackageSourceOptions,
+    options: RouteOptions,
     invalidation_paths: &mut Vec<PathBuf>,
     search: &mut PackageSearchCache,
     watchable_negative: &mut bool,
@@ -298,8 +311,10 @@ fn resolve_uncached(
     let manifest_path = canonical_path(&package_root.join("package.json"), canonical_paths);
     let mappings = if specifier.starts_with('#') {
         manifest.get("imports")
-    } else {
+    } else if options.package_exports {
         manifest.get("exports")
+    } else {
+        None
     };
     let mut candidates = Vec::new();
     if let Some(mappings) = mappings {
@@ -328,9 +343,10 @@ fn resolve_uncached(
         }
     }
     if !specifier.starts_with('#') {
-        // Keep legacy/type-version topology alongside exports. Native
-        // TypeScript decides which family is active for Node10/Classic versus
-        // Node16/NodeNext/Bundler; extra shadow candidates do not select one.
+        // Preserve the condition topology for native TypeScript to select.
+        // Explicit Node10/Classic resolution ignores exports entirely: a
+        // missing export's workspace fallback must not create source shadows
+        // that override this family's existing declaration inputs.
         collect_legacy_candidates(&manifest, &request, &package_root, &mut candidates);
         collect_types_version_candidates(&manifest, &request, &package_root, &mut candidates);
     }
@@ -338,12 +354,17 @@ fn resolve_uncached(
     let workspace_source = !inside_node_modules(&package_root);
     for candidate in &candidates {
         invalidation_paths.push(candidate.clone());
-        let mut resolved = resolve_sources(candidate, options, invalidation_paths, canonical_paths);
+        let mut resolved = resolve_sources(
+            candidate,
+            options.sources,
+            invalidation_paths,
+            canonical_paths,
+        );
         if resolved.is_empty() && workspace_source {
             resolved = resolve_workspace_source_fallbacks(
                 candidate,
                 &package_root,
-                options,
+                options.sources,
                 invalidation_paths,
                 canonical_paths,
             );
