@@ -73,10 +73,9 @@ function verifyReceipt(candidateSource: string, receipt: ContentMapperV1Receipt)
   const job = pages.flatMap(({ jobs }) => jobs).find(({ name }) => name === receipt.job);
   assert.ok(job, `${label}: job ${receipt.job} is missing`);
   assert.equal(job.conclusion, "success", `${label}: job ${receipt.job} did not succeed`);
-  for (const step of receipt.steps) {
-    const observed = job.steps?.find(({ name }) => name === step);
-    assert.equal(observed?.conclusion, "success", `${label}: step ${step} did not succeed`);
-  }
+  const steps = new Map((job.steps ?? []).map(({ name, conclusion }) => [name, conclusion]));
+  for (const step of receipt.steps)
+    assert.equal(steps.get(step), "success", `${label}: step ${step} did not succeed`);
 
   const artifacts = api<{ artifacts: Artifact[] }[]>(
     `repos/${repo}/actions/runs/${receipt.runId}/artifacts?per_page=100`,
