@@ -350,7 +350,7 @@ fn nested_shadowing_references_keep_safe_parent_declarations_in_snapshots() {
     .unwrap();
     assert_eq!(detection.declaration_snapshots, vec![
         (root.join(".nuxt/nuxt.d.ts"), format!("/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\n/// <reference path=\"{}\" />\nexport {{}}\n",
-            parent.display(), root.join(".nuxt/types/components.d.ts").display(), root.join(".nuxt/types/imports.d.ts").display(), root.join("node_modules/nitro-kit/index.d.ts").display()).into()),
+            root.join("node_modules/nitro-kit/index.d.ts").display(), parent.display(), root.join(".nuxt/types/components.d.ts").display(), root.join(".nuxt/types/imports.d.ts").display()).into()),
         (parent.clone(), format!("/// <reference path=\"{}\" />\nexport {{}}; declare global {{ const safeParent: number }}\n", child.display()).into()),
         (child.clone(), "export {}; declare global { const safeChild: true }\n".into()),
     ]);
@@ -374,5 +374,111 @@ fn nested_shadowing_references_keep_safe_parent_declarations_in_snapshots() {
     assert_eq!(
         [&parent, &child, &shim].map(|path| std::fs::read(path).unwrap()),
         originals
+    );
+}
+
+#[test]
+fn snapshots_preserve_script_references_and_unresolved_type_directives() {
+    let (root, program) = nuxt4_project("snapshot-script-reference");
+    let script = write(
+        &root,
+        "workspace-globals.ts",
+        "declare const fromReferencedScript: 41;\n",
+    );
+    let parent = root.join("node_modules/.pnpm/nitro-server/dist/augments.d.mts");
+    let source = format!(
+        "/// <reference path=\"shim.d.ts\" />\n\
+         /// <reference path=\"{}\" preserve=\"true\" />\n\
+         /// <reference types=\"missing-reference-type\" />\n\
+         export {{}}; declare global {{ const safeParent: 42 }}\n",
+        script.display()
+    );
+    std::fs::write(&parent, &source).unwrap();
+    write(
+        &root,
+        "node_modules/.pnpm/nitro-server/dist/shim.d.ts",
+        "declare module 'vue' { export const unrelated: true }\n",
+    );
+    let mut options = VirtualTsOptions::default();
+    let detection = detect(
+        &mut options,
+        &root,
+        &root,
+        Some(&root.join("tsconfig.json")),
+        Some(&program),
+        false,
+        VueVersion::V3,
+    )
+    .unwrap();
+    let snapshot = detection
+        .declaration_snapshots
+        .iter()
+        .find(|(path, _)| path == &parent)
+        .unwrap();
+    assert_eq!(
+        snapshot.1.as_str(),
+        format!(
+            "/// <reference path=\"{}\" preserve=\"true\" />\n\
+         /// <reference types=\"missing-reference-type\" />\n\
+         export {{}}; declare global {{ const safeParent: 42 }}\n",
+            script.display()
+        )
+    );
+    assert_eq!(std::fs::read_to_string(&parent).unwrap(), source);
+}
+
+#[cfg(unix)]
+#[test]
+fn linked_type_package_stubs_keep_the_registered_snapshot_spelling() {
+    let (root, program) = nuxt4_project("snapshot-linked-types");
+    let installed = root.join("node_modules/nitro-kit");
+    std::fs::write(installed.join("index.d.ts"), "/// <reference path=\"shim.d.ts\" />\nexport {}; declare global { const safeLinked: 42 }\n").unwrap();
+    std::fs::write(
+        installed.join("shim.d.ts"),
+        "declare module 'vue' { export const unrelated: true }\n",
+    )
+    .unwrap();
+    let real = root.join("workspace/nitro-kit");
+    std::fs::create_dir_all(real.parent().unwrap()).unwrap();
+    std::fs::rename(&installed, &real).unwrap();
+    std::os::unix::fs::symlink(&real, &installed).unwrap();
+    let mut options = VirtualTsOptions::default();
+    let detection = detect(
+        &mut options,
+        &root,
+        &root,
+        Some(&root.join("tsconfig.json")),
+        Some(&program),
+        false,
+        VueVersion::V3,
+    )
+    .unwrap();
+    assert_eq!(
+        detection
+            .declaration_snapshots
+            .iter()
+            .map(|(path, _)| path.clone())
+            .collect::<Vec<_>>(),
+        vec![root.join(".nuxt/nuxt.d.ts"), installed.join("index.d.ts")]
+    );
+    let references = options
+        .auto_import_stubs
+        .iter()
+        .filter(|stub| stub.starts_with("///"))
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    assert_eq!(
+        references,
+        vec![
+            format!(
+                "/// <reference path=\"{}\" />",
+                root.join("node_modules/.pnpm/nitro-server/dist/augments.d.mts")
+                    .display()
+            ),
+            format!(
+                "/// <reference path=\"{}\" />",
+                installed.join("index.d.ts").display()
+            )
+        ]
     );
 }

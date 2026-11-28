@@ -158,7 +158,12 @@ pub(in crate::commands::check) fn detect(
         (Some(graph), Some(files)) => {
             declaration_snapshots =
                 reference_graph::safe_declaration_snapshots(graph, &shadowing_declarations)?;
-            installed_reference_stubs(graph, &shadowing_declarations, files)
+            installed_reference_stubs(
+                graph,
+                &shadowing_declarations,
+                files,
+                &declaration_snapshots,
+            )
         }
         _ => Vec::new(),
     };

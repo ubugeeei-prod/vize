@@ -13,9 +13,11 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_l0::{FxHashSet, String, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
-use super::super::tsconfig_inputs::normalize_input_path;
+use super::super::tsconfig_inputs::{
+    DeclarationReference, normalize_input_path, reference_attribute,
+};
 
 /// One `/// <reference path>` stub for each installed declaration in `graph`
 /// that `program_files` does not already hold, in path order.
@@ -27,12 +29,26 @@ pub(super) fn installed_reference_stubs(
     graph: &super::super::tsconfig_inputs::InstalledDeclarationGraph,
     shadowing: &FxHashSet<PathBuf>,
     program_files: &[PathBuf],
+    snapshots: &[(PathBuf, String)],
 ) -> Vec<String> {
+    let snapshots = snapshots
+        .iter()
+        .map(|(path, _)| path)
+        .collect::<FxHashSet<_>>();
     let mut candidates = graph
         .installed
         .iter()
         .filter(|path| !shadowing.contains(*path))
-        .map(|path| real_path(path))
+        .map(|path| {
+            let identity = real_path(path);
+            let ordinary = !snapshots.contains(path);
+            let emitted = if ordinary {
+                identity.clone()
+            } else {
+                path.clone()
+            };
+            (identity, ordinary, emitted)
+        })
         .collect::<Vec<_>>();
     if candidates.is_empty() {
         return Vec::new();
@@ -45,11 +61,11 @@ pub(super) fn installed_reference_stubs(
         .map(|path| real_path(path))
         .collect::<FxHashSet<_>>();
     candidates.sort();
-    candidates.dedup();
+    candidates.dedup_by(|left, right| left.0 == right.0);
     candidates
         .into_iter()
-        .filter(|path| !loaded.contains(path))
-        .filter_map(|path| {
+        .filter(|(identity, _, _)| !loaded.contains(identity))
+        .filter_map(|(_, _, path)| {
             let path = path.to_str()?;
             // A path holding a quote cannot be spelled in the directive.
             (!path.contains('"')).then(|| cstr!("/// <reference path=\"{path}\" />"))
@@ -105,20 +121,18 @@ pub(super) fn safe_declaration_snapshots(
                     path.display()
                 )
             })?;
-            let targets = graph
-                .references
+            let directives = graph
+                .directives
                 .get(path)
-                .ok_or_else(|| cstr!("Missing declaration references for {}", path.display()))?;
+                .into_iter()
+                .flatten()
+                .map(|reference| (reference.key(), reference))
+                .collect::<FxHashMap<_, _>>();
             let mut snapshot = String::default();
-            for target in targets.iter().filter(|target| !shadowing.contains(*target)) {
-                snapshot.push_str(&snapshot_reference(target)?);
-            }
             for line in source.split_inclusive('\n') {
-                let trimmed = line.trim_start();
-                let directive = trimmed.starts_with("///")
-                    && trimmed.contains("<reference")
-                    && (trimmed.contains("path=") || trimmed.contains("types="));
-                if !directive {
+                if let Some(rewritten) = snapshot_directive(line, &directives, shadowing)? {
+                    snapshot.push_str(&rewritten);
+                } else {
                     snapshot.push_str(line);
                 }
             }
@@ -127,7 +141,58 @@ pub(super) fn safe_declaration_snapshots(
         .collect()
 }
 
+fn snapshot_directive(
+    line: &str,
+    directives: &FxHashMap<(&str, &str), &DeclarationReference>,
+    shadowing: &FxHashSet<PathBuf>,
+) -> Result<Option<String>, String> {
+    for attribute in ["path", "types"] {
+        let Some(specifier) = reference_attribute(line, attribute) else {
+            continue;
+        };
+        let reference = directives
+            .get(&(attribute, specifier))
+            .ok_or_else(|| cstr!("Declaration reference changed while snapshotting: {line:?}"))?;
+        return match reference {
+            DeclarationReference::Path { target, .. } => {
+                if shadowing.contains(target) {
+                    return Ok(Some(String::default()));
+                }
+                let start = line
+                    .find("path=")
+                    .ok_or_else(|| cstr!("Missing path attribute: {line:?}"))?
+                    + "path=".len();
+                let end = start + specifier.len() + 2;
+                let before = line
+                    .get(..start)
+                    .ok_or_else(|| cstr!("Invalid reference path boundary: {line:?}"))?;
+                let after = line
+                    .get(end..)
+                    .ok_or_else(|| cstr!("Invalid reference path boundary: {line:?}"))?;
+                let (quote, target) = quoted_reference_path(target)?;
+                Ok(Some(cstr!("{before}{quote}{target}{quote}{after}")))
+            }
+            DeclarationReference::Types { targets, .. } => {
+                if targets.is_empty() {
+                    return Ok(None);
+                }
+                let mut rewritten = String::default();
+                for target in targets.iter().filter(|target| !shadowing.contains(*target)) {
+                    rewritten.push_str(&snapshot_reference(target)?);
+                }
+                Ok(Some(rewritten))
+            }
+        };
+    }
+    Ok(None)
+}
+
 fn snapshot_reference(target: &Path) -> Result<String, String> {
+    let (quote, target) = quoted_reference_path(target)?;
+    Ok(cstr!("/// <reference path={quote}{target}{quote} />\n"))
+}
+
+fn quoted_reference_path(target: &Path) -> Result<(char, &str), String> {
     let target = target.to_str().ok_or_else(|| {
         cstr!(
             "Declaration reference path is not UTF-8: {}",
@@ -145,5 +210,5 @@ fn snapshot_reference(target: &Path) -> Result<String, String> {
             "Declaration reference path contains both quote delimiters: {target:?}"
         ));
     }
-    Ok(cstr!("/// <reference path={quote}{target}{quote} />\n"))
+    Ok((quote, target))
 }

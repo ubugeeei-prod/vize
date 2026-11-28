@@ -16,15 +16,26 @@ pub(super) struct TypeReference {
 /// A declaration's own recursive references are retained as well.
 pub(super) fn references(text: &str) -> Vec<TypeReference> {
     let trimmed = text.trim_start();
-    let declaration = ["type ", "interface ", "declare ", "export "]
+    let declaration = ["type", "interface", "declare", "export"]
         .iter()
-        .any(|prefix| trimmed.starts_with(prefix));
+        .any(|keyword| {
+            trimmed
+                .strip_prefix(keyword)
+                .is_some_and(|rest| rest.starts_with(char::is_whitespace))
+        });
     let prefix = if declaration { "" } else { "null as " };
+    let fallback = if declaration { "null as " } else { "" };
+    parsed_references(text, prefix)
+        .or_else(|| parsed_references(text, fallback))
+        .unwrap_or_default()
+}
+
+fn parsed_references(text: &str, prefix: &str) -> Option<Vec<TypeReference>> {
     let source = cstr!("{prefix}{text};");
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source.as_str(), SourceType::ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return Vec::new();
+        return None;
     }
     let semantic = SemanticBuilder::new()
         .with_build_nodes(true)
@@ -53,7 +64,7 @@ pub(super) fn references(text: &str) -> Vec<TypeReference> {
         .collect::<Vec<_>>();
     references.sort_unstable_by_key(|reference| reference.span.start);
     references.dedup_by_key(|reference| reference.span.start);
-    references
+    Some(references)
 }
 
 /// A conservative lexical rejection before scoped parsing. Escaped identifiers
