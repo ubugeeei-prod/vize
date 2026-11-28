@@ -115,6 +115,22 @@ steps = new Listing {
     run = #". "${{ env.VIZE_CI_FILES }}/checksum-and-sign-release-artifacts.sh""#
   }
   new Dynamic {
+    name = "Setup release-note dependencies"
+    `if` = "steps.release-state.outputs.published != 'true'"
+    uses = ci.setupVp
+    with {
+      version = ci.vpVersion
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Install release-note dependencies"
+    `if` = "steps.release-state.outputs.published != 'true'"
+    run = "node tools/support/github/vp-install.ts --filter './tools...'"
+  }
+  new Dynamic {
     name = "Generate release notes"
     `if` = "steps.release-state.outputs.published != 'true'"
     env {

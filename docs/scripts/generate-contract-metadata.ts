@@ -226,6 +226,7 @@ export function documentationContractMetadata() {
         rust: "cargo test --locked --profile ci -p vize_glyph -p vize_patina --doc",
       },
       releaseEvidence: {
+        consumer: "tests/tooling/docs-release-source-consumer.test.ts",
         workflow: ".github/workflows/release.yml",
         notesGenerator: "tools/support/release/github_release_notes.ts",
         source: "exact merged revision",

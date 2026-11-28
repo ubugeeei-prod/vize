@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import "../docs-release-source-consumer.test.ts";
 import { documentationReleaseNote } from "../../../docs/scripts/generate-contract-metadata.ts";
 import {
   coAuthorCredits,
@@ -26,7 +27,13 @@ import {
 
 type Job = {
   env?: Record<string, string>;
-  steps?: Array<{ name?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
+  steps?: Array<{
+    name?: string;
+    uses?: string;
+    run?: string;
+    if?: string;
+    with?: Record<string, unknown>;
+  }>;
 };
 
 // Real pinned topology: release metadata commits are siblings of main's later
@@ -282,6 +289,8 @@ test("the workflow publishes only the prepared body for the release tag commit",
   const steps = job.steps ?? [];
   const node = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const notes = steps.findIndex((step) => step.name === "Generate release notes");
+  const packageManager = steps.findIndex((step) => step.name === "Setup release-note dependencies");
+  const install = steps.findIndex((step) => step.name === "Install release-note dependencies");
   const create = steps.findIndex((step) => step.name === "Upload assets to draft release");
   assert.equal(
     steps[notes]?.run,
@@ -291,6 +300,16 @@ test("the workflow publishes only the prepared body for the release tag commit",
   assert.equal(steps[create]?.with?.body_path, "${{ runner.temp }}/release-notes.md");
   assert.equal(steps[create]?.with?.generate_release_notes, false);
   assert.ok(node >= 0 && node < notes && notes < create);
+  assert.ok(packageManager > node && packageManager < install && install < notes);
+  assert.ok(steps[packageManager]?.uses?.startsWith("voidzero-dev/setup-vp@"));
+  assert.equal(steps[packageManager]?.with?.["node-version-file"], "package.json");
+  assert.equal(steps[packageManager]?.with?.["run-install"], false);
+  assert.equal(
+    steps[install]?.run,
+    "node tools/support/github/vp-install.ts --filter './tools...'",
+  );
+  assert.equal(steps[packageManager]?.if, steps[notes]?.if);
+  assert.equal(steps[install]?.if, steps[notes]?.if);
   const read = (file: string) => readFileSync(new URL(`../../../${file}`, import.meta.url), "utf8");
   const preflight = read(".github/workflows/release-contracts.yml");
   const tests = read(".github/scripts/workflows/release-contracts/test-release-pipeline.sh");
