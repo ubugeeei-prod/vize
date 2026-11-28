@@ -28,7 +28,7 @@ jobs:
   inventory-contract:
     name: Generated fail-closed inventory contract
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -49,8 +49,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version: "24", package-manager-cache: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          version: 1.8.0
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
       - name: Verify the exact source checkout
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-source-checkout.sh"
