@@ -42640,75 +42640,6 @@
       }
     },
     {
-      "id": "typechecker/regression/component-intersection-props-13689",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "component-intersection-props-13689/Child.vue.txt",
-          "sha256": "a8024cb81346dbd034dd0f551b93a5ed1511eea85d3f854d734b3bb16abcb4ea",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/Empty.vue.txt",
-          "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/Generic.vue.txt",
-          "sha256": "3455f72880ed1e2f8a2a93753e30d615d4ea58210d59c932979b367c034219de",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/Invalid.vue.txt",
-          "sha256": "b73cd5c02f6766e7d0e6b8820a5c72e13d12a46b5c50da173e1ddb1ab4c12f22",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/Second.vue.txt",
-          "sha256": "e7a2db2cfe181a41c1109f3c8fe5e08feec4864f568f7f59d259b861d9ae3a0f",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/Valid.vue.txt",
-          "sha256": "cce2220c4c9d47e9de9bed7f12ee9247ab865e29d2c4cc1dc0bd4a00852c2f59",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/controls.ts.txt",
-          "sha256": "148e715d75914f55f2c9d12990eb60d917d57d7dfc8a12f1312310f7688e20c4",
-          "role": "regression-control"
-        },
-        {
-          "path": "component-intersection-props-13689/lazy.ts.txt",
-          "sha256": "6762d38493bca69beb44d5d18d9cfd878530797dbaf5bae1a002abfe668d9b75",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-intersection-props-13689/tsconfig.json.txt",
-          "sha256": "ca0b006d5729313973d4b5c50385be6159e6e97e5c9efeb24aa982c2ccc6abaf",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "intersection_component_props::intersection_props_match_the_vue_tsc_negative_controls and content_mapper::tests::intersection_props::intersection_props_preserve_complete_inline_and_shared_typescript_contracts; complete real-Vue imports in both intersection orders, strict own/wrapper values, defaults/requiredness, empty components, repeated/closure/root-slot constructor-pair usage, complete inline/shared TS6 modules and native batch diagnostics; input registration, no whole-product performance or native parity credit"
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
       "state": "active",
       "targets": [
@@ -66146,6 +66077,75 @@
               "ts"
             ],
             "selector": "lsp_component_api_hover_cli::component_api_hovers_show_declared_types_and_jsdoc; pins the interface prop owner, defineModel JSDoc, runtime prop spelling, and Options API event and SlotsType sources changed by #12461. Input-only batch registration for shared Canon generation; hover behavior remains asserted by the LSP oracle."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-intersection-props-13689",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-intersection-props-13689/Child.vue.txt",
+          "sha256": "a8024cb81346dbd034dd0f551b93a5ed1511eea85d3f854d734b3bb16abcb4ea",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Empty.vue.txt",
+          "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Generic.vue.txt",
+          "sha256": "3455f72880ed1e2f8a2a93753e30d615d4ea58210d59c932979b367c034219de",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Invalid.vue.txt",
+          "sha256": "b73cd5c02f6766e7d0e6b8820a5c72e13d12a46b5c50da173e1ddb1ab4c12f22",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Second.vue.txt",
+          "sha256": "e7a2db2cfe181a41c1109f3c8fe5e08feec4864f568f7f59d259b861d9ae3a0f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Valid.vue.txt",
+          "sha256": "cce2220c4c9d47e9de9bed7f12ee9247ab865e29d2c4cc1dc0bd4a00852c2f59",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/controls.ts.txt",
+          "sha256": "148e715d75914f55f2c9d12990eb60d917d57d7dfc8a12f1312310f7688e20c4",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/lazy.ts.txt",
+          "sha256": "6762d38493bca69beb44d5d18d9cfd878530797dbaf5bae1a002abfe668d9b75",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/tsconfig.json.txt",
+          "sha256": "ca0b006d5729313973d4b5c50385be6159e6e97e5c9efeb24aa982c2ccc6abaf",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "intersection_component_props::intersection_props_match_the_vue_tsc_negative_controls and content_mapper::tests::intersection_props::intersection_props_preserve_complete_inline_and_shared_typescript_contracts; complete real-Vue imports in both intersection orders, strict own/wrapper values, defaults/requiredness, empty components, repeated/closure/root-slot constructor-pair usage, complete inline/shared TS6 modules and native batch diagnostics; input registration, no whole-product performance or native parity credit"
           }
         ]
       }
