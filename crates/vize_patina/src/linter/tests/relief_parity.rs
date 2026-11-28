@@ -11,6 +11,7 @@ mod a11y;
 mod all_hooks;
 mod directives;
 mod fallback_ports;
+mod unsafe_url;
 
 /// A rule with its markup entry hidden, so every lane drives its Relief hooks.
 struct ReliefOnly(Box<dyn Rule>);

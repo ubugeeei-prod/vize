@@ -43,6 +43,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupDirective, MarkupElement,
+    MarkupElementKind, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::url::is_unsafe_url;
 use oxc_allocator::Allocator;
@@ -50,7 +54,7 @@ use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::is_platform_tag;
-use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unsafe-url",
@@ -67,12 +71,15 @@ pub struct NoUnsafeUrl;
 /// Only inspect URLs where the browser can navigate or run active content.
 /// Component props have no known DOM destination, and image/media resource
 /// attributes do not execute `javascript:` URLs.
-fn is_unsafe_url_sink(name: &str, element: &ElementNode<'_>) -> bool {
-    if element.tag_type != ElementType::Element || !is_platform_tag(element.tag) {
+fn is_unsafe_url_sink(name: &str, element: &MarkupElement<'_>) -> bool {
+    let tag = element.tag();
+    if element.kind() != MarkupElementKind::Element
+        || !is_platform_tag(tag)
+        || !element.is_unqualified_tag_exact(tag)
+    {
         return false;
     }
 
-    let tag = element.tag;
     if name.eq_ignore_ascii_case("href") || name.eq_ignore_ascii_case("xlink:href") {
         matches!(tag, "a" | "area" | "base")
             || (tag == "script" && name.eq_ignore_ascii_case("xlink:href"))
@@ -95,26 +102,6 @@ fn is_router_link_tag(tag: &str) -> bool {
 
 fn is_slot_tag(tag: &str) -> bool {
     tag == "slot"
-}
-
-fn is_hash_only_href_binding(attr_name: &str, directive: &DirectiveNode) -> bool {
-    if !attr_name.eq_ignore_ascii_case("href") {
-        return false;
-    }
-
-    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
-        return false;
-    };
-
-    is_hash_prefixed_expression(exp.content.trim())
-}
-
-fn is_sanitized_url_binding(directive: &DirectiveNode) -> bool {
-    let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
-        return false;
-    };
-
-    expression_is_sanitizer_call(exp.content.trim())
 }
 
 fn expression_is_sanitizer_call(source: &str) -> bool {
@@ -204,6 +191,124 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
     None
 }
 
+impl NoUnsafeUrl {
+    fn check_static<'a>(ctx: &mut LintContext<'a>, element: &MarkupElement<'a>) {
+        if is_router_link_tag(element.tag()) {
+            return;
+        }
+
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() != MarkupBindingKind::Attribute {
+                return;
+            }
+            let Some(attr_name) = binding.authored_argument(ctx.source) else {
+                return;
+            };
+            if !is_unsafe_url_sink(attr_name, element) {
+                return;
+            }
+            let Some(value) = binding.static_value() else {
+                return;
+            };
+            if !is_unsafe_url(value) {
+                return;
+            }
+
+            ctx.warn_at_with_help(
+                ctx.t("vue/no-unsafe-url.static_message"),
+                binding.range(),
+                ctx.t("vue/no-unsafe-url.static_help"),
+            );
+        });
+    }
+
+    fn check_dynamic<'a>(
+        ctx: &mut LintContext<'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        // Only check v-bind
+        if binding.kind() != MarkupBindingKind::Bind {
+            return;
+        }
+
+        // Bindings on <slot> are slot props, not URL-bearing DOM attributes.
+        if is_slot_tag(element.tag()) {
+            return;
+        }
+
+        // Get the attribute name
+        let Some(attr_name) = binding.authored_argument(ctx.source) else {
+            return;
+        };
+        if !binding.argument_is_static() {
+            return;
+        }
+
+        // Check if this is a potentially unsafe attribute
+        if !is_unsafe_url_sink(attr_name, element) {
+            return;
+        }
+
+        // Skip if the element is router-link (it handles routing safely)
+        if is_router_link_tag(element.tag()) {
+            return;
+        }
+
+        let expression = binding.expression().or_else(|| {
+            let retained = binding.retained_expression()?;
+            let range = retained.authored_range(retained.ast.span())?;
+            ctx.source.get(range.start as usize..range.end as usize)
+        });
+        if let Some(expression) = expression.map(str::trim) {
+            if (attr_name.eq_ignore_ascii_case("href") && is_hash_prefixed_expression(expression))
+                || expression_is_sanitizer_call(expression)
+            {
+                return;
+            }
+        }
+
+        let help_message = if attr_name == "href" {
+            ctx.t("vue/no-unsafe-url.help_href")
+        } else {
+            ctx.t("vue/no-unsafe-url.help")
+        };
+
+        ctx.warn_at_with_help(
+            ctx.t_fmt("vue/no-unsafe-url.message", &[("attr", attr_name)]),
+            binding.range(),
+            help_message,
+        );
+    }
+}
+
+impl MarkupRule for NoUnsafeUrl {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::ElementsAndDirectives
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !ctx.is_jsx_attribute_value() {
+            Self::check_static(ctx.lint(), element);
+        }
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        if !ctx.is_jsx_attribute_value() {
+            Self::check_dynamic(ctx.lint(), element, &directive.as_binding());
+        }
+    }
+}
+
 impl Rule for NoUnsafeUrl {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -213,35 +318,17 @@ impl Rule for NoUnsafeUrl {
         crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // Preserve lowering-only parser diagnostics from the original JSX lane.
+        true
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if is_router_link_tag(element.tag) {
-            return;
-        }
-
-        for prop in &element.props {
-            let PropNode::Attribute(attr) = prop else {
-                continue;
-            };
-
-            let attr_name = attr.name;
-            if !is_unsafe_url_sink(attr_name, element) {
-                continue;
-            }
-
-            let Some(value) = &attr.value else {
-                continue;
-            };
-
-            if !is_unsafe_url(value.content) {
-                continue;
-            }
-
-            ctx.warn_with_help(
-                ctx.t("vue/no-unsafe-url.static_message"),
-                &attr.loc,
-                ctx.t("vue/no-unsafe-url.static_help"),
-            );
-        }
+        Self::check_static(ctx, &MarkupElement::new(element));
     }
 
     fn check_directive<'a>(
@@ -250,50 +337,10 @@ impl Rule for NoUnsafeUrl {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        // Only check v-bind
-        if directive.name != "bind" {
-            return;
-        }
-
-        // Bindings on <slot> are slot props, not URL-bearing DOM attributes.
-        if is_slot_tag(element.tag) {
-            return;
-        }
-
-        // Get the attribute name
-        let attr_name = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.is_static => s.content,
-            _ => return,
-        };
-
-        // Check if this is a potentially unsafe attribute
-        if !is_unsafe_url_sink(attr_name, element) {
-            return;
-        }
-
-        // Skip if the element is router-link (it handles routing safely)
-        if is_router_link_tag(element.tag) {
-            return;
-        }
-
-        if is_hash_only_href_binding(attr_name, directive) {
-            return;
-        }
-
-        if is_sanitized_url_binding(directive) {
-            return;
-        }
-
-        let help_message = if attr_name == "href" {
-            ctx.t("vue/no-unsafe-url.help_href")
-        } else {
-            ctx.t("vue/no-unsafe-url.help")
-        };
-
-        ctx.warn_with_help(
-            ctx.t_fmt("vue/no-unsafe-url.message", &[("attr", attr_name)]),
-            &directive.loc,
-            help_message,
+        Self::check_dynamic(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupBinding::from_relief_directive(directive),
         );
     }
 }
