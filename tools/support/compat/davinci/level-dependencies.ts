@@ -217,7 +217,7 @@ export function inspectLevelDependencies(
       } else if (byName.has(dep.name)) {
         requireEvidence(forbidden(dep.name), "missing workspace dependency path: " + dep.name);
       }
-      if (dep.kind === null && levelName.test(dep.rename ?? dep.name)) {
+      if (dep.kind !== "dev" && levelName.test(dep.rename ?? dep.name)) {
         requireEvidence(destination, "missing level alias owner: " + (dep.rename ?? dep.name));
         requireEvidence(
           !forbidden(destination.name),
