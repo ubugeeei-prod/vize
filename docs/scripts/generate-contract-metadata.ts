@@ -9,6 +9,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { documentationSourceContractTests } from "./check-source-contracts.ts";
+import { jsrPackages } from "../../tools/support/release/jsr/packages.ts";
+
 import { COMPOSABLE_CATALOG } from "../../npm/compose/core/src/catalog.ts";
 import {
   UI_FAMILY_CATALOG_SCHEMA_VERSION,
@@ -29,6 +32,14 @@ function manifest(relativePath: string): PackageManifest {
 
 function publicSubpaths(relativePath: string): readonly string[] {
   return Object.keys(manifest(relativePath).exports ?? {}).sort();
+}
+
+function npmInstallation(packageName: string) {
+  const published = jsrPackages.some((entry) => entry.npmName === packageName);
+  return {
+    distribution: published ? "registry" : "workspace",
+    package: published ? `pnpm add ${packageName}` : `pnpm add '${packageName}@workspace:*'`,
+  } as const;
 }
 
 const evidence = {
@@ -62,7 +73,11 @@ const evidence = {
     "tests/tooling/compiled-docs-inputs.test.ts",
     "docs/davinci/plan/budgets.toml",
   ],
-  devtools: ["npm/devtools/README.md", "tests/tooling/docs-public-api.test.ts"],
+  devtools: [
+    "npm/devtools/README.md",
+    "tests/tooling/docs-public-api.test.ts",
+    "tools/support/release/jsr/packages.ts",
+  ],
   plugins: ["npm/plugin-sdk/README.md", "tests/tooling/docs-public-api.test.ts"],
 } as const;
 
@@ -129,7 +144,7 @@ export function documentationContractMetadata() {
         title: "Fresco",
         packageName: fresco.name,
         documentation: "https://github.com/ubugeeei-prod/vize/tree/main/docs/fresco",
-        installation: { package: `pnpm add ${fresco.name}` },
+        installation: npmInstallation(fresco.name),
         stability: fresco.metadata?.vize?.stability ?? "unknown",
         publicSubpaths: publicSubpaths("npm/fresco/package.json"),
         evidence: evidence.fresco,
@@ -163,7 +178,7 @@ export function documentationContractMetadata() {
         title: "Devtools",
         packageName: devtools.name,
         documentation: "https://github.com/ubugeeei-prod/vize/tree/main/npm/devtools/README.md",
-        installation: { package: `pnpm add ${devtools.name}` },
+        installation: npmInstallation(devtools.name),
         stability: devtools.metadata?.vize?.stability ?? "unknown",
         publicSubpaths: publicSubpaths("npm/devtools/package.json"),
         evidence: evidence.devtools,
@@ -173,18 +188,23 @@ export function documentationContractMetadata() {
         title: "Plugin SDK",
         packageName: plugins.name,
         documentation: "https://github.com/ubugeeei-prod/vize/tree/main/npm/plugin-sdk/README.md",
-        installation: { package: `pnpm add ${plugins.name}` },
+        installation: npmInstallation(plugins.name),
         stability: plugins.metadata?.vize?.stability ?? "unknown",
         publicSubpaths: publicSubpaths("npm/plugin-sdk/package.json"),
         evidence: evidence.plugins,
       },
     ],
     acceptance: {
+      sourceContracts: {
+        command: "pnpm --dir docs check:contracts",
+        tests: documentationSourceContractTests,
+      },
       examples: {
         format: "vp check",
         lint: "vp check",
         typecheck: "docs UI preview and public API checks",
         render: "docs build and browser preview checks",
+        rust: "cargo test --locked --profile ci -p vize_glyph -p vize_patina --doc",
       },
       releaseEvidence: {
         workflow: ".github/workflows/release.yml",

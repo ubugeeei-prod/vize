@@ -10,6 +10,8 @@ import {
 } from "../../docs/scripts/generate-contract-metadata.ts";
 import { COMPOSABLE_CATALOG } from "../../npm/compose/core/src/catalog.ts";
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
+import { documentationSourceContractTests } from "../../docs/scripts/check-source-contracts.ts";
+import { jsrPackages } from "../../tools/support/release/jsr/packages.ts";
 
 void test("the published docs contract covers every required product surface", () => {
   const metadata = documentationContractMetadata();
@@ -55,6 +57,28 @@ void test("hover and completion records come from the exact UI and Compose catal
   );
 });
 
+void test("installation claims follow the release inventory and preserve workspace-only packages", () => {
+  const metadata = documentationContractMetadata();
+  for (const surface of metadata.surfaces) {
+    if (!("distribution" in surface.installation)) continue;
+    const published = jsrPackages.some((entry) => entry.npmName === surface.packageName);
+    assert.equal(surface.installation.distribution, published ? "registry" : "workspace");
+    assert.equal(
+      surface.installation.package,
+      published
+        ? `pnpm add ${surface.packageName}`
+        : `pnpm add '${surface.packageName}@workspace:*'`,
+    );
+  }
+  const devtools = metadata.surfaces.find(({ id }) => id === "devtools");
+  assert.ok(devtools && "distribution" in devtools.installation);
+  assert.equal(devtools.installation.distribution, "workspace");
+  assert.match(
+    readFileSync(new URL("../../npm/devtools/README.md", import.meta.url), "utf8"),
+    /workspace-only and has not been published/u,
+  );
+});
+
 void test("docs builds publish a deterministic machine-readable endpoint", () => {
   const rendered = renderDocumentationContractMetadata();
   assert.deepEqual(JSON.parse(rendered), documentationContractMetadata());
@@ -71,11 +95,18 @@ void test("docs builds publish a deterministic machine-readable endpoint", () =>
     "node ./scripts/generate-contract-metadata.ts",
   );
   for (const script of ["dev", "build"]) {
-    assert.match(
-      packageScripts("docs", packageJson.scripts)[script] ?? "",
-      /pnpm generate:metadata/u,
-    );
+    const command = packageScripts("docs", packageJson.scripts)[script] ?? "";
+    assert.match(command, /pnpm generate:metadata/u);
+    assert.ok(command.startsWith("pnpm check:contracts && "), `${script}: check before generation`);
   }
+  assert.equal(
+    packageScripts("docs", packageJson.scripts)["check:contracts"],
+    "node ./scripts/check-source-contracts.ts",
+  );
+  assert.deepEqual(
+    documentationContractMetadata().acceptance.sourceContracts.tests,
+    documentationSourceContractTests,
+  );
   assert.match(
     readFileSync(new URL("../../docs/.gitignore", import.meta.url), "utf8"),
     /^public\/vize-docs-metadata\.json$/mu,

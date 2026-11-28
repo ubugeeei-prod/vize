@@ -30,6 +30,7 @@ test("docs build prepares its browser before previews and checks the rendered si
   }
 
   assert.deepEqual(packageCommands(repoRoot, "docs", script("build"), "build"), [
+    "pnpm check:contracts",
     "node ./scripts/ensure-browser.ts",
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
@@ -59,6 +60,7 @@ test("docs build prepares its browser before previews and checks the rendered si
   assert.equal(script("generate:ui-previews"), "node ./scripts/build-ui-previews.ts");
   assert.equal(script("generate:reference"), "node ../npm/ui/scripts/generate-reference-docs.ts");
   assert.equal(script("generate:metadata"), "node ./scripts/generate-contract-metadata.ts");
+  assert.equal(script("check:contracts"), "node ./scripts/check-source-contracts.ts");
   assert.equal(script("check:ui-docs"), "node ./previews/ui/check-site.ts");
   assert.equal(script("check:heading-links"), "node ./scripts/check-heading-hash.ts");
   assert.equal(script("generate:og-images"), "node ./scripts/generate-og-images.ts");

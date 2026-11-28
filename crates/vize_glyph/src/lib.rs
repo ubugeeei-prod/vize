@@ -20,7 +20,7 @@
 //!
 //! ## Example
 //!
-//! ```ignore
+//! ```rust
 //! use vize_glyph::{format_sfc, FormatOptions};
 //!
 //! let source = r#"
@@ -34,7 +34,8 @@
 //! "#;
 //! let options = FormatOptions::default();
 //! let result = format_sfc(source, &options).unwrap();
-//! println!("{}", result.code);
+//! assert!(result.code.contains("const count = ref(0);"));
+//! assert_eq!(format_sfc(&result.code, &options).unwrap().code, result.code);
 //! ```
 
 #![cfg_attr(

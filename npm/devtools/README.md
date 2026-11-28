@@ -5,6 +5,10 @@ Typed, SSR-safe trace foundations for Vize devtools.
 This experimental package is currently workspace-only and has not been published to npm. The
 example below requires the Vize repository workspace.
 
+From another package in that workspace, add the local dependency with
+`pnpm add '@vizejs/devtools@workspace:*'`. The documentation metadata derives this
+workspace requirement from the release package inventory.
+
 The workspace implements the first trace protocol slice for render/update events, reactive
 edges, provide/inject ownership, and Suspense branch state. It is request-local by default: create a
 recorder per server render or client app instance, then serialize the snapshot into a devtools panel

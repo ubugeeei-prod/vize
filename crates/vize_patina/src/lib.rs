@@ -20,18 +20,24 @@
 //!
 //! ## Usage
 //!
-//! ```rust,ignore
+//! ```rust
 //! use vize_patina::{Linter, OutputFormat, format_results};
 //!
 //! let linter = Linter::new();
-//! let source = r#"<template><div v-for="item in items">{{ item }}</div></template>"#;
-//! let result = linter.lint_template(source, "test.vue");
+//! let filename = "test.vue";
+//! let source = r#"<div v-for="item in items">{{ item }}</div>"#;
+//! let result = linter.lint_template(source, filename);
 //!
-//! if result.has_errors() {
-//!     // Format and display errors
-//!     let output = format_results(&[result], &[(filename.to_string(), source.to_string())], OutputFormat::Text);
-//!     println!("{}", output);
-//! }
+//! assert!(result.has_errors());
+//! let output = format_results(
+//!     &[result],
+//!     &[(filename.into(), source.into())],
+//!     OutputFormat::Plain,
+//! );
+//! assert!(output.contains("vue/require-v-for-key"));
+//!
+//! let valid = r#"<div v-for="item in items" :key="item.id">{{ item }}</div>"#;
+//! assert!(!linter.lint_template(valid, filename).has_errors());
 //! ```
 //!
 //! ## Rules
