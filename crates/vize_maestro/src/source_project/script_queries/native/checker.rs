@@ -20,20 +20,27 @@ impl SourceSnapshot {
     ) -> Result<Option<(ScriptQueryProducts, Vec<SfcTypeDiagnostic>)>, ScriptQueryRefusal> {
         let mut diagnostics = Vec::new();
         let editor = self.with_native_script_blocks(state, owner, |out, root, name, block| {
+            let (frame, prefix) = script_frame(root, block)?;
             let checker = ScriptDiagnosticProfile::for_language(block.lang.as_deref());
-            if !out.read_retained_script(root, name, block, owner)? {
+            if !out.read_retained_script(frame, prefix, name, block, owner) {
                 // Preserve the existing shared-grammar schedule when native
                 // syntax is unavailable: the editor and checker still parse once.
-                return out.read_script(root, name, block, Some(checker.source_type()), |syntax| {
-                    diagnostics.extend(
-                        checker
-                            .diagnostics(syntax)
-                            .map_err(ScriptQueryRefusal::Checker)?,
-                    );
-                    Ok(())
-                });
+                return out.read_script_frame(
+                    name,
+                    block,
+                    frame,
+                    prefix,
+                    Some(checker.source_type()),
+                    |syntax| {
+                        diagnostics.extend(
+                            checker
+                                .diagnostics(syntax)
+                                .map_err(ScriptQueryRefusal::Checker)?,
+                        );
+                        Ok(())
+                    },
+                );
             }
-            let (frame, _) = script_frame(root, block)?;
             if frame.source().is_empty()
                 || matching_script(owner, block)
                     .is_some_and(|syntax| clean_checker_program(syntax, frame, checker))

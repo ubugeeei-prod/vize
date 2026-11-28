@@ -2,7 +2,7 @@
 use super::{ScriptQueryProducts, ScriptQueryRefusal, ServerState, SourceSnapshot, script_frame};
 use core::ops::ControlFlow;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_l0::{Allocator, SourceRoot};
+use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::embed::authored_program::AuthoredProgram;
 use vize_l1::{container::vue::ScriptRole, embed::syntax::EmbedSyntax};
 use vize_l1_to_l2::native_file::NativeSfcObservation;
@@ -17,10 +17,10 @@ impl SourceSnapshot {
         owner: &NativeSfcObservation<'_>,
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
         self.with_native_script_blocks(state, owner, |out, root, name, block| {
-            if out.read_retained_script(root, name, block, owner)? {
+            let (frame, prefix) = script_frame(root, block)?;
+            if out.read_retained_script(frame, prefix, name, block, owner) {
                 return Ok(());
             }
-            let (frame, prefix) = script_frame(root, block)?;
             let symbol = {
                 let arena = Allocator::default();
                 let syntax = AuthoredProgram::parse(
@@ -78,15 +78,15 @@ impl SourceSnapshot {
 impl ScriptQueryProducts {
     fn read_retained_script(
         &mut self,
-        root: SourceRoot<'_>,
+        frame: SourceBlock<'_>,
+        prefix: &str,
         name: &'static str,
         block: &SfcScriptBlock<'_>,
         owner: &NativeSfcObservation<'_>,
-    ) -> Result<bool, ScriptQueryRefusal> {
-        let (frame, prefix) = script_frame(root, block)?;
+    ) -> bool {
         if frame.source().is_empty() {
             self.push_script_symbol(Self::retained_empty_symbol(name, block, prefix));
-            return Ok(true);
+            return true;
         }
         if let Some(syntax) = matching_script(owner, block)
             && let Some(program) = syntax.program()
@@ -97,9 +97,9 @@ impl ScriptQueryProducts {
             let visit_nested =
                 outline.is_none() || Self::has_specifier_argument_list(frame.source().as_bytes());
             self.read_retained_specifiers(program, frame.start(), visit_nested);
-            return Ok(true);
+            return true;
         }
-        Ok(false)
+        false
     }
 }
 

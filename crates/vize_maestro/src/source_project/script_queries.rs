@@ -151,9 +151,21 @@ impl ScriptQueryProducts {
         name: &'static str,
         block: &SfcScriptBlock<'_>,
         additional_profile: Option<SourceType>,
-        mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
+        observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<(), ScriptQueryRefusal> {
         let (frame, prefix) = script_frame(root, block)?;
+        self.read_script_frame(name, block, frame, prefix, additional_profile, observe)
+    }
+
+    fn read_script_frame(
+        &mut self,
+        name: &'static str,
+        block: &SfcScriptBlock<'_>,
+        frame: SourceBlock<'_>,
+        prefix: &str,
+        additional_profile: Option<SourceType>,
+        mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
+    ) -> Result<(), ScriptQueryRefusal> {
         if frame.source().is_empty() && additional_profile.is_none() {
             let symbol =
                 Self::script_block_symbol(name, block, &LineIndex::new(prefix), Vec::new());

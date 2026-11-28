@@ -69,13 +69,15 @@ fn compare(state: &ServerState, uri: &Url, source: &str, name: &str, counts: &mu
         {
             counts.blocks += 1;
             let (frame, _) = script_frame(root, block).unwrap();
-            if matching_script(&owner, block).is_some_and(|syntax| {
-                clean_checker_program(
-                    syntax,
-                    frame,
-                    ScriptDiagnosticProfile::for_language(block.lang.as_deref()),
-                )
-            }) {
+            if !frame.source().is_empty()
+                && matching_script(&owner, block).is_some_and(|syntax| {
+                    clean_checker_program(
+                        syntax,
+                        frame,
+                        ScriptDiagnosticProfile::for_language(block.lang.as_deref()),
+                    )
+                })
+            {
                 counts.clean_checker_programs += 1;
                 counts.reused_from_incomplete_files += usize::from(owner.admitted().is_none());
             }
