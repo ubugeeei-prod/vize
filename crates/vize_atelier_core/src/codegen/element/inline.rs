@@ -338,7 +338,7 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(el.tag) {
+    } else if push_component_binding!(ctx, el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }

@@ -2,12 +2,14 @@ use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String};
 
+use crate::module_map::Runs;
 use crate::script::ScriptCompileContext;
 
 use super::super::super::{
     TemplateParts, import_utils::extract_import_identifiers,
     returned_bindings::push_returned_binding,
 };
+use super::trace::TemplateTrace;
 
 mod template_refs;
 
@@ -30,7 +32,8 @@ pub(super) fn emit_render_return(
     is_prod: bool,
     vapor_render_alias: Option<&str>,
     ctx: &ScriptCompileContext,
-) {
+) -> InlineRenderLayout {
+    let mut layout = InlineRenderLayout::default();
     if !template.render_body.is_empty() {
         if is_ts {
             output.push_str("return (_ctx: any,_cache: any) => {\n");
@@ -39,6 +42,7 @@ pub(super) fn emit_render_return(
         }
 
         // Output component/directive resolution statements (preamble)
+        layout.assets = output.len();
         for line in template.preamble.lines() {
             if !line.trim().is_empty() {
                 output.push_str("  ");
@@ -63,6 +67,7 @@ pub(super) fn emit_render_return(
             }
         } else {
             // Indent the render body properly
+            layout.body = output.len() + "  return ".len();
             let mut first_line = true;
             for line in template.render_body.lines() {
                 if first_line {
@@ -142,6 +147,52 @@ pub(super) fn emit_render_return(
         } else if !template.render_fn.is_empty() {
             output.push_str("return {}\n");
         }
+    }
+    layout
+}
+
+/// Where [`emit_render_return`] wrote the inline render's template parts,
+/// as offsets into the text it emitted.
+#[derive(Clone, Copy, Default)]
+pub(super) struct InlineRenderLayout {
+    /// The first asset-resolution statement's two-space indent.
+    assets: usize,
+    /// The return expression, after `return `.
+    body: usize,
+}
+
+impl InlineRenderLayout {
+    /// The `.vue` provenance of `render`, the text [`emit_render_return`]
+    /// emitted from `template`, given the provenance of the parts it copied.
+    ///
+    /// Each asset statement follows a two-space indent and each line of the
+    /// return expression follows the previous line's `\n`. The copies are
+    /// verified against `render` before `trace` is read through them.
+    pub(super) fn provenance(
+        self,
+        render: &str,
+        template: &TemplateParts<'_>,
+        trace: &TemplateTrace,
+    ) -> Runs {
+        let statements = template
+            .preamble
+            .lines()
+            .filter(|line| !line.trim().is_empty());
+        let mut assets = Runs::default();
+        assets.copy_lines(self.assets, template.preamble, statements, 2);
+        let mut body = Runs::default();
+        body.copy_lines(
+            self.body,
+            template.render_body,
+            template.render_body.lines(),
+            0,
+        );
+        let mut placed = assets
+            .verified(render, template.preamble)
+            .compose(&trace.preamble);
+        let body = body.verified(render, template.render_body);
+        placed.append(0, &body.compose(&trace.render_body));
+        placed
     }
 }
 

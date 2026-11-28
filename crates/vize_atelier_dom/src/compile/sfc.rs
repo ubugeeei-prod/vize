@@ -179,7 +179,13 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             },
         );
     }
-    let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
+    // The composed copy compiles a template whose map the SFC assembly
+    // composes: its map must describe the module a plain compile emits.
+    let compile = dom_map_copy!(
+        plain { super::inner::compile_template_inner_with_sections_captured }
+        composed { super::inner::compile_composed_template_with_sections_captured }
+    );
+    let (_, errors, result) = compile(
         allocator,
         source,
         options,

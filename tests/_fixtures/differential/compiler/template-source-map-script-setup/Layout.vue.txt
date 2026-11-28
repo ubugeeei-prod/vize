@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from '../Child.vue';
+
+const trip = undefined as unknown as { title: string };
+</script>
+
+<template>
+  <Child label="before" />
+  <p>{{ trip.title }}</p>
+</template>

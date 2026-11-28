@@ -134,6 +134,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         };
         self.ctx.push(", (");
+        sfc_map_copy! {
+            plain {}
+            composed {
+                if self.ctx.spans_enabled() {
+                    anchor_for_aliases(&mut self.ctx.out, binding, [Some(value), key, index], &aliases);
+                }
+            }
+        }
         // The walker anchors the loop source but not the aliases it binds.
         for (index, alias) in aliases.iter().flatten().enumerate() {
             if index > 0 {
@@ -195,4 +203,39 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
         return Err(LegacyReason::Structure.into());
     }
     Ok(source)
+}
+
+sfc_map_copy! {
+    plain {}
+    composed {
+        /// Anchor each alias about to be written, from the document's cursor,
+        /// at the alias the loop authored, as the walker does for a composed
+        /// map: an alias spelled as authored maps to its own bytes, a
+        /// rewritten one to nothing.
+        #[cold]
+        #[inline(never)]
+        fn anchor_for_aliases(
+            out: &mut vize_atelier_core::codegen::document::EmitDocument,
+            binding: &l2::ForBinding<'_>,
+            authored: [Option<&str>; 3],
+            aliases: &[Option<vize_l0::String>; 3],
+        ) {
+            let spans = [
+                Some(binding.value.span()),
+                binding.key.as_ref().map(|alias| alias.span()),
+                binding.index.as_ref().map(|alias| alias.span()),
+            ];
+            let mut at = out.len() as u32;
+            for ((alias, authored), span) in aliases.iter().zip(authored).zip(spans) {
+                let Some(alias) = alias else {
+                    continue;
+                };
+                if let Some(span) = span.filter(|_| authored == Some(alias.as_str())) {
+                    out.anchor_ahead(at, span.start);
+                }
+                // `, ` separates the aliases.
+                at += alias.len() as u32 + 2;
+            }
+        }
+    }
 }

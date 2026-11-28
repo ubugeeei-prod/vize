@@ -18,6 +18,21 @@ use vize_l0::{Span, String};
 use self::text::Text;
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
+render_map_copy! {
+    plain {
+        #[cfg(test)]
+        mod authored;
+        #[cfg(test)]
+        mod member_columns;
+        #[cfg(test)]
+        pub(super) use authored::authored_offset;
+    }
+    composed {
+        mod authored;
+        mod member_columns;
+        pub use authored::authored_offset;
+    }
+}
 
 mod text;
 

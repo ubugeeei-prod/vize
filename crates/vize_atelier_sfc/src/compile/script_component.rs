@@ -12,7 +12,6 @@ use crate::types::{SfcCompileResult, SfcError, SfcScriptBlock};
 use super::helpers::{source_type_for_script_lang, trim_trailing_newlines};
 use super::output_module::{
     append_component_render_export, append_css_modules_assignment, finalize_output_mode,
-    rewrite_client_render_for_sfc_main,
 };
 use super::prelude::{Outputs, Prelude, Target};
 use super::{bindings, module_trace, stage_capture};
@@ -72,6 +71,9 @@ pub(super) fn compile(
         .flatten();
 
     // Compile template if present
+    // With a source map requested, `render_at` is where the render block lands
+    // in the module and what it maps to.
+    let mut render_at = None;
     if let Some(template) = descriptor.template.as_ref() {
         let template_allocator = vize_carton::pool::acquire();
         let template_result = if is_vapor {
@@ -124,7 +126,7 @@ pub(super) fn compile(
         match template_result {
             Ok(template_output) => {
                 warnings.extend(template_output.warnings);
-                let template_code = template_output.code;
+                let (template_code, map) = (template_output.code, template_output.map);
                 // Build output matching Vue's compiler-sfc:
                 // 1. Full template output (imports + hoisted + function _sfc_render(...))
                 // 2. Rewritten script
@@ -133,6 +135,7 @@ pub(super) fn compile(
                 if is_vapor || options.template.ssr {
                     // Vapor / SSR keep the render block first, then the script.
                     script_at += template_code.len();
+                    render_at = map.map(|map| (0, map));
                     code.push_str(&template_code);
                     code.push_str(&final_script);
                     code.push('\n');
@@ -141,7 +144,8 @@ pub(super) fn compile(
                     // the <script> block (and its own imports) comes first, then the
                     // template render block. This keeps user imports at the top of the
                     // module instead of after the generated render function.
-                    let template_code = rewrite_client_render_for_sfc_main(&template_code);
+                    let (template_code, map) = module_trace::client_render(&template_code, map);
+                    render_at = map.map(|map| (final_script.len() + 1, map));
                     code.push_str(&final_script);
                     code.push('\n');
                     code.push_str(&template_code);
@@ -201,10 +205,11 @@ pub(super) fn compile(
     }
 
     Ok(SfcCompileResult {
-        map: module_trace::module_map(
+        map: module_trace::module_map_with_render(
             &code,
             script_runs,
             script_at,
+            render_at,
             rewrite,
             descriptor,
             prelude.filename,

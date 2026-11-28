@@ -3,6 +3,17 @@
 //! SSR code generation produces JavaScript that uses template literals and `_push()` calls
 //! to build HTML strings on the server side.
 
+/// Write a component's setup binding read. A composed map anchors it at the
+/// authored byte `source`.
+macro_rules! push_setup_binding {
+    ($ctx:expr, $binding:expr, $source:expr) => {
+        sfc_map_copy!(
+            plain { $ctx.push($binding) }
+            composed { $ctx.push_anchored($binding, $source) }
+        )
+    };
+}
+
 mod children;
 mod component_binding;
 mod component_resolution;
@@ -15,19 +26,9 @@ mod spans;
 pub(crate) use spans::push_escaped_bound_name;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
+pub use crate::shared::{SsrCodegenResult, SsrSfcContext};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
-
-/// SSR codegen result
-#[derive(Debug, Default)]
-pub struct SsrCodegenResult {
-    /// Generated render function code
-    pub code: String,
-    /// Import preamble
-    pub preamble: String,
-    /// Source Map v3 JSON for the generated render code.
-    pub map: Option<String>,
-}
 
 /// A part of a template literal, carrying the authored spans it copies.
 #[derive(Debug)]
@@ -36,45 +37,6 @@ pub(crate) enum TemplatePart {
     Static(EmitDocument),
     /// Dynamic expression
     Dynamic(EmitDocument),
-}
-
-/// Host-owned SFC metadata, separate from user compiler options. Existing
-/// direct-template entry points retain their production helper spelling.
-#[doc(hidden)]
-#[derive(Clone, Copy)]
-pub struct SsrSfcContext {
-    pub(crate) slotted: bool,
-    pub(crate) development: bool,
-    pub(crate) jsx_closure: bool,
-}
-
-impl SsrSfcContext {
-    /// Preserve direct-template production metadata with explicit scope ownership.
-    #[must_use]
-    pub const fn new(slotted: bool) -> Self {
-        Self {
-            slotted,
-            development: false,
-            jsx_closure: false,
-        }
-    }
-
-    /// A JSX component owns lexical bindings directly, rather than the SFC
-    /// `$setup` object. This host role does not alter template defaults.
-    #[must_use]
-    pub const fn with_jsx_closure(mut self) -> Self {
-        self.jsx_closure = true;
-        self
-    }
-
-    /// The adapter's explicit development target; never read the environment
-    /// from an emitter or infer it from comment preservation.
-    /// This target is independent of upstream JavaScript module-load mode.
-    #[must_use]
-    pub const fn with_development(mut self, development: bool) -> Self {
-        self.development = development;
-        self
-    }
 }
 
 /// SSR codegen context
@@ -259,8 +221,16 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            self.out
-                .source_map(self.source_map_filename.as_str(), self.source)
+            sfc_map_copy!(
+                plain {
+                    self.out
+                        .source_map(self.source_map_filename.as_str(), self.source)
+                }
+                composed {
+                    self.out
+                        .composed_source_map(self.source_map_filename.as_str(), self.source)
+                }
+            )
         });
         let code = self.out.into_string();
 

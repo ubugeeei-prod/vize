@@ -1,0 +1,399 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_dom/src/compile/stage_options.rs by `node tools/commands/generate/composed-copies.ts`.
+// Edit the source and run the command again.
+//! Per-stage option construction for DOM template compilation.
+//! Parser, transform and emit wiring for the product pipeline.
+
+use vize_atelier_core::composed::codegen::{CodegenResult, CodegenResultWithSections, CodegenSections};
+use vize_atelier_core::composed::options::{
+    BindingMetadata, BindingType, CodegenMode, CodegenOptions, CustomElementMatcher, ParserOptions,
+    TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
+};
+use vize_atelier_core::composed::walk_probe::WalkCounts;
+use vize_l0::dump::capture::NoCapture;
+use vize_l0::profiler::{active_profiler_is_enabled, with_active_profiler};
+use vize_l0::{Allocator, profile};
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::{
+    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError,
+};
+
+use super::pipeline::L2EmitSelection;
+use super::selection::{DomLegacyReason, noting_refusal};
+use crate::composed::namespace::get_namespace;
+use crate::composed::options::DomCompilerOptions;
+
+mod capture;
+pub(super) use capture::{SlotEmitPolicy, emit_l2_captured, try_emit_l2_captured};
+/// Parser options with DOM-specific settings.
+pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
+    ParserOptions {
+        is_void_tag: vize_l0::is_void_tag,
+        is_native_tag: Some(vize_l0::is_platform_tag),
+        custom_renderer: options.custom_renderer,
+        is_pre_tag: |tag| tag == "pre",
+        get_namespace,
+        comments: options.comments,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
+        dialect: options.dialect,
+        ..ParserOptions::default()
+    }
+}
+
+/// DOM transform settings pass `BindingMetadata` directly.
+pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOptions {
+    TransformOptions {
+        prefix_identifiers: options.prefix_identifiers,
+        hoist_static: options.hoist_static,
+        cache_handlers: options.cache_handlers,
+        scope_id: options.scope_id.clone(),
+        ssr: options.ssr,
+        is_ts: options.is_ts,
+        inline: options.inline,
+        custom_renderer: options.custom_renderer,
+        experimental_patterned_template: options.experimental_patterned_template,
+        binding_metadata: options.binding_metadata.clone(),
+        dialect: options.dialect,
+        directive_contracts: options.directive_contracts.clone(),
+        ..Default::default()
+    }
+}
+
+pub(super) fn codegen_options(
+    options: &DomCompilerOptions,
+    defaults: CodegenOptions,
+) -> CodegenOptions {
+    CodegenOptions {
+        mode: options.mode,
+        source_map: options.source_map,
+        component_name: options.component_name.clone(),
+        scope_id: options.scope_id.clone(),
+        ssr: options.ssr,
+        is_ts: options.is_ts,
+        inline: options.inline,
+        cache_handlers: options.cache_handlers,
+        binding_metadata: options.binding_metadata.clone(),
+        // Compound dynamic `v-bind` / `v-on` keys (`:[prefix+suffix]`) only
+        // walk identifiers when this flag is set. Transform already receives
+        // it; omitting it here left SFC module-mode render functions with
+        // bare `prefix+suffix` and a runtime ReferenceError.
+        prefix_identifiers: options.prefix_identifiers,
+        ..defaults
+    }
+}
+
+pub(super) fn l2_emit_supported(
+    options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+    custom_elements: &CustomElementMatcher,
+    template_syntax: TemplateSyntaxMode,
+    has_croquis: bool,
+    l2_emit_selection: L2EmitSelection,
+    experimental_self_component: bool,
+) -> bool {
+    l2_emit_refusal(
+        options,
+        codegen,
+        custom_elements,
+        template_syntax,
+        has_croquis,
+        l2_emit_selection,
+        experimental_self_component,
+    )
+    .is_none()
+}
+
+/// The first gate that keeps this compile off the L2 emitter, if any.
+pub(super) fn l2_emit_refusal(
+    options: &DomCompilerOptions,
+    _codegen: &CodegenOptions,
+    _custom_elements: &CustomElementMatcher,
+    _template_syntax: TemplateSyntaxMode,
+    has_croquis: bool,
+    l2_emit_selection: L2EmitSelection,
+    experimental_self_component: bool,
+) -> Option<DomLegacyReason> {
+    #[cfg(feature = "legacy-differential")]
+    if super::selection::differential::legacy_forced() {
+        return Some(DomLegacyReason::Forced);
+    }
+    let reason = match l2_emit_selection {
+        L2EmitSelection::Disabled => DomLegacyReason::Entry,
+        L2EmitSelection::Refused => DomLegacyReason::EmitRefused,
+        L2EmitSelection::Allowed | L2EmitSelection::RequireSections if options.ssr => {
+            DomLegacyReason::Ssr
+        }
+        _ if options.experimental_patterned_template => DomLegacyReason::PatternedTemplate,
+        _ if experimental_self_component => DomLegacyReason::SelfComponent,
+        _ if options.custom_renderer => DomLegacyReason::CustomRenderer,
+        // L2 lowering currently implements only the default condense mode.
+        _ if vize_atelier_core::composed::parser::current_whitespace_strategy(
+            WhitespaceStrategy::Condense,
+        ) != WhitespaceStrategy::Condense
+            || vize_atelier_core::composed::parser::current_legacy_line_breaks() =>
+        {
+            DomLegacyReason::Whitespace
+        }
+        _ if has_croquis => DomLegacyReason::Croquis,
+        _ => return None,
+    };
+    Some(reason)
+}
+
+pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool {
+    source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
+}
+
+/// A template that may bind a directive declared by `vue.plugins` (#13074)
+/// stays on the compatibility lane, which applies the contract: the
+/// published `DomEmitOptions` literal is frozen, so it cannot carry the
+/// table. This superset scan never runs without a plugin plan.
+pub(super) fn source_may_bind_declared_directive(
+    source: &str,
+    contracts: &vize_l0::config::DirectiveContracts,
+) -> bool {
+    let bytes = source.as_bytes();
+    source.match_indices("v-").any(|(at, _)| {
+        let rest = bytes.get(at + 2..).unwrap_or_default();
+        contracts
+            .as_slice()
+            .iter()
+            .any(|contract| rest.starts_with(contract.name.as_bytes()))
+    })
+}
+
+/// `@vize:` comments stay on the legacy lane: its parser retains them as
+/// children even with `comments` off, affecting child-slot emission; L2
+/// drops them. This superset scan prevents output drift (P3-17).
+pub(super) fn source_may_contain_vize_directive_comment(source: &str) -> bool {
+    source.contains("@vize:")
+}
+
+/// Project public DOM options to L2 while retaining the legacy AST and
+/// diagnostics. Source maps attach a verified compatibility map; fields
+/// missing here must force the compatibility path, not an L2 default.
+pub(super) fn l2_emit_options<'a>(
+    options: &'a DomCompilerOptions,
+    codegen: &'a CodegenOptions,
+    custom_elements: &'a CustomElementMatcher,
+    bindings: Option<&'a BindingTable>,
+    hoisted_scope_id: Option<&'a str>,
+    experimental_component_name: Option<&'a str>,
+) -> Option<DomEmitOptions<'a>> {
+    Some(DomEmitOptions {
+        mode: match options.mode {
+            CodegenMode::Function => DomEmitMode::Function,
+            CodegenMode::Module => DomEmitMode::Module,
+        },
+        runtime_module_name: codegen.runtime_module_name.as_str(),
+        runtime_global_name: codegen.runtime_global_name.as_str(),
+        prefix_identifiers: options.prefix_identifiers,
+        hoist_static: options.hoist_static,
+        inline: options.inline,
+        // The shipped codegen reads the experimental context's name first
+        // (`CodegenContext::new`: `experimental.component_name.or(options…)`);
+        // SFC compiles carry the file stem only there.
+        component_name: experimental_component_name.or(options.component_name.as_deref()),
+        cache_handlers: options.cache_handlers,
+        hoisted_scope_id,
+        scope_id: options.scope_id.as_deref(),
+        is_ts: options.is_ts,
+        comments: options.comments,
+        experimental_in_tag_comments: options.experimental_in_tag_comments,
+        custom_element_patterns: custom_elements.patterns(),
+        custom_element_predicate: custom_elements.static_predicate(),
+        bindings,
+    })
+}
+
+pub(super) use super::script_tables::{l2_binding_table_for, unprojectable_croquis};
+
+pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
+    metadata.map(|metadata| {
+        BindingTable::new(
+            metadata
+                .bindings
+                .iter()
+                .map(|(name, kind)| (name.as_str(), l2_binding_kind(*kind))),
+            metadata
+                .props_aliases
+                .iter()
+                .map(|(local, key)| (local.as_str(), key.as_str())),
+            metadata.is_script_setup,
+        )
+    })
+}
+
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
+pub(super) fn try_emit_l2(
+    allocator: &Allocator,
+    source: &str,
+    template_syntax: TemplateSyntaxMode,
+    options: &DomCompilerOptions,
+    codegen: &CodegenOptions,
+    custom_elements: &CustomElementMatcher,
+    hoisted_scope_id: Option<&str>,
+    experimental_component_name: Option<&str>,
+    pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+) -> Option<CodegenResultWithSections> {
+    let binding_table = l2_binding_table_for(options);
+    let emit_options = l2_emit_options(
+        options,
+        codegen,
+        custom_elements,
+        binding_table.as_ref(),
+        hoisted_scope_id,
+        experimental_component_name,
+    )?;
+    noting_refusal(profile!(
+        "atelier.dom.template.s2_codegen",
+        emit_l2(
+            allocator,
+            source,
+            options.dialect,
+            template_syntax,
+            &emit_options,
+            pre_s2_walks,
+            strict_slot_params,
+            no_slotted,
+            development,
+        )
+    ))
+    .ok()
+}
+
+/// Emit one DOM module through L2, with the SFC-only slot check when requested.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "compile inputs remain explicit across the internal SFC environment boundary"
+)]
+pub(super) fn emit_l2(
+    allocator: &Allocator,
+    source: &str,
+    dialect: vize_l0::config::VueVersion,
+    template_syntax: TemplateSyntaxMode,
+    options: &DomEmitOptions<'_>,
+    pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+) -> Result<CodegenResultWithSections, EmitError> {
+    let caps = dom_compat_caps(dialect, options.prefix_identifiers);
+    let emit = if active_profiler_is_enabled() {
+        let observed = vize_l4::targets::dom::artifact::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+            template_syntax,
+            &mut NoCapture,
+        )?;
+        record_l2_budget(observed.budget, pre_s2_walks);
+        observed.emit
+    } else {
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+            template_syntax,
+            &mut NoCapture,
+        )?
+    };
+    Ok(CodegenResultWithSections {
+        result: CodegenResult {
+            code: emit.code,
+            preamble: emit.preamble,
+            map: None,
+        },
+        // L2 records the same structural render-module boundaries as the
+        // shipped emitter so SFC assembly can slice either lane identically.
+        sections: Some(l2_codegen_sections(emit.sections)),
+    })
+}
+
+/// Historical DOM compilation enables the legacy pipe-filter rewrite only on
+/// its identifier-prefixing transform path. In unprefixed function mode,
+/// `label | cap` remains a JavaScript bitwise-or expression. Keep the shared
+/// dialect table intact for SSR and direct Davinci consumers while projecting
+/// that shipped DOM behavior at this product boundary.
+pub(super) fn dom_compat_caps(
+    dialect: vize_l0::config::VueVersion,
+    prefix_identifiers: bool,
+) -> LegacyCaps {
+    let mut caps = LegacyCaps::for_version(dialect);
+    if !prefix_identifiers {
+        caps.supports_filters = false;
+        caps.space_separated_filter_args = false;
+    }
+    caps
+}
+const fn l2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
+    CodegenSections {
+        imports_len: sections.imports_len,
+        assets_start: sections.assets_start,
+        assets_end: sections.assets_end,
+        return_expr_start: sections.return_expr_start,
+        return_expr_end: sections.return_expr_end,
+    }
+}
+
+const fn l2_binding_kind(kind: BindingType) -> BindingKind {
+    match kind {
+        BindingType::SetupLet => BindingKind::SetupLet,
+        BindingType::SetupMaybeRef => BindingKind::SetupMaybeRef,
+        BindingType::SetupRef => BindingKind::SetupRef,
+        BindingType::SetupReactiveConst => BindingKind::SetupReactiveConst,
+        BindingType::SetupConst => BindingKind::SetupConst,
+        BindingType::Props => BindingKind::Props,
+        BindingType::PropsAliased => BindingKind::PropsAliased,
+        BindingType::Data => BindingKind::Data,
+        BindingType::Options => BindingKind::Options,
+        BindingType::LiteralConst => BindingKind::LiteralConst,
+        BindingType::JsGlobalUniversal => BindingKind::JsGlobalUniversal,
+        BindingType::JsGlobalBrowser => BindingKind::JsGlobalBrowser,
+        BindingType::JsGlobalNode => BindingKind::JsGlobalNode,
+        BindingType::JsGlobalDeno => BindingKind::JsGlobalDeno,
+        BindingType::JsGlobalBun => BindingKind::JsGlobalBun,
+        BindingType::VueGlobal => BindingKind::VueGlobal,
+        BindingType::ExternalModule => BindingKind::ExternalModule,
+    }
+}
+
+fn record_l2_budget(
+    budget: vize_l4::targets::dom::artifact::DomEmitBudget,
+    pre_s2_walks: Option<WalkCounts>,
+) {
+    with_active_profiler(|profiler| {
+        profiler.record_counter_enabled("l2.dom.files", 1);
+        profiler
+            .record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
+        profiler.record_counter_enabled(
+            "l2.dom.transform.passes",
+            u64::from(budget.transform.passes),
+        );
+        profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
+        profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
+        profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
+        let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
+            (counts.total_walks(), counts.total_visits())
+        });
+        profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
+        profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
+        profiler.record_counter_enabled(
+            "l2.dom.build.walks",
+            pre_s2_walks + u64::from(budget.total_walks()),
+        );
+    });
+}
+
+#[cfg(test)]
+mod tests;

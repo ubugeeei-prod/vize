@@ -1,0 +1,176 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_core/src/lane/extensions.rs by `node tools/commands/generate/composed-copies.ts`.
+// Edit the source and run the command again.
+//! Specialized transform entry points layered over the shared transform lane.
+
+use vize_l0::{Allocator, String};
+
+use super::{JsxTransformCompat, ScriptTables, TransformLaneOptions, transform_inner};
+use crate::composed::{CompilerError, RootNode, TransformOptions, options::CustomElementMatcher};
+
+/// Transform the root AST node with an explicit scope ID for hoisted VNodes.
+#[doc(hidden)]
+pub fn transform_with_hoisted_scope_id<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    hoisted_scope_id: Option<String>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            hoisted_scope_id,
+            ..Default::default()
+        },
+        None,
+    )
+}
+
+/// Transform with template syntax quirks and an explicit hoisted VNode scope ID.
+#[doc(hidden)]
+pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    hoisted_scope_id: Option<String>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            template_syntax_quirks: true,
+            hoisted_scope_id,
+            ..Default::default()
+        },
+        None,
+    )
+}
+
+/// Transform with declarative custom-element patterns and optional hoisted scope ID.
+#[doc(hidden)]
+pub fn transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    hoisted_scope_id: Option<String>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            template_syntax_quirks,
+            hoisted_scope_id,
+            custom_elements,
+            ..Default::default()
+        },
+        None,
+    )
+}
+
+/// Transform with Vue parser quirks and an explicit hoisted VNode scope ID.
+#[doc(hidden)]
+#[deprecated(note = "use transform_with_template_syntax_quirks_and_hoisted_scope_id instead")]
+pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    hoisted_scope_id: Option<String>,
+) -> std::vec::Vec<CompilerError> {
+    transform_with_template_syntax_quirks_and_hoisted_scope_id(
+        allocator,
+        root,
+        options,
+        script_tables,
+        hoisted_scope_id,
+    )
+}
+
+/// Transform with Babel JSX's static plain-element v-model argument extension.
+#[doc(hidden)]
+pub fn transform_with_plain_element_model_argument<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            jsx_compat: JsxTransformCompat {
+                allow_static_v_model_arg_on_element: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        None,
+    )
+}
+
+/// Transform against an explicit loc-span source basis.
+///
+/// JSX roots keep the root element's slice in `RootNode::source` (the source
+/// maps embed it), while node spans index into the whole module source; this
+/// entry lets those callers supply the module text the spans resolve against.
+#[doc(hidden)]
+pub fn transform_with_source_text<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    source_text: &'a str,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions::default(),
+        Some(source_text),
+    )
+}
+
+/// Transform JSX with Babel-specific element and v-model classification.
+#[doc(hidden)]
+pub fn transform_with_jsx_compatibility<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    allow_static_v_model_arg_on_element: bool,
+    custom_element_spans: &[(u32, u32)],
+    source_text: Option<&'a str>,
+) -> std::vec::Vec<CompilerError> {
+    let mut jsx_compat = JsxTransformCompat {
+        allow_static_v_model_arg_on_element,
+        ..Default::default()
+    };
+    jsx_compat
+        .custom_element_spans
+        .extend(custom_element_spans.iter().copied());
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            jsx_compat,
+            ..Default::default()
+        },
+        source_text,
+    )
+}

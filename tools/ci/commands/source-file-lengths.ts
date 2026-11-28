@@ -1,5 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
+import { isComposedCopy } from "../../commands/generate/composed-copies.ts";
 import { pklGeneratedTargets } from "../../support/ci/pkl-products.ts";
 
 interface SourceFile {
@@ -74,6 +75,9 @@ function isExcluded(file: string, generated: ReadonlySet<string>): boolean {
     ["ja", "zh-CN", "pt-BR", "fr"].some((locale) => file.startsWith(`docs/content/${locale}/`)) ||
     // Generated, one row per rule; `generate-patina-rules-page.ts --check` keeps it fresh.
     file === "docs/content/rules/all.md" ||
+    // Generated copies of a crate's source, which stays under the rule;
+    // `generate/composed-copies.ts --check` keeps them fresh.
+    isComposedCopy(file) ||
     file.includes(".min.") ||
     [
       "_fixtures",
