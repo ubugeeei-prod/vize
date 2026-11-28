@@ -1,0 +1,36 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/06-native-application-host/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Native application first host
+on:
+  pull_request:
+    paths:
+      - npm/native-host-fixture/**
+      - tools/ci/workflows/06-native-application-host/**
+      - .github/workflows/06-native-application-host.yml
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: native-application-host-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  target-sdk:
+    name: First native host SDK
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+      - name: Verify target SDK and available simulator runtime
+        run: node tools/ci/workflows/06-native-application-host/scripts/qualify-sdk.ts
+      - name: Retain SDK qualification
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-application-sdk-${{ github.sha }}
+          path: ${{ runner.temp }}/native-application-sdk.json
+          if-no-files-found: error

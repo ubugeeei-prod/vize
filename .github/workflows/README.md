@@ -32,7 +32,7 @@ surfaces and are not routine CI-refactor targets.
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 19        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 4         |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 5         |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 16        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 14        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 4         |
@@ -151,12 +151,13 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/compiler/)
 
-| ID    | Workflow                 | File                                                         |
-| ----- | ------------------------ | ------------------------------------------------------------ |
-| 06.01 | Level HTML content model | [`06-browser-oracles.yml`](./06-browser-oracles.yml)         |
-| 06.02 | Tool codegen equivalence | [`06-codegen-equivalence.yml`](./06-codegen-equivalence.yml) |
-| 06.03 | CSS engine forks         | [`06-css-engine-forks.yml`](./06-css-engine-forks.yml)       |
-| 06.04 | Native Smoke             | [`06-native-smoke.yml`](./06-native-smoke.yml)               |
+| ID    | Workflow                      | File                                                                 |
+| ----- | ----------------------------- | -------------------------------------------------------------------- |
+| 06.01 | Level HTML content model      | [`06-browser-oracles.yml`](./06-browser-oracles.yml)                 |
+| 06.02 | Tool codegen equivalence      | [`06-codegen-equivalence.yml`](./06-codegen-equivalence.yml)         |
+| 06.03 | CSS engine forks              | [`06-css-engine-forks.yml`](./06-css-engine-forks.yml)               |
+| 06.04 | Native application first host | [`06-native-application-host.yml`](./06-native-application-host.yml) |
+| 06.05 | Native Smoke                  | [`06-native-smoke.yml`](./06-native-smoke.yml)                       |
 
 ## 07 Davinci, Canon, and Level
 

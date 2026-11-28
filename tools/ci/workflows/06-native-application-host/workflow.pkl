@@ -1,0 +1,52 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Native application first host"
+
+on {
+  pull_request {
+    paths = new Listing {
+      "npm/native-host-fixture/**"
+      "tools/ci/workflows/06-native-application-host/**"
+      ".github/workflows/06-native-application-host.yml"
+    }
+  }
+  workflow_dispatch = null
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "native-application-host-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  `target-sdk` {
+    name = "First native host SDK"
+    `runs-on` = ci.macos
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version-file` = "package.json" }
+      }
+      new Dynamic {
+        name = "Verify target SDK and available simulator runtime"
+        run = "node tools/ci/workflows/06-native-application-host/scripts/qualify-sdk.ts"
+      }
+      new Dynamic {
+        name = "Retain SDK qualification"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-application-sdk-${{ github.sha }}"
+          path = "${{ runner.temp }}/native-application-sdk.json"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}
