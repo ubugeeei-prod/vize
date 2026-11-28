@@ -157,7 +157,7 @@ jobs:
   ci-selection-tests:
     name: CI selection tests
     needs: pr-source-plan
-    runs-on: ${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 5
     steps:
       - name: Check out the workflow's scripts

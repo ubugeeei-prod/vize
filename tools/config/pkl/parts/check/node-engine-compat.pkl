@@ -1,7 +1,7 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
 needs = "iteration-plan"
-`runs-on` = "${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`runs-on` = "${{ needs.iteration-plan.outputs.engines == 'true' && '\(ci.linuxSmall)' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 20
 strategy {
   `fail-fast` = false
