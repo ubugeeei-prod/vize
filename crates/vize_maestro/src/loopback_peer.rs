@@ -8,9 +8,10 @@ use std::net::SocketAddr;
 
 /// Whether the socket at `peer`, connected to `local`, belongs to this account.
 ///
-/// Linux lists every socket's owner in `/proc/net/tcp`. Other platforms keep
-/// that behind APIs this crate does not bind, so there the connection is taken
-/// as before.
+/// Linux lists every socket's owner in `/proc/net/tcp`. Elsewhere the peer
+/// account calls (`getpeereid`, `LOCAL_PEERCRED`) answer only for Unix-domain
+/// sockets, so a TCP connection is taken as before and the pairing token
+/// (`crate::pairing`) is what ties the server to its client.
 #[cfg(target_os = "linux")]
 pub(crate) fn opened_by_this_account(local: SocketAddr, peer: SocketAddr) -> bool {
     use std::os::unix::fs::MetadataExt;

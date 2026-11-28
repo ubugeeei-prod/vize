@@ -474,7 +474,9 @@ vize ide zed
 ```
 
 `vize lsp` starts the language server directly. `vize ide` adds editor-specific install and
-management commands for the VS Code and Zed integrations.
+management commands for the VS Code and Zed integrations. With `--port`, `--token-file <path>` (or
+`VIZE_LSP_TOKEN`) pairs the server with the client that sends the token as
+`initializationOptions.vizeToken`; see [Language server](./language-server.md#other-editors).
 
 ## Global Options
 

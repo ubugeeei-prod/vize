@@ -40,6 +40,11 @@ pub struct IdeArgs {
     #[arg(long)]
     pub port: Option<u16>,
 
+    /// File holding a token the client's `initialize` must carry as
+    /// `initializationOptions.vizeToken` (with --port; overrides VIZE_LSP_TOKEN)
+    #[arg(long, value_name = "PATH", requires = "port")]
+    pub token_file: Option<std::path::PathBuf>,
+
     /// Enable debug logging
     #[arg(long)]
     pub debug: bool,
@@ -87,7 +92,9 @@ pub fn run(args: IdeArgs) {
 fn run_lsp(args: IdeArgs) {
     let result = match transport_from_port(args.port) {
         LspTransport::Stdio => vize_maestro::serve_blocking(),
-        LspTransport::Tcp(port) => vize_maestro::serve_tcp_blocking(port),
+        LspTransport::Tcp(port) => {
+            crate::commands::lsp::serve_tcp(port, args.token_file.as_deref())
+        }
     };
 
     if let Err(e) = result {
