@@ -65,6 +65,7 @@ fn load_uncached() -> Value {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::optional_jsx_witness::source_before(path, current);
     let record = load();
     let Some(entry) = record["files"]
         .as_array()

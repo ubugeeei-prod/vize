@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { certifyFallthroughSourceFields } from "../../../../tools/support/compat/content-mapper/shared-usage-gates-transition.ts";
+import { optionalJsxWitnessPredecessor } from "./experimental-router-optional-jsx-witness.ts";
 import { withDefaultsUndefinedPredecessor } from "./experimental-router-with-defaults-undefined.ts";
 
 type GoldenEntry = { file: string; sha256: string };
@@ -23,6 +24,7 @@ export function sharedUsageGatesPredecessor(
   entry: GoldenEntry,
   bytes: Buffer,
 ): { entry: GoldenEntry; bytes: Buffer } {
+  ({ entry, bytes } = optionalJsxWitnessPredecessor(custody, entry, bytes));
   ({ entry, bytes } = withDefaultsUndefinedPredecessor(custody, entry, bytes));
   if (!entry.file.includes(".shared-usage-gates")) return { entry, bytes };
   const receiptBytes = fs.readFileSync(path.join(custody, "shared-usage-gates-20261111.json"));

@@ -272,7 +272,7 @@ declare global {
       : T extends unknown
         ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>>
         : never;
-  type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+  type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };
   // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
   type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> =
     $IsAny<Authored> extends true

@@ -1,0 +1,92 @@
+{
+  "schema": "vize.experimental-router-optional-jsx-witness-transition.v1",
+  "qualificationCredit": false,
+  "entries": [
+    {
+      "previous": {
+        "file": "lf.valid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "6e6985202a4a50b00343612dc7254f52b9342f6b1818422f4bb3a0809605558b",
+        "bytes": 15497
+      },
+      "current": {
+        "file": "lf.valid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "32e2ce396f00bcf2b2f1c7b8cd0f7b314f2c1c5053ecc2f61ee603631d4196bd",
+        "bytes": 15498
+      }
+    },
+    {
+      "previous": {
+        "file": "lf.invalid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "54a0fc4853e9854c7a75af3f5f952675d83c69983187760b8d77001dd916e8ee",
+        "bytes": 15501
+      },
+      "current": {
+        "file": "lf.invalid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "d93ec0a9745ef5e0c106dfd1b5dbff6c495356a3c4be8fe9a194b2e2586b7e62",
+        "bytes": 15502
+      }
+    },
+    {
+      "previous": {
+        "file": "crlf.valid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "f3fcc1242503e206348bc9db97e72d1778b7ad0f7560fde2648add6b7768ec27",
+        "bytes": 15497
+      },
+      "current": {
+        "file": "crlf.valid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "a6be53a88191b9afe0f2ada10f3d6f2b95653074546047b216dd114418e41552",
+        "bytes": 15498
+      }
+    },
+    {
+      "previous": {
+        "file": "crlf.invalid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "66fa3103f36aada88d955e76759b6ce0988367a0b96aaeb2f665fc2ead901376",
+        "bytes": 15501
+      },
+      "current": {
+        "file": "crlf.invalid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "af0c5c91ada52570c97a07e637665e043ebb5ec826e16ffc06d94c4144d220ea",
+        "bytes": 15502
+      }
+    },
+    {
+      "previous": {
+        "file": "explicit.valid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "15ad6b80a4b92903eeed04757d5470b48d63a1c7c8d259e2743cf354da3d84a6",
+        "bytes": 15425
+      },
+      "current": {
+        "file": "explicit.valid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "d9c0de57fea4c7d38fb26b5bc032afa4cb3717fb18bcdc9e29dd1bcb27ef3421",
+        "bytes": 15426
+      }
+    },
+    {
+      "previous": {
+        "file": "explicit.invalid.with-defaults-undefined.virtual.ts.txt",
+        "sha256": "36e093e10b0515f17a7810a5b84eb3c831d5fbd272ea415b2b734cc0bb9edf21",
+        "bytes": 15358
+      },
+      "current": {
+        "file": "explicit.invalid.optional-jsx-witness.virtual.ts.txt",
+        "sha256": "a4d48e2d42c20dcfe214cb6f72a04367bf7dcc98bf69268b9b66e42847010e68",
+        "bytes": 15359
+      }
+    }
+  ],
+  "completionDataPositions": {
+    "lf": {
+      "before": 11831,
+      "after": 11832
+    },
+    "crlf": {
+      "before": 11831,
+      "after": 11832
+    },
+    "explicit": {
+      "before": 11759,
+      "after": 11760
+    }
+  }
+}

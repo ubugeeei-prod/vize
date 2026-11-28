@@ -45,11 +45,12 @@ fn restore_source(path: &str, current: &str) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::optional_jsx_witness::source_before(path, current);
     restore_source(path, &current)
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    current.to_owned()
+    super::optional_jsx_witness::preamble_before(current)
 }
 
 #[cfg(test)]
@@ -66,8 +67,12 @@ mod tests {
             vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
             vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
         ] {
+            // This layer left the compiled preambles alone; only newer layers move them.
             let previous = preamble_before(current);
-            assert_eq!(previous, current);
+            assert_eq!(
+                previous,
+                super::super::optional_jsx_witness::preamble_before(current)
+            );
             assert_eq!(preamble_before(&previous), previous);
         }
     }

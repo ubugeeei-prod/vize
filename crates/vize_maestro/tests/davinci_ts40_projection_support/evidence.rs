@@ -3,6 +3,7 @@ mod authored_component_infer;
 mod component_metadata;
 mod constructor_noinfer_return;
 mod mixed_vue2;
+mod optional_jsx_witness;
 mod receipt;
 mod shared_listener_args;
 mod unextracted_options_props;
@@ -277,6 +278,6 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        unextracted_options_props::slots(unowned_successor)
+        optional_jsx_witness::slots(unextracted_options_props::slots(unowned_successor))
     );
 }

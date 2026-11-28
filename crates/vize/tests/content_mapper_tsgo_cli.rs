@@ -75,6 +75,7 @@ mod template_expression_syntax;
 mod template_model_props;
 mod template_ref_inference_scope;
 mod tsx_script_syntax;
+mod tsx_union_props_spread;
 mod type_only_import_use;
 mod typed_context_undefined;
 mod unicode_prop_bindings;

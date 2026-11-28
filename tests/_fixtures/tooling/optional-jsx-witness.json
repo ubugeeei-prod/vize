@@ -1,0 +1,97 @@
+{
+  "schema": "vize.optionalJsxWitnessSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      "before": {
+        "bytes": 6205,
+        "sha256": "61dc8766da6a30cb3c76f1607109884fc330b62d0c1c5dad2e0bb71d96f4b48b"
+      },
+      "after": {
+        "bytes": 6206,
+        "sha256": "82cf577e21dcecb89420fe5a9be2a92d021ecfe9c31afbc25e8e9c2f70e8a22c"
+      },
+      "hunks": [
+        {
+          "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+          "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 12942,
+        "sha256": "e20333cdd467f335b327b588904fe9749d3cc9949bfcf3e4bc31b25d54b30575"
+      },
+      "after": {
+        "bytes": 12943,
+        "sha256": "97d04934f6f194c2ee3329091e7d9876532671ea89b6bd3e4c9abf144ed323ff"
+      },
+      "hunks": [
+        {
+          "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+          "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 21217,
+        "sha256": "d2cc4d1e40b40dac7e6362a3532ba92e9cefc4d7272a345f73f096919aba390e"
+      },
+      "after": {
+        "bytes": 21218,
+        "sha256": "8ad3d1331a757e4653c92781242a5b9705b894f571c885c1a38fd919689189cc"
+      },
+      "hunks": [
+        {
+          "before": "  type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+          "after": "  type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreambles": [
+    {
+      "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+      "before": {
+        "bytes": 58391,
+        "sha256": "3c64c8f55d8c6bbeb5e39c4fae676c36a8546245b5895ad8df09af9123b412f4"
+      },
+      "after": {
+        "bytes": 58392,
+        "sha256": "954b942ddc1072e596f9dd837aca592823e2ef11a412e6728dd708c59b7c4347"
+      },
+      "hunks": [
+        {
+          "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+          "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };\n"
+        }
+      ]
+    },
+    {
+      "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS",
+      "before": {
+        "bytes": 58182,
+        "sha256": "bb0d1e6d191f1acbbbd6ed4503569e5f622628f4588e57aa9f11ccf7e6058ef5"
+      },
+      "after": {
+        "bytes": 58183,
+        "sha256": "96aee206536d44ce277bba6721b66c0b634ecb3673cade556c3b867aa5f42f05"
+      },
+      "hunks": [
+        {
+          "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n",
+          "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]?: unknown };\n"
+        }
+      ]
+    }
+  ]
+}

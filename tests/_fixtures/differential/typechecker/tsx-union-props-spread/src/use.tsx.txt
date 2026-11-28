@@ -1,0 +1,11 @@
+import OptionalProps from './OptionalProps.vue'
+import UnionProps from './UnionProps.vue'
+
+declare const withLabel: boolean
+const props = withLabel ? { label: 'a' } : { ariaLabel: 'b' }
+
+export const union = <UnionProps {...props} />
+export const optional = <OptionalProps {...props} />
+export const missing = <UnionProps />
+export const both = <UnionProps label="a" ariaLabel="b" />
+export const wrong = <OptionalProps {...{ label: 1 }} />

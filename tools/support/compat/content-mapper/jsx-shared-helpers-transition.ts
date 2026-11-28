@@ -1,6 +1,7 @@
 /** Invert the published JSX helper ABI before older source-custody checks. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { beforeOptionalJsxWitness } from "./optional-jsx-witness-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 
@@ -24,6 +25,7 @@ const identity = (text: string): Identity => ({
 
 /** Return the exact pre-publication SDK file; unrelated source images pass through. */
 export function beforeJsxSharedHelpersSource(file: string, current: string): string {
+  current = beforeOptionalJsxWitness(file, current);
   const now = identity(current);
   if (
     file === globalsPath &&

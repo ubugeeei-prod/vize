@@ -237,7 +237,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            default_expression
+            super::optional_jsx_witness::mixed_vue2(default_expression)
         );
     }
 }

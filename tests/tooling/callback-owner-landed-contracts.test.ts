@@ -14,6 +14,7 @@ import {
 } from "../../tools/support/compat/content-mapper/callback-owner-closed-emit.ts";
 import { beforeClosedEmitFactory } from "../../tools/support/compat/content-mapper/closed-emit-factory-transition.ts";
 import { beforeInstanceInputKeys } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
+import { beforeOptionalJsxWitness } from "../../tools/support/compat/content-mapper/optional-jsx-witness-transition.ts";
 import { beforeUnownedOwnedKeys } from "../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -73,16 +74,19 @@ test("each landed helper predecessor is certified once, before the current image
   const current = readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
   const inputKeys = beforeInstanceInputKeys(path, current);
   const ownedKeys = beforeUnownedOwnedKeys(path, current);
-  assert.equal(new Set([inputKeys, ownedKeys, current]).size, 3);
+  const requiredWitness = beforeOptionalJsxWitness(path, current);
+  assert.equal(new Set([inputKeys, ownedKeys, requiredWitness, current]).size, 4);
   assert.deepEqual(certifiedHelperImages(path, current, ["older"]), [
     "older",
     inputKeys,
     ownedKeys,
+    requiredWitness,
     current,
   ]);
   assert.deepEqual(certifiedHelperImages(path, current, [inputKeys]), [
     inputKeys,
     ownedKeys,
+    requiredWitness,
     current,
   ]);
 });

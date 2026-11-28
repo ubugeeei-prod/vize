@@ -41,6 +41,7 @@ mod library_props_fallthrough;
 mod listener_contract;
 mod listener_relations;
 mod loose_emit_sdk;
+mod optional_jsx_witness;
 mod private_emit_sdk;
 mod projection_text_buffer;
 mod prop_value_or;

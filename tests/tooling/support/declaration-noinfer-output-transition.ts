@@ -8,6 +8,7 @@ import {
   currentDefaultNativeType,
   previousDefaultNativeType,
 } from "../../../tools/support/compat/content-mapper/with-defaults-undefined-transition.ts";
+import { optionalJsxWitnessHelperEdit } from "../../../tools/support/compat/content-mapper/optional-jsx-witness-transition.ts";
 
 type Identity = { sha256: string; bytes: number };
 type Output = {
@@ -50,9 +51,29 @@ assert.equal(
  */
 export function noinferOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
   // #13179 is newer: undo it before this layer and replay it after.
+  // The optional JSX key witness is newer still: undo it first, replay it last.
   if (direction === "inverse")
-    return noinferOnly(withDefaultsUndefined(current, "inverse"), direction);
-  return withDefaultsUndefined(noinferOnly(current, direction), "forward");
+    return noinferOnly(
+      withDefaultsUndefined(optionalJsxWitness(current, "inverse"), "inverse"),
+      direction,
+    );
+  return optionalJsxWitness(
+    withDefaultsUndefined(noinferOnly(current, direction), "forward"),
+    "forward",
+  );
+}
+
+/** The `$AuthoredKeyWitness` line of a declaration helper output, when it holds one. */
+function optionalJsxWitness(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const edit = optionalJsxWitnessHelperEdit();
+  const [before, after] = [edit.before.trimEnd(), edit.after.trimEnd()];
+  const [from, to] = direction === "forward" ? [before, after] : [after, before];
+  const text = current.toString("utf8");
+  const count = text.split(from).length - 1;
+  if (count === 0) return current;
+  assert.equal(count, 1, "one optional JSX witness declaration line");
+  assert.equal(text.split(to).length - 1, 0);
+  return Buffer.from(text.replace(from, () => to));
 }
 
 /** The #13179 `$DefaultNativeType` line of a declaration helper output, when it holds one. */
