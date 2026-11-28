@@ -286,10 +286,10 @@ void test("whole authored input, source authority, production preimages and comp
 });
 
 void test("all four genuine workflow roles and the actual Rust selector remain mandatory", () => {
-  const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+  const workflow = ".github/workflows/05-native-diagnostic-dto.yml";
   const source = read("head", workflow)!.toString("utf8");
   const program =
-    ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh";
+    "tools/ci/workflows/05-native-diagnostic-dto/scripts/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh";
   for (const [file, marker] of [
     [workflow, "role: [before, after]"],
     [workflow, "version: 7.1.0-beta"],

@@ -31,8 +31,8 @@ surfaces and are not routine CI-refactor targets.
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 13        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 19        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
-| 05    | [Language services and editors](#05-language-services-and-editors)                     | 7         |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 5         |
+| 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 4         |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 16        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 14        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 4         |
@@ -94,23 +94,23 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 
 | ID    | Workflow                               | File                                                               |
 | ----- | -------------------------------------- | ------------------------------------------------------------------ |
-| 03.01 | Benchmark - Type checking gate         | [`03-check-gate.yml`](./03-check-gate.yml)                         |
-| 03.02 | Benchmark - CI wall time               | [`03-ci-walltime.yml`](./03-ci-walltime.yml)                       |
-| 03.03 | Benchmark - SFC compilation            | [`03-compile.yml`](./03-compile.yml)                               |
-| 03.04 | Benchmark - Criterion suites           | [`03-criterion.yml`](./03-criterion.yml)                           |
-| 03.05 | Benchmark - Fresco dimensions          | [`03-fresco-layout.yml`](./03-fresco-layout.yml)                   |
-| 03.06 | Benchmark - Level memory               | [`03-level-memory.yml`](./03-level-memory.yml)                     |
-| 03.07 | Davinci resource budgets               | [`03-lsp-resources.yml`](./03-lsp-resources.yml)                   |
-| 03.08 | Benchmark - Source comparison          | [`03-source-comparison.yml`](./03-source-comparison.yml)           |
-| 03.09 | Benchmark - Tool comparison            | [`03-tool-comparison.yml`](./03-tool-comparison.yml)               |
-| 03.10 | Type-check cold pair                   | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)           |
-| 03.11 | Type-check profile                     | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)           |
-| 03.12 | Type-check scaling                     | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)           |
-| 03.13 | Typecheck vs vue-tsc                   | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml)     |
-| 03.14 | Benchmark - Vite client Vue resolution | [`03-vite-client-resolution.yml`](./03-vite-client-resolution.yml) |
-| 03.15 | Benchmark - VS Code startup            | [`03-vscode-startup.yml`](./03-vscode-startup.yml)                 |
-| 03.16 | Vue Benchmarks Replay                  | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)                 |
-| 03.17 | Davinci Canon distinct-host scaling    | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)         |
+| 03.01 | Davinci Canon distinct-host scaling    | [`03-canon-scaling.yml`](./03-canon-scaling.yml)                   |
+| 03.02 | Benchmark - Type checking gate         | [`03-check-gate.yml`](./03-check-gate.yml)                         |
+| 03.03 | Benchmark - CI wall time               | [`03-ci-walltime.yml`](./03-ci-walltime.yml)                       |
+| 03.04 | Benchmark - SFC compilation            | [`03-compile.yml`](./03-compile.yml)                               |
+| 03.05 | Benchmark - Criterion suites           | [`03-criterion.yml`](./03-criterion.yml)                           |
+| 03.06 | Benchmark - Fresco dimensions          | [`03-fresco-layout.yml`](./03-fresco-layout.yml)                   |
+| 03.07 | Benchmark - Level memory               | [`03-level-memory.yml`](./03-level-memory.yml)                     |
+| 03.08 | Davinci resource budgets               | [`03-lsp-resources.yml`](./03-lsp-resources.yml)                   |
+| 03.09 | Benchmark - Source comparison          | [`03-source-comparison.yml`](./03-source-comparison.yml)           |
+| 03.10 | Benchmark - Tool comparison            | [`03-tool-comparison.yml`](./03-tool-comparison.yml)               |
+| 03.11 | Type-check cold pair                   | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)           |
+| 03.12 | Type-check profile                     | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)           |
+| 03.13 | Type-check scaling                     | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)           |
+| 03.14 | Typecheck vs vue-tsc                   | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml)     |
+| 03.15 | Benchmark - Vite client Vue resolution | [`03-vite-client-resolution.yml`](./03-vite-client-resolution.yml) |
+| 03.16 | Benchmark - VS Code startup            | [`03-vscode-startup.yml`](./03-vscode-startup.yml)                 |
+| 03.17 | Vue Benchmarks Replay                  | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)                 |
 | 03.18 | Level instruction counts               | [`level-instruction-counts.yml`](./level-instruction-counts.yml)   |
 | 03.19 | Shipped release-profile measure        | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
 
@@ -125,7 +125,7 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 | 04.01 | Content Mapper Cold Start          | [`04-content-mapper-cold-start.yml`](./04-content-mapper-cold-start.yml)   |
 | 04.02 | Content Mapper Conformance         | [`04-content-mapper-conformance.yml`](./04-content-mapper-conformance.yml) |
 | 04.03 | WSL2 type-check qualification      | [`04-typecheck-wsl2.yml`](./04-typecheck-wsl2.yml)                         |
-| 04.04 | Type checker native backend phases | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)         |
+| 04.04 | Type checker native backend phases | [`04-typechecker-native-phases.yml`](./04-typechecker-native-phases.yml)   |
 | 04.05 | Platform VSIX native projection    | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)           |
 
 ## 05 Language services and editors
@@ -139,10 +139,11 @@ LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover check
 | 05.01 | Editor conformance                | [`05-editor-conformance.yml`](./05-editor-conformance.yml)           |
 | 05.02 | Current-source LSP baseline       | [`05-lsp-baseline.yml`](./05-lsp-baseline.yml)                       |
 | 05.03 | LSP vs Vue language tools         | [`05-lsp-vs-volar.yml`](./05-lsp-vs-volar.yml)                       |
-| 05.04 | Volar Plugin                      | [`05-volar-plugin.yml`](./05-volar-plugin.yml)                       |
-| 05.05 | VS Code VSIX validation           | [`05-vscode-vsix.yml`](./05-vscode-vsix.yml)                         |
-| 05.06 | VS Code workspace server          | [`05-vscode-workspace-server.yml`](./05-vscode-workspace-server.yml) |
-| 05.07 | TypeScript plugin packed consumer | [`typescript-plugin.yml`](./typescript-plugin.yml)                   |
+| 05.04 | Native beta diagnostic DTO        | [`05-native-diagnostic-dto.yml`](./05-native-diagnostic-dto.yml)     |
+| 05.05 | Volar Plugin                      | [`05-volar-plugin.yml`](./05-volar-plugin.yml)                       |
+| 05.06 | VS Code VSIX validation           | [`05-vscode-vsix.yml`](./05-vscode-vsix.yml)                         |
+| 05.07 | VS Code workspace server          | [`05-vscode-workspace-server.yml`](./05-vscode-workspace-server.yml) |
+| 05.08 | TypeScript plugin packed consumer | [`typescript-plugin.yml`](./typescript-plugin.yml)                   |
 
 ## 06 SFC, JSX, and compiler correctness
 
@@ -150,13 +151,12 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/compiler/)
 
-| ID    | Workflow                   | File                                                                 |
-| ----- | -------------------------- | -------------------------------------------------------------------- |
-| 06.01 | Level HTML content model   | [`06-browser-oracles.yml`](./06-browser-oracles.yml)                 |
-| 06.02 | Tool codegen equivalence   | [`06-codegen-equivalence.yml`](./06-codegen-equivalence.yml)         |
-| 06.03 | CSS engine forks           | [`06-css-engine-forks.yml`](./06-css-engine-forks.yml)               |
-| 06.04 | Native Smoke               | [`06-native-smoke.yml`](./06-native-smoke.yml)                       |
-| 06.05 | Native beta diagnostic DTO | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml) |
+| ID    | Workflow                 | File                                                         |
+| ----- | ------------------------ | ------------------------------------------------------------ |
+| 06.01 | Level HTML content model | [`06-browser-oracles.yml`](./06-browser-oracles.yml)         |
+| 06.02 | Tool codegen equivalence | [`06-codegen-equivalence.yml`](./06-codegen-equivalence.yml) |
+| 06.03 | CSS engine forks         | [`06-css-engine-forks.yml`](./06-css-engine-forks.yml)       |
+| 06.04 | Native Smoke             | [`06-native-smoke.yml`](./06-native-smoke.yml)               |
 
 ## 07 Davinci, Canon, and Level
 

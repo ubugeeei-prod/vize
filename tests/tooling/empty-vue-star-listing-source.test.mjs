@@ -11,6 +11,7 @@ import {
   qualifyStarListingSDK,
   qualifyStarListingMain,
   starListingLexicalReader,
+  starListingLivePath,
   starListingProgramPaths,
 } from "../../tools/support/compat/github/empty-vue-star-listing-source.mjs";
 
@@ -55,10 +56,11 @@ function fixture(run) {
     git(owner, ["symbolic-ref", "HEAD", "refs/heads/current"]);
     for (const file of new Set([...files, ...manifest.mainUnion.cells.map(([file]) => file)])) {
       // A recorded cell that a later change deleted is absent from HEAD as well.
-      if (!fs.existsSync(path.join(root, file))) continue;
-      const target = path.join(owner, file);
+      const live = starListingLivePath(file);
+      if (!fs.existsSync(path.join(root, live))) continue;
+      const target = path.join(owner, live);
       fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.copyFileSync(path.join(root, file), target);
+      fs.copyFileSync(path.join(root, live), target);
       fs.chmodSync(target, 0o644);
     }
     run(owner, head);
@@ -179,7 +181,7 @@ await test("foreign raw bodies, changed entrypoints, hybrid source, modes and re
       ".github/workflows/typechecker-native-phases.yml",
     ]) {
       assert.deepEqual(readLexical(file), git(root, ["show", manifest.base + ":" + file]));
-      const target = path.join(owner, file),
+      const target = path.join(owner, starListingLivePath(file)),
         original = fs.readFileSync(target);
       fs.writeFileSync(target, Buffer.concat([original, Buffer.from("foreign copied source\n")]));
       assert.throws(() => readLexical(file));

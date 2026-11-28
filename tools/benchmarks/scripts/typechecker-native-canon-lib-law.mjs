@@ -30,7 +30,7 @@ for (const declarations of Object.values(rootManifest.patch ?? {})) {
 export const canonManifest = "crates/vize_canon/Cargo.toml";
 export const integration = "crates/vize_canon/tests/ambient_declarations.rs";
 export const library = "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests.rs";
-export const workflow = readWorkflowShell("typechecker-native-phases");
+export const workflow = readWorkflowShell("04-typechecker-native-phases");
 export function source(changes = {}) {
   const files = new Map(texts);
   for (const [file, text] of Object.entries(changes)) {

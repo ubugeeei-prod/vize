@@ -83,8 +83,19 @@ assert.equal(sha(mainInverseRaw), metadata.mainUnion.inverseCapsule.rawSHA256);
 const mainInverses = JSON.parse(mainInverseRaw);
 assert.equal(mainInverses.length, metadata.mainUnion.inverseCapsule.count);
 const proofs = new WeakMap();
-function raw(root, source, files) {
-  const tree = git(root, ["ls-tree", "-z", source, "--", ...files]);
+/** The listing names two workflows by their file names before the NN-subject rename. */
+const renamedWorkflows = new Map([
+  [
+    ".github/workflows/typechecker-native-phases.yml",
+    ".github/workflows/04-typechecker-native-phases.yml",
+  ],
+  [".github/workflows/davinci-canon-scaling.yml", ".github/workflows/03-canon-scaling.yml"],
+]);
+/** Where a listed file lives in the current tree. */
+export const starListingLivePath = (file) => renamedWorkflows.get(file) ?? file;
+function raw(root, source, files, locate = (file) => file) {
+  const listed = new Map(files.map((file) => [locate(file), file]));
+  const tree = git(root, ["ls-tree", "-z", source, "--", ...listed.keys()]);
   assertBytes(Buffer.from(tree.toString()), tree);
   const entries = tree
     .toString()
@@ -92,8 +103,8 @@ function raw(root, source, files) {
     .filter(Boolean)
     .map((record) => {
       const match = /^100644 blob ([a-f0-9]{40})\t(.+)$/u.exec(record);
-      assert(match && files.includes(match[2]), "complete regular committed listing source");
-      return { blob: match[1], file: match[2] };
+      assert(match && listed.has(match[2]), "complete regular committed listing source");
+      return { blob: match[1], file: listed.get(match[2]) };
     });
   assert.equal(new Set(entries.map(({ file }) => file)).size, entries.length);
   const stream = git(
@@ -121,7 +132,11 @@ function confirm(owned) {
   assert.equal(git(owned.root, ["rev-parse", "HEAD"]).toString().trim(), owned.head);
   assert.equal(git(owned.root, ["for-each-ref", "--format=%(refname)", "refs/replace"]).length, 0);
   for (const [file, body] of owned.live)
-    assertBytes(regular(owned.root, file), body, "same complete current source: " + file);
+    assertBytes(
+      regular(owned.root, starListingLivePath(file)),
+      body,
+      "same complete current source: " + file,
+    );
 }
 
 const setupWorkflows = new Set([".github/workflows/typechecker-native-phases.yml"]);
@@ -184,7 +199,7 @@ export function authenticateStarListingSource(root) {
   assert.equal(new Set(files).size, files.length);
   const before = raw(root, base, files),
     current = raw(root, recorded, files),
-    live = raw(root, head, files);
+    live = raw(root, head, files, starListingLivePath);
   const projectedCurrent = new Map(current);
   const canonical = metadata.mainUnion.canonicalSuccessor;
   if (canonical) {
@@ -483,7 +498,7 @@ export function starListingLexicalReader(copiedRoot) {
     value = owned(packet);
   const read = (file) => {
     assert(metadata.javascriptPaths.includes(file), "one closed current lexical JS93 source");
-    const current = regular(copiedRoot, file);
+    const current = regular(copiedRoot, starListingLivePath(file));
     assertBytes(current, value.live.get(file), "complete actual copied lexical source");
     if (lexicalCounterparts.has(file) || setupWorkflows.has(file) || unpinnedWorkflows.has(file)) {
       owned(packet);

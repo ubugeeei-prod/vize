@@ -67,7 +67,9 @@ const inputs = [
   "native-beta-diagnostic-dto-10731/actual-beta-wire.json",
   "native-beta-diagnostic-dto-10731/source-pairs.json",
 ];
+// The producer record names the workflow by its file name before the NN-subject rename.
 const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+const currentWorkflow = ".github/workflows/05-native-diagnostic-dto.yml";
 const producerFiles = [
   workflow,
   "tests/tooling/support/native-beta-dto/prepare-role.mjs",
@@ -118,7 +120,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
   return producerFiles.map((originalPath, index) => {
     const archivedPath = producerOriginalRoot + originalPath.split("/").at(-1) + ".txt";
     const original = pinned(read, archivedPath, producerHashes[index]);
-    const currentPath = index === 0 ? originalPath : originalPath.replace(/\.mjs$/u, ".ts");
+    const currentPath = index === 0 ? currentWorkflow : originalPath.replace(/\.mjs$/u, ".ts");
     const current = read("head", currentPath);
     require(current !== null, `missing current typed producer: ${currentPath}`);
     const currentInputDependency =
@@ -139,7 +141,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         require(transitioned.split(file).length === 2, "one exact producer workflow path required");
         transitioned = transitioned.replace(file, file.replace(/\.mjs$/u, ".ts"));
       }
-      require(workflowPredecessor("native-beta-diagnostic-dto", current, (file) =>
+      require(workflowPredecessor("05-native-diagnostic-dto", current, (file) =>
         read("head", file),
       ).equals(Buffer.from(transitioned)), "workflow changed beyond four typed producer paths");
     } else if (index === 1) {
@@ -519,9 +521,9 @@ export function newNativeBetaDtoProtocolCases(
         : actual.includes(
             marker === "expected_refusal" ? "expect_refusal" : marker,
           ), `missing actual observer authority: ${marker}`);
-    const currentJob = read("head", workflow);
+    const currentJob = read("head", currentWorkflow);
     require(currentJob, "missing actual four-role producer workflow");
-    const job = workflowPredecessor("native-beta-diagnostic-dto", currentJob, (file) =>
+    const job = workflowPredecessor("05-native-diagnostic-dto", currentJob, (file) =>
       read("head", file),
     ).toString("utf8");
     for (const marker of [

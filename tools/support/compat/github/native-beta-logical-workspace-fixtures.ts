@@ -40,7 +40,7 @@ const selector =
   "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete";
 const observerPath =
   "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs";
-const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+const workflow = ".github/workflows/05-native-diagnostic-dto.yml";
 const production = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response.rs",
   "crates/vize_canon/src/lsp_client/initial_diagnostics/diagnostic_response/location.rs",
@@ -221,7 +221,7 @@ export function newLogicalWorkspaceProtocolCases(
   ]);
   const bytes = read("head", workflow);
   assert.ok(bytes);
-  const job = workflowPredecessor("native-beta-diagnostic-dto", bytes, (file) =>
+  const job = workflowPredecessor("05-native-diagnostic-dto", bytes, (file) =>
     read("head", file),
   ).toString("utf8");
   assert.equal(authority.nativeRoles.length, 4);

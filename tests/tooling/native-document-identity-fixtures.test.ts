@@ -102,18 +102,19 @@ test("four historical inputs, all five current consumers and actual A/B producer
     );
   }
   assert.throws(
-    () => validate(corrupt("head", row.legacyProtocol.workflow.path)),
-    /native-beta-diagnostic-dto: unreviewed workflow revision/,
+    // The record keeps the workflow's old name; the renamed file supplies its bytes.
+    () => validate(corrupt("head", ".github/workflows/05-native-diagnostic-dto.yml")),
+    /05-native-diagnostic-dto: unreviewed workflow revision/,
   );
   assert.throws(
     () =>
       validate(
         corrupt(
           "head",
-          ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
+          "tools/ci/workflows/05-native-diagnostic-dto/scripts/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
         ),
       ),
-    /native-beta-diagnostic-dto: executable source changed/,
+    /05-native-diagnostic-dto: executable source changed/,
   );
   for (const [path, expected] of [
     [

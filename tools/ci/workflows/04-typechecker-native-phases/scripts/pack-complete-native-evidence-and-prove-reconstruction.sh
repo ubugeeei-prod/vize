@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/04-typechecker-native-phases/scripts/pack-complete-native-evidence-and-prove-reconstruction.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+set -euo pipefail
+# Retain original raw custody even when immutable helper authority is unavailable.
+raw_paths=(outside-import-types/ typechecker-native-source-custody.json 'native-source-recipe*' reference-path-module/ typechecker-native-phases.json typechecker-native-phases.json.samples/provenance.json template-dollar-emit/ config-scoped-vue-helpers/)
+raw_paths+=(tsconfig-types-extends/ jsx-slot-parameter-types/ canon-selected-alias/ lsp-passive-3952/ unchecked-index-access/ unknown-template-options/ template-emit-ts40-projection/)
+raw_paths+=(typechecker-native-phases.json.samples/failure.json typechecker-native-phases.json.samples/inputs/ typechecker-native-phases.json.samples/raw/ typechecker-native-phases.json.samples/native/ typechecker-native-phases.json.samples/projections/ typechecker-native-phases.json.samples/virtual-ts/ undefined-default-props/)
+{ printf 'raw_paths<<NATIVE_RAW_PATHS\n'; for raw_path in "${raw_paths[@]}"; do printf '%s/%s\n' "$RUNNER_TEMP" "$raw_path"; done
+  printf 'NATIVE_RAW_PATHS\n'; } >> "$GITHUB_OUTPUT"
+[[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]]
+git cat-file -e "$GITHUB_WORKFLOW_SHA^{commit}" || git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
+[[ "$(git cat-file -t "$GITHUB_WORKFLOW_SHA")" == commit ]]
+helper_root="$(mktemp -d "$RUNNER_TEMP/native-phase-artifact-helper-XXXXXX")"
+helper_root="$(cd "$helper_root" && pwd -P)"
+for helper in native-phase-artifact.mjs native-phase-artifact-files.mjs native-phase-artifact-paths.json; do
+  git show "$GITHUB_WORKFLOW_SHA:tools/support/compat/github/$helper" > "$helper_root/$helper"
+done
+node "$helper_root/native-phase-artifact.mjs" pack "$RUNNER_TEMP" "$RUNNER_TEMP/native-phase-artifact"
