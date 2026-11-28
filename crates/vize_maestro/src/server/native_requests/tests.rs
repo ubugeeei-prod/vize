@@ -7,6 +7,9 @@ use tower_lsp::{LanguageServer, jsonrpc::Error};
 
 use super::super::build_lsp_service;
 
+#[cfg(feature = "native")]
+mod component_targets;
+
 const APP: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");
 const TOAST: &str =

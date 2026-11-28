@@ -11,6 +11,29 @@ use crate::ide::IdeContext;
 use crate::ide::{definition::helpers, is_component_tag, kebab_to_pascal};
 
 impl HoverService {
+    #[cfg(feature = "native")]
+    pub(super) async fn hover_native_component_tag(
+        ctx: &IdeContext<'_>,
+        bridge: Option<&std::sync::Arc<vize_canon::CorsaBridge>>,
+    ) -> Option<Hover> {
+        let tag = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+        if !is_component_tag(&tag) {
+            return None;
+        }
+        let name = if tag.contains('-') {
+            kebab_to_pascal(&tag)
+        } else {
+            tag
+        };
+        let path = crate::ide::definition::component_import::resolve_native_component_file(
+            ctx, &name, bridge?,
+        )
+        .await?;
+        let contract =
+            super::component_import::component_contract_markdown_at_path(ctx, &name, &path)?;
+        Some(HoverBuilder::new().description(&contract).build())
+    }
+
     pub(super) fn hover_component_tag(ctx: &IdeContext<'_>) -> Option<Hover> {
         #[cfg(feature = "native")]
         {

@@ -13,6 +13,10 @@ use super::{IdeContext, helpers};
 
 #[cfg(feature = "native")]
 mod alias;
+#[cfg(feature = "native")]
+mod native_target;
+#[cfg(feature = "native")]
+pub(crate) use native_target::resolve_native_component_file;
 
 const MAX_REEXPORT_DEPTH: usize = 8;
 
@@ -52,6 +56,8 @@ pub(crate) fn is_registered_component(ctx: &IdeContext<'_>, component_name: &str
 struct ComponentImport {
     specifier: String,
     imported_name: String,
+    #[cfg(feature = "native")]
+    specifier_offset: usize,
 }
 
 fn find_component_import(ctx: &IdeContext<'_>, component_name: &str) -> Option<ComponentImport> {
@@ -118,6 +124,11 @@ fn find_component_import_by_name(
             continue;
         };
         let specifier = helpers::extract_import_path_from_pos(rest, from_pos + " from".len())?;
+        #[cfg(feature = "native")]
+        let specifier_offset = {
+            let after_from = rest.get(from_pos + " from".len()..)?.trim_start();
+            pos + rest.len() - after_from.len() + 1
+        };
         let Some(clause) = rest.get("import ".len()..from_pos) else {
             continue;
         };
@@ -125,12 +136,16 @@ fn find_component_import_by_name(
         if default_import_name(clause) == Some(component_name) {
             return Some(ComponentImport {
                 specifier,
+                #[cfg(feature = "native")]
+                specifier_offset,
                 imported_name: "default".to_string(),
             });
         }
         if let Some(imported_name) = named_import_name(clause, component_name) {
             return Some(ComponentImport {
                 specifier,
+                #[cfg(feature = "native")]
+                specifier_offset,
                 imported_name,
             });
         }

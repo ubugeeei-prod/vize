@@ -1,5 +1,8 @@
 //! Shared test fixtures.
 
+#[cfg(feature = "native")]
+pub(crate) mod native_component;
+
 /// A temporary directory under the canonical temp root. macOS's `/var` is a
 /// symlink to `/private/var`, and the server compares physical paths, so a
 /// fixture rooted in `/var/...` would disagree with every path it resolves.

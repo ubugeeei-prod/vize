@@ -79,6 +79,20 @@ pub(super) fn native_requirement(native: Option<&Hover>) -> Option<bool> {
     }
 }
 
+#[cfg(feature = "native")]
+pub(super) fn is_unknown_hover(hover: &Hover) -> bool {
+    let HoverContents::Markup(content) = &hover.contents else {
+        return false;
+    };
+    content.kind == MarkupKind::Markdown
+        && (is_unknown_signature(&content.value)
+            || content
+                .value
+                .strip_prefix("```typescript\n")
+                .and_then(|value| value.split_once("\n```"))
+                .is_some_and(|(signature, _)| is_unknown_signature(signature)))
+}
+
 fn is_unknown_signature(signature: &str) -> bool {
     let signature = signature.trim();
     signature == "unknown"

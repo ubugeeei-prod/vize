@@ -115,7 +115,11 @@ impl HoverService {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
-            if let Some(mut hover) = Self::hover_component_tag(ctx) {
+            let tag_hover = match Self::hover_component_tag(ctx) {
+                Some(hover) => Some(hover),
+                None => Self::hover_native_component_tag(ctx, corsa_bridge.as_ref()).await,
+            };
+            if let Some(mut hover) = tag_hover {
                 if hover.range.is_none() {
                     hover.range = authored_hover_token_range(ctx);
                 }
@@ -167,8 +171,20 @@ impl HoverService {
 
         if let Some(answer) = canonical::hover(ctx, corsa_bridge.as_ref(), false).await {
             return match answer {
-                canonical::Answer::Empty => None,
+                canonical::Answer::Empty => {
+                    super::component_prop::native_attribute_hover(ctx, None, corsa_bridge.as_ref())
+                        .await
+                }
                 canonical::Answer::Hover(mut hover) => {
+                    if let Some(selected) = super::component_prop::native_attribute_hover(
+                        ctx,
+                        Some(&hover),
+                        corsa_bridge.as_ref(),
+                    )
+                    .await
+                    {
+                        hover = selected;
+                    }
                     super::declaration_keyword::align_hover(ctx, &word, &mut hover);
                     Some(hover)
                 }

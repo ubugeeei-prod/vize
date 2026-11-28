@@ -54,7 +54,9 @@ use globals::template_expression_completions;
 
 pub(crate) use art::{complete_art, complete_inline_art};
 pub(crate) use component_cache::CachedComponentMetadata;
-pub(crate) use component_meta::component_metadata;
+#[cfg(feature = "native")]
+pub(crate) use component_cache::cached_component_metadata;
+pub(crate) use component_meta::{ComponentProp, component_metadata};
 #[cfg(feature = "native")]
 pub(super) use component_native::complete_with_corsa as complete_component_with_corsa;
 pub(crate) use directives::{contextual_directive_completions, vize_directive_completions};

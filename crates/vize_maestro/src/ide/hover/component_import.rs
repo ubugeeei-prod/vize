@@ -57,6 +57,23 @@ pub(super) fn component_contract_markdown(
     local_name: &str,
 ) -> Option<String> {
     let (resolved_path, fields) = component_contract(ctx, local_name)?;
+    Some(render_contract(local_name, &resolved_path, &fields))
+}
+
+pub(super) fn component_contract_markdown_at_path(
+    ctx: &IdeContext<'_>,
+    local_name: &str,
+    path: &Path,
+) -> Option<String> {
+    let fields = component_fields(ctx, path)?;
+    Some(render_contract(local_name, path, &fields))
+}
+
+fn render_contract(
+    local_name: &str,
+    resolved_path: &Path,
+    fields: &[(&'static str, String)],
+) -> String {
     let mut lines = vec![format!("const {local_name}: VueComponent")];
     if !fields.is_empty() {
         if let Some(header) = lines.first_mut() {
@@ -76,7 +93,7 @@ pub(super) fn component_contract_markdown(
         markdown.push_str("\n\nVue component: ");
         markdown.push_str(file_name);
     }
-    Some(markdown)
+    markdown
 }
 
 /// The same contract on one line, for a type inlay hint.
@@ -98,9 +115,17 @@ fn component_contract(
     local_name: &str,
 ) -> Option<(std::path::PathBuf, Vec<(&'static str, String)>)> {
     let resolved_path = imported_vue_component_path(ctx, local_name)?;
-    let source = component_source(ctx, &resolved_path)?;
+    let fields = component_fields(ctx, &resolved_path)?;
+    Some((resolved_path, fields))
+}
+
+fn component_fields(
+    ctx: &IdeContext<'_>,
+    resolved_path: &Path,
+) -> Option<Vec<(&'static str, String)>> {
+    let source = component_source(ctx, resolved_path)?;
     let filename = resolved_path.to_string_lossy();
-    let descriptor = ctx.state.component_descriptor(&resolved_path, &source)?;
+    let descriptor = ctx.state.component_descriptor(resolved_path, &source)?;
     let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
         &descriptor,
         None,
@@ -119,7 +144,7 @@ fn component_contract(
     .into_iter()
     .filter_map(|(name, value)| Some((name, value?)))
     .collect();
-    Some((resolved_path, fields))
+    Some(fields)
 }
 
 fn imported_vue_component_path(

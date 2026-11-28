@@ -18,7 +18,7 @@ pub(crate) struct CachedComponentMetadata {
     metadata: Arc<ComponentMetadata>,
 }
 
-pub(super) fn cached_component_metadata(
+pub(crate) fn cached_component_metadata(
     ctx: &IdeContext,
     resolved: &Path,
 ) -> Option<Arc<ComponentMetadata>> {
