@@ -174,20 +174,13 @@ fn run_node(pending: &[Pending]) -> Result<Vec<JobResult>, String> {
         })
         .collect();
     let input = serde_json::to_vec(&jobs).map_err(|error| cstr!("{error}"))?;
-    let (output, written) = node_module::run(
-        "node".as_ref(),
-        &[],
-        "preprocess.mjs",
-        include_str!("preprocess.mjs"),
-        &input,
-    )
-    .map_err(|error| match error {
-        NodeModuleError::Prepare(error) => {
-            cstr!("could not prepare style preprocessor module ({error})")
-        }
-        NodeModuleError::Start(error) => cstr!("could not start node ({error})"),
-        NodeModuleError::Wait(error) => cstr!("node failed ({error})"),
-    })?;
+    let (output, written) =
+        node_module::run("node".as_ref(), &[], include_str!("preprocess.mjs"), &input).map_err(
+            |error| match error {
+                NodeModuleError::Start(error) => cstr!("could not start node ({error})"),
+                NodeModuleError::Wait(error) => cstr!("node failed ({error})"),
+            },
+        )?;
     written.map_err(|error| cstr!("could not write to node ({error})"))?;
     if !output.status.success() {
         return Err(cstr!(

@@ -1,35 +1,28 @@
 use std::{
     ffi::OsStr,
-    fs, io,
+    io,
     io::Write,
     process::{Command, Output, Stdio},
     thread,
 };
 
 pub(super) enum NodeModuleError {
-    Prepare(io::Error),
     Start(io::Error),
     Wait(io::Error),
 }
 
-/// The CLI ships as one binary. Keep its private module alive until Node exits.
+/// The CLI ships as one binary, so its Node modules are embedded sources.
+/// Node evaluates one as the ES module entry straight from argv; stdin stays
+/// free for `input`, and nothing is written to disk.
 pub(super) fn run(
     node: &OsStr,
     options: &[&str],
-    filename: &str,
     source: &str,
     input: &[u8],
 ) -> Result<(Output, io::Result<()>), NodeModuleError> {
-    let directory = tempfile::Builder::new()
-        .prefix("vize-node-")
-        .tempdir()
-        .map_err(NodeModuleError::Prepare)?;
-    let module = directory.path().join(filename);
-    fs::write(&module, source).map_err(NodeModuleError::Prepare)?;
-
     let mut child = Command::new(node)
         .args(options)
-        .arg(module)
+        .args(["--input-type=module", "--eval", source])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
