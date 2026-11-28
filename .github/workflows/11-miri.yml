@@ -22,6 +22,7 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   MIRIFLAGS: "-Zmiri-ignore-leaks"
+  RUSTUP_TOOLCHAIN: nightly
   CARGO_TARGET_DIR: ${{ github.workspace }}/source/target/miri
   PRODUCT_SOURCE_SHA: ${{ inputs.source_sha }}
   PRODUCT_PACKAGE: ${{ inputs.package }}
@@ -48,16 +49,17 @@ jobs:
         with:
           toolchain: nightly
           components: miri,rust-src
-      - uses: ./source/.github/actions/setup-rust-sticky-cache
-        with:
-          key: miri
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-          target-path: source/target/miri
-      - name: Setup Miri
-        working-directory: source
-        run: cargo miri setup
       - name: Bind immutable source and verifier before execution
         run: node tools/ci/commands/unsafe-miri-source.ts before
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: miri
+          cache-key-suffix: source-proof-${{ runner.os }}-${{ runner.arch }}
+          target-path: source/target/miri
+          reuse-target: false
+      - name: Setup Miri
+        working-directory: source
+        run: cargo +nightly miri setup
       - name: Run the original Miri command on the actual selected tests
         run: node tools/ci/commands/unsafe-miri-source.ts run
       - name: Verify unchanged source and verifier after execution

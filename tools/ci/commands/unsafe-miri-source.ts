@@ -24,8 +24,26 @@ function git(cwd: string, args: string[]): string {
 
 const producer = git(root, ["rev-parse", "HEAD"]);
 assert.equal(producer, process.env.GITHUB_SHA, "unexpected verifier producer source");
+assert.equal(git(root, ["status", "--porcelain", "--untracked-files=no"]), "");
 assert.equal(git(source, ["rev-parse", "HEAD"]), expected, "unexpected product source");
-assert.equal(git(source, ["status", "--porcelain", "--untracked-files=no"]), "");
+assert.equal(git(source, ["status", "--porcelain", "--untracked-files=all"]), "");
+function hash(file: string): string {
+  return createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+}
+for (const file of ["Cargo.lock", "rust-toolchain.toml"]) {
+  assert.equal(
+    hash(path.join(source, file)),
+    hash(path.join(root, file)),
+    "cache inputs differ from the immutable verifier producer",
+  );
+}
+const producerFiles = Object.fromEntries(
+  [
+    "tools/ci/commands/unsafe-miri-source.ts",
+    ".github/workflows/11-miri.yml",
+    "tools/ci/workflows/11-miri/workflow.pkl",
+  ].map((file) => [file, hash(path.join(root, file))]),
+);
 const kernel =
   pkg === "vize_patina"
     ? ["crates/vize_patina/src/lent_walk.rs", "crates/vize_patina/src/lent_walk"]
@@ -53,7 +71,7 @@ const hashes = Object.fromEntries(
   ]),
 );
 const filter = pkg === "vize_patina" ? "lent_walk::tests" : "previous_actions::tests";
-const args = ["miri", "test", "--locked", "-p", pkg, "--lib", "--", filter];
+const args = ["+nightly", "miri", "test", "--locked", "-p", pkg, "--lib", "--", filter];
 const output = path.join(root, "miri-evidence");
 fs.mkdirSync(output, { recursive: true });
 if (phase === "run") {
@@ -99,16 +117,21 @@ const receipt = {
   package: pkg,
   command: ["cargo", ...args],
   miri_flags: process.env.MIRIFLAGS,
-  rustc: execFileSync("rustc", ["--version"], { encoding: "utf8" }).trim(),
-  miri: execFileSync("cargo", ["miri", "--version"], { cwd: source, encoding: "utf8" }).trim(),
+  rustc: execFileSync("rustc", ["+nightly", "--version"], { cwd: source, encoding: "utf8" }).trim(),
+  miri: execFileSync("cargo", ["+nightly", "miri", "--version"], {
+    cwd: source,
+    encoding: "utf8",
+  }).trim(),
   run_id: process.env.GITHUB_RUN_ID,
   run_attempt: process.env.GITHUB_RUN_ATTEMPT,
   files: hashes,
+  producer_files: producerFiles,
 };
 if (phase === "after") {
   const before = JSON.parse(
     fs.readFileSync(path.join(output, "before.json"), "utf8"),
   ) as typeof receipt;
+  assert.deepEqual(receipt.producer_files, before.producer_files);
   assert.deepEqual(
     receipt.files,
     before.files,
@@ -124,9 +147,15 @@ if (phase === "after") {
     passed: number;
     failed: number;
     ignored: number;
+    command: string[];
+    stdout_sha256: string;
+    stderr_sha256: string;
   };
   assert.equal(test.source_commit, expected);
   assert.equal(test.producer_commit, producer);
+  assert.deepEqual(test.command, receipt.command);
+  assert.equal(hash(path.join(output, "stdout.txt")), test.stdout_sha256);
+  assert.equal(hash(path.join(output, "stderr.txt")), test.stderr_sha256);
   assert.ok(test.passed > 0 && test.failed === 0 && test.ignored === 0);
 }
 fs.writeFileSync(path.join(output, `${phase}.json`), JSON.stringify(receipt, null, 2) + "\n");
