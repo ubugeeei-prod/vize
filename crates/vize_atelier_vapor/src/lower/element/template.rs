@@ -19,18 +19,10 @@ pub(in crate::lower) fn generate_element_template(
     root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
+    split: bool,
 ) -> String {
     let mut template = String::default();
-    let el = root.owner();
-    let non_reactive = root.non_reactive();
-    write_element_template(
-        &mut template,
-        el,
-        scope_id,
-        source,
-        non_reactive,
-        Some(root),
-    );
+    write_root(&mut template, root, scope_id, source, split);
     template
 }
 
@@ -40,22 +32,45 @@ pub(in crate::lower) fn generate_element_template_spanned(
     root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
+    split: bool,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    let el = root.owner();
-    let non_reactive = root.non_reactive();
-    write_element_template(
-        &mut template,
-        el,
-        scope_id,
-        source,
-        non_reactive,
-        Some(root),
-    );
+    write_root(&mut template, root, scope_id, source, split);
     template
 }
 
-fn write_element_template(
+#[inline(always)]
+fn write_root(
+    template: &mut impl TemplateWriter,
+    root: RootAttributes<'_, '_>,
+    scope_id: Option<&str>,
+    source: &str,
+    split: bool,
+) {
+    if split {
+        return write_split_root(template, root, scope_id, source);
+    }
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template::<false>(template, el, scope_id, source, non_reactive, Some(root));
+}
+
+#[cold]
+#[inline(never)]
+fn write_split_root(
+    template: &mut impl TemplateWriter,
+    root: RootAttributes<'_, '_>,
+    scope_id: Option<&str>,
+    source: &str,
+) {
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template::<true>(template, el, scope_id, source, non_reactive, Some(root));
+}
+
+/// `SPLIT`: leave each child `el` cannot hold to its own template (see
+/// [`crate::nesting`]); the ordinary lowering never meets one.
+fn write_element_template<const SPLIT: bool>(
     template: &mut impl TemplateWriter,
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
@@ -94,15 +109,17 @@ fn write_element_template(
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        let placeholders = super::insertion::block_placeholders(&el.children, non_reactive);
+        let placeholders =
+            super::insertion::block_placeholders::<SPLIT>(Some(el), &el.children, non_reactive);
         let mut placeholders = placeholders.into_iter();
         if el.ns == vize_atelier_core::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
             let mut children = LeadingNewlineWriter {
                 sink: template,
                 first: true,
             };
-            append_child_templates(
+            append_child_templates::<SPLIT>(
                 &mut children,
+                Some(el),
                 &el.children,
                 scope_id,
                 source,
@@ -110,8 +127,9 @@ fn write_element_template(
                 &mut placeholders,
             );
         } else {
-            append_child_templates(
+            append_child_templates::<SPLIT>(
                 template,
+                Some(el),
                 &el.children,
                 scope_id,
                 source,
@@ -126,8 +144,11 @@ fn write_element_template(
     }
 }
 
-fn append_child_templates(
+/// `parent` is the element that owns `children` directly, `None` for the
+/// children of a transparent `<template>`, which accepts any nesting.
+fn append_child_templates<const SPLIT: bool>(
     template: &mut impl TemplateWriter,
+    parent: Option<&ElementNode<'_>>,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
     source: &str,
@@ -144,8 +165,9 @@ fn append_child_templates(
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    append_child_templates(
+                    append_child_templates::<SPLIT>(
                         template,
+                        None,
                         &child_el.children,
                         scope_id,
                         source,
@@ -155,10 +177,19 @@ fn append_child_templates(
                 });
             }
             TemplateChildNode::Element(child_el)
-                if is_template_backed_element(child_el, non_reactive) =>
+                if is_template_backed_element(child_el, non_reactive)
+                    && !(SPLIT
+                        && parent.is_some_and(|parent| is_split_child(parent, child_el))) =>
             {
                 ensure_sufficient_stack(|| {
-                    write_element_template(template, child_el, scope_id, source, non_reactive, None)
+                    write_element_template::<SPLIT>(
+                        template,
+                        child_el,
+                        scope_id,
+                        source,
+                        non_reactive,
+                        None,
+                    )
                 });
             }
             // Only a block followed by template-rendered siblings keeps its
@@ -204,8 +235,9 @@ pub(crate) fn escape_html_text(s: &str) -> String {
     result
 }
 
-/// Check if an element is static (no dynamic directives)
-pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
+/// Check if an element is static (no dynamic directives). Under `SPLIT` a
+/// child that leaves its parent's template string also needs runtime work.
+pub(in crate::lower) fn is_static<const SPLIT: bool>(el: &ElementNode<'_>) -> bool {
     if !matches!(el.tag_type, ElementType::Element) {
         return false;
     }
@@ -226,7 +258,9 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
         match child {
             TemplateChildNode::Interpolation(_) => return false,
             TemplateChildNode::Element(child_el) => {
-                if !ensure_sufficient_stack(|| is_static_element(child_el)) {
+                if SPLIT && is_split_child(el, child_el)
+                    || !ensure_sufficient_stack(|| is_static::<SPLIT>(child_el))
+                {
                     return false;
                 }
             }
@@ -236,6 +270,15 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
     }
 
     true
+}
+
+/// A native element child its native parent's template string cannot hold
+/// (see [`crate::nesting`]): it gets a template of its own and is inserted.
+#[inline]
+pub(in crate::lower) fn is_split_child(parent: &ElementNode<'_>, child: &ElementNode<'_>) -> bool {
+    parent.tag_type == ElementType::Element
+        && child.tag_type == ElementType::Element
+        && !crate::nesting::is_valid_html_nesting(parent.tag, child.tag)
 }
 
 pub(super) fn is_template_backed_element(el: &ElementNode<'_>, non_reactive: bool) -> bool {

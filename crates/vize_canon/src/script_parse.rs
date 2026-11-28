@@ -1,6 +1,6 @@
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, profile};
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 
 pub(crate) fn is_typescript_lang(lang: &str) -> bool {
     matches!(lang, "ts" | "tsx" | "mts" | "cts")
@@ -25,6 +25,7 @@ pub(crate) struct ScriptParseDiagnostic {
 }
 
 pub(crate) fn collect_script_parse_diagnostics(
+    parses: Option<&ScriptParses<'_>>,
     source: &str,
     source_offset: u32,
     lang: Option<&str>,
@@ -32,7 +33,7 @@ pub(crate) fn collect_script_parse_diagnostics(
     let source_type = script_source_type(lang);
     let (mut diagnostics, panicked) = profile!(
         "canon.script.parse_errors",
-        with_shared_parse(source, source_type, |parsed| {
+        with_shared_parse(parses, source, source_type, |parsed| {
             let diagnostics: Vec<ScriptParseDiagnostic> = parsed
                 .diagnostics
                 .iter()
@@ -117,7 +118,7 @@ mod tests {
 
     #[test]
     fn tsx_lang_accepts_embedded_jsx_without_parse_error() {
-        let diagnostics = collect_script_parse_diagnostics(JSX_BODY, 0, Some("tsx"));
+        let diagnostics = collect_script_parse_diagnostics(None, JSX_BODY, 0, Some("tsx"));
         assert_eq!(
             diagnostics,
             vec![],
@@ -129,7 +130,7 @@ mod tests {
     fn jsx_lang_accepts_embedded_jsx_without_parse_error() {
         // `jsx` blocks carry no type annotations; drop the `: string`.
         let body = "const label = 'hi';\nconst vnode = <button>{label}</button>;\n";
-        let diagnostics = collect_script_parse_diagnostics(body, 0, Some("jsx"));
+        let diagnostics = collect_script_parse_diagnostics(None, body, 0, Some("jsx"));
         assert_eq!(
             diagnostics,
             vec![],
@@ -143,7 +144,7 @@ mod tests {
         // is still surfaced rather than silently accepted. A `ts` block, an
         // absent lang, and an unknown lang all keep the prior behavior.
         for lang in [Some("ts"), None, Some("scss")] {
-            let diagnostics = collect_script_parse_diagnostics(JSX_BODY, 0, lang);
+            let diagnostics = collect_script_parse_diagnostics(None, JSX_BODY, 0, lang);
             assert!(
                 !diagnostics.is_empty(),
                 "non-JSX dialect (lang={lang:?}) must reject embedded JSX"
@@ -156,8 +157,8 @@ mod tests {
         // Offsets are relative to the SFC file: the block offset must shift the
         // reported range. Compare the same broken script at offset 0 vs 100.
         let broken = "const x: = 1;\n";
-        let base = collect_script_parse_diagnostics(broken, 0, Some("ts"));
-        let shifted = collect_script_parse_diagnostics(broken, 100, Some("ts"));
+        let base = collect_script_parse_diagnostics(None, broken, 0, Some("ts"));
+        let shifted = collect_script_parse_diagnostics(None, broken, 100, Some("ts"));
         assert_eq!(base.len(), shifted.len());
         assert!(!base.is_empty());
         assert_eq!(shifted[0].start, base[0].start + 100);

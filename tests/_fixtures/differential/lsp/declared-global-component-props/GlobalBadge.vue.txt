@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ level: number }>()
+</script>
+<template><span /></template>

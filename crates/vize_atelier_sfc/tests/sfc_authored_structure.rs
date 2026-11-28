@@ -1,9 +1,10 @@
 //! A Vue component template keeps its authored structure, as Vue 3.5's
 //! compiler builds it: a nested `form`, `a` or `button`, block content or a
 //! `<p>` in a `<p>`, and content in a `<table>` compile as written, with every
-//! handler. Vapor keeps the browser's repairs, because `innerHTML` reads its
-//! templates (#13310). The expected SSR markup is Vue 3.5.35's `compileTemplate`
-//! output for the same template, and the DOM trees are the ones Vue builds.
+//! handler. Vapor keeps the authored tree too, as Vue 3.6 Vapor does: a child
+//! `innerHTML` would re-parent gets a template of its own and is inserted.
+//! The expected SSR markup is Vue 3.5.35's `compileTemplate` output for the
+//! same template, and the DOM trees are the ones Vue builds.
 
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions, TemplateCompileOptions,
@@ -251,30 +252,23 @@ fn misnested_formatting_end_tags_fail_with_vues_errors() {
     );
 }
 
-/// Vapor still applies the browser's repairs, as before; Vue 3.6 Vapor splits
-/// each invalid nesting into its own template instead (#13310).
+/// Vapor emits each child its parent's template string cannot hold from a
+/// template of its own and inserts it, as `@vue/compiler-vapor` 3.6 does.
 #[test]
-fn vapor_keeps_the_browsers_repairs() {
-    let vapor = |body: &str| {
-        let result = compile(&template(body), false, true).expect("compile");
-        result.code.as_str().to_owned()
-    };
-    let anchors = vapor(r#"<a href="/x"><a href="/y">y</a></a>"#);
+fn vapor_splits_each_invalid_nesting_into_its_own_template() {
+    let vapor = |source: &str| code(source, false, true);
+    let anchors = vapor(&template(r#"<a href="/x"><a href="/y">y</a></a>"#));
     assert_eq!(
         anchors.as_str(),
         include_str!("fixtures/sfc_authored_structure/anchors.vapor.expected.txt")
     );
-    let items = vapor("<ul><li>a<li>b</ul>");
+    let items = vapor(&template("<ul><li>a<li>b</ul>"));
     assert_eq!(
         items.as_str(),
         include_str!("fixtures/sfc_authored_structure/items.vapor.expected.txt")
     );
-    for body in [
-        r#"<form @submit="a"><form @submit="b"><button>x</button></form></form>"#,
-        "<p><ul><li>a</li></ul></p>",
-        "<p>one<p>two</p></p>",
-    ] {
-        assert!(compile(&template(body), false, true).is_err(), "{body}");
-    }
-    assert!(compile(SOURCE, false, true).is_err(), "the whole case");
+    assert_eq!(
+        vapor(SOURCE).as_str(),
+        include_str!("fixtures/sfc_authored_structure/layout.vapor.expected.txt")
+    );
 }

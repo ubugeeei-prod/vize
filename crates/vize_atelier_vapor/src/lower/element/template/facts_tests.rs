@@ -63,13 +63,13 @@ fn classified_root_scope_preserves_full_templates_and_recursive_child_facts() {
         let TemplateChildNode::Element(el) = &root.children[0] else {
             panic!("the complete original control must own its element");
         };
-        let attrs = classify(el, inherited, own_key).template_attributes;
+        let attrs = classify(el, inherited, own_key, false).template_attributes;
         assert!(std::ptr::eq(attrs.owner(), el.as_ref()), "{source}");
         assert_eq!(attrs.non_reactive(), expected_scope, "{source}");
-        let plain = generate_element_template(attrs, None, source);
-        let attrs = classify(el, inherited, own_key).template_attributes;
+        let plain = generate_element_template(attrs, None, source, false);
+        let attrs = classify(el, inherited, own_key, false).template_attributes;
         assert!(std::ptr::eq(attrs.owner(), el.as_ref()), "{source}");
-        let mapped = generate_element_template_spanned(attrs, None, source);
+        let mapped = generate_element_template_spanned(attrs, None, source, false);
         assert_eq!(plain.as_str(), expected, "{source}");
         assert_eq!(mapped.as_str(), expected, "{source}");
     }

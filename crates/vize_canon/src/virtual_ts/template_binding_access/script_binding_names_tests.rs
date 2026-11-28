@@ -67,7 +67,7 @@ export default {};
         "local",
         "EscapedName",
     ]);
-    let parsed = script_top_level_binding_names(script).unwrap();
+    let parsed = script_top_level_binding_names(None, script).unwrap();
     assert_eq!(parsed, expected);
     let summary = Croquis::new();
     let options = VirtualTsOptions::default();
@@ -103,7 +103,7 @@ fn clean_tsx_and_complete_empty_results_remain_successful_facts() {
         ),
         ("export default {};", FxHashSet::default()),
     ] {
-        let parsed = script_top_level_binding_names(script).unwrap();
+        let parsed = script_top_level_binding_names(None, script).unwrap();
         assert_eq!(parsed, expected);
         let access = authored(&summary, &options, parsed);
         assert_eq!(
@@ -129,7 +129,7 @@ fn unavailable_public_and_mismatched_owners_leave_the_parser_fallback_available(
         Some(&names(&["retained"]))
     );
     assert_eq!(
-        script_top_level_binding_names("function warm() { await 1 } export default {};"),
+        script_top_level_binding_names(None, "function warm() { await 1 } export default {};"),
         None
     );
 }
@@ -145,7 +145,7 @@ fn receiver_preparation_retains_the_complete_owned_name_set() {
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let options = VirtualTsOptions::default();
-    let parsed = script_top_level_binding_names(script).unwrap();
+    let parsed = script_top_level_binding_names(None, script).unwrap();
     assert_eq!(parsed, names(&["__ctx"]));
     let mut access = authored(&summary, &options, parsed);
     let before = std::ptr::from_ref(access.authored_script_binding_names(&summary).unwrap());

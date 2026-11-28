@@ -13,6 +13,24 @@ pub(super) fn repository() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
+/// The source a custody record reviewed, under `root`. A source that has
+/// since moved on is read from its frozen copy under `tests/_fixtures/byte-custody`.
+pub(super) fn reviewed_source_in(root: &Path, path: &str) -> PathBuf {
+    let frozen = root
+        .join("tests/_fixtures/byte-custody")
+        .join(relative(path));
+    if frozen.is_file() {
+        frozen
+    } else {
+        root.join(relative(path))
+    }
+}
+
+/// [`reviewed_source_in`] the repository.
+pub(super) fn reviewed_source(path: &str) -> PathBuf {
+    reviewed_source_in(&repository(), path)
+}
+
 pub(super) fn corpus() -> PathBuf {
     repository().join("tests/_fixtures/differential/typechecker/empty-vue-star-exports")
 }

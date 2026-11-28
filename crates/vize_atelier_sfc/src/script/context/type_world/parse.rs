@@ -7,7 +7,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_parser::{Parser, ParserReturn};
 use oxc_span::{GetSpan, SourceType, Span};
 use vize_carton::{CompactString, FxHashSet};
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 use vize_croquis::types::world::{
     TypeDeclaration, TypeDeclarationKind, TypeExportBinding, TypeImport, TypeModule,
     TypeModuleReference,
@@ -24,10 +24,11 @@ pub(super) fn parse_module(
 
 /// [`parse_module`] of the SFC's own script, whose parse its other analyses share.
 pub(super) fn parse_shared_module(
+    parses: Option<&ScriptParses<'_>>,
     source: &str,
     source_type: SourceType,
 ) -> (TypeModule, FxHashSet<CompactString>) {
-    with_shared_parse(source, source_type, |parsed| {
+    with_shared_parse(parses, source, source_type, |parsed| {
         module_from_parse(source, parsed)
     })
 }

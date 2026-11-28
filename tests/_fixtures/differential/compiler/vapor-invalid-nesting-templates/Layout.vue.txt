@@ -1,0 +1,7 @@
+<template>
+  <form @submit="a"><form @submit="b"><button>x</button></form></form>
+  <p><ul><li>a</li></ul></p>
+  <p>one<p>two</p></p>
+  <a href="/x"><a href="/y">y</a></a>
+  <table><tr><td>{{ cell }}</td></tr></table>
+</template>

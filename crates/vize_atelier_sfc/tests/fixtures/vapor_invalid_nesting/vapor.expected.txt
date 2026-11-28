@@ -1,0 +1,38 @@
+import { insert as _insert, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<form><button>x</button></form>")
+const t1 = _template("<form></form>")
+const t2 = _template("<ul><li>a</li></ul>")
+const t3 = _template("<p></p>")
+const t4 = _template("<p>two</p>")
+const t5 = _template("<p>one</p>")
+const t6 = _template("<a href=\"/y\">y</a>")
+const t7 = _template("<a href=\"/x\"></a>")
+const t8 = _template("<tr><td> </td></tr>")
+const t9 = _template("<table></table>")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n1 = t1()
+  const n3 = t3()
+  const n5 = t5()
+  const n7 = t7()
+  const n9 = t9()
+  const n0 = t0()
+  const n2 = t2()
+  const n4 = t4()
+  const n6 = t6()
+  const n8 = t8()
+  const n10 = _child(n8)
+  const x10 = _txt(n10)
+  _on(n1, "submit", e => _ctx.a(e))
+  _insert(n0, n1)
+  _on(n0, "submit", e => _ctx.b(e))
+  _insert(n2, n3)
+  _insert(n4, n5)
+  _insert(n6, n7)
+  _insert(n8, n9)
+  _renderEffect(() => _setText(x10, _toDisplayString(_ctx.cell)))
+  return [n1, n3, n5, n7, n9]
+}
+const _sfc_main = { __vapor: true }
+_sfc_main.render = render
+export default _sfc_main

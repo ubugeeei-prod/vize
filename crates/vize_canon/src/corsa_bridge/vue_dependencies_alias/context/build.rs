@@ -84,7 +84,6 @@ pub(super) fn build_with_import_facts(
     });
 
     let mut project = VirtualProject::new(&root).map_err(bridge_error)?;
-    #[cfg(not(feature = "ambient-project-declarations"))]
     project.set_virtual_ts_options(environment.virtual_ts_options.clone());
     project.set_options_api(options.options_api);
     project.set_legacy_vue2(options.legacy_vue2);
@@ -125,8 +124,17 @@ pub(super) fn build_with_import_facts(
     );
     let imports_alias_template_ref = project.imports_alias_reexports_vue_template_ref();
     project.set_imports_alias_vue_template_ref(imports_alias_template_ref);
-    #[cfg(feature = "ambient-project-declarations")]
-    let virtual_ts_options = editor_declaration_options(&mut project, &revision, environment)?;
+    let referenced_declarations = project.referenced_project_declarations(
+        environment.virtual_ts_options,
+        overlays,
+        revision.requested_sources,
+    );
+    let virtual_ts_options = editor_declaration_options(
+        &mut project,
+        &revision,
+        &referenced_declarations,
+        environment,
+    )?;
     project.set_editor_document_options(
         crate::batch::virtual_project::VueDocumentVirtualTsOptions {
             options_api: options.options_api,
@@ -182,6 +190,9 @@ pub(super) fn build_with_import_facts(
         }
         let source = overlays.get(&path).copied().unwrap_or(source);
         inputs.push((path, source));
+    }
+    for (path, source) in &referenced_declarations {
+        inputs.push((path.clone(), source.as_str()));
     }
     // One revision shares its dependency type sources. A workspace-wide query
     // registers every Vue file, and a per-file snapshot would read, resolve
@@ -361,9 +372,6 @@ pub(super) fn build_with_import_facts(
         refreshed_sources,
         host_facts,
         mirror,
-        #[cfg(not(feature = "ambient-project-declarations"))]
-        virtual_ts_options: environment.virtual_ts_options.clone(),
-        #[cfg(feature = "ambient-project-declarations")]
         virtual_ts_options,
         configured_global_template_ref,
         imports_alias_template_ref,
@@ -371,25 +379,62 @@ pub(super) fn build_with_import_facts(
     })
 }
 
-#[cfg(feature = "ambient-project-declarations")]
+/// Point references at the mirrored copies of the declarations registered in
+/// this revision that need the mirror: referenced ones importing a `.vue`
+/// module, and every declaration the explicit ambient session requests.
 fn editor_declaration_options(
     project: &mut VirtualProject,
     revision: &SourceRevision<'_>,
+    referenced: &[(PathBuf, vize_carton::String)],
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
 ) -> Result<crate::virtual_ts::VirtualTsOptions, CorsaBridgeError> {
     let mut options = environment.virtual_ts_options.clone();
-    if environment
+    if options.reference_paths.is_empty() {
+        return Ok(options);
+    }
+    let ambient = ambient_session(environment);
+    let supplied = revision
+        .requested_sources
+        .iter()
+        .filter(|(path, text)| {
+            ambient
+                || (options
+                    .reference_paths
+                    .iter()
+                    .any(|reference| Path::new(reference.as_str()) == path)
+                    && crate::batch::virtual_project::imports_vue_module(path, text))
+        })
+        .map(|(path, text)| (path.clone(), *text))
+        .chain(
+            referenced
+                .iter()
+                .map(|(path, text)| (path.clone(), text.as_str())),
+        )
+        .collect::<Vec<_>>();
+    if supplied.is_empty() {
+        return Ok(options);
+    }
+    project
+        .project_declaration_references(&mut options, &supplied)
+        .map_err(bridge_error)?;
+    project.set_virtual_ts_options(options.clone());
+    Ok(options)
+}
+
+#[cfg(feature = "ambient-project-declarations")]
+fn ambient_session(
+    environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
+) -> bool {
+    environment
         .editor_session
         .ambient_declarations
         .get()
         .is_some()
-    {
-        project
-            .project_declaration_references(&mut options, revision.requested_sources)
-            .map_err(bridge_error)?;
-    }
-    project.set_virtual_ts_options(options.clone());
-    Ok(options)
+}
+
+#[cfg(not(feature = "ambient-project-declarations"))]
+fn ambient_session(_: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>) -> bool {
+    false
 }
 
 fn bridge_error(error: crate::CorsaError) -> CorsaBridgeError {

@@ -22,7 +22,7 @@ fn preserves_trivia_and_exact_body_mappings_across_keyword_lines() {
         let source = vize_carton::cstr!(
             "const before = 1; {header}{{ name: 'A' }}; const after: number = 'bad';"
         );
-        let facts = analyze_options_api_script(&source, true, false);
+        let facts = analyze_options_api_script(None, &source, true, false);
         let rewrite = IrregularDefault::new(&source, &facts).unwrap();
         let mut generated = TextBuf::default();
         let mut mappings = Vec::new();
@@ -62,7 +62,7 @@ fn preserves_trivia_and_exact_body_mappings_across_keyword_lines() {
 #[test]
 fn named_class_keeps_decorators_and_defers_alias() {
     let source = "export /* gap */ default @Component() class Foo {}";
-    let facts = analyze_options_api_script(source, true, false);
+    let facts = analyze_options_api_script(None, source, true, false);
     let rewrite = IrregularDefault::new(source, &facts).unwrap();
     let output = rewrite.project_line(source, 0, &[]).unwrap();
     assert_eq!(
@@ -75,7 +75,7 @@ fn named_class_keeps_decorators_and_defers_alias() {
 #[test]
 fn ordinary_keywords_after_a_same_line_statement_use_ast_ranges() {
     let source = "const M = { props: { initial: Number } }; export default { mixins: [M] };";
-    let facts = analyze_options_api_script(source, true, false);
+    let facts = analyze_options_api_script(None, source, true, false);
     let rewrite = IrregularDefault::new(source, &facts).unwrap();
     let output = rewrite.project_line(source, 0, &[]).unwrap();
     assert_eq!(

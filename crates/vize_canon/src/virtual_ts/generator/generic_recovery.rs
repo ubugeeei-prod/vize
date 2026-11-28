@@ -22,6 +22,7 @@ use super::setup_helpers::SetupHelperPlan;
 /// actual setup body remains verbatim, including independent type errors and
 /// import bindings. Only synthetic component scaffolding becomes opaque.
 pub(crate) fn generate(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     summary: &Croquis,
     script: &str,
     source: (u32, SourceType),
@@ -85,7 +86,8 @@ pub(crate) fn generate(
     code.push_str(plan.authored());
     let closing = code.len();
     code.push_str(">() {\n");
-    let helpers = SetupHelperPlan::collect(
+    let helpers = SetupHelperPlan::collect_with_parses(
+        parses,
         summary,
         Some(script),
         false,

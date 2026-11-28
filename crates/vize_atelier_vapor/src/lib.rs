@@ -15,6 +15,7 @@ pub mod ir;
 #[doc(hidden)]
 pub mod l3;
 pub mod lower;
+mod nesting;
 pub mod steps;
 
 #[cfg(test)]
@@ -46,6 +47,8 @@ mod tests_generated_identity;
 mod tests_implicit_default_slot;
 #[cfg(test)]
 mod tests_insertion_state;
+#[cfg(test)]
+mod tests_invalid_nesting;
 #[cfg(test)]
 mod tests_once_components;
 #[cfg(test)]

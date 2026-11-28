@@ -346,8 +346,11 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     }
 
     // Lower to Vapor IR.
+    let split = vapor_lower::needs_split(&root.children);
     let (ir, transform_diagnostics, transform_warnings, template_spans) =
-        vapor_lower::transform_to_ir_with_spans(allocator, &root, source, scope_id, source_map);
+        vapor_lower::transform_to_ir_with_spans(
+            allocator, &root, source, scope_id, source_map, split,
+        );
     let spans = template_spans.map(|templates| VaporSourceSpans::collect(&root, templates));
     let mut result = emit(&ir, transform_diagnostics, spans.as_ref());
     result.warning_messages = transform_warnings;

@@ -95,7 +95,10 @@ pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
-pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offsets_and_checks};
+pub(crate) use generator::{
+    extract_declared_name, generate_virtual_ts_with_offsets_and_checks,
+    generate_virtual_ts_with_shared_parses,
+};
 #[cfg(feature = "native")]
 pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{

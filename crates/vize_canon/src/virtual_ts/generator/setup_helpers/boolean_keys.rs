@@ -8,15 +8,18 @@ use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 use vize_croquis::macros::DEFINE_PROPS;
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 
 pub(super) struct DefinePropsBooleanKeys {
     pub(super) keys: Vec<String>,
     pub(super) has_unresolved_references: bool,
 }
 
-pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<DefinePropsBooleanKeys> {
-    with_shared_parse(script, SourceType::ts(), define_props_boolean_keys)
+pub(super) fn collect_define_props_boolean_keys(
+    parses: Option<&ScriptParses<'_>>,
+    script: &str,
+) -> Option<DefinePropsBooleanKeys> {
+    with_shared_parse(parses, script, SourceType::ts(), define_props_boolean_keys)
 }
 
 fn define_props_boolean_keys(parsed: &ParserReturn<'_>) -> Option<DefinePropsBooleanKeys> {
@@ -263,6 +266,7 @@ mod tests {
     #[test]
     fn collects_boolean_keys_from_local_type_ast() {
         let keys = collect_define_props_boolean_keys(
+            None,
             r#"
 interface Base {
   disabled?: boolean | undefined;
@@ -284,6 +288,7 @@ defineProps<Props<Record<string, unknown>>>();
     #[test]
     fn ignores_generic_object_props_when_collecting_boolean_keys() {
         let keys = collect_define_props_boolean_keys(
+            None,
             r#"
 interface Props<T> {
   as?: string;
@@ -301,6 +306,7 @@ defineProps<Props<Record<string, unknown>>>();
     #[test]
     fn records_unresolved_imported_heritage() {
         let keys = collect_define_props_boolean_keys(
+            None,
             r#"
 interface Props<T> extends ImportedBase {
   value: T;

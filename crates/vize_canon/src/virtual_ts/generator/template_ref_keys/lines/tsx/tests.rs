@@ -9,7 +9,7 @@ use vize_carton::{String, cstr};
 #[test]
 fn inserted_comma_has_no_authored_subspan_and_original_bytes_stay_exact() {
     let source = "const 身分 = <名 /* , > */>(value: 名): 名 => value;";
-    let plan = collect_script_module_plan(source, false);
+    let plan = collect_script_module_plan(None, source, false);
     assert_eq!(plan.tsx_arrows.len(), 1);
     let position = plan.tsx_arrows[0].position;
     let checks = TemplateRefKeyChecks {
@@ -51,7 +51,7 @@ fn inserted_comma_has_no_authored_subspan_and_original_bytes_stay_exact() {
 #[test]
 fn template_ref_callee_and_arrow_share_original_coordinates() {
     let source = "const item = useTemplateRef('x'); const identity = <T>(value: T): T => value;";
-    let plan = collect_script_module_plan(source, false);
+    let plan = collect_script_module_plan(None, source, false);
     assert_eq!(plan.tsx_arrows.len(), 1);
     let position = plan.tsx_arrows[0].position;
     let start = source.find("useTemplateRef").unwrap();
@@ -142,7 +142,7 @@ fn already_unambiguous_or_recovered_source_keeps_its_whole_line() {
         "const f = <T>(value: T) => ;",
         "const text = '<T>(value) => value';",
     ] {
-        let plan = collect_script_module_plan(source, false);
+        let plan = collect_script_module_plan(None, source, false);
         assert_eq!(plan.tsx_arrows.len(), 0, "{source}");
         let checks = TemplateRefKeyChecks {
             calls: &[],

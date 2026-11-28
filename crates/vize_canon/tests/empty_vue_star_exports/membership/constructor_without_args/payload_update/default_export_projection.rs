@@ -57,8 +57,7 @@ fn source_before_in(root: &Path, path: &str, current: String) -> String {
     {
         Some(file) if is_after(&current, file) => {
             for source in record()["supportingSources"].as_array().unwrap() {
-                let path = support::relative(source["path"].as_str().unwrap());
-                let path = root.join(path);
+                let path = support::reviewed_source_in(root, source["path"].as_str().unwrap());
                 assert!(fs::symlink_metadata(&path).unwrap().is_file());
                 let bytes = fs::read(path).unwrap();
                 assert_eq!(json!(bytes.len()), source["bytes"]);
@@ -98,7 +97,7 @@ mod tests {
                 "sha256": "0a348064a6fd157a9c4020f670c341da7a6d5a2122dcaf5736189d4621b9ba85"
             })
         );
-        let current = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = fs::read_to_string(support::reviewed_source(path)).unwrap();
         assert!(is_after(&current, file));
         let previous = source_before(path, current.clone());
         let mut round_trip = previous.clone();
@@ -151,10 +150,10 @@ mod tests {
         for path in &paths {
             let destination = root.path().join(path);
             fs::create_dir_all(destination.parent().unwrap()).unwrap();
-            fs::copy(support::repository().join(path), destination).unwrap();
+            fs::copy(support::reviewed_source(path), destination).unwrap();
         }
         let path = "crates/vize_canon/src/virtual_ts/generator.rs";
-        let current = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = fs::read_to_string(support::reviewed_source(path)).unwrap();
         let expected = source_before(path, current.clone());
         assert_eq!(
             source_before_in(root.path(), path, current.clone()),

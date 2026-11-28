@@ -111,7 +111,7 @@ fn compile_and_check_read_scripts_in_the_compile_language_only() {
         let options = SfcCroquisOptions::full();
         let compiled = analyze_sfc_descriptor(&descriptor, None, options);
         let allocator = oxc_allocator::Allocator::default();
-        let scripts = SfcScriptParses::new(&allocator, &descriptor, tsx);
+        let scripts = SfcScriptParses::new(&allocator, &descriptor, tsx, None);
         let lenient = analyze_sfc_descriptor_with_template_reuse(&scripts, None, options, None);
         (
             compiled.bindings.contains("view"),

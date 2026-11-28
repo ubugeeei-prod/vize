@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn records_exact_retained_parameter_and_nested_arrow_positions() {
         let source = "const identity = <T>(value: T): T => value; const nested = <U>(u: U) => <V>(v: V) => [u, v];";
-        let arrows = collect_script_module_plan(source, false).tsx_arrows;
+        let arrows = collect_script_module_plan(None, source, false).tsx_arrows;
         let records: Vec<_> = arrows
             .iter()
             .map(|arrow| {
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn original_comment_spans_keep_unicode_crlf_and_comma_trivia_distinct() {
         let source = "// 日本 🌸\r\nconst identity = <T /* keep > , */\r\n>(value: T) => value;";
-        let arrows = collect_script_module_plan(source, false).tsx_arrows;
+        let arrows = collect_script_module_plan(None, source, false).tsx_arrows;
         assert_eq!(arrows.len(), 1);
         let position = source.find("<T").unwrap() + 2;
         assert_eq!(arrows[0].position, position);
@@ -138,7 +138,7 @@ mod tests {
             "const text = '<T>(value: T) => value'; /* <U>(u: U) => u */",
         ] {
             assert!(
-                collect_script_module_plan(source, false)
+                collect_script_module_plan(None, source, false)
                     .tsx_arrows
                     .is_empty(),
                 "{source}"
@@ -150,10 +150,12 @@ mod tests {
     fn descriptor_syntax_errors_withhold_an_otherwise_valid_typescript_arrow() {
         use crate::virtual_ts::types::VirtualTsGenerationOptions;
         let source = "const identity = <T>(value: T) => value;";
-        let valid = super::super::collect(source, false, VirtualTsGenerationOptions::default());
+        let valid =
+            super::super::collect(None, source, false, VirtualTsGenerationOptions::default());
         assert_eq!(valid.tsx_arrows.len(), 1);
         let boundaries = [source.len()];
         let invalid = super::super::collect(
+            None,
             source,
             false,
             VirtualTsGenerationOptions {
@@ -171,7 +173,7 @@ mod tests {
             "const view = <div />; const identity = <T,>(value: T) => value;",
         ] {
             assert!(
-                collect_script_module_plan(source, false)
+                collect_script_module_plan(None, source, false)
                     .tsx_arrows
                     .is_empty(),
                 "{source}"

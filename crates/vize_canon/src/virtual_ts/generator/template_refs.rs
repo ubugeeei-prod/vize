@@ -72,6 +72,7 @@ pub(super) struct TemplateRefUnwraps {
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_and_emit_scope_preamble(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options_api: bool,
@@ -93,6 +94,7 @@ pub(super) fn collect_and_emit_scope_preamble(
     ),
 ) -> TemplateRefUnwraps {
     let mut unwraps = TemplateRefUnwraps::collect(
+        parses,
         summary,
         options_api,
         Some(template_referenced_names),
@@ -203,6 +205,7 @@ impl TemplateRefUnwraps {
 
     #[expect(clippy::too_many_arguments, reason = "independent collection inputs")]
     pub(super) fn collect(
+        parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
         summary: &Croquis,
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
@@ -278,6 +281,7 @@ impl TemplateRefUnwraps {
         // Shadowing a name twice would redeclare it with a conflicting type,
         // so the deferred set excludes everything already shadowed above.
         let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
+            parses,
             summary,
             script_content,
             template_referenced_names,

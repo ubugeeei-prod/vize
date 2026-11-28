@@ -43,27 +43,33 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
     scope_id: Option<&str>,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
     let (ir, diagnostics, _, _) =
-        transform_to_ir_with_spans(allocator, root, source, scope_id, false);
+        transform_to_ir_with_spans(allocator, root, source, scope_id, false, false);
     (ir, diagnostics)
 }
 
 /// [`transform_to_ir_with_scope_id`] that also returns the authored anchors
-/// of every template string when `spans` is set (Davinci P3-9).
+/// of every template string when `spans` is set (Davinci P3-9). `split`
+/// gives each child its parent's template string cannot hold a template of
+/// its own; [`needs_split`] tells whether a template has one.
 pub(crate) fn transform_to_ir_with_spans<'a>(
     allocator: &'a Allocator,
     root: &RootNode<'a>,
     source: &'a str,
     scope_id: Option<&str>,
     spans: bool,
+    split: bool,
 ) -> (
     RootIRNode<'a>,
     std::vec::Vec<String>,
     std::vec::Vec<String>,
     Option<TemplateSpans>,
 ) {
-    transform_to_ir_with_host_context(allocator, root, source, scope_id, spans, false, false)
+    transform_to_ir_with_host_context(
+        allocator, root, source, scope_id, spans, false, false, split,
+    )
 }
 
+#[expect(clippy::too_many_arguments, reason = "the lowering's host switches")]
 pub(crate) fn transform_to_ir_with_host_context<'a>(
     allocator: &'a Allocator,
     root: &RootNode<'a>,
@@ -72,6 +78,7 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
     spans: bool,
     jsx_closure: bool,
     jsx_children: bool,
+    split: bool,
 ) -> (
     RootIRNode<'a>,
     std::vec::Vec<String>,
@@ -83,6 +90,7 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
     ctx.jsx_closure = jsx_closure;
     ctx.jsx_children = jsx_children;
     ctx.template_spans = spans.then(TemplateSpans::default);
+    ctx.split_nesting = split;
 
     vize_atelier_core::walk_probe::record_walk(
         vize_atelier_core::walk_probe::WalkStage::VaporLower,
@@ -112,6 +120,26 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
         ctx.warnings,
         ctx.template_spans,
     )
+}
+
+/// Whether some native element child sits where its native parent's
+/// template string cannot hold it (see [`crate::nesting`]), so the template
+/// needs the split lowering.
+pub(crate) fn needs_split(children: &[TemplateChildNode<'_>]) -> bool {
+    children.iter().any(|child| match child {
+        TemplateChildNode::Element(el) => {
+            el.children.iter().any(|child| {
+                matches!(child, TemplateChildNode::Element(child)
+                    if element::template::is_split_child(el, child))
+            }) || ensure_sufficient_stack(|| needs_split(&el.children))
+        }
+        TemplateChildNode::If(node) => node
+            .branches
+            .iter()
+            .any(|branch| ensure_sufficient_stack(|| needs_split(&branch.children))),
+        TemplateChildNode::For(node) => ensure_sufficient_stack(|| needs_split(&node.children)),
+        _ => false,
+    })
 }
 
 /// Transform children nodes

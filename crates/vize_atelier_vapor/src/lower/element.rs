@@ -44,7 +44,8 @@ pub(super) fn transform_element_unkeyed<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let non_reactive = super::key::classify(el, ctx.is_key_non_reactive(), false);
+    let non_reactive =
+        super::key::classify(el, ctx.is_key_non_reactive(), false, ctx.split_nesting);
     transform_classified_element(ctx, el, block, non_reactive);
 }
 

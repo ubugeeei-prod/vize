@@ -17,7 +17,7 @@ use crate::batch::SfcBlockType;
 use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{
     AuthoredScriptMetadata, VirtualTsGenerationOptions, VirtualTsOptions,
-    generate_virtual_ts_with_offsets_and_checks,
+    generate_virtual_ts_with_shared_parses,
 };
 
 use super::diagnostics::{
@@ -54,7 +54,9 @@ pub(super) fn generate_vue_virtual_ts(
     mut codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
     // Analyses reading the same script text in the same dialect share one parse.
-    let _shared_parses = vize_croquis::script_parser::SharedParseScope::enter();
+    let script_parse_arena = oxc_allocator::Allocator::default();
+    let script_parses = vize_croquis::script_parser::ScriptParses::new(&script_parse_arena);
+    let shared = Some(&script_parses);
     crate::virtual_ts::validate_reference_paths(&options.reference_paths).map_err(|error| {
         crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
             "Invalid declaration reference path {:?}: {}",
@@ -181,7 +183,7 @@ pub(super) fn generate_vue_virtual_ts(
             && incomplete_tag
             && (descriptor.script.is_some() || descriptor.script_setup.is_some()));
     let script_diagnostics =
-        collect_script_parse_fallbacks(path, source, descriptor, has_script_projection);
+        collect_script_parse_fallbacks(shared, path, source, descriptor, has_script_projection);
     diagnostics.extend(script_diagnostics.diagnostics);
 
     // Batch projections keep the fallback. Editor and Content Mapper projections
@@ -213,6 +215,7 @@ pub(super) fn generate_vue_virtual_ts(
     let (analysis, module_exports) = profile!(
         "canon.croquis.analyze_sfc",
         analyze_sfc_descriptor_with_module_exports(
+            shared,
             descriptor,
             template_ast.as_ref(),
             croquis_options,
@@ -264,6 +267,7 @@ pub(super) fn generate_vue_virtual_ts(
     profile!(
         "canon.croquis.augment_type_props",
         augment_type_based_props_from_script_context(
+            shared,
             &mut croquis,
             descriptor,
             path,
@@ -342,6 +346,7 @@ pub(super) fn generate_vue_virtual_ts(
             return Ok(generic_syntax::refuse(path, source, descriptor));
         };
         let Some(output) = crate::virtual_ts::generic_recovery::generate(
+            shared,
             &croquis,
             script_content.as_deref().unwrap_or_default(),
             (
@@ -358,14 +363,14 @@ pub(super) fn generate_vue_virtual_ts(
     } else {
         profile!(
             "canon.virtual_ts.generate",
-            generate_virtual_ts_with_offsets_and_checks(
+            generate_virtual_ts_with_shared_parses(
                 &croquis,
                 script_content.as_deref(),
                 template_ast.as_ref(),
                 script_offset,
                 template_offset,
                 options,
-                generation_options,
+                (generation_options, shared),
             )
         )
     };
@@ -384,7 +389,7 @@ pub(super) fn generate_vue_virtual_ts(
     // `vize check` would silently accept SFCs that `vize build` rejects.
     if let Some(diagnostic) = profile!(
         "canon.sfc.compile_validate",
-        collect_sfc_compile_diagnostic(path, source, descriptor)
+        collect_sfc_compile_diagnostic(shared, path, source, descriptor)
     ) {
         diagnostics.push(diagnostic);
     }

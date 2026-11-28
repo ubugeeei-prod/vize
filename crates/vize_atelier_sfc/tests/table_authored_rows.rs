@@ -1,6 +1,7 @@
 //! Rows and cells written directly in a `<table>` stay as authored, as Vue
-//! 3.5's compiler emits them (`table > tr`, `table > td`). Vapor keeps the
-//! `tbody` the HTML parser inserts, because `innerHTML` reads its templates.
+//! 3.5's compiler emits them (`table > tr`, `table > td`). Vapor gives each
+//! such row or cell a template of its own and inserts it, as Vue 3.6's Vapor
+//! compiler does, so `innerHTML` never implies a `tbody` around it.
 
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions, TemplateCompileOptions, compile_sfc, parse_sfc,
@@ -52,7 +53,7 @@ fn direct_table_rows_and_cells_stay_authored_like_vue() {
 }
 
 #[test]
-fn vapor_templates_keep_the_tbody_that_inner_html_inserts() {
+fn vapor_inserts_direct_rows_and_cells_into_the_authored_table() {
     assert_eq!(
         compile(false, true),
         include_str!("fixtures/table_authored_rows/vapor.expected.txt")

@@ -65,8 +65,13 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
         SfcCroquisOptions::full(),
     );
     let script = analysis.script_content.as_deref();
-    let retained =
-        super::super::diagnostics::collect_script_parse_fallbacks(path, source, &descriptor, true);
+    let retained = super::super::diagnostics::collect_script_parse_fallbacks(
+        None,
+        path,
+        source,
+        &descriptor,
+        true,
+    );
     let generic_parameters =
         crate::virtual_ts::generic_parameters::GenericParameters::from_setup(source, &descriptor);
     let analyzed_setup = analysis

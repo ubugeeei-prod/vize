@@ -1,0 +1,3 @@
+import GlobalBadge from './GlobalBadge.vue'
+declare module 'vue' { export interface GlobalComponents { GlobalBadge: typeof GlobalBadge } }
+export {}
