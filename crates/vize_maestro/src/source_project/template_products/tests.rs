@@ -6,6 +6,9 @@ use vize_l0::config::{VueDialect, VueVersion};
 
 const SOURCE: &str = "<script setup>const fj=1;const 作者=2;const unused=0;</script>\r\n<template><p :title='&fjlig;'>{{ 作者 + fj }}</p></template>";
 
+#[cfg(feature = "experimental-component-listeners")]
+mod families;
+
 fn options() -> DescriptorOptions {
     DescriptorOptions {
         version: VueVersion::V3,

@@ -469,6 +469,8 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
       "test -p vize_canon --features template-operand-projection --lib projection::expr::",
       "test -p vize_maestro --features experimental-template-operand-products,micro-profiling --lib virtual_code::generator::",
       "test -p vize_maestro --features experimental-template-operand-products,micro-profiling --lib source_project::template_products::",
+      "clippy -p vize_maestro --features experimental-template-operand-products,experimental-lexical-arrow-queries,micro-profiling --lib --no-deps",
+      "test -p vize_maestro --features experimental-template-operand-products,experimental-lexical-arrow-queries,micro-profiling --lib source_project::template_products::",
     ],
   },
   {
