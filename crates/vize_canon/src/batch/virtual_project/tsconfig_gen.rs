@@ -64,16 +64,22 @@ impl VirtualProject {
         self.preserve_unused_diagnostics
     }
 
-    pub(super) fn resolve_tsconfig_preserves_unused_diagnostics(&self) -> bool {
-        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
-            return false;
+    /// Re-read the compiler options that decide which generated reads
+    /// TypeScript reports, from one load of the tsconfig chain.
+    pub(super) fn refresh_tsconfig_diagnostic_options(&mut self) {
+        let compiler_options = self
+            .resolved_tsconfig_path()
+            .and_then(|path| self.load_compiler_options(Some(path.as_path())).ok());
+        let enabled = |name: &str| {
+            compiler_options
+                .as_ref()
+                .is_some_and(|options| compiler_option_enabled(options, name))
         };
-        let Ok(compiler_options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
-            return false;
-        };
-
-        compiler_option_enabled(&compiler_options, "noUnusedLocals")
-            || compiler_option_enabled(&compiler_options, "noUnusedParameters")
+        self.preserve_unused_diagnostics =
+            enabled("noUnusedLocals") || enabled("noUnusedParameters");
+        self.virtual_ts_check_options
+            .no_property_access_from_index_signature =
+            enabled("noPropertyAccessFromIndexSignature");
     }
 
     pub(super) fn write_tsconfig_file(

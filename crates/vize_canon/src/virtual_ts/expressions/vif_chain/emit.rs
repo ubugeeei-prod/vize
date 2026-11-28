@@ -112,6 +112,9 @@ fn emit_vif_branch_open(
             "{}  // @vize-map: expr -> {src_start}:{src_end}\n",
             context.indent,
         );
+        if let Some(slot_reads) = context.checks.slot_condition_reads {
+            slot_reads.append(ts, expr, ctx.bindings, context.indent);
+        }
     }
 }
 

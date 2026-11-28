@@ -33,6 +33,7 @@ pub(super) fn emit_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
+        event_navigation_element_access: ctx.event_navigation_element_access,
         fallthrough_listener_events: ctx.fallthrough_listener_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
@@ -75,6 +76,7 @@ pub(super) fn emit_scoped_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
+        event_navigation_element_access: ctx.event_navigation_element_access,
         fallthrough_listener_events: ctx.fallthrough_listener_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
@@ -108,6 +110,7 @@ struct EventNavigationContext<'a> {
     preserve_event_navigation: bool,
     omit_navigation_references: bool,
     check_unknown_events: bool,
+    event_navigation_element_access: bool,
     fallthrough_listener_events: bool,
     hoist_shared_preamble: bool,
 }
@@ -241,26 +244,20 @@ fn emit_usage_event_references(
         }
 
         vize_l0::emit_ts!(ts, "{event_indent}void {events_ref}");
-        let event_gen_range = if is_complete_kebab {
-            if is_ts_identifier(camel_event_name.as_str()) {
-                ts.push('.');
-                let start = ts.len();
-                ts.push_str(camel_event_name.as_str());
-                start..ts.len()
-            } else {
-                ts.push('[');
-                let range = push_ts_single_quoted_literal(ts, camel_event_name.as_str());
-                ts.push(']');
-                range
-            }
-        } else if is_ts_identifier(event.name.as_str()) {
+        let event_key = if is_complete_kebab {
+            camel_event_name.as_str()
+        } else {
+            event.name.as_str()
+        };
+        let event_gen_range = if !ctx.event_navigation_element_access && is_ts_identifier(event_key)
+        {
             ts.push('.');
             let start = ts.len();
-            ts.push_str(event.name.as_str());
+            ts.push_str(event_key);
             start..ts.len()
         } else {
             ts.push('[');
-            let range = push_ts_single_quoted_literal(ts, event.name.as_str());
+            let range = push_ts_single_quoted_literal(ts, event_key);
             ts.push(']');
             range
         };

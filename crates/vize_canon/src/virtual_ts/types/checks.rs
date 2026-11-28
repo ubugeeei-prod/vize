@@ -71,6 +71,9 @@ pub(crate) struct VirtualTsCheckOptions {
     /// The host reports every mapped diagnostic (Content Mapper): add
     /// companion checks for values the whole-props literal leaves unchecked.
     pub(crate) unchecked_prop_values: bool,
+    /// The program's `noPropertyAccessFromIndexSignature`: a dot read that
+    /// resolves to an index signature is `TS4111`.
+    pub(crate) no_property_access_from_index_signature: bool,
 }
 
 impl VirtualTsCheckOptions {
@@ -146,6 +149,7 @@ impl Default for VirtualTsCheckOptions {
             #[cfg(feature = "native")]
             strict_css_modules: false,
             unchecked_prop_values: false,
+            no_property_access_from_index_signature: false,
         }
     }
 }

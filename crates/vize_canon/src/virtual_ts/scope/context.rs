@@ -252,6 +252,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) preserve_event_navigation: bool,
     pub(crate) omit_navigation_references: bool,
     pub(crate) check_unknown_events: bool,
+    pub(crate) event_navigation_element_access: bool,
     pub(crate) fallthrough_listener_events: bool,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
@@ -325,6 +326,10 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     /// destructuring report the same diagnostic.
     pub(super) type_only_slot_references: bool,
     pub(super) check_unknown_events: bool,
+    /// Read every listener name off the navigation record with element access:
+    /// under `noPropertyAccessFromIndexSignature`, a dot read of an event the
+    /// component does not declare hits the record's index signature (`TS4111`).
+    pub(super) event_navigation_element_access: bool,
     /// The listeners a component passes to its root are known events of the
     /// component (`VirtualTsCheckOptions::infers_fallthrough_attributes`).
     pub(super) fallthrough_listener_events: bool,

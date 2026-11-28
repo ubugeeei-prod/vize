@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ label: string }>()
+defineEmits<{ save: [id: number] }>()
+</script>
+
+<template>
+  <button>{{ label }}</button>
+</template>

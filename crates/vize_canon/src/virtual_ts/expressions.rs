@@ -46,6 +46,8 @@ mod reserved_props;
 pub(crate) use spread_reserved_props::BindingRewrite;
 #[cfg(test)]
 mod sequence_prop_tests;
+mod slot_condition_reads;
+pub(crate) use slot_condition_reads::SlotConditionReads;
 mod spread_reserved_props;
 mod statement_guard;
 mod statements;
