@@ -24,22 +24,24 @@ use super::super::tsconfig_inputs::normalize_input_path;
 /// package outright; input collection keeps those out of every program, and
 /// they stay out here.
 pub(super) fn installed_reference_stubs(
-    graph: &FxHashSet<PathBuf>,
+    graph: &super::super::tsconfig_inputs::InstalledDeclarationGraph,
     shadowing: &FxHashSet<PathBuf>,
     program_files: &[PathBuf],
 ) -> Vec<String> {
     let mut candidates = graph
+        .installed
         .iter()
-        .filter(|path| is_installed(path) && !shadowing.contains(*path))
+        .filter(|path| !shadowing.contains(*path))
         .map(|path| real_path(path))
         .collect::<Vec<_>>();
     if candidates.is_empty() {
         return Vec::new();
     }
-    // Only installed inputs can match, so only those are canonicalized.
+    // Canonical linked-package paths need their recorded installed membership.
+    // Ordinary app inputs still never incur an extra canonicalization here.
     let loaded = program_files
         .iter()
-        .filter(|path| is_installed(path))
+        .filter(|path| graph.installed.contains(*path) || is_installed(path))
         .map(|path| real_path(path))
         .collect::<FxHashSet<_>>();
     candidates.sort();
@@ -62,4 +64,86 @@ pub(super) fn is_installed(path: &Path) -> bool {
 
 fn real_path(path: &Path) -> PathBuf {
     normalize_input_path(path)
+}
+
+/// Keep a parent's declarations while preventing its nested references from
+/// loading a bare Vue shim. Sources remain untouched; Canon registers these
+/// snapshots in its owned mirror and routes references to the snapshots.
+pub(super) fn safe_declaration_snapshots(
+    graph: &super::super::tsconfig_inputs::InstalledDeclarationGraph,
+    shadowing: &FxHashSet<PathBuf>,
+) -> Result<Vec<(PathBuf, String)>, String> {
+    if shadowing.is_empty() {
+        return Ok(Vec::new());
+    }
+    let mut reverse = vize_l0::FxHashMap::<&PathBuf, Vec<&PathBuf>>::default();
+    for (parent, targets) in &graph.references {
+        for target in targets {
+            reverse.entry(target).or_default().push(parent);
+        }
+    }
+    let mut pending = shadowing.iter().collect::<Vec<_>>();
+    let mut affected = FxHashSet::default();
+    while let Some(target) = pending.pop() {
+        for parent in reverse.get(target).into_iter().flatten() {
+            if affected.insert(*parent) {
+                pending.push(parent);
+            }
+        }
+    }
+    let mut affected = affected
+        .into_iter()
+        .filter(|path| !shadowing.contains(*path))
+        .collect::<Vec<_>>();
+    affected.sort();
+    affected
+        .into_iter()
+        .map(|path| {
+            let source = std::fs::read_to_string(path).map_err(|error| {
+                cstr!(
+                    "Cannot read declaration snapshot {}: {error}",
+                    path.display()
+                )
+            })?;
+            let targets = graph
+                .references
+                .get(path)
+                .ok_or_else(|| cstr!("Missing declaration references for {}", path.display()))?;
+            let mut snapshot = String::default();
+            for target in targets.iter().filter(|target| !shadowing.contains(*target)) {
+                snapshot.push_str(&snapshot_reference(target)?);
+            }
+            for line in source.split_inclusive('\n') {
+                let trimmed = line.trim_start();
+                let directive = trimmed.starts_with("///")
+                    && trimmed.contains("<reference")
+                    && (trimmed.contains("path=") || trimmed.contains("types="));
+                if !directive {
+                    snapshot.push_str(line);
+                }
+            }
+            Ok((path.clone(), snapshot))
+        })
+        .collect()
+}
+
+fn snapshot_reference(target: &Path) -> Result<String, String> {
+    let target = target.to_str().ok_or_else(|| {
+        cstr!(
+            "Declaration reference path is not UTF-8: {}",
+            target.display()
+        )
+    })?;
+    if target.contains(['\r', '\n', '\0', '\u{2028}', '\u{2029}']) {
+        return Err(cstr!(
+            "Declaration reference path contains an unrepresentable character: {target:?}"
+        ));
+    }
+    let quote = if target.contains('"') { '\'' } else { '"' };
+    if target.contains(quote) {
+        return Err(cstr!(
+            "Declaration reference path contains both quote delimiters: {target:?}"
+        ));
+    }
+    Ok(cstr!("/// <reference path={quote}{target}{quote} />\n"))
 }

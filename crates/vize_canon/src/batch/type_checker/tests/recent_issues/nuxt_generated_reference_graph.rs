@@ -115,3 +115,66 @@ fn nuxt_generated_reference_graph_reaches_the_program() {
     });
     assert_eq!(diagnostics, expected);
 }
+
+#[test]
+fn declaration_snapshots_preserve_parent_types_and_importer_package_identity() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let fixture: serde_json::Value =
+        serde_json::from_str(fixture!("reference-snapshots.json")).unwrap();
+    let files = fixture["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| {
+            (
+                file["path"].as_str().unwrap(),
+                file["source"].as_str().unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let root = create_project_case_without_node_modules("nuxt-shadowing-snapshots", &files);
+    let root = vize_carton::path::canonicalize_non_verbatim(&root);
+    let parent = root.join("node_modules/server-kit/dist/parent.d.ts");
+    let child = root.join("node_modules/server-kit/dist/child.d.ts");
+    let parent_original = std::fs::read_to_string(&parent).unwrap();
+    let child_original = std::fs::read_to_string(&child).unwrap();
+    let options = BatchTypeCheckerOptions {
+        virtual_ts_options: VirtualTsOptions {
+            auto_import_stubs: vec![vize_carton::cstr!(
+                "/// <reference path=\"{}\" />",
+                parent.display()
+            )],
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let mut before = BatchTypeChecker::with_options(&root, options.clone()).unwrap();
+    before.scan_project().unwrap();
+    let old = before.check_project().unwrap();
+    assert_eq!(
+        old.diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.code)
+            .collect::<Vec<_>>(),
+        vec![Some(2305)],
+        "{old:?}"
+    );
+    drop(before);
+    let mut checker = BatchTypeChecker::with_options(&root, options).unwrap();
+    checker.scan_project().unwrap();
+    let snapshots = vec![
+        (parent.clone(), vize_carton::cstr!("/// <reference path=\"{}\" />\nimport type {{ real }} from 'vue';\nexport {{}}; declare global {{ const fromParent: typeof real }}\n", child.display())),
+        (child.clone(), "import type { Marker } from './types';\nexport {}; declare global { const fromChild: Marker }\n".into()),
+    ];
+    checker.register_declaration_snapshots(&snapshots).unwrap();
+    let result = checker.check_project().unwrap();
+    assert_eq!(result.diagnostics.len(), 1, "{result:?}");
+    assert_eq!(result.diagnostics[0].code, Some(2322));
+    assert_eq!(result.diagnostics[0].line, 4);
+    assert_eq!(std::fs::read_to_string(&parent).unwrap(), parent_original);
+    assert_eq!(std::fs::read_to_string(&child).unwrap(), child_original);
+    drop(checker);
+    std::fs::remove_dir_all(&root).unwrap();
+}

@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_l0::FxHashSet;
+use vize_l0::{FxHashMap, FxHashSet};
 
 use super::NODE_MODULES_DIR;
 use super::collect_default_check_files_inner;
@@ -204,17 +204,23 @@ pub(crate) fn collect_declaration_reference_graph_reading(
     contents: DeclarationContents,
     read: impl FnMut(&Path, &str),
 ) -> FxHashSet<PathBuf> {
-    reference_graph_reading(configured_files, contents, false, read)
+    reference_graph_reading(configured_files, contents, false, read).files
 }
 
 /// [`collect_declaration_reference_graph_reading`], following `path`
 /// references into installed packages as well, as `tsc` does. Nuxt's
 /// generated `nuxt.d.ts` reaches Nitro's augmentations only that way.
+pub(crate) struct InstalledDeclarationGraph {
+    pub(crate) files: FxHashSet<PathBuf>,
+    pub(crate) installed: FxHashSet<PathBuf>,
+    pub(crate) references: FxHashMap<PathBuf, Vec<PathBuf>>,
+}
+
 pub(crate) fn collect_installed_declaration_reference_graph_reading(
     configured_files: &[PathBuf],
     contents: DeclarationContents,
     read: impl FnMut(&Path, &str),
-) -> FxHashSet<PathBuf> {
+) -> InstalledDeclarationGraph {
     reference_graph_reading(configured_files, contents, true, read)
 }
 
@@ -223,17 +229,30 @@ fn reference_graph_reading(
     mut contents: DeclarationContents,
     installed: bool,
     mut read: impl FnMut(&Path, &str),
-) -> FxHashSet<PathBuf> {
+) -> InstalledDeclarationGraph {
     // Reuse the program's already collected roots. Do not walk the workspace
     // or parse its configuration again for generated-stub discovery.
     let mut files = configured_files.to_vec();
     // Configured roots may live outside the app (Nuxt's custom buildDir).
     // Their explicit references retain membership across that boundary.
-    follow_declaration_references(installed, &mut files, &mut contents, &mut read);
-    files
-        .into_iter()
-        .filter(|path| is_declaration_file(path))
-        .collect()
+    let (mut installed, references) =
+        follow_declaration_references(installed, &mut files, &mut contents, &mut read);
+    let mut pending = installed.iter().cloned().collect::<Vec<_>>();
+    while let Some(parent) = pending.pop() {
+        for target in references.get(&parent).into_iter().flatten() {
+            if installed.insert(target.clone()) {
+                pending.push(target.clone());
+            }
+        }
+    }
+    InstalledDeclarationGraph {
+        files: files
+            .into_iter()
+            .filter(|path| is_declaration_file(path))
+            .collect(),
+        installed,
+        references,
+    }
 }
 
 fn follow_declaration_references(
@@ -241,9 +260,18 @@ fn follow_declaration_references(
     files: &mut Vec<PathBuf>,
     contents: &mut DeclarationContents,
     read: &mut dyn FnMut(&Path, &str),
-) {
+) -> (FxHashSet<PathBuf>, FxHashMap<PathBuf, Vec<PathBuf>>) {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut realpaths = ReferenceRealpaths::default();
+    let mut edges = FxHashMap::default();
+    if installed {
+        realpaths.installed.extend(
+            files
+                .iter()
+                .filter(|path| path_has_component(path, NODE_MODULES_DIR))
+                .cloned(),
+        );
+    }
     let mut index = 0;
     while let Some(path) = files.get(index).cloned() {
         index += 1;
@@ -257,19 +285,26 @@ fn follow_declaration_references(
             continue;
         };
         read(&path, &content);
-        for referenced in
-            reference_path_declaration_files(&path, &content, None, installed, &mut realpaths)
-        {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
+        let mut referenced =
+            reference_path_declaration_files(&path, &content, None, installed, &mut realpaths);
+        let type_references = reference_type_declaration_files(&path, &content, contents);
+        if installed {
+            realpaths.installed.extend(type_references.iter().cloned());
+        }
+        referenced.extend(type_references);
+        if installed && realpaths.installed.contains(&path) {
+            realpaths.installed.extend(referenced.iter().cloned());
+        }
+        for target in &referenced {
+            if seen.insert(target.clone()) {
+                files.push(target.clone());
             }
         }
-        for referenced in reference_type_declaration_files(&path, &content, contents) {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
-            }
+        if installed {
+            edges.insert(path, referenced);
         }
     }
+    (realpaths.installed, edges)
 }
 
 pub(crate) fn collect_tsconfig_type_declaration_files(
@@ -411,7 +446,11 @@ fn reference_path_declaration_files(
     reference_directive_lines(content)
         .filter_map(reference_path_attribute)
         .filter_map(|reference| {
-            let resolved = realpaths.resolve(&base_dir.join(reference));
+            let spelled = base_dir.join(reference);
+            let resolved = realpaths.resolve(&spelled);
+            if installed && path_has_component(&spelled, NODE_MODULES_DIR) {
+                realpaths.installed.insert(resolved.clone());
+            }
             (project_root.is_none_or(|root| resolved.starts_with(root))
                 && (installed || !path_has_component(&resolved, NODE_MODULES_DIR))
                 && is_declaration_file(&resolved)
