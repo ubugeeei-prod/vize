@@ -15,8 +15,8 @@
       "required": ["id", "minVersion", "maxVersion"],
       "properties": {
         "id": { "$ref": "#/$defs/identifier" },
-        "minVersion": { "type": "integer", "minimum": 1 },
-        "maxVersion": { "type": "integer", "minimum": 1 }
+        "minVersion": { "type": "integer", "minimum": 1, "maximum": 4294967295 },
+        "maxVersion": { "type": "integer", "minimum": 1, "maximum": 4294967295 }
       }
     },
     "manifest": {

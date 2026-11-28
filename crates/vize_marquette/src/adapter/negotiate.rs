@@ -62,6 +62,14 @@ fn mismatch(
             None,
         ));
     };
+    if requirement.version == 0 {
+        return Some(problem(
+            AdapterCapabilityMismatchCode::InvalidRequirementVersion,
+            id,
+            None,
+            None,
+        ));
+    }
     if !manifest_is_valid {
         return None;
     }
@@ -110,6 +118,9 @@ const fn mismatch_message(code: AdapterCapabilityMismatchCode) -> &'static str {
     match code {
         AdapterCapabilityMismatchCode::UnknownRequirement => {
             "application references an undeclared capability requirement"
+        }
+        AdapterCapabilityMismatchCode::InvalidRequirementVersion => {
+            "application capability version must be a positive unsigned 32-bit integer"
         }
         AdapterCapabilityMismatchCode::MissingCapability => {
             "adapter does not support the required capability"

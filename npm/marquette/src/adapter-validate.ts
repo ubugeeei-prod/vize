@@ -61,7 +61,19 @@ export function validateAdapterCapabilityManifest(
       );
     }
     seen.add(capability.id);
-    if (capability.minVersion <= 0) {
+    if (
+      !Number.isInteger(capability.minVersion) ||
+      capability.minVersion < 0 ||
+      capability.minVersion > 0xffff_ffff
+    ) {
+      diagnostics.push(
+        diagnostic(
+          "invalid-version",
+          `${path}.minVersion`,
+          "minimum supported version must be an unsigned 32-bit integer",
+        ),
+      );
+    } else if (capability.minVersion === 0) {
       diagnostics.push(
         diagnostic(
           "invalid-version",
@@ -70,7 +82,19 @@ export function validateAdapterCapabilityManifest(
         ),
       );
     }
-    if (capability.maxVersion <= 0) {
+    if (
+      !Number.isInteger(capability.maxVersion) ||
+      capability.maxVersion < 0 ||
+      capability.maxVersion > 0xffff_ffff
+    ) {
+      diagnostics.push(
+        diagnostic(
+          "invalid-version",
+          `${path}.maxVersion`,
+          "maximum supported version must be an unsigned 32-bit integer",
+        ),
+      );
+    } else if (capability.maxVersion === 0) {
       diagnostics.push(
         diagnostic(
           "invalid-version",
@@ -126,16 +150,22 @@ export function parseAdapterCapabilityManifest(value: unknown): AdapterCapabilit
       if (
         typeof capability.minVersion !== "number" ||
         !Number.isSafeInteger(capability.minVersion) ||
-        capability.minVersion < 0
+        capability.minVersion < 0 ||
+        capability.minVersion > 0xffff_ffff
       ) {
-        throw new TypeError(`${path}.minVersion must be a safe integer`);
+        throw new TypeError(
+          `${path}.minVersion must be a safe integer in the unsigned 32-bit range`,
+        );
       }
       if (
         typeof capability.maxVersion !== "number" ||
         !Number.isSafeInteger(capability.maxVersion) ||
-        capability.maxVersion < 0
+        capability.maxVersion < 0 ||
+        capability.maxVersion > 0xffff_ffff
       ) {
-        throw new TypeError(`${path}.maxVersion must be a safe integer`);
+        throw new TypeError(
+          `${path}.maxVersion must be a safe integer in the unsigned 32-bit range`,
+        );
       }
     }
   }

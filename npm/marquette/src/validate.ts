@@ -62,9 +62,15 @@ export function validateApplicationMarquette(
       );
     }
     const version = capability.version ?? 1;
-    if (!Number.isInteger(version) || version < 1) {
+    if (!Number.isInteger(version) || version < 1 || version > 0xffff_ffff) {
       diagnostics.push(
-        error("VIZE_MARQUETTE_005", path, "capability version must be greater than zero"),
+        error(
+          "VIZE_MARQUETTE_005",
+          path,
+          version === 0
+            ? "capability version must be greater than zero"
+            : "capability version must be a positive unsigned 32-bit integer",
+        ),
       );
     }
     if (capability.description.trim().length === 0) {

@@ -1,0 +1,9 @@
+[
+  { "name": "minimum", "version": 1, "parsed": true, "valid": true },
+  { "name": "maximum", "version": 4294967295, "parsed": true, "valid": true },
+  { "name": "zero", "version": 0, "parsed": true, "valid": false },
+  { "name": "negative", "version": -1, "parsed": false, "valid": false },
+  { "name": "fractional", "version": 1.5, "parsed": false, "valid": false },
+  { "name": "above-maximum", "version": 4294967296, "parsed": false, "valid": false },
+  { "name": "safe-integer-limit", "version": 9007199254740991, "parsed": false, "valid": false }
+]

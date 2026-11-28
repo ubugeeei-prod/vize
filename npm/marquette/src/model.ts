@@ -44,7 +44,7 @@ export interface CapabilityDefinition {
   /** Summary shown by diagnostics, documentation, and AI tooling. */
   readonly description: string;
   /**
-   * Capability contract version.
+   * Capability contract version as a positive unsigned 32-bit integer.
    *
    * @default 1
    */
