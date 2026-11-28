@@ -305,6 +305,7 @@ test("a deferral skips only the crate publisher; every other channel and the rel
     "publish-open-vsx-platforms",
     "publish-vscode",
     "publish-vscode-platforms",
+    "release-sbom",
   ]);
   for (const resume of ["", "41584652683"]) {
     for (const id of [...downstream, "dispatch-verify"]) {

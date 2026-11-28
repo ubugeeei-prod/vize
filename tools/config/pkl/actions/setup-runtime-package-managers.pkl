@@ -26,6 +26,7 @@ runs {
       `if` = "inputs.node-version == ''"
       uses = ci.setupVp
       with {
+        version = ci.vpVersion
         `node-version-file` = "${{ inputs.node-version-file }}"
         cache = "${{ inputs.cache }}"
         `run-install` = false
@@ -36,6 +37,7 @@ runs {
       `if` = "inputs.node-version != ''"
       uses = ci.setupVp
       with {
+        version = ci.vpVersion
         `node-version` = "${{ inputs.node-version }}"
         cache = "${{ inputs.cache }}"
         `run-install` = false

@@ -92,21 +92,228 @@ jobs {
     }
   }
 
-  `native-plugin-packages` {
+  // The build and publish jobs of parcel-bundler/parcel's reusable native-plugin
+  // workflow at the commit below (v3.0.0-alpha.2), for this repository's one Rust
+  // plugin. Its packaging scripts run from that commit; every action is pinned to
+  // the commit its tag named, and npm and cargo-zigbuild to exact releases. The
+  // per-target builds run on the hosted runners Parcel's matrix names; reading
+  // targets, packing and publishing do no compilation.
+  `native-plugin-matrix` {
+    name = "Read targets"
     needs = "packaging-changes"
     `if` = "${{ !cancelled() && (github.event_name != 'pull_request' || needs.packaging-changes.outputs.packages == 'true') }}"
-    permissions {
-      contents = "read"
-      `id-token` = "write"
-    }
-    uses = "parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222"  // v3.0.0-alpha.2
-    with {
-      paths = "npm/builder/parcel-native"
+    `runs-on` = "ubuntu-24.04"
+    permissions { contents = "read" }
+    outputs {
+      matrix = "${{ steps.matrix.outputs.matrix }}"
+      plugins = "${{ steps.matrix.outputs.plugins }}"
+      name = "${{ steps.matrix.outputs.name }}"
+      version = "${{ steps.matrix.outputs.version }}"
+      language = "${{ steps.matrix.outputs.language }}"
       // Publish only in this repository: for a pushed v* tag, or for a dispatch that asks
       // for it on main or on a v* tag. release.yml dispatches on the release tag.
       publish = "${{ github.repository == 'ubugeeei-prod/vize' && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish == true && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))) }}"
-      version = "${{ inputs.version }}"
-      `rust-toolchain` = "1.100.0"
+    }
+    steps = new Listing {
+      ...nativePluginSetup
+      new Dynamic {
+        name = "Compute build matrix"
+        id = "matrix"
+        shell = "bash"
+        env {
+          PLUGIN_DIRS = nativePluginPaths
+          LANGUAGE = ""
+          PARCEL_PLUGIN_VERSION = "${{ inputs.version }}"
+        }
+        run = #"node "$RUNNER_TEMP/native-plugin/matrix.mjs" --dirs "$PLUGIN_DIRS" --language "$LANGUAGE""#
+      }
+    }
+  }
+
+  `native-plugin-build` {
+    name = "${{ matrix.plugin }} (${{ matrix.target }})"
+    needs = "native-plugin-matrix"
+    `if` = "${{ !cancelled() && needs.native-plugin-matrix.result == 'success' }}"
+    `runs-on` = "${{ matrix.runner }}"
+    permissions { contents = "read" }
+    strategy {
+      `fail-fast` = false
+      matrix = "${{ fromJSON(needs.native-plugin-matrix.outputs.matrix) }}"
+    }
+    steps = new Listing {
+      ...nativePluginSetup
+      new Dynamic {
+        name = "Install Rust"
+        `if` = "${{ matrix.language == 'rust' }}"
+        uses = "dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc"  // master
+        with {
+          toolchain = "1.100.0"
+          targets = "${{ matrix.target }}"
+        }
+      }
+      new Dynamic {
+        `if` = "${{ matrix.language == 'rust' }}"
+        uses = "Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0"  // v2.9.3
+        with {
+          workspaces = "${{ matrix.dir }}"
+          `shared-key` = "${{ matrix.plugin }}-${{ matrix.target }}"
+        }
+      }
+      // Linux targets are cross compiled with Zig so that glibc builds link
+      // against an old enough glibc to run on distros older than the runner.
+      new Dynamic {
+        name = "Install Zig"
+        `if` = "${{ matrix.builder == 'zig' }}"
+        uses = "goto-bus-stop/setup-zig@222d316fd35ce56a4141fe4a869e1aeefc7f3590"  // v1.4.0
+        with { version = "0.14.0" }
+      }
+      new Dynamic {
+        name = "Install cargo-zigbuild"
+        `if` = "${{ matrix.builder == 'zig' && matrix.language == 'rust' }}"
+        uses = "taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83"  // v2.90.11
+        env { GITHUB_TOKEN = "${{ github.token }}" }
+        with { tool = "cargo-zigbuild@0.24.1" }
+      }
+      new Dynamic {
+        name = "Build (Rust)"
+        `if` = "${{ matrix.language == 'rust' }}"
+        shell = "bash"
+        `working-directory` = "${{ matrix.dir }}"
+        env {
+          TARGET = "${{ matrix.target }}"
+          ZIG_TARGET = "${{ matrix.zigTarget }}"
+          BUILDER = "${{ matrix.builder }}"
+          CARGO_ARGS = ""
+          EXTRA_RUSTFLAGS = " ${{ matrix.rustflags }}"
+          EXT = "${{ matrix.ext }}"
+        }
+        run = ci.workflowScript("build-the-native-plugin-library.sh")
+      }
+      new Dynamic {
+        name = "Pack ${{ matrix.package }}"
+        shell = "bash"
+        env {
+          PLUGIN_DIR = "${{ matrix.dir }}"
+          TARGET = "${{ matrix.target }}"
+          PARCEL_PLUGIN_VERSION = "${{ inputs.version }}"
+        }
+        run = ci.workflowScript("pack-the-native-plugin-target.sh")
+      }
+      // Namespaced by plugin, as the reusable workflow names them.
+      new Dynamic {
+        uses = uploadArtifactV4
+        with {
+          name = "native-artifact-${{ matrix.plugin }}-${{ matrix.target }}"
+          path = "${{ runner.temp }}/artifacts/${{ matrix.target }}.tgz"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+
+  `native-plugin-pack` {
+    name = "Pack ${{ matrix.name }}"
+    needs = List("native-plugin-matrix", "native-plugin-build")
+    `if` = "${{ !cancelled() && needs.native-plugin-matrix.result == 'success' && needs.native-plugin-build.result == 'success' }}"
+    `runs-on` = "ubuntu-24.04"
+    permissions { contents = "read" }
+    strategy {
+      `fail-fast` = false
+      matrix = "${{ fromJSON(needs.native-plugin-matrix.outputs.plugins) }}"
+    }
+    steps = new Listing {
+      ...nativePluginSetup
+      new Dynamic {
+        name = "Download artifact packages"
+        uses = downloadArtifactV4
+        with {
+          pattern = "native-artifact-${{ matrix.plugin }}-*"
+          path = "${{ runner.temp }}/artifacts"
+          `merge-multiple` = true
+        }
+      }
+      // Also verifies that every target declared in parcel.artifacts produced a
+      // tarball, before anything is published.
+      new Dynamic {
+        name = "Pack plugin package"
+        shell = "bash"
+        env {
+          PLUGIN_DIR = "${{ matrix.dir }}"
+          PARCEL_PLUGIN_VERSION = "${{ inputs.version }}"
+        }
+        run = ci.workflowScript("pack-the-native-plugin-package.sh")
+      }
+      new Dynamic {
+        uses = uploadArtifactV4
+        with {
+          name = "native-plugin-main-${{ matrix.plugin }}"
+          path = "${{ runner.temp }}/main/*.tgz"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+
+  `native-plugin-publish` {
+    name = "Publish to npm"
+    needs = List("native-plugin-matrix", "native-plugin-pack")
+    `if` = "${{ !cancelled() && needs.native-plugin-pack.result == 'success' && needs.native-plugin-matrix.outputs.publish == 'true' }}"
+    `runs-on` = "ubuntu-24.04"
+    permissions {
+      contents = "read"
+      // npm trusted publishing
+      `id-token` = "write"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("parcel-transformer")
+      ...nativePluginScripts
+      new Dynamic {
+        uses = "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"  // v4.4.0
+        with {
+          `node-version` = "24"
+          `registry-url` = "https://registry.npmjs.org"
+        }
+      }
+      // Trusted publishing (and the provenance attestation it generates)
+      // requires npm 11.5.1 or later.
+      new Dynamic {
+        name = "Update npm"
+        shell = "bash"
+        run = "npm install -g npm@12.2.3"
+      }
+      // Left unmerged: across plugins the tarballs inside share names, so each
+      // artifact keeps its own subdirectory.
+      new Dynamic {
+        name = "Download artifact packages"
+        uses = downloadArtifactV4
+        with {
+          pattern = "native-artifact-*"
+          path = "${{ runner.temp }}/artifacts"
+        }
+      }
+      new Dynamic {
+        name = "Download plugin packages"
+        uses = downloadArtifactV4
+        with {
+          pattern = "native-plugin-main-*"
+          path = "${{ runner.temp }}/main"
+        }
+      }
+      // Platform packages go first: the plugin package's optionalDependencies
+      // point at exact versions of its artifacts, so it must never be resolvable
+      // before they are.
+      new Dynamic {
+        name = "Publish artifact packages"
+        shell = "bash"
+        env { TAG = "" }
+        run = #"node "$RUNNER_TEMP/native-plugin/publish.mjs" --tag "$TAG" "$RUNNER_TEMP"/artifacts/*/*.tgz"#
+      }
+      new Dynamic {
+        name = "Publish plugin packages"
+        shell = "bash"
+        env { TAG = "" }
+        run = #"node "$RUNNER_TEMP/native-plugin/publish.mjs" --tag "$TAG" "$RUNNER_TEMP"/main/*/*.tgz"#
+      }
     }
   }
 
@@ -119,6 +326,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }
@@ -153,6 +361,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }
@@ -225,5 +434,43 @@ jobs {
         }
       }
     }
+  }
+}
+
+local nativePluginPaths = "npm/builder/parcel-native"
+local nativePluginCommit = "2bcfb43e725b2688b787e497e0b0b4105c353222"  // v3.0.0-alpha.2
+local checkoutV4 = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"  // v4.4.0
+local uploadArtifactV4 = "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"  // v4.6.2
+local downloadArtifactV4 = "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093"  // v4.3.0
+
+/// The packaging scripts of the pinned Parcel commit, moved out of the workspace.
+local nativePluginScripts: Listing<Dynamic> = new {
+  new Dynamic {
+    name = "Check out packaging scripts"
+    uses = checkoutV4
+    with {
+      repository = "parcel-bundler/parcel"
+      ref = nativePluginCommit
+      path = ".parcel-native-plugin-scripts"
+      `sparse-checkout` = ".github/scripts/native-plugin"
+      `sparse-checkout-cone-mode` = false
+      filter = "blob:none"
+    }
+  }
+  new Dynamic {
+    name = "Move packaging scripts out of the workspace"
+    shell = "bash"
+    run = ci.workflowScript("move-the-native-plugin-scripts-out-of-the-workspace.sh")
+  }
+}
+
+/// The source checkout, the packaging scripts and the Node.js they run on.
+local nativePluginSetup: Listing<Dynamic> = new {
+  ...ci.stageWorkflowScripts("parcel-transformer")
+  ci.use(checkoutV4)
+  ...nativePluginScripts
+  new Dynamic {
+    uses = "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"  // v4.4.0
+    with { `node-version` = "24" }
   }
 }

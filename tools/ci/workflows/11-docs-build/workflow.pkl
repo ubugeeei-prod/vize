@@ -69,6 +69,7 @@ jobs {
         name = "Setup Vite+ and Node.js"
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           cache = true
           `run-install` = false
@@ -174,6 +175,7 @@ jobs {
         name = "Setup Vite+ and Node.js"
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           cache = true
           `run-install` = false

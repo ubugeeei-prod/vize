@@ -14,6 +14,7 @@ use tower_lsp::lsp_types::{
 };
 
 use super::MaestroServer;
+use crate::ide::markup::push_markdown_text;
 use vize_l0::append;
 
 #[cfg(test)]
@@ -299,11 +300,13 @@ impl MaestroServer {
             }
 
             let mut parts = diag.message.split("\n\nHelp: ");
-            markdown.push_str(parts.next().unwrap_or_default());
+            push_markdown_text(&mut markdown, parts.next().unwrap_or_default());
             markdown.push_str("\n\n");
 
             if let Some(help) = parts.next() {
-                append!(markdown, "**Help:** {help}\n\n");
+                markdown.push_str("**Help:** ");
+                push_markdown_text(&mut markdown, help);
+                markdown.push_str("\n\n");
             }
 
             if let Some(ref code_desc) = diag.code_description {

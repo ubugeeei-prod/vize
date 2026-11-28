@@ -28,7 +28,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ inputs.run-js }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

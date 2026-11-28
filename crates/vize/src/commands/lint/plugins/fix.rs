@@ -9,7 +9,7 @@ use vize_l0::{FxHashSet, String, cstr, profiler::global_profiler};
 use vize_patina::LintResult;
 
 use super::{PluginLint, PluginLintReceipt};
-use crate::commands::atomic_write::atomic_write;
+use crate::commands::atomic_write::atomic_write_in_project;
 use crate::commands::lint::cross_file::CliLintFileResult;
 use crate::commands::lint::fix::apply_lint_fixes;
 
@@ -60,7 +60,7 @@ impl PluginLint {
                     if relinted_source == *source {
                         return Ok(None);
                     }
-                    atomic_write(path, relinted_source.as_bytes()).map_err(|error| {
+                    atomic_write_in_project(path, relinted_source.as_bytes()).map_err(|error| {
                         global_profiler().record_fs_write_failure(relinted_source.len());
                         cstr!("Failed to write {}: {error}", path.display())
                     })?;
