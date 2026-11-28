@@ -21,14 +21,16 @@ use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_chec
 use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
 pub(crate) fn generate_scope_closures(
-    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
     template_offset: u32,
-    options: ScopeGenerationOptions<'_, '_>,
+    (options, parses): (
+        ScopeGenerationOptions<'_, '_>,
+        Option<&vize_croquis::script_parser::ScriptParses<'_>>,
+    ),
 ) {
     emit_scope_closures(
         ts,

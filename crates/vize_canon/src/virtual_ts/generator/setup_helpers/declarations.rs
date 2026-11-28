@@ -27,6 +27,7 @@ pub(crate) struct SetupHelperPlan {
 }
 
 impl SetupHelperPlan {
+    #[cfg(test)]
     pub(crate) fn collect(
         summary: &Croquis,
         source: Option<&str>,

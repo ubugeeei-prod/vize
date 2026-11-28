@@ -622,14 +622,13 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
                 profile!(
                     "canon.virtual_ts.generate_scope_closures",
                     generate_scope_closures(
-                        parses,
                         &mut ts,
                         &mut ScopeMappings::new(&mut mappings, &mut diagnostic_mappings),
                         &mut semantic_links,
                         summary,
                         &template_binding_access,
                         template_offset,
-                        scope_options,
+                        (scope_options, parses),
                     )
                 );
             }

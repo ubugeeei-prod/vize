@@ -75,7 +75,7 @@ impl<'p> ScriptParses<'p> {
 
         // No borrow is held while parsing: a reader of another shared parse may
         // be running further up this thread's stack.
-        let text = &*self.allocator.alloc_str(text);
+        let text = self.allocator.alloc_str(text);
         let parse = Rc::new(SharedParse {
             text,
             source_type,
