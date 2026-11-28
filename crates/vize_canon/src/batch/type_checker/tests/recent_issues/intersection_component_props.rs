@@ -1,5 +1,6 @@
 //! #13689 uses real Vue and SFC intersections in both orders, without Nuxt.
-use super::super::{create_project_case, resolve_test_tsgo_binary};
+use super::super::resolve_test_tsgo_binary;
+use super::real_vue::create_project_case;
 use crate::batch::{BatchTypeChecker, TypeChecker};
 
 #[test]
