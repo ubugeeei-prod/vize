@@ -11,14 +11,14 @@ interface SharedDependencies {
 
 // Unique dependency lists retain the direct index. These bounds also limit the
 // extra snapshots kept when a project has few opportunities to share a list.
-const MIN_SHARED_DEPENDENCIES = 16;
+export const MIN_SHARED_DEPENDENCIES = 16;
 const MAX_SHARED_GROUPS = 256;
 const MAX_SHARED_INPUTS = 65_536;
 const MAX_FINGERPRINT_CANDIDATES = 8;
 
 /** Dependency ownership, sharing identical large lists within one filesystem epoch. */
 export class CompiledDependencyIndex {
-  readonly #directOwners = new Map<string, Set<string>>();
+  readonly #directOwners: Map<string, Set<string>>;
   readonly #sharedOwners = new Map<string, Set<SharedDependencies>>();
   readonly #memberships = new Map<string, Set<string> | SharedDependencies>();
   readonly #groups = new Map<number, Set<SharedDependencies>>();
@@ -29,9 +29,22 @@ export class CompiledDependencyIndex {
   #groupCount = 0;
   #inputCount = 0;
 
-  constructor(identities: (file: string) => readonly string[], generation?: () => number) {
+  constructor(
+    identities: (file: string) => readonly string[],
+    generation?: () => number,
+    direct?: {
+      owners: Map<string, Set<string>>;
+      memberships: ReadonlyMap<string, Set<string>>;
+    },
+  ) {
     this.#identities = identities;
     this.#generation = generation;
+    this.#directOwners = direct?.owners ?? new Map();
+    // These sets already capture their filesystem epoch. Transfer their
+    // ownership without resolving paths again when sharing first becomes useful.
+    if (direct)
+      for (const [owner, identities] of direct.memberships)
+        this.#memberships.set(owner, identities);
   }
 
   add(file: string, inputs: readonly string[]): void {

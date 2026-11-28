@@ -5,6 +5,33 @@ import { CompiledDependencyIndex } from "./compiled-dependency-index.ts";
 const dependencies = (label: string, count = 32) =>
   Array.from({ length: count }, (_, index) => `/deps/${label}/${index}.ts`);
 
+void test("starting shared ownership retains already observed direct snapshots and order", () => {
+  const inputs = dependencies("transition");
+  let observations = 0;
+  const identities = new Set([inputs[0]]);
+  const memberships = new Map([["old", identities]]);
+  const index = new CompiledDependencyIndex(
+    (file) => {
+      observations++;
+      return [file];
+    },
+    () => 0,
+    { owners: new Map([[inputs[0], new Set(["old"])]]), memberships },
+  );
+  memberships.clear();
+  assert.equal(observations, 0);
+  index.add("first", inputs);
+  index.add("second", inputs.slice());
+  assert.equal(observations, inputs.length);
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["old", "first", "second"]);
+  index.delete("old");
+  index.add("old", [inputs[0]]);
+  assert.deepEqual([...index.ownersOf(inputs[0])], ["first", "second", "old"]);
+  assert.equal(observations, inputs.length + 1);
+  index.clear();
+  assert.deepEqual([...index.ownersOf(inputs[0])], []);
+});
+
 void test("identical large lists share observations and retain replacement order", () => {
   let observations = 0;
   const index = new CompiledDependencyIndex(
