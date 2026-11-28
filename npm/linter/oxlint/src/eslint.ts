@@ -1,6 +1,6 @@
 import { definePlugin, defineRule, eslintCompatPlugin, type Context } from "@oxlint/plugins";
 import { getPatinaRules } from "./binding.js";
-import { isPatinaFile } from "./file-kinds.js";
+import { isPatinaFile, isPlainScriptFile } from "./file-kinds.js";
 import { formatPatinaMessage } from "./format.js";
 import { loadBinding } from "./native.js";
 import oxlintPlugin from "./plugin.js";
@@ -69,6 +69,8 @@ function run(collected: Collected): void {
     ruleOptionsJson: ruleOptions ? JSON.stringify(ruleOptions) : undefined,
     ...directRuleOptions,
     includeFixes: true,
+    // ESLint also runs in editor servers that lint the same files again after edits, so each call reads fresh type sources
+    runScopedTypeSources: false,
   });
   if (result.filename !== collected.filename) {
     throw new Error("Vize returned diagnostics for another ESLint source");
@@ -111,6 +113,7 @@ const rules = Object.fromEntries(
           },
           Program(program) {
             if (!isPatinaFile(context.physicalFilename)) return;
+            if (rule.plainScripts === false && isPlainScriptFile(context.physicalFilename)) return;
             const preset = getActivePreset(getVizeSettings(context));
             if (
               preset !== "incremental" &&

@@ -1412,6 +1412,7 @@ export declare function resolveViteCssImports(
   aliasRules: Array<CssAliasRuleNapi>,
   isDev?: boolean | undefined | null,
   devUrlBase?: string | undefined | null,
+  readableRoots?: Array<string> | undefined | null,
 ): string;
 
 export declare function resolveViteRelativeImport(id: string, importer: string): string | null;

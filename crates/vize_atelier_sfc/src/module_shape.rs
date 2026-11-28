@@ -32,9 +32,9 @@
 //!
 //! ## Why a parse rather than a scan
 //!
-//! `analyzeFastDefaultOutput` on the JS side already string-scans, and bails to
-//! a parse whenever the module contains `_sfc_main`, `export {`, or a named
-//! render export. It bails because `export default` can appear inside a string
+//! `analyzeFastDefaultOutput` on the JS side string-scans the module this
+//! reports no shape for, and gives up whenever the module contains
+//! `_sfc_main`, `export {`, or a named render export. It gives up because `export default` can appear inside a string
 //! or a comment in the user's own `<script>`, which is concatenated into this
 //! output verbatim. The same hazard applies here, and the offsets are used for
 //! splicing, so this parses.
@@ -95,17 +95,26 @@ pub struct SfcModuleShape {
 
 /// Analyze an emitted module, or `None` when it does not parse.
 ///
-/// `None` rather than a partly-filled shape: the consumer falls back to its own
-/// analysis, which is exactly the behaviour before this existed. A module that
-/// fails to parse here is one the build is going to fail on anyway.
+/// `None` rather than a partly-filled shape: a consumer acts on what this
+/// reports, and a module that parses as neither TypeScript nor TSX is one the
+/// bundler cannot load either.
 pub fn analyze_module_shape(code: &str) -> Option<SfcModuleShape> {
     let allocator = Allocator::default();
     // TypeScript is a superset, so this parses both the JS and the TS emit
     // without the caller having to say which it produced.
-    let parsed = profile!(
+    let mut parsed = profile!(
         "atelier.sfc.module_shape.parse",
         Parser::new(&allocator, code, SourceType::ts()).parse()
     );
+    // A `lang="jsx"` or `lang="tsx"` script reaches the module with its JSX
+    // intact, for the bundler to lower. TSX cannot read a `<T>value`
+    // assertion, so it is only the second attempt.
+    if !parsed.diagnostics.is_empty() {
+        parsed = profile!(
+            "atelier.sfc.module_shape.parse",
+            Parser::new(&allocator, code, SourceType::tsx()).parse()
+        );
+    }
     if !parsed.diagnostics.is_empty() {
         return None;
     }
@@ -227,7 +236,10 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShap
     shape.has_dynamic_import = dynamic_imports.found;
     for statement in &program.body {
         match statement {
-            Statement::ExportDefaultDeclaration(export) => {
+            // A module with two default exports is invalid, and the parser
+            // still reads it. Report the first, as the builders' own oxc
+            // analysis did before this shape existed.
+            Statement::ExportDefaultDeclaration(export) if !shape.has_default_export => {
                 let span = export.span();
                 shape.has_default_export = true;
                 shape.default_export_start = Some(span.start);

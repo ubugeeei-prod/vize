@@ -14,6 +14,7 @@ import { createOxlintDiagnostic, shouldReportForCurrentProgram } from "./report.
 import { getScriptMap, markDiagnosticAsReported } from "./file-state.js";
 import type { PatinaRuleMeta } from "./model.js";
 import { getActivePreset, getVizeSettings, isIncrementalPreset, isPatinaFile } from "./settings.js";
+import { isPlainScriptFile } from "./file-kinds.js";
 
 function createPatinaRule(ruleMeta: PatinaRuleMeta) {
   return defineRule({
@@ -28,6 +29,10 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
       return {
         Program(program) {
           if (!isPatinaFile(context.filename)) {
+            return;
+          }
+          // A rule that can't report on a plain module skips it, so a file no active rule reads is never read
+          if (ruleMeta.plainScripts === false && isPlainScriptFile(context.filename)) {
             return;
           }
 

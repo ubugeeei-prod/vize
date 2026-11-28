@@ -7,7 +7,10 @@
 
 use std::sync::{Arc, OnceLock};
 
+use vize_carton::String;
+
 use super::FileTypeSummary;
+use super::bindings::{self, Export};
 use super::declarations::Declarations;
 use super::modules::{ModuleGraph, ModuleId};
 use super::resolution::project::Project;
@@ -27,6 +30,8 @@ pub(super) struct TypeClosure {
     /// Whether every resolved module could be read. A walk that met an
     /// unreadable one says nothing about the next attempt.
     pub(super) complete: bool,
+    /// Where each requested export of the entry module is declared.
+    exports: Box<[(String, Option<Export>)]>,
     /// The declarations of `modules` by name, made when a component first
     /// merges this walk.
     declarations: OnceLock<Arc<Declarations>>,
@@ -43,10 +48,23 @@ impl TypeClosure {
         let mut walk = Walk::new(graph, project, &mut modules);
         walk.enter(module, requested);
         let (files, complete) = walk.finish();
+        let exports = match requested {
+            RequestedExports::All => Box::default(),
+            RequestedExports::Names(names) => names
+                .iter()
+                .map(|name| {
+                    (
+                        name.clone(),
+                        bindings::resolve(graph, module, name, project),
+                    )
+                })
+                .collect(),
+        };
         Self {
             modules,
             files,
             complete,
+            exports,
             declarations: OnceLock::new(),
         }
     }
@@ -55,7 +73,7 @@ impl TypeClosure {
     /// walked.
     pub(super) fn declarations(&self, graph: &ModuleGraph) -> &Arc<Declarations> {
         self.declarations
-            .get_or_init(|| Arc::new(Declarations::of(graph, &self.modules)))
+            .get_or_init(|| Arc::new(Declarations::of(graph, &self.modules, &self.exports)))
     }
 }
 

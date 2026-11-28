@@ -15,7 +15,7 @@ export default {
 let Child = 0;
 const value = {};
 
-const __returned__ = { Child, value }
+const __returned__ = { get Child() { return Child }, set Child(v) { Child = v }, value }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 return __returned__
 }

@@ -210,15 +210,20 @@ fn emits_native_root_fallthrough_props_for_single_root() {
     assert_eq!(ty, "Partial<$NativeElement<\"button\">>");
 }
 
+// A component root no binding owns forwards what its `GlobalComponents` entry
+// accepts, and stays open when nothing registers the tag.
 #[test]
-fn emits_open_fallthrough_props_for_single_component_root() {
+fn emits_global_fallthrough_props_for_single_unbound_component_root() {
     let ty = fallthrough_type(
         "defineProps<{ title: string }>()",
         "<BaseInput>{{ title }}</BaseInput>",
     )
-    .expect("single component root should keep fallthrough props open");
+    .expect("single component root should accept fallthrough props");
 
-    assert_eq!(ty, "Record<string, unknown>");
+    assert_eq!(
+        ty,
+        "(import('vue').GlobalComponents extends { \"BaseInput\": infer __vizeRoot0 } ? Partial<$ComponentFallthroughProps<__vizeRoot0>> : Record<string, unknown>)"
+    );
 }
 
 // `<child>` over an imported `<basic />` root forwards what `basic` accepts:
@@ -317,9 +322,12 @@ fn inherit_attrs_false_uses_explicit_attrs_forwarding_target() {
         "defineOptions({ inheritAttrs: false })\ndefineProps<{ title: string }>()",
         r#"<Wrapper><Primitive v-bind="{ ...scopeIdAttrs, ...$attrs }" /></Wrapper>"#,
     )
-    .expect("explicit component $attrs forwarding should keep fallthrough open");
+    .expect("explicit component $attrs forwarding should accept fallthrough props");
 
-    assert_eq!(component_ty, "Record<string, unknown>");
+    assert_eq!(
+        component_ty,
+        "(import('vue').GlobalComponents extends { \"Primitive\": infer __vizeRoot0 } ? Partial<$ComponentFallthroughProps<__vizeRoot0>> : Record<string, unknown>)"
+    );
 }
 
 #[test]

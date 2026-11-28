@@ -31,6 +31,9 @@ export function transformCssVarsForPipeline(
 /**
  * Resolve CSS @import statements by inlining the imported files,
  * then resolve @custom-media definitions within the combined CSS.
+ *
+ * With `readableRoots`, only files inside those directories are inlined or
+ * rewritten to `/@fs/` URLs; others stay as authored for Vite to resolve.
  */
 export function resolveCssImports(
   css: string,
@@ -38,6 +41,7 @@ export function resolveCssImports(
   aliasRules: CssAliasRule[],
   isDev?: boolean,
   devUrlBase?: string,
+  readableRoots?: readonly string[],
 ): string {
   return resolveViteCssImports(
     css,
@@ -45,6 +49,7 @@ export function resolveCssImports(
     aliasRules.map(toNativeCssAliasRule),
     isDev,
     devUrlBase,
+    readableRoots ? [...readableRoots] : undefined,
   );
 }
 

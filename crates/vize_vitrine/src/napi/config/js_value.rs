@@ -103,9 +103,10 @@ fn normalize_config_aliases(config: Unknown<'_>) -> Result<Unknown<'_>> {
     let mut lsp = None;
     let mut has_language_server = false;
 
-    for (key, key_value) in enumerable_keys(config)? {
+    for key in enumerable_keys(config)? {
+        let key_value = key.handle();
         let value = get_property(config, key_value)?;
-        match key.as_str() {
+        match key.name()?.as_str()? {
             "lsp" => lsp = Some(value),
             "languageServer" => {
                 has_language_server = true;
@@ -164,7 +165,8 @@ fn strip_array(value: Unknown<'_>, depth: u32) -> Result<Unknown<'_>> {
 fn strip_object(value: Unknown<'_>, depth: u32) -> Result<Unknown<'_>> {
     let output = create_object(value.value().env)?;
 
-    for (_, key_value) in enumerable_keys(value)? {
+    for key in enumerable_keys(value)? {
+        let key_value = key.handle();
         if let Some(entry) = strip_nullish(get_property(value, key_value)?, depth)? {
             set_property(output, key_value, entry)?;
         }
@@ -174,7 +176,8 @@ fn strip_object(value: Unknown<'_>, depth: u32) -> Result<Unknown<'_>> {
 }
 
 fn deep_merge(target: Unknown<'_>, source: Unknown<'_>, depth: u32) -> Result<()> {
-    for (_, key_value) in enumerable_keys(source)? {
+    for key in enumerable_keys(source)? {
+        let key_value = key.handle();
         let value = get_property(source, key_value)?;
         let current = get_property(target, key_value)?;
         if is_plain_object(current)? && is_plain_object(value)? {
@@ -192,8 +195,10 @@ fn strip_entry_metadata(entry: Unknown<'_>) -> Result<Unknown<'_>> {
 
 fn copy_without_keys<'js>(value: Unknown<'js>, ignored: &[&str]) -> Result<Unknown<'js>> {
     let output = create_object(value.value().env)?;
-    for (key, key_value) in enumerable_keys(value)? {
-        if !ignored.contains(&key.as_str()) {
+    for key in enumerable_keys(value)? {
+        // Only a caller that ignores keys needs their names decoded.
+        if ignored.is_empty() || !ignored.contains(&key.name()?.as_str()?) {
+            let key_value = key.handle();
             set_property(output, key_value, get_property(value, key_value)?)?;
         }
     }

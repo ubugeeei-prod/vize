@@ -9,7 +9,7 @@ permissions { contents = "read" }
 jobs {
   `level-dependencies` {
     name = "Level dependency direction"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxSmall
     `timeout-minutes` = 5
     env {
       VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/07-level-dependencies/scripts"

@@ -41,7 +41,7 @@ import {
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { isServedFileAllowed } from "./served-files.ts";
+import { isServedFileAllowed, servedStylesheetRoots } from "./served-files.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
 import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
@@ -266,6 +266,7 @@ export async function transformSfcModule(
         state.cssAliasRules,
         state.server !== null,
         currentBase,
+        servedStylesheetRoots(state, !!isSsr),
       ),
     };
   }

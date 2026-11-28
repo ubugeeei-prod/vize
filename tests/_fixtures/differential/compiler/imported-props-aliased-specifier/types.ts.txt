@@ -1,0 +1,1 @@
+export type Public = { value: string }
