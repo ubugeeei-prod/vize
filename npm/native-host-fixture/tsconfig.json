@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
+}

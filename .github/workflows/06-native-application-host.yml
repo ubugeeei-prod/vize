@@ -1,0 +1,96 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/06-native-application-host/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Native application first host
+on:
+  pull_request:
+    paths:
+      - npm/native-host-fixture/**
+      - npm/native/**
+      - npm/marquette/**
+      - crates/vize_atelier_sfc/**
+      - crates/vize_atelier_core/**
+      - crates/vize_atelier_dom/**
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - tools/ci/workflows/06-native-application-host/**
+      - .github/workflows/06-native-application-host.yml
+  workflow_dispatch: null
+permissions:
+  contents: read
+concurrency:
+  group: native-application-host-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  target-sdk:
+    name: First native host SDK
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+      - name: Verify target SDK and available simulator runtime
+        run: node tools/ci/workflows/06-native-application-host/scripts/qualify-sdk.ts
+      - name: Retain SDK qualification
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-application-sdk-${{ github.sha }}
+          path: ${{ runner.temp }}/native-application-sdk.json
+          if-no-files-found: error
+  native-application:
+    name: Compiled SFC native application
+    needs: target-sdk
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 55
+    env:
+      CARGO_BUILD_JOBS: "8"
+      CARGO_INCREMENTAL: "0"
+      VIZE_NATIVE_BUILD_RECEIPT: ${{ github.workspace }}/npm/native-host-fixture/.build/compiler-build.json
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          version: 1.8.0
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: stable
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: native-application-host
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the frozen native application graph
+        run: node tools/support/github/vp-install.ts --filter './npm/native-host-fixture...'
+      - name: Build and identify the actual source compiler
+        run: node npm/native-host-fixture/scripts/build-compiler.ts
+      - name: Build the portable application contract
+        run: vp run --filter './npm/marquette' build
+      - name: Check the native application adapter types
+        run: vp run --filter './npm/native-host-fixture' check:types
+      - name: Compile canonical SFCs and verify native tree interactions
+        run: node --test npm/native-host-fixture/test/application.test.ts
+      - name: Verify packet admission and real simulator interactions
+        run: node npm/native-host-fixture/scripts/qualify-host.ts
+      - name: Retain first-host qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-application-host-${{ github.sha }}
+          path: |-
+            npm/native-host-fixture/.build/compiler-build.json
+            ${{ runner.temp }}/vize-native-first-host-*/qualification.json
+            ${{ runner.temp }}/vize-native-first-host-*/interaction-summary.json
+            ${{ runner.temp }}/vize-native-first-host-*/packet-tests.xml
+            ${{ runner.temp }}/vize-native-first-host-*/*.log
+            ${{ runner.temp }}/vize-native-first-host-*/*.xcresult
+            npm/native-host-fixture/.build/application-build.json
+            npm/native-host-fixture/ios/Resources/application.js
+          include-hidden-files: true
+          if-no-files-found: warn
+          compression-level: 1

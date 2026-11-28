@@ -1,0 +1,27 @@
+{
+  "name": "@vizejs/native-host-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "test": "node --test test/*.test.ts",
+    "check:types": "tsc --noEmit -p tsconfig.json",
+    "qualify": "node scripts/qualify.ts"
+  },
+  "dependencies": {
+    "@vizejs/marquette": "workspace:*",
+    "vue": "catalog:vue-production"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental"
+    }
+  }
+}
