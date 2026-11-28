@@ -49,15 +49,7 @@ pub(super) fn emit_cached_element(
     cx.buf.push("] = ");
     let scope_id = cached_scope_id(cx, element);
     cx.buf.push(
-        cached_element_rhs(
-            element,
-            true,
-            cx.buf.indent_width(),
-            cx.is_ts,
-            scope_id,
-            cx.escape_names,
-        )
-        .as_str(),
+        cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, scope_id).as_str(),
     );
     cx.buf.push(")");
     Ok(())
@@ -101,15 +93,7 @@ pub(super) fn emit_cached_elements_array(
         }
         let scope_id = cached_scope_id(cx, element);
         cx.buf.push(
-            cached_element_rhs(
-                element,
-                true,
-                cx.buf.indent_width(),
-                cx.is_ts,
-                scope_id,
-                cx.escape_names,
-            )
-            .as_str(),
+            cached_element_rhs(element, true, cx.buf.indent_width(), cx.is_ts, scope_id).as_str(),
         );
     }
 
@@ -126,13 +110,8 @@ pub(super) fn hoist_static_element(cx: &mut EmitCx<'_>, element: &ElementOp<'_>)
         cx.buf.use_create_text();
     }
     let scope_id = cx.hoisted_scope_id.or(cx.scope_id);
-    cx.buf.push_hoist(hoist_element_rhs(
-        element,
-        true,
-        cx.is_ts,
-        scope_id,
-        cx.escape_names,
-    ))
+    cx.buf
+        .push_hoist(hoist_element_rhs(element, true, cx.is_ts, scope_id))
 }
 
 pub(super) fn is_hoistable(element: &ElementOp<'_>, is_ts: bool) -> bool {
@@ -174,7 +153,6 @@ fn hoist_element_rhs(
     pure: bool,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
     let mut out = String::default();
     if pure {
@@ -186,7 +164,7 @@ fn hoist_element_rhs(
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = static_vnode_props(element, true, is_ts, scope_id, escape_names);
+    let props = static_vnode_props(element, true, is_ts, scope_id);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -197,7 +175,7 @@ fn hoist_element_rhs(
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids, is_ts, scope_id, escape_names);
+        append_hoist_kids(&mut out, &kids, is_ts, scope_id);
     }
     out.push(')');
     out
@@ -209,18 +187,9 @@ fn cached_element_rhs(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
     let mut out = String::default();
-    append_cached_element_rhs(
-        &mut out,
-        element,
-        cached,
-        line_indent,
-        is_ts,
-        scope_id,
-        escape_names,
-    );
+    append_cached_element_rhs(&mut out, element, cached, line_indent, is_ts, scope_id);
     out
 }
 
@@ -231,7 +200,6 @@ fn append_cached_element_rhs(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
     out.push_str(Buf::create_element_vnode_alias());
     out.push('(');
@@ -240,16 +208,8 @@ fn append_cached_element_rhs(
     out.push('"');
     out.push_str(", ");
     if element.bindings.is_empty() && !element.attributes.is_empty() {
-        cached_props::push_object(
-            out,
-            element.attributes.iter(),
-            line_indent,
-            scope_id,
-            escape_names,
-        );
-    } else if let Some(props) =
-        cached_static_vnode_props(element, line_indent, is_ts, scope_id, escape_names)
-    {
+        cached_props::push_object(out, element.attributes.iter(), line_indent, scope_id);
+    } else if let Some(props) = cached_static_vnode_props(element, line_indent, is_ts, scope_id) {
         out.push_str(props.as_str());
     } else {
         out.push_str("null");
@@ -259,7 +219,7 @@ fn append_cached_element_rhs(
     if kids.is_empty() {
         out.push_str("null");
     } else {
-        append_cached_kids(out, &kids, line_indent, is_ts, scope_id, escape_names);
+        append_cached_kids(out, &kids, line_indent, is_ts, scope_id);
     }
     if cached {
         out.push_str(", -1 /* CACHED */");
@@ -272,7 +232,6 @@ fn static_vnode_props(
     include_bindings: bool,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> Option<String> {
     if include_bindings {
         return super::props_static::root_hoist_props(
@@ -280,7 +239,6 @@ fn static_vnode_props(
             &element.bindings,
             is_ts,
             scope_id,
-            escape_names,
         )
         .ok()
         .flatten();
@@ -288,11 +246,7 @@ fn static_vnode_props(
     if element.attributes.is_empty() && scope_id.is_none() {
         return None;
     }
-    Some(compact_props_object(
-        element.attributes.iter(),
-        scope_id,
-        escape_names,
-    ))
+    Some(compact_props_object(element.attributes.iter(), scope_id))
 }
 
 fn cached_static_vnode_props(
@@ -300,7 +254,6 @@ fn cached_static_vnode_props(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> Option<String> {
     super::props_static::cached_root_hoist_props(
         &element.attributes,
@@ -308,7 +261,6 @@ fn cached_static_vnode_props(
         line_indent,
         is_ts,
         scope_id,
-        escape_names,
     )
     .ok()
     .flatten()

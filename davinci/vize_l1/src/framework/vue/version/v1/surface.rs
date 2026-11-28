@@ -185,16 +185,15 @@ fn projection<'a>(
                 bindings: &mut bindings,
                 boundaries: &mut text_boundaries,
             };
-            let mut lexer = Lexer::<Component, _>::new(
+            Lexer::<Component, _>::new(
                 source,
                 sink,
                 LexOptions {
                     raw_interpolation: true,
                     ..LexOptions::default()
                 },
-            );
-            lexer.run();
-            lexer.name_backslash()
+            )
+            .run();
         });
     // Rebase only observations already produced by the single construction;
     // neither the original source, events nor either CST is visited again.

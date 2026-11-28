@@ -83,9 +83,6 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) experimental_self_component: bool,
     /// Authored anchors beyond the IR; `Some` only for map-requesting compiles.
     pub(crate) spans: Option<&'a super::spans::VaporSourceSpans>,
-    /// The lexer saw a backslash in an attribute or directive name, so slot
-    /// keys are escaped inside their string literals.
-    pub(crate) escape_names: bool,
 }
 
 impl<'a> GenerateContext<'a> {
@@ -127,7 +124,6 @@ impl<'a> GenerateContext<'a> {
             component_name: None,
             experimental_self_component: false,
             spans: None,
-            escape_names: false,
         }
     }
 

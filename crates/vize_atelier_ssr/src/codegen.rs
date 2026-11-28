@@ -12,7 +12,7 @@ pub(crate) mod helpers;
 mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
-pub(crate) use spans::push_bound_name_escaping;
+pub(crate) use spans::push_escaped_bound_name;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
@@ -115,9 +115,6 @@ pub struct SsrCodegenContext<'a> {
     /// The source string node-loc spans index into, used to recover covered
     /// text from a `SourceLocation`.
     pub(crate) source: &'a str,
-    /// The lexer saw a backslash in an attribute or directive name, so bound
-    /// attribute names are escaped inside their string literals.
-    pub(crate) escape_names: bool,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
     /// `_tempN` bindings allocated by merged-props elements.
@@ -163,7 +160,6 @@ impl<'a> SsrCodegenContext<'a> {
             runtime_module_name: String::from("vue"),
             jsx_closure: false,
             source,
-            escape_names: false,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
             ssr_helpers: FxHashSet::default(),
@@ -217,7 +213,6 @@ impl<'a> SsrCodegenContext<'a> {
         if root.helpers.contains(&RuntimeHelper::Unref) {
             self.use_core_helper(RuntimeHelper::Unref);
         }
-        self.escape_names = root.name_backslash;
 
         let is_fragment = css_vars::root_is_fragment(&root.children);
 

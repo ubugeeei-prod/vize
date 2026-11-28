@@ -25,7 +25,6 @@ pub const UPPER_A: u8 = 0x41;
 pub const UPPER_F: u8 = 0x46;
 pub const UPPER_Z: u8 = 0x5A;
 pub const LEFT_SQUARE: u8 = 0x5B;
-pub const BACKSLASH: u8 = 0x5C;
 pub const RIGHT_SQUARE: u8 = 0x5D;
 pub const GRAVE_ACCENT: u8 = 0x60;
 pub const LOWER_A: u8 = 0x61;

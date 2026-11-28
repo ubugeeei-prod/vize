@@ -90,12 +90,10 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
 
     // Create block for root
     let block = transform_children(&mut ctx, &root.children);
-    let mut node = RootNode::new(allocator, "");
-    node.name_backslash = root.name_backslash;
 
     (
         RootIRNode {
-            node,
+            node: RootNode::new(allocator, ""),
             source,
             template: Default::default(),
             template_index_map: Default::default(),

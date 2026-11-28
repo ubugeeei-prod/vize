@@ -13,12 +13,11 @@ pub(super) fn push_object<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
     line_indent: usize,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
     let unique = unique_attrs(attributes);
     let scope = scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
     if unique.len() + usize::from(scope.is_some()) <= 1 {
-        out.push_str(compact_props_object(unique.iter().copied(), scope, escape_names).as_str());
+        out.push_str(compact_props_object(unique.iter().copied(), scope).as_str());
         return;
     }
 
@@ -29,7 +28,7 @@ pub(super) fn push_object<'a>(
         }
         out.push('\n');
         push_spaces(out, line_indent + 2);
-        push_attr_pair(out, attr, escape_names);
+        push_attr_pair(out, attr);
     }
     if let Some(scope_id) = scope {
         if !unique.is_empty() {

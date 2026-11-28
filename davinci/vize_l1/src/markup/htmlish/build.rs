@@ -117,7 +117,6 @@ pub(crate) fn build<
         SurfaceTree {
             source: src,
             children: b.root,
-            name_backslash: false,
         },
         b.repaired,
     )

@@ -87,10 +87,8 @@ pub(crate) enum VaporL3BridgeStatus<'a> {
 
 /// Private fields prevent callers from confusing a verified generic graph with
 /// the narrower executable backend contract. There is no boolean acceptance.
-/// The flag records whether the lexer saw a backslash in a name, which the
-/// generated IR carries so slot keys are escaped.
 #[derive(Debug)]
-pub(crate) struct VaporL3Artifact<'a>(NativeArtifact<'a>, std::vec::Vec<(u32, u32)>, bool);
+pub(crate) struct VaporL3Artifact<'a>(NativeArtifact<'a>, std::vec::Vec<(u32, u32)>);
 
 impl<'a> VaporL3Artifact<'a> {
     /// The recoveries the legacy parser reports for this source, which the
@@ -131,16 +129,11 @@ impl<'a> VaporL3Artifact<'a> {
         crate::ir::RootIRNode<'a>,
         Option<crate::generate::spans::VaporSourceSpans>,
     )> {
-        let name_backslash = self.2;
         bridge_profile!(
             "atelier.vapor.bridge.ir_projection",
             self.0
                 .into_ir_with_spans(allocator, source, scope_id, spans)
         )
-        .map(|(mut ir, spans)| {
-            ir.node.name_backslash = name_backslash;
-            (ir, spans)
-        })
     }
 }
 
@@ -295,14 +288,13 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         capture.page(Level::L3, "values", || {
             vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.l3ir))
         });
-        let name_backslash = s2.artifact.features.has_backslash_names();
-        admit_with(s3, &retained, &loops, source, recoveries, name_backslash)
+        admit_with(s3, &retained, &loops, source, recoveries)
     })
 }
 
 #[cfg(test)]
 fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporL3BridgeStatus<'a> {
-    admit_with(s3, retained, &[], "", std::vec::Vec::new(), false)
+    admit_with(s3, retained, &[], "", std::vec::Vec::new())
 }
 
 fn admit_with<'a>(
@@ -311,7 +303,6 @@ fn admit_with<'a>(
     loops: &[templates::TemplateLoop<'a>],
     source: &str,
     recoveries: std::vec::Vec<(u32, u32)>,
-    name_backslash: bool,
 ) -> VaporL3BridgeStatus<'a> {
     let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.l3ir));
     if !violations.is_empty() {
@@ -339,9 +330,7 @@ fn admit_with<'a>(
         "atelier.vapor.bridge.native_admission",
         NativeArtifact::admit(&s3, retained, loops, source)
     ) {
-        Ok(artifact) => {
-            VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact, recoveries, name_backslash))
-        }
+        Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact, recoveries)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporL3BridgeStatus::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => VaporL3BridgeStatus::Rejected(std::vec![cstr!(
             "Davinci L3 verifier rejected Vapor artifact: {message}"

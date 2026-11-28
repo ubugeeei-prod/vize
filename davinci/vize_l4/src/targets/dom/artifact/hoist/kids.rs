@@ -26,9 +26,8 @@ pub(super) fn append_hoist_kids(
     kids: &[&Op<'_>],
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
-    ensure_sufficient_stack(|| append_hoist_kids_guarded(out, kids, is_ts, scope_id, escape_names));
+    ensure_sufficient_stack(|| append_hoist_kids_guarded(out, kids, is_ts, scope_id));
 }
 
 fn append_hoist_kids_guarded(
@@ -36,7 +35,6 @@ fn append_hoist_kids_guarded(
     kids: &[&Op<'_>],
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
@@ -63,9 +61,7 @@ fn append_hoist_kids_guarded(
                 out.push(')');
             }
             Op::Element(element) => {
-                out.push_str(
-                    hoist_descendant_element_rhs(element, is_ts, scope_id, escape_names).as_str(),
-                );
+                out.push_str(hoist_descendant_element_rhs(element, is_ts, scope_id).as_str());
             }
             _ => {}
         }
@@ -77,18 +73,14 @@ fn hoist_descendant_element_rhs(
     element: &ElementOp<'_>,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
-    ensure_sufficient_stack(|| {
-        hoist_descendant_element_rhs_guarded(element, is_ts, scope_id, escape_names)
-    })
+    ensure_sufficient_stack(|| hoist_descendant_element_rhs_guarded(element, is_ts, scope_id))
 }
 
 fn hoist_descendant_element_rhs_guarded(
     element: &ElementOp<'_>,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
     let mut out = String::default();
     out.push_str(Buf::create_element_vnode_alias());
@@ -97,7 +89,7 @@ fn hoist_descendant_element_rhs_guarded(
     out.push_str(element.tag);
     out.push('"');
     let kids = renderable_children(&element.children);
-    let props = super::static_vnode_props(element, false, is_ts, scope_id, escape_names);
+    let props = super::static_vnode_props(element, false, is_ts, scope_id);
     if props.is_some() || !kids.is_empty() {
         out.push_str(", ");
         if let Some(props) = props {
@@ -108,7 +100,7 @@ fn hoist_descendant_element_rhs_guarded(
     }
     if !kids.is_empty() {
         out.push_str(", ");
-        append_hoist_kids(&mut out, &kids, is_ts, scope_id, escape_names);
+        append_hoist_kids(&mut out, &kids, is_ts, scope_id);
     }
     out.push(')');
     out
@@ -120,11 +112,8 @@ pub(super) fn append_cached_kids(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
-    ensure_sufficient_stack(|| {
-        append_cached_kids_guarded(out, kids, line_indent, is_ts, scope_id, escape_names)
-    });
+    ensure_sufficient_stack(|| append_cached_kids_guarded(out, kids, line_indent, is_ts, scope_id));
 }
 
 fn append_cached_kids_guarded(
@@ -133,7 +122,6 @@ fn append_cached_kids_guarded(
     line_indent: usize,
     is_ts: bool,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) {
     if kids.iter().all(|op| matches!(op, Op::Text(_))) {
         out.push('"');
@@ -164,7 +152,6 @@ fn append_cached_kids_guarded(
                     line_indent + 2,
                     is_ts,
                     scope_id,
-                    escape_names,
                 );
             }
             _ => {}

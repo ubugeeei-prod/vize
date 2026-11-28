@@ -132,7 +132,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
         match arg {
             ExpressionNode::Simple(simple) => {
                 if simple.is_static {
-                    ctx.push_string_literal(simple.content);
+                    ctx.push_checked_string_literal(simple.content);
                 } else {
                     ctx.push(simple.content);
                 }

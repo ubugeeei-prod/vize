@@ -8,6 +8,8 @@ use self::escape_gate::byte_may_need_js_escaping;
 use crate::RuntimeHelper;
 use vize_l0::{ToCompactString, general::quoted_name, js_string::push_js_string_literal};
 
+pub(super) use quoted_name::{KeySpelling, key_spelling};
+
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
     // Numeric decoding only triggers on `&`; otherwise skip the state machine
@@ -123,17 +125,13 @@ pub(super) fn js_string_contents(name: &str) -> String {
     String::from(literal.get(1..end).unwrap_or(name))
 }
 
-/// Append `name` between double quotes, escaped when it holds a backslash.
-/// Only a compile whose lexer saw a backslash in a name comes here.
+/// Append the double-quoted JavaScript string literal of a key spelled
+/// [`KeySpelling::Escaped`].
 #[cold]
 #[inline(never)]
-pub(super) fn push_quoted_name_escaping(out: &mut String, name: &str) {
+pub(super) fn push_escaped_name(out: &mut String, name: &str) {
     out.push('"');
-    if quoted_name::name_needs_escape(name) {
-        out.push_str(&quoted_name::escaped_name_contents(name));
-    } else {
-        out.push_str(name);
-    }
+    out.push_str(&quoted_name::escaped_name_contents(name));
     out.push('"');
 }
 

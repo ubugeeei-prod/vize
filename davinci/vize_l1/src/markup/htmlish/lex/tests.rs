@@ -10,7 +10,6 @@ mod basic;
 mod entities;
 mod entity_expansion;
 mod errors;
-mod name_backslash;
 mod raw;
 mod special;
 

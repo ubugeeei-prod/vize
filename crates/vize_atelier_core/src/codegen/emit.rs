@@ -49,7 +49,6 @@ pub(super) fn generate_with_sections_and_options(
         None => root.source.into(),
     };
     ctx.static_cache = ctx.options.inline | !root.hoists.is_empty();
-    ctx.escape_names = root.name_backslash;
     // Edge whitespace is ignorable. An internal space stays a text VNode.
     // Directive comments are dropped. One pass avoids shifting the vec.
     let mut root_children: std::vec::Vec<&TemplateChildNode<'_>> = std::vec::Vec::new();

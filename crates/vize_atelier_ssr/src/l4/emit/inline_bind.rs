@@ -5,13 +5,14 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_atelier_core::codegen::document::EmitDocument;
+use vize_l0::general::quoted_name::name_needs_escape;
 use vize_l0::{String, cstr};
 
 use super::attrs::{Attached, Bind, BindName, static_value};
 use super::spans::argument_start;
 use super::{Emitter, Result};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
-use crate::codegen::push_bound_name_escaping;
+use crate::codegen::push_escaped_bound_name;
 
 pub(super) fn emit(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
@@ -68,13 +69,9 @@ pub(super) fn emit(
                 BindName::Static(authored) => authored,
                 _ => name,
             };
-            if em.ctx.escape_names {
+            if name_needs_escape(name) {
                 let start = argument_start(em.ctx.source, bind.span, authored);
-                push_bound_name_escaping(
-                    &mut piece,
-                    name,
-                    start.filter(|_| em.ctx.spans_enabled()),
-                );
+                push_escaped_bound_name(&mut piece, name, start.filter(|_| em.ctx.spans_enabled()));
             } else {
                 match argument_start(em.ctx.source, bind.span, authored) {
                     Some(start) if em.ctx.spans_enabled() => piece.push_mapped(name, start),

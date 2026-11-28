@@ -178,16 +178,15 @@ fn projection<'a, const TAG_FACTS: bool>(
                 recorder,
                 &mut unsupported,
             );
-            let mut lexer = Lexer::<Component, _>::new(
+            Lexer::<Component, _>::new(
                 source,
                 sink,
                 LexOptions {
                     in_tag_comments: options.experimental_in_tag_comments,
                     ..LexOptions::default()
                 },
-            );
-            lexer.run();
-            lexer.name_backslash()
+            )
+            .run();
         },
     );
     Ok(ComponentParse {

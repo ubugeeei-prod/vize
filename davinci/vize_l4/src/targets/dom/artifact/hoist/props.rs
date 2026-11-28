@@ -3,24 +3,23 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::String;
 use vize_l2::op::Attribute;
 
-use super::super::js::{escape_js_string, is_valid_js_identifier};
+use super::super::js::escape_js_string;
+use vize_l0::general::quoted_name::{KeySpelling, key_spelling};
 
 /// First-occurrence static attrs as a single-line object, matching
 /// hoisted `JsChildNode::Object` emission.
 pub(in crate::targets::dom::artifact) fn compact_props_object<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
     scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
     let unique = unique_attrs(attributes);
     let scope = scope_id.filter(|scope| !unique.iter().any(|attr| attr.name == *scope));
-    compact_props_object_from_unique(&unique, scope, escape_names)
+    compact_props_object_from_unique(&unique, scope)
 }
 
 fn compact_props_object_from_unique(
     unique: &[&Attribute<'_>],
     hoisted_scope_id: Option<&str>,
-    escape_names: bool,
 ) -> String {
     let mut out = String::from("{ ");
     let mut emitted = 0usize;
@@ -28,7 +27,7 @@ fn compact_props_object_from_unique(
         if emitted > 0 {
             out.push_str(", ");
         }
-        push_attr_pair(&mut out, attr, escape_names);
+        push_attr_pair(&mut out, attr);
         emitted += 1;
     }
     if let Some(scope_id) = hoisted_scope_id {
@@ -54,24 +53,19 @@ pub(in crate::targets::dom::artifact) fn unique_attrs<'a>(
     unique
 }
 
-/// `escape_names`: the lexer saw a backslash in a name of this compile.
-pub(in crate::targets::dom::artifact) fn push_attr_pair(
-    out: &mut String,
-    attr: &Attribute<'_>,
-    escape_names: bool,
-) {
-    push_pair(out, attr.name, attr.value.unwrap_or_default(), escape_names);
+pub(in crate::targets::dom::artifact) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
+    push_pair(out, attr.name, attr.value.unwrap_or_default());
 }
 
-/// A scope-id pair; its name is never authored.
 pub(in crate::targets::dom::artifact) fn push_empty_attr_pair(out: &mut String, name: &str) {
-    push_pair(out, name, "", false);
+    push_pair(out, name, "");
 }
 
-fn push_pair(out: &mut String, name: &str, value: &str, escape_names: bool) {
-    let quoted = !is_valid_js_identifier(name);
-    if quoted && escape_names {
-        push_quoted_name_escaping(out, name);
+fn push_pair(out: &mut String, name: &str, value: &str) {
+    let spelling = key_spelling(name);
+    let quoted = spelling != KeySpelling::Bare;
+    if spelling == KeySpelling::Escaped {
+        push_escaped_name(out, name);
     } else {
         if quoted {
             out.push('"');
@@ -88,13 +82,8 @@ fn push_pair(out: &mut String, name: &str, value: &str, escape_names: bool) {
 
 #[cold]
 #[inline(never)]
-fn push_quoted_name_escaping(out: &mut String, name: &str) {
-    use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
+fn push_escaped_name(out: &mut String, name: &str) {
     out.push('"');
-    if name_needs_escape(name) {
-        out.push_str(escaped_name_contents(name).as_str());
-    } else {
-        out.push_str(name);
-    }
+    out.push_str(vize_l0::general::quoted_name::escaped_name_contents(name).as_str());
     out.push('"');
 }

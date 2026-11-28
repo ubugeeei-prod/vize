@@ -121,7 +121,7 @@ pub(super) fn emit_dom_observed<'f, P>(
         prefix_identifiers: options.prefix_identifiers,
         untracked_children: lowered.artifact.features.has_child_values(),
         runtime_class: lowered.artifact.features.has_runtime_class_bindings(),
-        escape_names: lowered.artifact.features.has_backslash_names(),
+        escape_names: false,
         hoist_static: options.hoist_static,
         is_ts: options.is_ts,
         strict_slot_params,

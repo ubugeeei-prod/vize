@@ -102,14 +102,7 @@ pub(super) fn emit_call(
     let hoistable_static_props = if !cx.hoist_static || cx.hoisted_scope_id.is_some() {
         None
     } else {
-        call_props::hoistable_static_props(
-            component,
-            skip_is,
-            &hoist_attrs,
-            cx.is_ts,
-            cx.scope_id,
-            cx.escape_names,
-        )?
+        call_props::hoistable_static_props(component, skip_is, &hoist_attrs, cx.is_ts, cx.scope_id)?
     };
     // A key injected from `<template v-for>` (the component has no key of its
     // own) makes the item props dynamic, so the shipped lane registers no

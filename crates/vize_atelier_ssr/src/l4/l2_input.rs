@@ -167,8 +167,6 @@ fn select_l2_lane_with_experimental_options<'a>(
             frozen_slots: None,
         },
         diagnostics: 0,
-        // A caller-built region carries no lexer facts: check every name.
-        escape_names: true,
     };
     select_from_l2_plain(
         allocator,

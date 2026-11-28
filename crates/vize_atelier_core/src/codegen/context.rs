@@ -9,11 +9,12 @@ use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
 use super::document::EmitDocument;
-use super::helpers::is_valid_js_identifier;
 use vize_l0::FxHashMap;
 use vize_l0::Span;
 use vize_l0::String;
-use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
+use vize_l0::general::quoted_name::{
+    KeySpelling, escaped_name_contents, key_spelling, name_needs_escape,
+};
 
 /// Code generation context using a UTF-8 string buffer for performance.
 pub struct CodegenContext {
@@ -106,8 +107,9 @@ pub struct CodegenContext {
     /// The template source node spans index into (the transformed root's
     /// `source`), used to recover covered text from a `SourceLocation`.
     pub(super) source: String,
-    /// The lexer saw a backslash in an attribute or directive name, so names
-    /// written between quotes are escaped (the root's `name_backslash`).
+    /// A key holding a backslash has been written. A dynamic prop name is
+    /// written only after its element's props object spelled it as a key, so
+    /// the dynamic-props arrays look at names only once this is set.
     pub(super) escape_names: bool,
 }
 
@@ -380,14 +382,27 @@ impl std::fmt::Write for CodegenContext {
 /// Authored names written between quotes: prop keys, event keys, dynamic
 /// prop names, directive arguments and modifiers. A name is final text, so a
 /// name with a backslash is spelled through the string-literal writer; every
-/// other name is copied as it is. The lexer records whether any name holds a
-/// backslash, so a compile without one writes every name as it is.
+/// other name is copied as it is.
 impl CodegenContext {
-    /// Push `name` as a double-quoted JavaScript string literal.
+    /// Push a dynamic prop name as a double-quoted JavaScript string literal.
+    /// The name was already written as a key; see [`Self::escape_names`].
     #[inline(always)]
     pub(in crate::codegen) fn push_string_literal(&mut self, name: &str) {
         if self.escape_names {
-            self.push_string_literal_escaping(name);
+            self.push_checked_string_literal_cold(name);
+        } else {
+            self.push("\"");
+            self.push(name);
+            self.push("\"");
+        }
+    }
+
+    /// Push a name that no key wrote before (a modifier, a directive
+    /// argument) as a double-quoted JavaScript string literal.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_checked_string_literal(&mut self, name: &str) {
+        if name_needs_escape(name) {
+            self.push_escaped_string_literal(name);
         } else {
             self.push("\"");
             self.push(name);
@@ -397,13 +412,16 @@ impl CodegenContext {
 
     #[cold]
     #[inline(never)]
-    fn push_string_literal_escaping(&mut self, name: &str) {
+    fn push_checked_string_literal_cold(&mut self, name: &str) {
+        self.push_checked_string_literal(name);
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn push_escaped_string_literal(&mut self, name: &str) {
+        self.escape_names = true;
         self.push("\"");
-        if name_needs_escape(name) {
-            self.push(&escaped_name_contents(name));
-        } else {
-            self.push(name);
-        }
+        self.push(&escaped_name_contents(name));
         self.push("\"");
     }
 
@@ -411,10 +429,14 @@ impl CodegenContext {
     /// as the string literal that spells it.
     #[inline(always)]
     pub(in crate::codegen) fn push_key(&mut self, key: &str) {
-        if is_valid_js_identifier(key) {
-            self.push(key);
-        } else {
-            self.push_string_literal(key);
+        match key_spelling(key) {
+            KeySpelling::Bare => self.push(key),
+            KeySpelling::Quoted => {
+                self.push("\"");
+                self.push(key);
+                self.push("\"");
+            }
+            KeySpelling::Escaped => self.push_escaped_string_literal(key),
         }
     }
 
@@ -422,11 +444,14 @@ impl CodegenContext {
     /// `span` that spells the symbol `name`.
     #[inline(always)]
     pub(in crate::codegen) fn push_named_key(&mut self, key: &str, span: Span, name: &str) {
-        let needs_quotes = !is_valid_js_identifier(key);
-        if needs_quotes && self.escape_names {
-            self.push_named_key_escaping(key, span, name);
-            return;
-        }
+        let needs_quotes = match key_spelling(key) {
+            KeySpelling::Bare => false,
+            KeySpelling::Quoted => true,
+            KeySpelling::Escaped => {
+                self.push_escaped_named_key(key, span, name);
+                return;
+            }
+        };
         if needs_quotes {
             self.push("\"");
         }
@@ -438,16 +463,10 @@ impl CodegenContext {
 
     #[cold]
     #[inline(never)]
-    fn push_named_key_escaping(&mut self, key: &str, span: Span, name: &str) {
-        let escaped;
-        let text = if name_needs_escape(key) {
-            escaped = escaped_name_contents(key);
-            escaped.as_str()
-        } else {
-            key
-        };
+    fn push_escaped_named_key(&mut self, key: &str, span: Span, name: &str) {
+        self.escape_names = true;
         self.push("\"");
-        self.push_named(text, span, name);
+        self.push_named(&escaped_name_contents(key), span, name);
         self.push("\"");
     }
 }

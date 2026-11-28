@@ -141,7 +141,7 @@ pub(crate) fn generate_merged_event_handlers(
     // Output the event key name (e.g., "onClick" or "\"onUpdate:modelValue\"")
     // Event names containing ':' need quotes for valid JavaScript
     if target_event_key.contains(':') {
-        ctx.push_string_literal(target_event_key);
+        ctx.push_checked_string_literal(target_event_key);
     } else {
         ctx.push(target_event_key);
     }
@@ -239,7 +239,7 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
             if i > 0 {
                 ctx.push(",");
             }
-            ctx.push_string_literal(mod_name);
+            ctx.push_checked_string_literal(mod_name);
         }
         ctx.push("])");
     }
@@ -250,7 +250,7 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
             if i > 0 {
                 ctx.push(",");
             }
-            ctx.push_string_literal(mod_name);
+            ctx.push_checked_string_literal(mod_name);
         }
         ctx.push("])");
     }

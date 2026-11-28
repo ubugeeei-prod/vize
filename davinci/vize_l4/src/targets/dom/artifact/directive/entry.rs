@@ -74,7 +74,7 @@ pub(super) fn emit_argument(
 ) -> Result<(), EmitError> {
     match argument {
         DynamicName::Static(name) => {
-            cx.push_quoted_name(name);
+            cx.push_checked_quoted_name(name);
             Ok(())
         }
         DynamicName::Dynamic(expr) => {

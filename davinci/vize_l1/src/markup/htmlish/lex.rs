@@ -95,9 +95,6 @@ pub struct Lexer<'a, P: Profile, S: Sink> {
     /// True while the open interpolation is a `{{{ … }}}` one.
     in_raw_interpolation: bool,
     in_tag_comments: bool,
-    /// An attribute or directive name held a backslash. Read with
-    /// [`Lexer::name_backslash`] once the run is over.
-    name_backslash: bool,
     profile: PhantomData<P>,
 }
 
@@ -128,18 +125,8 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
             triple_mustache: raw_interpolation && delimiters.open == b"{{",
             in_raw_interpolation: false,
             in_tag_comments,
-            name_backslash: false,
             profile: PhantomData,
         }
-    }
-
-    /// Whether any attribute or directive name read so far holds a
-    /// backslash. Emitters write names between double quotes, and a name
-    /// can change meaning there only through a backslash (the lexer reports
-    /// a double quote in a name), so they escape names only when this is set.
-    #[inline]
-    pub fn name_backslash(&self) -> bool {
-        self.name_backslash
     }
 
     /// The source bytes being lexed.

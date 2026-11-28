@@ -127,7 +127,6 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
         ir.source,
     );
     ctx.templates = &ir.templates;
-    ctx.escape_names = ir.node.name_backslash;
     ctx.jsx_closure = options.jsx_closure;
     ctx.is_ts = is_ts;
     ctx.component_name = experimental_options.component_name;
