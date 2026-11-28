@@ -1,0 +1,68 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-imported-props/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Benchmark - Imported props
+run-name: Imported props ${{ github.event.pull_request.base.sha || inputs.base_sha }}...${{ github.event.pull_request.head.sha || github.sha }}
+on:
+  pull_request:
+    paths:
+      - .github/workflows/03-imported-props.yml
+      - tools/ci/workflows/03-imported-props/**
+      - tools/benchmarks/scripts/imported-props*
+      - crates/vize_atelier_sfc/src/script/context/external_types/**
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Exact 40-character baseline commit
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: imported-props-${{ github.ref }}-${{ inputs.base_sha }}
+  cancel-in-progress: false
+env:
+  CARGO_BUILD_JOBS: "12"
+  CARGO_INCREMENTAL: "0"
+  RUSTUP_TOOLCHAIN: 1.100.0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  IMPORTED_PROPS_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+  IMPORTED_PROPS_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  measure:
+    runs-on: blacksmith-16vcpu-ubuntu-2404
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.IMPORTED_PROPS_HEAD_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.IMPORTED_PROPS_BASE_SHA }}
+          path: baseline
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: ./.github/actions/setup-wild-http-recovery
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: imported-props
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24.14.0
+          package-manager-cache: false
+      - name: Test the dependency union, shared walks, cycles and freshness
+        run: cargo test --locked -p vize_atelier_sfc --lib script::context::external_types
+      - name: Compare exact source images across threads and chunk sizes
+        run: node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props"
+      - name: Retain sources, input inventories, per-file output fingerprints and timings
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: imported-props-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/imported-props
+          if-no-files-found: warn
+          retention-days: 30

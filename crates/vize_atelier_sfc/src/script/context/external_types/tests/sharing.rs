@@ -238,11 +238,9 @@ fn shared_work(components: usize, modules: usize, parses: usize) -> Work {
     }
 }
 
-/// Workers that reach a shared type together all walk it, and the graph
-/// gives each read and each resolution to one of them: the files read, the
-/// probes and the locks of a batch are the same at every thread count. Only
-/// the walk over modules already in memory is repeated, by the workers that
-/// started before a result existed.
+/// Workers that reach a shared type together share its walk as well as its
+/// reads and resolutions. The work of the shared type is independent of the
+/// thread count, including the cold first request.
 ///
 /// The reference walk reads a file once per worker that reaches it before
 /// another worker has validated it, so its counts depend on scheduling and
@@ -274,17 +272,7 @@ fn shared_walk_reads_do_not_depend_on_threads() {
             let (work, busiest) = run_batch(&reproduction, threads, Walker::Shared(&graph));
             row("shared", batch, shape, (work, busiest));
             let alone = shared_work(components, modules, parses);
-            let unwalked = |work: Work| Work {
-                modules: 0,
-                edges: 0,
-                ..work
-            };
-            assert_eq!(unwalked(work), unwalked(alone));
-            let walked_edges = work.edges - components;
-            assert!(work.modules >= alone.modules, "{work:?}");
-            assert!(work.modules <= threads * alone.modules, "{work:?}");
-            assert!(walked_edges > modules, "{work:?}");
-            assert!(walked_edges <= threads * (modules + 1), "{work:?}");
+            assert_eq!(work, alone);
         }
     }
 }
@@ -299,15 +287,19 @@ fn a_graph_without_room_repeats_walks_but_not_reads() {
     let dir = tempfile::tempdir().unwrap();
     let reproduction = write_reproduction(dir.path(), components, modules);
 
-    let crowded = ModuleGraph::keeping(synthetic_epoch(), 0);
-    assert_eq!(
-        run_batch(&reproduction, 1, Walker::Shared(&crowded)).0,
-        Work {
-            modules: components * files,
-            edges: components * (modules + 1) + components,
-            ..shared_work(components, modules, files)
-        }
-    );
+    for (limit, threads, parses) in [(0, 1, files), (0, 16, 0), (1, 1, 0), (1, 16, 0)] {
+        // An empty graph can know its budget is exhausted before walking;
+        // a nonzero budget may only discover that its first walk is too big.
+        let crowded = ModuleGraph::keeping(synthetic_epoch(), limit);
+        assert_eq!(
+            run_batch(&reproduction, threads, Walker::Shared(&crowded)).0,
+            Work {
+                modules: components * files,
+                edges: components * (modules + 1) + components,
+                ..shared_work(components, modules, parses)
+            }
+        );
+    }
 
     // A walk holds each module it reached twice: in walk order and by name.
     let roomy = ModuleGraph::keeping(synthetic_epoch(), 2 * files);

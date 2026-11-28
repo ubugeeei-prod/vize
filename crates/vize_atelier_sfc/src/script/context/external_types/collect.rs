@@ -287,17 +287,41 @@ fn sorted_union(left: Vec<String>, right: Vec<String>) -> Vec<String> {
     let mut union: Vec<String> = Vec::with_capacity(left.len() + right.len());
     let mut left = left.into_iter().peekable();
     let mut right = right.into_iter().peekable();
-    loop {
-        let next = match (left.peek(), right.peek()) {
-            (Some(l), Some(r)) if r < l => right.next(),
-            (Some(_), _) => left.next(),
-            (None, _) => right.next(),
-        };
-        let Some(next) = next else {
-            return union;
-        };
-        if union.last() != Some(&next) {
-            union.push(next);
+    while let (Some(l), Some(r)) = (left.peek(), right.peek()) {
+        match l.cmp(r) {
+            std::cmp::Ordering::Less => union.extend(left.next()),
+            std::cmp::Ordering::Greater => union.extend(right.next()),
+            std::cmp::Ordering::Equal => {
+                union.extend(left.next());
+                right.next();
+            }
+        }
+    }
+    // Each input is already distinct. Once one is exhausted, the remaining
+    // names need no comparisons or deduplication (the usual case when a few
+    // config inputs precede a wide barrel's source paths).
+    union.extend(left);
+    union.extend(right);
+    union
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sorted_union;
+    use vize_carton::String;
+
+    #[test]
+    fn dependency_union_preserves_order_and_removes_overlapping_names() {
+        let names = |names: &[&str]| names.iter().copied().map(String::from).collect();
+        for (left, right, expected) in [
+            (&[][..], &[][..], &[][..]),
+            (&["a", "b"][..], &[][..], &["a", "b"][..]),
+            (&[][..], &["a", "b"][..], &["a", "b"][..]),
+            (&["a", "c"][..], &["b", "d"][..], &["a", "b", "c", "d"][..]),
+            (&["a", "c"][..], &["a", "b", "c"][..], &["a", "b", "c"][..]),
+            (&["b", "c", "d"][..], &["a"][..], &["a", "b", "c", "d"][..]),
+        ] {
+            assert_eq!(sorted_union(names(left), names(right)), names(expected));
         }
     }
 }

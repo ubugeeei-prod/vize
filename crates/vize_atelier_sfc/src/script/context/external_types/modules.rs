@@ -15,12 +15,9 @@
 //! not be read is read again by the next walk that reaches it, and a walk
 //! that met such a module is not kept.
 //!
-//! No worker waits for another worker's walk. Workers that need the same walk
-//! at the same time all walk: every read and every resolution still happens
-//! once, in whichever worker takes it, and a module with many edges is split
-//! between the workers that reach it together. With one worker walking and
-//! the others waiting, the files of a batch would be read one after another
-//! however many threads the batch has.
+//! Workers that need the same retained walk share its computation as well as
+//! its result. The walk never asks for another closure, so even cyclic imports
+//! cannot make its worker wait for a closure held by another worker.
 
 #![expect(
     clippy::disallowed_types,
@@ -45,8 +42,19 @@ use super::{FileTypeSummary, summary_cache};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(super) struct ModuleId(u32);
 
-type ClosureCell = Arc<OnceLock<Arc<TypeClosure>>>;
+type ClosureCell = Arc<ClosureSlot>;
 type EntryCell = Arc<OnceLock<Option<ModuleId>>>;
+
+#[derive(Default)]
+struct ClosureSlot {
+    walk: Attempted<Arc<TypeClosure>>,
+    /// An incomplete first attempt cannot satisfy waiting callers. Retry the
+    /// traversal independently until one complete attempt can be retained.
+    parallel_retry: AtomicBool,
+    /// Once a walk exceeds the memory budget, callers traverse independently:
+    /// no result can be retained to satisfy callers waiting behind it.
+    unretained: AtomicBool,
+}
 
 /// Module ids the kept walks of one graph may hold: 32 MB. Each walk holds
 /// two ids per module it reached, so many different requests into a wide
@@ -265,10 +273,10 @@ impl ModuleGraph {
         }
     }
 
-    /// The walk from `module` for `requested`. Workers that ask before one
-    /// has finished all walk, sharing every read through the graph, and the
-    /// first finished walk is kept for the others. A walk waits on no other
-    /// walk, so import cycles cannot make two workers wait on each other.
+    /// The walk from `module` for `requested`, computed once for every worker
+    /// that asks. Only this entry point waits for a walk: traversal and export
+    /// resolution use module facts and edges directly, so import cycles never
+    /// wait for another closure.
     ///
     /// A walk that met a module it could not read is used by its caller and
     /// not kept, and neither is a walk the graph has no room for.
@@ -291,22 +299,58 @@ impl ModuleGraph {
                 None => Arc::clone(closures.entry(key).or_default()),
             }
         };
-        if let Some(kept) = cell.get() {
+        if let Some(kept) = cell.walk.get() {
             return Some(Arc::clone(kept));
         }
-        let walked = Arc::new(TypeClosure::walk(self, module, requested, project));
-        if !walked.complete {
-            return Some(walked);
-        }
-        // Count the walk before keeping it; a worker whose equal walk was
-        // kept first gives its room back.
-        let ids = walked.modules.len() + walked.files.len();
-        let kept = self.kept_ids.fetch_add(ids, Ordering::Relaxed);
-        if kept.saturating_add(ids) > self.kept_ids_limit || cell.set(Arc::clone(&walked)).is_err()
+        if cell.unretained.load(Ordering::Relaxed)
+            || self.kept_ids.load(Ordering::Relaxed) >= self.kept_ids_limit
         {
-            self.kept_ids.fetch_sub(ids, Ordering::Relaxed);
+            // No retained walk can satisfy a waiting caller. Preserve parallel
+            // traversal when the graph is already at its memory limit.
+            return Some(Arc::new(TypeClosure::walk(
+                self, module, requested, project,
+            )));
         }
-        Some(cell.get().map_or(walked, Arc::clone))
+        let walk = || Arc::new(TypeClosure::walk(self, module, requested, project));
+        let retain = |walked: Arc<TypeClosure>| {
+            if !walked.complete {
+                cell.parallel_retry.store(true, Ordering::Relaxed);
+                return Err(walked);
+            }
+            let ids = walked.modules.len() + walked.files.len();
+            let kept = self.kept_ids.fetch_add(ids, Ordering::Relaxed);
+            if kept.saturating_add(ids) > self.kept_ids_limit {
+                self.kept_ids.fetch_sub(ids, Ordering::Relaxed);
+                cell.unretained.store(true, Ordering::Relaxed);
+                return Err(walked);
+            }
+            Ok(walked)
+        };
+        let attempt = cell.walk.get_or_attempt(|| {
+            if cell.unretained.load(Ordering::Relaxed)
+                || cell.parallel_retry.load(Ordering::Relaxed)
+            {
+                // A caller may have queued before an incomplete or oversized
+                // attempt finished. Release the lock before retrying its walk.
+                return Err(None);
+            }
+            retain(walk()).map_err(Some)
+        });
+        Some(match attempt {
+            Ok(kept) => Arc::clone(kept),
+            Err(Some(walked)) => walked,
+            Err(None) => {
+                let walked = walk();
+                if cell.unretained.load(Ordering::Relaxed) || !walked.complete {
+                    return Some(walked);
+                }
+                // A formerly unreadable module may now be available. Only
+                // publication is serialized; competing retries walk in parallel.
+                cell.walk
+                    .get_or_attempt(|| retain(walked))
+                    .map_or_else(|walked| walked, Arc::clone)
+            }
+        })
     }
 }
 

@@ -1,0 +1,95 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Benchmark - Imported props"
+`run-name` = "Imported props ${{ github.event.pull_request.base.sha || inputs.base_sha }}...${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/03-imported-props.yml"
+      "tools/ci/workflows/03-imported-props/**"
+      "tools/benchmarks/scripts/imported-props*"
+      "crates/vize_atelier_sfc/src/script/context/external_types/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact 40-character baseline commit"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "imported-props-${{ github.ref }}-${{ inputs.base_sha }}"
+  `cancel-in-progress` = false
+}
+env {
+  CARGO_BUILD_JOBS = "12"
+  CARGO_INCREMENTAL = "0"
+  RUSTUP_TOOLCHAIN = "1.100.0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  IMPORTED_PROPS_BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+  IMPORTED_PROPS_HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  measure {
+    `runs-on` = ci.linuxValidation
+    `timeout-minutes` = 50
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.IMPORTED_PROPS_HEAD_SHA }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.IMPORTED_PROPS_BASE_SHA }}"
+          path = "baseline"
+          `persist-credentials` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.use("./.github/actions/setup-wild-http-recovery")
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "imported-props"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Test the dependency union, shared walks, cycles and freshness"
+        run = "cargo test --locked -p vize_atelier_sfc --lib script::context::external_types"
+      }
+      new Dynamic {
+        name = "Compare exact source images across threads and chunk sizes"
+        run = #"node tools/benchmarks/scripts/imported-props.mjs baseline . "$RUNNER_TEMP/imported-props""#
+      }
+      new Dynamic {
+        name = "Retain sources, input inventories, per-file output fingerprints and timings"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "imported-props-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/imported-props"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}
