@@ -207,7 +207,7 @@ function plannedRunnersBefore(file: string, source: string): string {
     assert.equal(selectors.length, 1, `one runner selector: ${file}/${row.job}`);
     const selector = selectors[0]!;
     assert.ok(
-      [row.before, row.after, ...row.previous].includes(selector[1]!),
+      ([row.before, row.after, ...row.previous] as readonly string[]).includes(selector[1]!),
       `unowned runner: ${file}/${row.job}`,
     );
     const previous = job.replace(selector[0], `    runs-on: ${row.before}`);

@@ -152,8 +152,9 @@ function validatePlan(plan: ToolingShardPlan) {
   return lead.reduce((sum, id) => sum + toolingTimings().leadSteps[id], 0);
 }
 
-// Native consumers use first-fit-decreasing under the normal test budget. This keeps the
-// expensive per-shard addon build on the fewest owners without extending their test work.
+// Files whose own work is parallel (native addon consumers and the CPU-heavy files
+// below) use first-fit-decreasing under the normal test budget. This keeps the addon
+// build and the larger runner on the fewest owners without extending their test work.
 // Remaining files use longest-processing-time packing onto the least-loaded runner. Ties
 // resolve by plan order and runner index, so every runner derives the same partition.
 // Runner 1 starts with its lead steps' time; it receives files only once the others catch up.
@@ -164,7 +165,7 @@ function pack(plan: ToolingShardPlan, total: number, leadMs: number, budget: num
   const order = plan.tests
     .map((file, index) => ({ index, ms: estimateToolingTestMs(plan.tier, file) }))
     .sort((left, right) => right.ms - left.ms || left.index - right.index);
-  const native = new Set(plan.nativeBuildTests ?? []);
+  const native = largeRunnerTests(plan);
   const nativeOwners: number[] = [];
   const assign = ({ index, ms }: (typeof order)[number], target: number) => {
     testLoads[target] += ms;
@@ -229,18 +230,45 @@ export function toolingShards(plan: ToolingShardPlan) {
 }
 
 // A shard runs its files one at a time (run-tooling-tests.mjs), so it leaves a
-// large runner mostly idle. Only a shard that builds the native addon compiles
-// Rust; it keeps the source validation pool, and every other shard takes the
-// smallest Blacksmith class.
+// large runner mostly idle. A shard that builds the native addon, or runs one of
+// the CPU-heavy files, keeps the source validation pool; every other shard takes
+// the smallest Blacksmith class.
 export const TOOLING_NATIVE_SHARD_RUNNER = "blacksmith-16vcpu-ubuntu-2404";
 export const TOOLING_SHARD_RUNNER = "blacksmith-4vcpu-ubuntu-2404";
 
+// Files that ran at least 1.5 times as long on 4 vCPU as on 16 vCPU (normalized to a
+// 16-vCPU shard of the same run) and took 5 s or more there. They pack together.
+export const TOOLING_CPU_HEAVY_TESTS: readonly string[] = [
+  "tests/tooling/davinci-bench-compare.test.ts",
+  "tests/tooling/davinci-bench-platform.test.ts",
+  "tests/tooling/davinci-bench-source-custody.test.ts",
+  "tests/tooling/davinci-bench-source-identity.test.ts",
+  "tests/tooling/davinci-dom-production-boundary.test.ts",
+  "tests/tooling/davinci-fact-spec-corpus.test.ts",
+  "tests/tooling/davinci-metamorphic-corpus.test.ts",
+  "tests/tooling/davinci-unused-setup-bindings.test.ts",
+  "tests/tooling/editor-artifact-download.test.ts",
+  "tests/tooling/lint-baseline-script-language.test.mjs",
+  "tests/tooling/release/release-smoke-install.test.ts",
+  "tests/tooling/tooling-prose-selection.test.ts",
+  "tests/tooling/tooling-test-selection.test.ts",
+];
+
+/** Selected files that need the larger runner: native consumers and CPU-heavy files. */
+function largeRunnerTests(plan: ToolingShardPlan): Set<string> {
+  const heavy = new Set(TOOLING_CPU_HEAVY_TESTS);
+  return new Set([
+    ...(plan.nativeBuildTests ?? []),
+    ...plan.tests.filter((file) => heavy.has(file)),
+  ]);
+}
+
 export function toolingShardMatrix(plan: ToolingShardPlan) {
   const shards = toolingShards(plan);
-  const native = new Set(plan.nativeBuildTests ?? []);
+  const large = largeRunnerTests(plan);
   return {
     include: shards.map(({ files }, index) => {
-      const runner = files.some((file) => native.has(file))
+      const runner = files.some((file) => large.has(file))
         ? TOOLING_NATIVE_SHARD_RUNNER
         : TOOLING_SHARD_RUNNER;
       // Name the worker after its costliest actual file. Display labels never
