@@ -2,6 +2,8 @@
 //! The Miri lane runs these tests, so every lent reference is also checked
 //! under the aliasing model.
 
+mod differential;
+
 use super::{LentNodes, walk_expression, walk_jsx_expression_container, walk_program};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
