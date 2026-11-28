@@ -85,6 +85,7 @@ function vueRefCall(program: Node, call: Node): boolean {
     const statement = node(value);
     return (
       statement?.type === "ImportDeclaration" &&
+      statement.importKind !== "type" &&
       node(statement.source)?.value === "vue" &&
       Array.isArray(statement.specifiers) &&
       statement.specifiers.some((value) => {
@@ -92,6 +93,7 @@ function vueRefCall(program: Node, call: Node): boolean {
           imported = node(specifier?.imported);
         return (
           specifier?.type === "ImportSpecifier" &&
+          specifier.importKind !== "type" &&
           node(specifier.local)?.name === callee.name &&
           (imported?.name === "ref" || imported?.name === "shallowRef")
         );

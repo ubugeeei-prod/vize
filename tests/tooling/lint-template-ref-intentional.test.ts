@@ -39,6 +39,26 @@ void test("a proven mutable setup ref is an unsafe readonly migration", () => {
   }
 });
 
+void test("Vue value aliases qualify but type-only imports cannot prove a ref factory", () => {
+  for (const factory of ["createRef", "shallowRef"]) {
+    const { source, finding } = sample(
+      "element.value = undefined",
+      `${factory}<HTMLInputElement>()`,
+    );
+    const specifier = factory === "createRef" ? "ref as createRef" : "shallowRef";
+    assert.match(
+      baselineIntentionalReason(finding, source.replace("{ ref }", `{ ${specifier} }`)) ?? "",
+      /readonly ref/u,
+    );
+  }
+  const { source, finding } = sample("element.value = undefined");
+  assert.equal(
+    baselineIntentionalReason(finding, source.replace("import { ref }", "import type { ref }")),
+    null,
+  );
+  assert.equal(baselineIntentionalReason(finding, source.replace("{ ref }", "{ type ref }")), null);
+});
+
 void test("reads, nested mutations, shadows and text cannot waive an upstream warning", () => {
   for (const body of [
     "console.log(element.value)",
