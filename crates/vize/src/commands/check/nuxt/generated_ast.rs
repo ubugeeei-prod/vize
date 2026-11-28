@@ -84,6 +84,9 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
     }
 
     let specifier_path = Path::new(specifier);
+    if ships_vue_declaration(specifier_path) {
+        return specifier.to_compact_string();
+    }
     let relative = if specifier_path.is_absolute() {
         specifier_path.strip_prefix(project_root).ok()
     } else {
@@ -99,6 +102,25 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
     cstr!("{specifier}.ts")
 }
 
+/// Whether an installed `.vue` file ships its own declaration next to it, as
+/// Nuxt's `nuxt-time.vue` does with `nuxt-time.vue.d.ts`. TypeScript resolves
+/// the import to that declaration, so the stub keeps the installed specifier:
+/// a copy compiled from the file's untyped runtime props would type every prop
+/// far more loosely than the package declares.
+fn ships_vue_declaration(path: &Path) -> bool {
+    if !path.is_absolute() || !super::reference_graph::is_installed(path) {
+        return false;
+    }
+    let mut dts = path.as_os_str().to_os_string();
+    dts.push(".d.ts");
+    let Some(stem) = path.file_stem() else {
+        return false;
+    };
+    let mut arbitrary = stem.to_os_string();
+    arbitrary.push(".d.vue.ts");
+    Path::new(&dts).is_file() || path.with_file_name(arbitrary).is_file()
+}
+
 const TYPE_ANNOTATION_PREFIX: &str = "type $GeneratedType = ";
 
 fn rewrite_import_type_specifiers(
@@ -106,7 +128,7 @@ fn rewrite_import_type_specifiers(
     rewrite: impl Fn(&str) -> String,
 ) -> Option<String> {
     let imports = collect_import_types(type_annotation)?;
-    let prefix_len = TYPE_ANNOTATION_PREFIX.len();
+    let prefix_len = import_type_prefix(type_annotation).len();
 
     let mut replacements = imports
         .into_iter()
@@ -142,8 +164,21 @@ fn rewrite_import_type_specifiers(
     Some(out)
 }
 
+fn import_type_prefix(source: &str) -> &'static str {
+    if source.trim_start().starts_with("declare namespace ") {
+        ""
+    } else {
+        TYPE_ANNOTATION_PREFIX
+    }
+}
+
 fn collect_import_types(type_annotation: &str) -> Option<Vec<ImportTypeSource>> {
-    let wrapped = cstr!("{TYPE_ANNOTATION_PREFIX}{type_annotation};");
+    let prefix = import_type_prefix(type_annotation);
+    let wrapped = if prefix.is_empty() {
+        type_annotation.to_compact_string()
+    } else {
+        cstr!("{prefix}{type_annotation};")
+    };
     let allocator = Allocator::default();
     let ret = Parser::new(&allocator, wrapped.as_str(), SourceType::d_ts()).parse();
     if ret.panicked || !ret.diagnostics.is_empty() {

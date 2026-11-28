@@ -90,6 +90,9 @@ mod retained_bytes;
 pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 pub use retained_bytes::RetainedBytes;
 mod materialize;
+pub(crate) use materialize::{CliBuildInfo, CliMaterialization};
+#[cfg(test)]
+mod cli_materialization_tests;
 mod materialize_delta;
 mod materialize_fingerprint;
 #[cfg(test)]

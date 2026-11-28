@@ -15,7 +15,7 @@ use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, IncrementalCheckMetrics,
     TypeCheckResult,
 };
-use super::virtual_project::VirtualProject;
+use super::virtual_project::{CliMaterialization, VirtualProject};
 use oxc_span::SourceType;
 use vize_carton::{
     String,
@@ -37,8 +37,8 @@ mod option_probe;
 mod session;
 
 use cli::{
-    CheckFailure, auto_server_count, check_with_cli, check_with_cli_classified,
-    check_with_cli_sharded,
+    CheckFailure, auto_server_count, check_with_cli, check_with_cli_classified_materialized,
+    check_with_cli_sharded_materialized,
 };
 use diagnostics::dedup_diagnostics;
 use fallback::{FallbackStep, warn_fallback};
@@ -135,8 +135,11 @@ impl CorsaExecutor {
         project: &VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
-        let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
-        profile!("canon.executor.materialize", project.materialize_for_cli())?;
+        let materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
+        let materialized = profile!(
+            "canon.executor.materialize",
+            project.materialize_for_cli(&materialize_lock)
+        )?;
 
         // The generated config is sanitized, so it cannot carry the user's own
         // `compilerOptions` diagnostics; a separate input-less program does
@@ -145,7 +148,7 @@ impl CorsaExecutor {
         // instead of after it.
         let (result, options) = std::thread::scope(|scope| {
             let probe = scope.spawn(|| option_probe::option_diagnostics(&self.corsa_path, project));
-            let result = self.check_program(project, servers);
+            let result = self.check_program(project, servers, materialized);
             (result, probe.join())
         });
         let mut result = result?;
@@ -173,24 +176,28 @@ impl CorsaExecutor {
         &self,
         project: &VirtualProject,
         servers: Option<usize>,
+        materialized: CliMaterialization<'_>,
     ) -> CorsaResult<TypeCheckResult> {
         if profile!(
             "canon.corsa.diagnostic_route",
             project.requires_project_session()
         ) {
+            drop(materialized);
             return self.check_with_project_session(project);
         }
+        let materialized = materialized.into_build_info();
         let servers = servers.unwrap_or_else(|| {
             auto_server_count(project, self.checkers(), self.program_concurrency)
         });
         if servers > 1 {
             match profile!(
                 "canon.corsa.cli",
-                check_with_cli_sharded(
+                check_with_cli_sharded_materialized(
                     &self.corsa_path,
                     project,
                     servers,
                     (self.checkers(), self.unsharded_checkers()),
+                    Some(&materialized),
                 )
             ) {
                 Ok(result) => return Ok(result),
@@ -206,7 +213,12 @@ impl CorsaExecutor {
 
         let cli_error = match profile!(
             "canon.corsa.cli",
-            check_with_cli_classified(&self.corsa_path, project, self.unsharded_checkers())
+            check_with_cli_classified_materialized(
+                &self.corsa_path,
+                project,
+                self.unsharded_checkers(),
+                Some(&materialized),
+            )
         ) {
             Ok(result) => return Ok(result),
             Err(cli_error) => {

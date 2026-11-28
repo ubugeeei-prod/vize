@@ -13,17 +13,22 @@ use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 use super::type_references::{
-    DeclarationContents, collect_tsconfig_type_packages, reference_directive_lines,
-    reference_type_packages, resolve_type_package_declaration_files,
+    DeclarationContents, collect_tsconfig_type_packages, reference_attribute,
+    reference_directive_lines, reference_type_packages, resolve_type_package_declaration_files,
     resolve_type_reference_declaration_files_reading,
 };
 
 mod content_mapper;
+mod graph;
 mod realpaths;
 mod top_level;
 
 pub(crate) use content_mapper::{
     collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
+};
+pub(crate) use graph::{
+    DeclarationReference, InstalledDeclarationGraph, collect_declaration_reference_graph,
+    collect_installed_declaration_reference_graph_reading,
 };
 use realpaths::ReferenceRealpaths;
 use top_level::has_top_level_import_or_export;
@@ -149,14 +154,21 @@ fn collect_ambient_declaration_files_from(
             hidden_reference_roots.push(path.clone());
         }
 
-        for referenced in
-            reference_path_declaration_files(&path, &content, Some(&project_root), &mut realpaths)
-        {
+        for referenced in reference_path_declaration_files(
+            &path,
+            &content,
+            Some(&project_root),
+            false,
+            &mut realpaths,
+            |_, _| {},
+        ) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
         }
-        for referenced in reference_type_declaration_files(&path, &content, &mut contents) {
+        for referenced in
+            reference_type_declaration_files(&path, &content, &mut contents, |_, _| {})
+        {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -177,75 +189,6 @@ fn collect_ambient_declaration_files_from(
         }
     }
     declarations
-}
-
-/// Configured declaration membership before ambient-only filtering. Nuxt's
-/// generated stubs must not invent globals from unrelated hidden siblings.
-pub(crate) fn collect_declaration_reference_graph(
-    configured_files: &[PathBuf],
-) -> FxHashSet<PathBuf> {
-    collect_declaration_reference_graph_reading(
-        configured_files,
-        DeclarationContents::default(),
-        |_, _| {},
-    )
-}
-
-/// [`collect_declaration_reference_graph`], handing `read` the path and content
-/// of every declaration in the graph as it is read, so a caller that inspects
-/// them reads each file once. A declaration whose text is in `contents`
-/// (a package graph walk already read it) is taken from there, not read again.
-pub(crate) fn collect_declaration_reference_graph_reading(
-    configured_files: &[PathBuf],
-    mut contents: DeclarationContents,
-    mut read: impl FnMut(&Path, &str),
-) -> FxHashSet<PathBuf> {
-    // Reuse the program's already collected roots. Do not walk the workspace
-    // or parse its configuration again for generated-stub discovery.
-    let mut files = configured_files.to_vec();
-    // Configured roots may live outside the app (Nuxt's custom buildDir).
-    // Their explicit references retain membership across that boundary.
-    follow_declaration_references(None, &mut files, &mut contents, &mut read);
-    files
-        .into_iter()
-        .filter(|path| is_declaration_file(path))
-        .collect()
-}
-
-fn follow_declaration_references(
-    project_root: Option<&Path>,
-    files: &mut Vec<PathBuf>,
-    contents: &mut DeclarationContents,
-    read: &mut dyn FnMut(&Path, &str),
-) {
-    let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
-    let mut realpaths = ReferenceRealpaths::default();
-    let mut index = 0;
-    while let Some(path) = files.get(index).cloned() {
-        index += 1;
-        if !is_declaration_file(&path) {
-            continue;
-        }
-        let Some(content) = contents
-            .remove(&path)
-            .or_else(|| fs::read_to_string(&path).ok())
-        else {
-            continue;
-        };
-        read(&path, &content);
-        for referenced in
-            reference_path_declaration_files(&path, &content, project_root, &mut realpaths)
-        {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
-            }
-        }
-        for referenced in reference_type_declaration_files(&path, &content, contents) {
-            if seen.insert(referenced.clone()) {
-                files.push(referenced);
-            }
-        }
-    }
 }
 
 pub(crate) fn collect_tsconfig_type_declaration_files(
@@ -292,7 +235,7 @@ pub(super) fn is_declaration_file(path: &Path) -> bool {
 /// and `declare module "~icons/foo"` must still be loaded for explicit checks,
 /// while bare ambient `declare module "vue"` files without top-level imports or
 /// exports shadow the real package.
-fn declares_shadowing_ambient_module(content: &str) -> bool {
+pub(crate) fn declares_shadowing_ambient_module(content: &str) -> bool {
     if has_top_level_import_or_export(content) {
         return false;
     }
@@ -378,7 +321,9 @@ fn reference_path_declaration_files(
     path: &Path,
     content: &str,
     project_root: Option<&Path>,
+    installed: bool,
     realpaths: &mut ReferenceRealpaths,
+    mut record: impl FnMut(&str, &Path),
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
@@ -386,9 +331,14 @@ fn reference_path_declaration_files(
     reference_directive_lines(content)
         .filter_map(reference_path_attribute)
         .filter_map(|reference| {
-            let resolved = realpaths.resolve(&base_dir.join(reference));
+            let spelled = base_dir.join(reference);
+            let resolved = realpaths.resolve(&spelled);
+            record(reference, &resolved);
+            if installed && path_has_component(&spelled, NODE_MODULES_DIR) {
+                realpaths.installed.insert(resolved.clone());
+            }
             (project_root.is_none_or(|root| resolved.starts_with(root))
-                && !path_has_component(&resolved, NODE_MODULES_DIR)
+                && (installed || !path_has_component(&resolved, NODE_MODULES_DIR))
                 && is_declaration_file(&resolved)
                 && resolved.is_file())
             .then_some(resolved)
@@ -400,6 +350,7 @@ fn reference_type_declaration_files(
     path: &Path,
     content: &str,
     contents: &mut DeclarationContents,
+    mut record: impl FnMut(&str, &[PathBuf]),
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
@@ -407,29 +358,19 @@ fn reference_type_declaration_files(
     reference_type_packages(content)
         .into_iter()
         .flat_map(|reference| {
-            resolve_type_reference_declaration_files_reading(base_dir, reference.as_str(), contents)
+            let targets = resolve_type_reference_declaration_files_reading(
+                base_dir,
+                reference.as_str(),
+                contents,
+            );
+            record(reference.as_str(), &targets);
+            targets
         })
         .collect()
 }
 
 fn reference_path_attribute(line: &str) -> Option<&str> {
-    let line = line.trim_start();
-    if !line.starts_with("///") || !line.contains("<reference") {
-        return None;
-    }
-    attribute_value(line, "path")
-}
-
-fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = vize_l0::cstr!("{name}=");
-    let start = line.find(needle.as_str())? + needle.len();
-    let quote = line.get(start..).unwrap_or_default().chars().next()?;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-    let value_start = start + quote.len_utf8();
-    let value_end = line.get(value_start..).unwrap_or_default().find(quote)? + value_start;
-    line.get(value_start..value_end)
+    reference_attribute(line, "path")
 }
 
 fn is_reference_manifest_declaration(content: &str) -> bool {

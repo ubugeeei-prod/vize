@@ -14,6 +14,8 @@ import {
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 import { beforePropValueOr } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 
+import { beforeSerializedIslandPropsSource } from "../../tools/support/compat/content-mapper/serialized-island-props-transition.ts";
+
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
 const base = "crates/vize_canon/src/virtual_ts/helpers/";
@@ -208,4 +210,27 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   assert.equal(previous.replace(edit.before, edit.after), owned);
   assert.equal(owned.replace(genericEdit.before, genericEdit.after), repairedCurrent);
+});
+
+void test("the island guard inverse authenticates only its two complete source images", () => {
+  const record = JSON.parse(read("tests/_fixtures/tooling/serialized-island-props-13820.json")) as {
+    files: Array<Transition & { path: string; hunks: Array<{ before: string; after: string }> }>;
+  };
+  assert.equal(record.files.length, 2);
+  for (const entry of record.files) {
+    const current = read(entry.path);
+    assert.deepEqual(identity(current), entry.after);
+    const previous = beforeSerializedIslandPropsSource(entry.path, current);
+    assert.deepEqual(identity(previous), entry.before);
+    assert.equal(beforeSerializedIslandPropsSource(entry.path, previous), previous);
+    for (const changed of [
+      current + "\n",
+      current + current,
+      current.replace(entry.hunks[0]!.after, ""),
+    ]) {
+      assert.equal(beforeSerializedIslandPropsSource(entry.path, changed), changed);
+      assert.notDeepEqual(identity(changed), entry.before);
+    }
+    assert.equal(beforeSerializedIslandPropsSource("unowned.ts", current), current);
+  }
 });

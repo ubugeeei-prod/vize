@@ -1,6 +1,6 @@
 //! Nuxt-specific auto-import and plugin injection helpers.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_l0::{FxHashSet, String, ToCompactString, config::VueVersion};
@@ -13,6 +13,7 @@ mod generated_values;
 mod legacy_template_globals;
 mod parsing;
 mod plugins;
+mod reference_graph;
 mod source_scan;
 mod stubs;
 mod tsconfig_aliases;
@@ -28,6 +29,8 @@ mod generated_tests;
 #[cfg(test)]
 mod legacy_template_globals_tests;
 #[cfg(test)]
+mod nuxt4_generated_tests;
+#[cfg(test)]
 mod strict_globals_tests;
 #[cfg(test)]
 mod tests;
@@ -38,6 +41,7 @@ use fallback::{
 use generated::{GeneratedImports, collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
+use reference_graph::installed_reference_stubs;
 use source_scan::collect_source_auto_import_stubs;
 use stubs::{declared_name, is_template_component_binding};
 use tsconfig_aliases::collect_explicit_virtual_module_aliases;
@@ -56,12 +60,20 @@ pub(in crate::commands::check) struct NuxtPathAlias {
     pub(in crate::commands::check) targets: Vec<String>,
 }
 
+#[derive(Default)]
+pub(in crate::commands::check) struct NuxtDetection {
+    pub(in crate::commands::check) path_aliases: Vec<NuxtPathAlias>,
+    pub(in crate::commands::check) declaration_snapshots: Vec<(PathBuf, String)>,
+}
+
 #[cfg(test)]
 pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, None, false, VueVersion::V3)
+    detect(options, cwd, cwd, None, None, false, VueVersion::V3)
+        .expect("Nuxt declarations")
+        .path_aliases
 }
 
 #[cfg(test)]
@@ -69,19 +81,25 @@ pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, None, true, VueVersion::V2_7)
+    detect(options, cwd, cwd, None, None, true, VueVersion::V2_7)
+        .expect("Nuxt declarations")
+        .path_aliases
 }
 
+/// `program_root` is the directory the checked program's virtual project
+/// mirrors. It is `cwd` for a standalone app, and the workspace root for an
+/// app inside one, so the copied component types name their mirrors from it.
 pub(in crate::commands::check) fn detect(
     options: &mut VirtualTsOptions,
     cwd: &Path,
+    program_root: &Path,
     tsconfig_path: Option<&Path>,
     configured_files: Option<&[std::path::PathBuf]>,
     legacy_vue2: bool,
     dialect: VueVersion,
-) -> Vec<NuxtPathAlias> {
+) -> Result<NuxtDetection, String> {
     if !is_nuxt_project_root(cwd) {
-        return Vec::new();
+        return Ok(NuxtDetection::default());
     }
 
     let mut seen_names = FxHashSet::default();
@@ -102,6 +120,7 @@ pub(in crate::commands::check) fn detect(
     let mut collected = Vec::new();
     let generated_dir = resolve_nuxt_generated_dir(cwd);
     let generated_files = generated_dir.dts_files();
+    let mut shadowing_declarations = FxHashSet::default();
     let declaration_graph = configured_files.map(|files| {
         vize_l0::profile!("cli.check.nuxt.declaration_graph", {
             let mut roots = files.to_vec();
@@ -123,17 +142,40 @@ pub(in crate::commands::check) fn detect(
                         .cloned(),
                 );
             }
-            super::tsconfig_inputs::collect_declaration_reference_graph(&roots)
+            super::tsconfig_inputs::collect_installed_declaration_reference_graph_reading(
+                &roots,
+                Default::default(),
+                |path, content| {
+                    if super::tsconfig_inputs::declares_shadowing_ambient_module(content) {
+                        shadowing_declarations.insert(path.to_path_buf());
+                    }
+                },
+            )
         })
     });
+    let mut declaration_snapshots = Vec::new();
+    let installed_references = match (&declaration_graph, configured_files) {
+        (Some(graph), Some(files)) => {
+            declaration_snapshots =
+                reference_graph::safe_declaration_snapshots(graph, &shadowing_declarations)?;
+            installed_reference_stubs(
+                graph,
+                &shadowing_declarations,
+                files,
+                &declaration_snapshots,
+            )
+        }
+        _ => Vec::new(),
+    };
     let GeneratedImports {
         found_manifest: has_generated_imports,
         types: mut type_auto_imports,
     } = collect_generated_stubs(
         cwd,
+        program_root,
         &generated_dir,
         &generated_files,
-        declaration_graph.as_ref(),
+        declaration_graph.as_ref().map(|graph| &graph.files),
         &mut collected,
         &mut seen_names,
         &mut external_template_bindings,
@@ -158,11 +200,10 @@ pub(in crate::commands::check) fn detect(
             &mut seen_names,
             &mut type_auto_imports,
         );
+        // The aliases keep their place ahead of the other fallbacks.
+        let aliases = claim_fallback_type_alias_stubs(&mut type_auto_imports);
+        collected.splice(fallback_aliases_at..fallback_aliases_at, aliases);
     }
-    // Reserve scanned source names before claiming the fallback aliases.
-    // The aliases keep their place ahead of the other fallbacks.
-    let aliases = claim_fallback_type_alias_stubs(&mut type_auto_imports);
-    collected.splice(fallback_aliases_at..fallback_aliases_at, aliases);
     collected.extend(type_auto_imports.render_stub());
     let explicit_aliases = collect_explicit_virtual_module_aliases(tsconfig_path);
     collect_fallback_module_stubs(cwd, &mut collected, &explicit_aliases);
@@ -189,7 +230,7 @@ pub(in crate::commands::check) fn detect(
     options.strict_instance_globals = has_generated_imports && !vue2_dialect;
     collect_generated_template_globals(
         &generated_files,
-        declaration_graph.as_ref(),
+        declaration_graph.as_ref().map(|graph| &graph.files),
         options,
         &seen_names,
         !options.strict_instance_globals,
@@ -203,11 +244,17 @@ pub(in crate::commands::check) fn detect(
         }
     }
 
+    // Triple-slash directives only count ahead of the first statement of the
+    // stub file, so the references lead every other stub.
+    options.auto_import_stubs.splice(0..0, installed_references);
     options.auto_import_stubs.extend(collected);
     let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
     external_template_bindings.sort();
     options.external_template_bindings = external_template_bindings;
-    path_aliases
+    Ok(NuxtDetection {
+        path_aliases,
+        declaration_snapshots,
+    })
 }
 
 /// Whether Nuxt detection for `cwd` supplies `declaration` itself.

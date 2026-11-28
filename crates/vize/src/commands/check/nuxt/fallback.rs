@@ -28,9 +28,11 @@ use fallback_values::fallback_value_stubs;
 /// The fallback type aliases whose names no other stub has claimed, claiming
 /// them in turn.
 ///
-/// The caller runs this after the source scan, so a type the project exports
-/// itself (its own `Component`) keeps its declaration. Generated re-exports
-/// retain their existing precedence over fallback aliases.
+/// Only a project without generated types takes these: with them, the
+/// manifest alone decides which types are global, and one it does not
+/// re-export is not in scope under vue-tsc either, so an alias would hide the
+/// TS2304 it reports. The caller runs this after the source scan, so a type
+/// the project exports itself (its own `Component`) keeps its declaration.
 pub(super) fn claim_fallback_type_alias_stubs(
     type_auto_imports: &mut TypeAutoImports,
 ) -> Vec<String> {
@@ -299,9 +301,8 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
     stubs
 }
 
-/// Type aliases for auto-imported Vue types, for projects whose generated
-/// manifest does not re-export them: no generated types at all, or a Nuxt
-/// version that predates type auto-imports.
+/// Type aliases for auto-imported Vue types, for projects with no generated
+/// types to name them.
 fn fallback_type_alias_stubs() -> Vec<String> {
     vec![
         "type Composer = any;".into(),

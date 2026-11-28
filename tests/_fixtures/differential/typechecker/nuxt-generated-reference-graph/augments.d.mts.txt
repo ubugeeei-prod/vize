@@ -1,0 +1,7 @@
+declare module "server-schema" {
+  interface ServerTypes {
+    event: { path: string };
+  }
+}
+
+export {};

@@ -156,7 +156,9 @@ mod tests {
                 .unwrap()
         };
 
-        project.materialize_for_cli().unwrap();
+        let lock = crate::batch::materialize_lock::MaterializeLock::acquire(project.virtual_root())
+            .unwrap();
+        project.materialize_for_cli(&lock).unwrap();
         let literal = config();
         assert!(literal.get("include").is_none() && literal.get("exclude").is_none());
         let files = literal["files"].as_array().unwrap();

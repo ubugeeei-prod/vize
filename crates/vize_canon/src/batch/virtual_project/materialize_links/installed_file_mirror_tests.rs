@@ -4,6 +4,48 @@ use std::fs;
 
 use super::super::VirtualProject;
 
+#[test]
+fn external_declaration_snapshots_keep_importer_local_dependencies_cold_and_warm() {
+    let workspace = tempfile::tempdir().unwrap();
+    let workspace = fs::canonicalize(workspace.path()).unwrap();
+    let root = workspace.join("app");
+    let package = workspace.join("linked-package");
+    fs::create_dir_all(&root).unwrap();
+    fs::create_dir_all(package.join("node_modules/vue")).unwrap();
+    fs::write(
+        package.join("node_modules/vue/index.d.ts"),
+        "export declare const local: 77;",
+    )
+    .unwrap();
+    let source = "import type { local } from 'vue'; export declare const value: typeof local;";
+    let declaration = package.join("index.d.ts");
+    fs::write(&declaration, source).unwrap();
+    let mut project = VirtualProject::new(&root).unwrap();
+    project
+        .register_declaration_file(&declaration, source)
+        .unwrap();
+    let mirrored = project
+        .find_by_original(&declaration)
+        .unwrap()
+        .virtual_path
+        .clone();
+    let expected = (
+        mirrored.parent().unwrap().join("node_modules"),
+        package.join("node_modules"),
+    );
+    let plan = project.workspace_alias_plan();
+    let cold = project.desired_package_links(&plan);
+    assert_eq!(cold.get(&expected.0), Some(&expected.1));
+    let warm = project.prepare_incremental_package_link_patch(&plan);
+    assert_eq!(warm.desired.get(&expected.0), Some(&expected.1));
+    project.materialize().unwrap();
+    assert_eq!(
+        fs::read_to_string(expected.0.join("vue/index.d.ts")).unwrap(),
+        "export declare const local: 77;"
+    );
+    assert_eq!(fs::read_to_string(declaration).unwrap(), source);
+}
+
 /// Nuxt's generated declarations name `../node_modules/<pkg>/…` by path, so
 /// the mirror rewrites that one file of the package. Its `package.json` and
 /// sibling declarations must stay linked, or a bare `import "pkg"` from any

@@ -44,60 +44,40 @@ pub(super) fn rewrite_import_type_aliases(
     type_annotation: &str,
     aliases: &ImportTypeAliases,
 ) -> String {
-    if aliases.aliases.is_empty() && aliases.values.is_empty() {
+    if (aliases.aliases.is_empty() && aliases.values.is_empty())
+        || !super::dts_type_references::may_reference(type_annotation, |name| {
+            aliases.aliases.contains_key(name) || aliases.values.contains_key(name)
+        })
+    {
         return type_annotation.to_compact_string();
     }
 
     let mut out = String::with_capacity(type_annotation.len());
-    let mut i = 0usize;
-    while let Some(ch) = char_at(type_annotation, i) {
-        if ch == '\'' || ch == '"' || ch == '`' {
-            i = copy_quoted(type_annotation, i, &mut out);
-            continue;
-        }
-        if !is_identifier_start(ch) {
-            out.push(ch);
-            i += ch.len_utf8();
-            continue;
-        }
-
-        let start = i;
-        i += ch.len_utf8();
-        while let Some(ch) = char_at(type_annotation, i).filter(|&ch| is_identifier_char(ch)) {
-            i += ch.len_utf8();
-        }
-
-        let ident = type_annotation.get(start..i).unwrap_or_default();
-        let next = char_at(type_annotation, i);
+    let mut offset = 0;
+    for reference in super::dts_type_references::references(type_annotation) {
+        let start = reference.span.start as usize;
+        let end = reference.span.end as usize;
+        let ident = reference.name.as_str();
         let alias = aliases.aliases.get(ident).or_else(|| {
             follows_typeof(type_annotation, start)
                 .then(|| aliases.values.get(ident))
                 .flatten()
         });
-        if let Some(alias) = alias {
-            match alias {
-                ImportTypeAlias::Namespace { module } if next == Some('.') => {
-                    out.push_str(&render_namespace_reference(module.as_str()));
-                    continue;
-                }
-                ImportTypeAlias::Named { module, imported }
-                    if previous_non_whitespace(type_annotation, start) != Some('.') =>
-                {
-                    out.push_str(&render_named_reference(module.as_str(), imported.as_str()));
-                    continue;
-                }
-                ImportTypeAlias::Default { module }
-                    if previous_non_whitespace(type_annotation, start) != Some('.') =>
-                {
-                    out.push_str(&render_named_reference(module.as_str(), "default"));
-                    continue;
-                }
-                _ => {}
+        let Some(alias) = alias else { continue };
+        let replacement = match alias {
+            ImportTypeAlias::Namespace { module } => render_namespace_reference(module.as_str()),
+            ImportTypeAlias::Named { module, imported } => {
+                render_named_reference(module.as_str(), imported.as_str())
             }
-        }
-        out.push_str(ident);
+            ImportTypeAlias::Default { module } => {
+                render_named_reference(module.as_str(), "default")
+            }
+        };
+        out.push_str(type_annotation.get(offset..start).unwrap_or_default());
+        out.push_str(&replacement);
+        offset = end;
     }
-
+    out.push_str(type_annotation.get(offset..).unwrap_or_default());
     out
 }
 
@@ -230,48 +210,12 @@ fn push_namespace_alias(local: &str, module: &str, aliases: &mut ImportTypeAlias
     }
 }
 
-fn copy_quoted(input: &str, start: usize, out: &mut String) -> usize {
-    let Some(quote) = char_at(input, start) else {
-        return input.len();
-    };
-    let mut i = start;
-    while let Some(ch) = char_at(input, i) {
-        out.push(ch);
-        i += ch.len_utf8();
-        if ch == '\\'
-            && let Some(escaped) = char_at(input, i)
-        {
-            out.push(escaped);
-            i += escaped.len_utf8();
-            continue;
-        }
-        if ch == quote && i > start + quote.len_utf8() {
-            break;
-        }
-    }
-    i
-}
-
-/// The character starting at byte `index`, if `index` is a boundary in `text`.
-fn char_at(text: &str, index: usize) -> Option<char> {
-    text.get(index..)?.chars().next()
-}
-
 fn render_named_reference(module: &str, imported: &str) -> String {
     cstr!("import('{module}').{imported}")
 }
 
 fn render_namespace_reference(module: &str) -> String {
     cstr!("import('{module}')")
-}
-
-fn previous_non_whitespace(input: &str, index: usize) -> Option<char> {
-    input
-        .get(..index)
-        .unwrap_or_default()
-        .chars()
-        .rev()
-        .find(|ch| !ch.is_whitespace())
 }
 
 fn is_identifier(value: &str) -> bool {
@@ -283,11 +227,11 @@ fn is_identifier(value: &str) -> bool {
 }
 
 fn is_identifier_start(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_ascii_alphabetic()
+    oxc_syntax::identifier::is_identifier_start(ch)
 }
 
 fn is_identifier_char(ch: char) -> bool {
-    is_identifier_start(ch) || ch.is_ascii_digit()
+    oxc_syntax::identifier::is_identifier_part(ch)
 }
 
 fn module_export_name<'a>(name: &'a ModuleExportName<'a>) -> Option<&'a str> {
@@ -369,6 +313,19 @@ import type DefaultThing, {
         assert_eq!(
             rewritten.as_str(),
             "import('/workspace/app/types/user').default | import('/workspace/app/types/user').User | import('/workspace/app/types/user').Wrapped"
+        );
+    }
+
+    #[test]
+    fn lexical_rejection_keeps_escaped_import_bindings() {
+        let aliases = collect_import_type_aliases(
+            r"import type { Item as \u0041lias } from './types'",
+            Path::new("/workspace"),
+        );
+        let rewritten = rewrite_import_type_aliases(r"Box<\u0041lias> & { Alias: 1 }", &aliases);
+        assert_eq!(
+            rewritten.as_str(),
+            "Box<import('/workspace/types').Item> & { Alias: 1 }"
         );
     }
 }

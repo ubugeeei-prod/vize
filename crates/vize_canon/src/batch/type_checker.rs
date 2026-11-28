@@ -323,6 +323,25 @@ impl BatchTypeChecker {
         self.foreign_declarations = declarations;
     }
 
+    /// Register caller-owned declaration snapshots after a scan. These copies
+    /// live only in this virtual project, preserving original import contexts.
+    /// Callers that scan or refresh again must register fresh snapshots before
+    /// checking; this method supplies the current batch's declaration inputs.
+    pub fn register_declaration_snapshots(
+        &mut self,
+        declarations: &[(PathBuf, vize_carton::String)],
+    ) -> CorsaResult<()> {
+        if !self.scanned {
+            return Err(CorsaError::NotInitialized);
+        }
+        for (path, source) in declarations {
+            self.project
+                .register_declaration_file(path, source.as_str())?;
+        }
+        self.project.rewrite_snapshot_references(declarations);
+        Ok(())
+    }
+
     /// The declarations a mirror-layout [`Self::emit_declarations`] produced
     /// for this program's own sources, keyed by authored source path.
     pub fn emitted_mirror_declarations(&self, out_dir: &Path) -> Vec<(PathBuf, PathBuf)> {

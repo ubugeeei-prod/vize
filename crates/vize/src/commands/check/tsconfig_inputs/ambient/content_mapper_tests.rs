@@ -189,7 +189,7 @@ fn the_reference_walk_takes_kept_declaration_text_instead_of_reading_again() {
     let mut contents = DeclarationContents::default();
     contents.insert(kept.clone(), VUE_TEMPLATE_REF.into());
     let mut visited = Vec::new();
-    let files = super::collect_declaration_reference_graph_reading(
+    let files = super::graph::collect_declaration_reference_graph_reading(
         std::slice::from_ref(&kept),
         contents,
         |path, content| visited.push((path.to_path_buf(), content.to_owned())),

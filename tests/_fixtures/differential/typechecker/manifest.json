@@ -65140,6 +65140,34 @@
       }
     },
     {
+      "id": "typechecker/nuxt-generated-reference-snapshots/importer-identity",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::nuxt_generated_reference_graph::declaration_snapshots_preserve_parent_types_and_importer_package_identity",
+      "inputs": [
+        {
+          "path": "nuxt-generated-reference-graph/reference-snapshots.json",
+          "role": "declaration-reference-snapshots-and-importer-local-package-identities",
+          "sha256": "d43666a8fce85283b6c51da8ee64b497dc3e912b0b533259e5e5f2aad0dc9d84"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "The ordinary native checker test loads these exact inputs. It observes the original nested bare Vue shim failure, then checks sanitized declaration snapshots with app Vue literal42 and dependency-local Vue literal77, preserves a relative imported type, retains the intentional wrong assignment, and checks original source bytes. Input-only registration; no differential adapter, native parity admission, frozen oracle or historical execution credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/nuxt-referenced-import-manifest-template-ref/default-layout",
       "state": "active",
       "targets": [
@@ -68541,6 +68569,107 @@
               "ts"
             ],
             "selector": "type_projects::tests::pinned_nuxt_config_rewrites_retire_a_revision_only_when_bytes_change; physically consumes the #12871 Nuxt reference graph through Canon ownership snapshot and SFC compile. A content-identical rewrite with a new mtime keeps the captured revision and its watch admission; the nuxt dev exclude edit retires it and recompiles msg:String/required:true. Input-only registration; no native SDK, diagnostic pack or Nuxt dev-server qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/nuxt-generated-reference-graph",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-generated-reference-graph/augments.d.mts.txt",
+          "sha256": "5a898a09aa00445ef9a3f7fcb8d28d1823f8d13a31adcfc00fcbc7e9c111e303",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/box.ts.txt",
+          "sha256": "987b2342ec414f0273f5516aedabcbe6b13150966705b06b7fb687ae5f458830",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/schema-index.d.ts.txt",
+          "sha256": "dc9bd2446067cd2e094f24fe4e245a3f537470e9e52f0d143469b6200e78ef87",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/schema-package.json.txt",
+          "sha256": "78a08b313d57bf194ddc2811c19aa6fd8122403ea0a327a512b57e84de6d4ef5",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/stub.d.ts.txt",
+          "sha256": "770887674ecc3f24c8f9259936b4a5721b128d81b64e828324fed3600a79a505",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/use.ts.txt",
+          "sha256": "43dd3245dcf69c0cbebb053fea543267f429bd48c15c5a4cfeb831665fb436cf",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nuxt_generated_reference_graph::nuxt_generated_reference_graph_reaches_the_program; the two stub forms vize check builds from Nuxt's generated reference graph: a triple-slash reference to an installed declaration (Nitro's augments.d.mts, which .nuxt/nuxt.d.ts references) puts its module augmentation in scope for every program file, and the file-local types of the generated components.d.ts (LazyComponent, IslandComponent) carried in a namespace keep a lazy component's own members and the alias's while leaving no global an authored file can name; the plain-TypeScript rows are what tsc 6.0.3 reports for the same declarations. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/nuxt-island-props-13820",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-island-props-13820/App.vue.txt",
+          "sha256": "52c27c08794b513e339a0761a1da9ab2ca92e8889e8c35ad62a625fc899692d7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/ServerProps.server.vue.txt",
+          "sha256": "5d687a66242bb77733927c447b86af87ac3b66b278b116fef1ff22d417584f5b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/components.d.ts.txt",
+          "sha256": "ff9c3575343c84074a85f6b3665fbb34a46a5bb822ea8161477917062263b30f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/tsconfig.json.txt",
+          "sha256": "bc79059c0f41127361bdc5b835649e4229253fb02875cb9b5a8237b8c602bd50",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nuxt_island_props::serialized_islands_check_wrong_and_missing_props_like_plain_components; a generated SFC keeps wrong-type and missing-required-prop diagnostics through the serialized IslandComponent constructor used by Nuxt. Plain-component controls use the same source. Input-only registration; no native parity claim."
           }
         ]
       }

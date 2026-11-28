@@ -8,7 +8,11 @@ mod dts_ast;
 #[cfg(test)]
 mod dts_ast_tests;
 mod dts_import_aliases;
+mod dts_local_types;
+#[cfg(test)]
+mod dts_local_types_tests;
 mod dts_rewrite;
+mod dts_type_references;
 mod imports;
 pub(super) mod imports_aliases;
 mod imports_package_routes;

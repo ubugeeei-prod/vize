@@ -7,6 +7,7 @@ use super::super::{TypeCheckResult, VirtualProject};
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::DiagnosticMapper;
+use crate::batch::virtual_project::CliBuildInfo;
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
@@ -44,8 +45,11 @@ use shard_sizing::shard_count;
 mod run;
 pub(super) use outcome::CliCheckFailure as CheckFailure;
 pub(super) use run::{
-    auto_server_count, check_with_cli, check_with_cli_classified, check_with_cli_sharded,
+    auto_server_count, check_with_cli, check_with_cli_classified_materialized,
+    check_with_cli_sharded_materialized,
 };
+#[cfg(test)]
+pub(super) use run::{check_with_cli_classified, check_with_cli_sharded};
 
 struct ShardPlan<'a> {
     /// Virtual paths to include per shard (owned Vue files plus every shared
@@ -74,8 +78,12 @@ fn run_cli_for_config(
     config_path: &Path,
     checkers: usize,
     owns: &dyn Fn(&Path) -> bool,
+    materialized: Option<&CliBuildInfo<'_>>,
 ) -> CliCheckResult {
-    let build_info = project.cli_build_info_path(config_path);
+    let build_info = match materialized {
+        Some(materialized) => materialized.build_info_path(project, config_path)?,
+        None => project.cli_build_info_path(config_path),
+    };
     let recorded = RecordedBuildInfo::read(&build_info);
     let mut output = run_cli_command(corsa_path, project, config_path, &build_info, checkers)?;
     if recorded.is_some_and(|recorded| {

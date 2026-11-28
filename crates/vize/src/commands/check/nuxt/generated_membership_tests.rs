@@ -5,17 +5,8 @@ use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_l0::config::VueVersion;
 
 fn assert_complete_stubs(options: &VirtualTsOptions, mut expected: Vec<&str>) {
+    // Every case has a generated manifest, which leaves no fallback type alias.
     expected.extend([
-        "type Composer = any;",
-        "type Ref<T = any> = import('vue').Ref<T>;",
-        "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
-        "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
-        "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
-        "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
-        "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
-        "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
-        "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
-        "type Component = import('vue').Component;",
         "declare function defineNuxtConfig<T extends Record<string, any>>(config: T): T;",
         "declare const NuxtLink: any;",
         "declare const NuxtPage: any;",
@@ -117,11 +108,13 @@ fn configured_generated_stubs_follow_references_and_literal_includes() {
         super::detect(
             &mut options,
             &root,
+            &root,
             Some(&config),
             Some(&files),
             false,
             VueVersion::V3,
-        );
+        )
+        .unwrap();
         let mut expected = vec![
             "declare const useConfigured: () => string;",
             "declare const referencedGlobal: number;",
@@ -184,11 +177,13 @@ fn configured_generated_stubs_follow_custom_build_dir_outside_the_app() {
     super::detect(
         &mut options,
         &app,
+        &app,
         Some(&config),
         Some(&files),
         false,
         VueVersion::V3,
-    );
+    )
+    .unwrap();
     assert_complete_stubs(
         &options,
         vec!["declare const useOutsideBuildDir: () => string;"],
@@ -234,11 +229,13 @@ fn configured_pure_manifest_retains_imports_after_ambient_root_filtering() {
     super::detect(
         &mut options,
         &root,
+        &root,
         Some(&config),
         Some(&files),
         false,
         VueVersion::V3,
-    );
+    )
+    .unwrap();
     assert_complete_stubs(&options, vec!["declare const useConfigured: () => string;"]);
     assert_complete_template_globals(&options, vec![]);
     assert!(options.strict_instance_globals);

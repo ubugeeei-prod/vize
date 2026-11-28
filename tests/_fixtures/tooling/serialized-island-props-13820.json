@@ -1,0 +1,90 @@
+{
+  "schema": "vize.serializedIslandPropsSource.v1",
+  "issue": 13820,
+  "sourceRevision": "6d053492b97718939ca9cd34b9e8e2976ed2e3f3",
+  "beforeSourceRevision": "84835693f6f67fc12770ff5b0b80df5b679ef5ca",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "historicalReconstructionOnly": true,
+  "compiledPreambleCapture": "VIZE_CANON_CAPTURE_ISLAND_PREAMBLES=/tmp/island-preambles.json cargo test -p vize_canon --profile ci --test empty_vue_star_exports serialized_island_props::tests::exact_current_sources_and_both_preambles_restore_without_new_credit -- --nocapture",
+  "beforePreambleRole": "Exact single-line inverse, authenticated by the unchanged predecessor-chain tests",
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 9797,
+        "sha256": "92f4e4462707432d2e41b5c63674fb5b912e6a8812c4d777f87783f9ce9010de"
+      },
+      "after": {
+        "bytes": 9792,
+        "sha256": "a1b1ff6fbb6d309bff3ec6a8b8a4cc659a99445f795b3b91ea37e35868bee428"
+      },
+      "hunks": [
+        {
+          "before": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;",
+          "after": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? unknown extends __P ? false : true : false : false;"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_prop_checker/check_helpers.rs",
+      "before": {
+        "bytes": 23975,
+        "sha256": "a51e98bb9cf2b487b2ea2057208a90058698ed2f47f8d7b1a4feee21177639cf"
+      },
+      "after": {
+        "bytes": 24130,
+        "sha256": "208150261d625b0227ceeb1b38e13d9a1a6ada71a7bbb617a6c4b8cbbeaca6d5"
+      },
+      "hunks": [
+        {
+          "before": "    ts.push_str(\n        \"  type $HasInstanceRawProps<C>",
+          "after": "    // A wrapper's final constructor can infer `unknown` for the optional raw\n    // marker. Only a known instance shape may take precedence over static props.\n    ts.push_str(\n        \"  type $HasInstanceRawProps<C>"
+        },
+        {
+          "before": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;",
+          "after": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? unknown extends __P ? false : true : false : false;"
+        }
+      ]
+    }
+  ],
+  "compiledPreambles": [
+    {
+      "name": "shared",
+      "before": {
+        "bytes": 58391,
+        "sha256": "3c64c8f55d8c6bbeb5e39c4fae676c36a8546245b5895ad8df09af9123b412f4"
+      },
+      "after": {
+        "bytes": 58386,
+        "sha256": "2b8bb680592a095ff636cf4b7740b8c3dcdbf456aa714c22c8fcdb424f0fce17"
+      },
+      "hunks": [
+        {
+          "before": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;",
+          "after": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? unknown extends __P ? false : true : false : false;"
+        }
+      ]
+    },
+    {
+      "name": "strict",
+      "before": {
+        "bytes": 58182,
+        "sha256": "bb0d1e6d191f1acbbbd6ed4503569e5f622628f4588e57aa9f11ccf7e6058ef5"
+      },
+      "after": {
+        "bytes": 58177,
+        "sha256": "41e43881639e00a5d65353eb2f263e34e671346d0383c8606db8137cc12277b2"
+      },
+      "hunks": [
+        {
+          "before": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;",
+          "after": "type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? unknown extends __P ? false : true : false : false;"
+        }
+      ]
+    }
+  ]
+}
