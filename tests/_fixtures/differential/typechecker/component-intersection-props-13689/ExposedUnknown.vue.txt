@@ -1,0 +1,2 @@
+<script setup lang="ts">defineProps<{ own: string }>();defineExpose<{ __vizeRawProps?: unknown }>();</script>
+<template><div /></template>

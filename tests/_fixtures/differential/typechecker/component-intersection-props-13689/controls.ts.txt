@@ -1,0 +1,162 @@
+import type { $ComponentUsageProps as Props, $UsageProps as Usage } from 'vize:virtual-ts';
+import Child from './Child.vue';
+import Second from './Second.vue';
+import Generic from './Generic.vue';
+import type { Left, Right, EmptyLeft, EmptyRight, RequiredLeft, RequiredRight } from './lazy';
+const left: Usage<typeof Left> = { label: 'Ready', hydrateOnIdle: true };
+const right: Usage<typeof Right> = { label: 'Ready', hydrateOnIdle: 100 };
+const emptyLeft: Usage<typeof EmptyLeft> = { hydrateOnIdle: true };
+const emptyRight: Usage<typeof EmptyRight> = { hydrateOnIdle: 100 };
+const defaults: Usage<typeof Child> = { label: 'Ready' };
+const defaultsFalse: Usage<typeof Child> = { label: 'Ready', enabled: false };
+// @ts-expect-error wrapper values remain typed
+const wrong: Usage<typeof Left> = { label: 'Ready', hydrateOnIdle: 'later' };
+// @ts-expect-error the required SFC prop remains required
+const missing: Usage<typeof Right> = { hydrateOnIdle: true };
+// @ts-expect-error an ordinary SFC remains closed
+const ordinary: Usage<typeof Child> = { label: 'Ready', hydrateOnIdle: true };
+// @ts-expect-error unknown wrapper properties remain unknown
+const unknown: Usage<typeof Left> = { label: 'Ready', other: true };
+// @ts-expect-error exact optional property types stay exact
+const absent: Usage<typeof Right> = { label: 'Ready', hydrateOnIdle: undefined };
+// @ts-expect-error an empty wrapped SFC retains hydration value types
+const emptyWrong: Usage<typeof EmptyRight> = { hydrateOnIdle: 'wrong' };
+// @ts-expect-error wrapper requiredness is preserved
+const required: Usage<typeof RequiredLeft> = { label: 'Ready' };
+const requiredRight: Usage<typeof RequiredRight> = { label: 'Ready', token: 'yes' };
+// @ts-expect-error boolean defaults do not widen the prop type
+const wrongDefault: Usage<typeof Child> = { label: 'Ready', enabled: 123 };
+type ExtraRaw = { new(): { readonly __vizeRawProps?: { extra: number }; $props: { extra: number } } };
+const last: Props<typeof Child & ExtraRaw> = { extra: 1 };
+// @ts-expect-error the final raw constructor remains authoritative
+const oldRaw: Props<typeof Child & ExtraRaw> = { label: 'Ready' };
+const first: Props<ExtraRaw & typeof Child> = { label: 'Ready' };
+// @ts-expect-error the generated raw constructor is last
+const wrongFirst: Props<ExtraRaw & typeof Child> = { extra: 1 };
+const two: Props<typeof Child & typeof Second> = { count: 1 };
+// @ts-expect-error distinct generated components must not share the static fast path
+const wrongTwo: Props<typeof Child & typeof Second> = { label: 'Ready' };
+const reversed: Props<typeof Second & typeof Child> = { label: 'Ready' };
+// @ts-expect-error the reverse intersection keeps its final instance raw props
+const wrongReversed: Props<typeof Second & typeof Child> = { count: 1 };
+type Legacy = { readonly __vizeComponentMarker: true; new(): { readonly __vizeRawProps?: { legacy: string }; $props: { legacy: string } } };
+const legacy: Props<Legacy> = { legacy: 'yes' };
+// @ts-expect-error legacy components without static metadata remain strict
+const badLegacy: Props<Legacy> = { legacy: 1 };
+type Conflict = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { static: string }; new(): { readonly __vizeRawProps?: { instance: number }; $props: { instance: number } } };
+const conflict: Props<Conflict> = { instance: 1 };
+// @ts-expect-error instance metadata still takes precedence over static metadata
+const badConflict: Props<Conflict> = { static: 'bad' };
+const loose: Props<any> = { unrelated: 1 };
+const unknownProps: Props<unknown> = {};
+const unionA: Props<typeof Child | Legacy> = { label: 'Ready' };
+const unionB: Props<typeof Child | Legacy> = { legacy: 'Ready' };
+type AssertNever<T extends never> = T;
+type NeverRemainsNever = AssertNever<Props<never>>;
+const generic: Usage<typeof Generic> = { value: 1, identity: (value: number) => value };
+Generic.__vizeCheck({ value: 1, identity: (value: number) => value });
+// @ts-expect-error the generic __vizeCheck path retains its inference
+Generic.__vizeCheck({ value: 1, identity: (value: string) => value });
+
+import Authored from './Authored.vue';
+import type { $ComponentRawProps as Raw } from 'vize:virtual-ts';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+const authoredRawPrecedence: Equal<Raw<typeof Authored>, Props<typeof Authored>> = true;
+
+import Emit from './Emit.vue';
+import Fresh from './Fresh.vue';
+import type { DefineComponent } from 'vue';
+type Mixed = typeof Emit | DefineComponent<{ hydrateOnIdle?: number | true }>;
+const mixedRawPrecedence: Equal<Raw<Mixed>, Props<Mixed>> = true;
+const mixedListener: Props<Mixed> = { label: 'Ready', onSave: (value: number) => {} };
+const freshSelf: Equal<ReturnType<NonNullable<typeof Fresh.__vizeComponentSelf>>, typeof Fresh> = true;
+
+import StaticNever from './StaticNever.vue';
+import StaticOpen from './StaticOpen.vue';
+import StaticLiteral from './StaticLiteral.vue';
+import StaticPattern from './StaticPattern.vue';
+type Hydration = DefineComponent<{ hydrateOnIdle?: number | true }>;
+const staticNeverLeft: Props<Hydration & typeof StaticNever>['hydrateOnIdle'] = true;
+const staticNeverRight: Props<typeof StaticNever & Hydration>['hydrateOnIdle'] = 100;
+const staticOpenLeft: Props<Hydration & typeof StaticOpen>['hydrateOnIdle'] = true;
+const staticOpenRight: Props<typeof StaticOpen & Hydration>['hydrateOnIdle'] = 100;
+const staticLiteralLeft: Props<Hydration & typeof StaticLiteral>['hydrateOnIdle'] = true;
+const staticLiteralRight: Props<typeof StaticLiteral & Hydration>['hydrateOnIdle'] = 100;
+const staticPatternLeft: Props<Hydration & typeof StaticPattern>['hydrateOnIdle'] = true;
+const staticPatternRight: Props<typeof StaticPattern & Hydration>['hydrateOnIdle'] = 100;
+// @ts-expect-error poisoned static metadata does not widen the wrapper values
+const staticNeverWrong: Props<Hydration & typeof StaticNever>['hydrateOnIdle'] = 'wrong';
+// @ts-expect-error poisoned static metadata does not widen the wrapper values
+const staticOpenWrong: Props<typeof StaticOpen & Hydration>['hydrateOnIdle'] = 'wrong';
+// @ts-expect-error a static-only literal is not the canonical owned prop
+const staticLiteralWrong: Props<typeof StaticLiteral & Hydration>['hydrateOnIdle'] = 'wrong';
+// @ts-expect-error a static-only pattern is not the canonical owned prop
+const staticPatternWrong: Props<Hydration & typeof StaticPattern>['hydrateOnIdle'] = 'wrong';
+import OwnLiteral from './OwnLiteral.vue';
+import OwnPattern from './OwnPattern.vue';
+import OwnIndex from './OwnIndex.vue';
+const ownLiteral: Props<Hydration & typeof OwnLiteral> = { own: 'Ready', hydrateOnIdle: 100 };
+// @ts-expect-error a wrapper cannot widen a real own literal prop
+const ownLiteralWrong: Props<Hydration & typeof OwnLiteral> = { own: 'Ready', hydrateOnIdle: true };
+const ownPattern: Props<Hydration & typeof OwnPattern> = { own: 'Ready', hydrateOnIdle: 100 };
+// @ts-expect-error a wrapper cannot widen a real own pattern prop
+const ownPatternWrong: Props<Hydration & typeof OwnPattern> = { own: 'Ready', hydrateOnIdle: true };
+const ownIndex: Props<Hydration & typeof OwnIndex> = { hydrateOnIdle: 100, other: 123 };
+// @ts-expect-error a wrapper cannot widen a real own string index
+const ownIndexWrong: Props<Hydration & typeof OwnIndex> = { hydrateOnIdle: true };
+import Exposed from './Exposed.vue';
+import ExposedAny from './ExposedAny.vue';
+import ExposedUnknown from './ExposedUnknown.vue';
+import ExposedNever from './ExposedNever.vue';
+const exposedSame: Equal<Raw<typeof Exposed>, Props<typeof Exposed>> = true;
+const exposedGood: Props<typeof Exposed> = { own: 'Ready', exposed: 1 };
+// @ts-expect-error exposed raw metadata remains typed
+const exposedWrong: Props<typeof Exposed> = { own: 'Ready', exposed: 'wrong' };
+const exposedAnySame: Equal<Raw<typeof ExposedAny>, Props<typeof ExposedAny>> = true;
+const exposedUnknownSame: Equal<Raw<typeof ExposedUnknown>, Props<typeof ExposedUnknown>> = true;
+const exposedNeverSame: Equal<Raw<typeof ExposedNever>, Props<typeof ExposedNever>> = true;
+const exposedAnyUnion: Equal<Raw<typeof ExposedAny | typeof Emit>, Props<typeof ExposedAny | typeof Emit>> = true;
+const exposedUnknownUnion: Equal<Raw<typeof ExposedUnknown | typeof Emit>, Props<typeof ExposedUnknown | typeof Emit>> = true;
+const exposedNeverUnion: Equal<Raw<typeof ExposedNever | typeof Emit>, Props<typeof ExposedNever | typeof Emit>> = true;
+const generatedUnion: Equal<Raw<typeof Emit | typeof OwnLiteral>, Props<typeof Emit | typeof OwnLiteral>> = true;
+const generatedIndexUnion: Equal<Raw<typeof OwnLiteral | typeof OwnIndex>, Props<typeof OwnLiteral | typeof OwnIndex>> = true;
+
+// Semantic base keys include authored Options API and aliased/union/index exposes.
+import RawMethods from './RawMethods.vue';
+const RawMethodsRawPrecedence: Equal<Raw<typeof RawMethods>, Props<typeof RawMethods>> = true;
+import RawComputed from './RawComputed.vue';
+const RawComputedRawPrecedence: Equal<Raw<typeof RawComputed>, Props<typeof RawComputed>> = true;
+import RawSetup from './RawSetup.vue';
+const RawSetupRawPrecedence: Equal<Raw<typeof RawSetup>, Props<typeof RawSetup>> = true;
+import ExposedAlias from './ExposedAlias.vue';
+const ExposedAliasRawPrecedence: Equal<Raw<typeof ExposedAlias>, Props<typeof ExposedAlias>> = true;
+import ExposedUnion from './ExposedUnion.vue';
+const ExposedUnionRawPrecedence: Equal<Raw<typeof ExposedUnion>, Props<typeof ExposedUnion>> = true;
+import ExposedOpen from './ExposedOpen.vue';
+const ExposedOpenRawPrecedence: Equal<Raw<typeof ExposedOpen>, Props<typeof ExposedOpen>> = true;
+import ExposedPattern from './ExposedPattern.vue';
+const ExposedPatternRawPrecedence: Equal<Raw<typeof ExposedPattern>, Props<typeof ExposedPattern>> = true;
+import ExposedNoRawUnion from './ExposedNoRawUnion.vue';
+const ExposedNoRawUnionRawPrecedence: Equal<Raw<typeof ExposedNoRawUnion>, Props<typeof ExposedNoRawUnion>> = true;
+import OptionalSource from './OptionalSource.vue';
+const OptionalSourceRawPrecedence: Equal<Raw<typeof OptionalSource>, Props<typeof OptionalSource>> = true;
+const methodRawReturn: ReturnType<Raw<typeof RawMethods>> = { fromMethods: 1 };
+const computedRawValue: Raw<typeof RawComputed>['fromComputed'] = 1;
+// @ts-expect-error computed raw metadata retains its value type
+const computedRawWrong: Props<typeof RawComputed>['fromComputed'] = 'wrong';
+const setupRawValue: Raw<typeof RawSetup>['fromSetup'] = 1;
+// @ts-expect-error setup-exposed raw metadata retains its value type
+const setupRawWrong: Props<typeof RawSetup>['fromSetup'] = 'wrong';
+const exposedAlias: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 1 };
+// @ts-expect-error aliased expose raw metadata stays required
+const exposedAliasMissing: Props<typeof ExposedAlias> = { own: 'Ready' };
+// @ts-expect-error aliased expose raw metadata stays typed
+const exposedAliasWrong: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 'wrong' };
+
+// Unrelated exposed members can reduce the complete instance to never.
+import ExposedConflictingProps from './ExposedConflictingProps.vue';
+const ExposedConflictingPropsRawPrecedence: Equal<Raw<typeof ExposedConflictingProps>, Props<typeof ExposedConflictingProps>> = true;
+import ExposedConflictingEmit from './ExposedConflictingEmit.vue';
+const ExposedConflictingEmitRawPrecedence: Equal<Raw<typeof ExposedConflictingEmit>, Props<typeof ExposedConflictingEmit>> = true;
+import ExposedConflictingSlots from './ExposedConflictingSlots.vue';
+const ExposedConflictingSlotsRawPrecedence: Equal<Raw<typeof ExposedConflictingSlots>, Props<typeof ExposedConflictingSlots>> = true;

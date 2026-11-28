@@ -1,0 +1,5 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ label: string; enabled?: boolean }>(), { enabled: true });
+defineSlots<{ default(props: { item: string }): unknown }>();
+</script>
+<template><slot :item="label" /></template>

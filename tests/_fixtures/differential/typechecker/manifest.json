@@ -66082,6 +66082,245 @@
       }
     },
     {
+      "id": "typechecker/regression/component-intersection-props-13689",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-intersection-props-13689/Authored.vue.txt",
+          "sha256": "e8e2adae01d695e6b17d344678745aac321ccb734cf5984f8edcb37e4b4d99d6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Child.vue.txt",
+          "sha256": "a8024cb81346dbd034dd0f551b93a5ed1511eea85d3f854d734b3bb16abcb4ea",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Emit.vue.txt",
+          "sha256": "ae8d2b8d9cc555d91acbb6a32d0f6151f37e14def7c93fe67538f40e5cdf701c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Empty.vue.txt",
+          "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Exposed.vue.txt",
+          "sha256": "315f2853241625b529fdef4cc8138061e9d7b1c77fc75172af040b00effc29b5",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedAlias.vue.txt",
+          "sha256": "4243cab878ef0a56149978eb8314eb1e5297cd7fd1e5a2a71d1109d8fd6c7a3a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedAny.vue.txt",
+          "sha256": "eb7ff59270b7d79829f75947b3e0059b1b7f786d2ef504a0cc518a79259846c4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedConflictingEmit.vue.txt",
+          "sha256": "e07e4e3789396d6778618f6d1c218a6d791a7d6ef8b1e04a9f16ad584a1c89c5",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedConflictingProps.vue.txt",
+          "sha256": "7403634ef84ee0b8f125a9f3c184a9557b44015ccad61add711329cc7ef8639f",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedConflictingSlots.vue.txt",
+          "sha256": "de7aa0a35588db818f8c66b81171d7081443e1c404bd0074d6b4e1d9754965be",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedNever.vue.txt",
+          "sha256": "b8ae859139dde73c6dbe346587f1a8a01dedbe31cdc3257a4e152fa6700ae91a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedNoRawUnion.vue.txt",
+          "sha256": "7b8420829381a6088f4f25ff5a1a7733f57528b48e43210564eaedbddf08f4fe",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedOpen.vue.txt",
+          "sha256": "72c702eac6e818c0aad21227efb8c9f38542aec7c2966efb481ea19122c13260",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedPattern.vue.txt",
+          "sha256": "2bc239ed3b2945f54d18cd24d197c91aafe07e520cf5d5118f15df6ddb6a8ffe",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedUnion.vue.txt",
+          "sha256": "d200a9caa068a20b1eb6875404dd9307f9802e23819665129c03f70277a1fa03",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedUnknown.vue.txt",
+          "sha256": "1777f8d0fff1498168f22cbc359a8b14035ab682a510c579011e0045c11f0bdf",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Fresh.vue.txt",
+          "sha256": "ebafb5f7f274ec7b0d2922b0dfb0efc7a89d7701169f14f2e60bade13adf55e3",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Generic.vue.txt",
+          "sha256": "3455f72880ed1e2f8a2a93753e30d615d4ea58210d59c932979b367c034219de",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Invalid.vue.txt",
+          "sha256": "b73cd5c02f6766e7d0e6b8820a5c72e13d12a46b5c50da173e1ddb1ab4c12f22",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/OptionalSource.vue.txt",
+          "sha256": "53e2d10b09724a5441de3a8f69db762c684405a1313f9f43994c8659ea8885e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/OwnIndex.vue.txt",
+          "sha256": "ef14906c366a3a652c99b9fad037f0ae73dc056f579606317e6351dafb90a379",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/OwnLiteral.vue.txt",
+          "sha256": "84a015055bd26f2d2120da7bf6c0f6cc9708d03bb5507482801acf8c2d50e8c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/OwnPattern.vue.txt",
+          "sha256": "bca588c7c9b8f9bade5af659f2c1d3b2fb3b59f2baabb45b4b0593daf1c00cf6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawComputed.vue.txt",
+          "sha256": "ab910d2015ccce7521212b38f48278dbe09580cfcf5550717753b39b3b8d743f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawMethods.vue.txt",
+          "sha256": "8ccf17afae945abd4d7f0aa4c03ea65ac35fe929a86b0f9d003337960be2a7bf",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawSetup.vue.txt",
+          "sha256": "572d21daeaff1159c512f4b581350efbc053afb73349210f02201567b4cecfea",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Second.vue.txt",
+          "sha256": "e7a2db2cfe181a41c1109f3c8fe5e08feec4864f568f7f59d259b861d9ae3a0f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/StaticLiteral.vue.txt",
+          "sha256": "87e714f5b998b0b4c80b4229a23f254993ba6d9d394dabeb9bc7b4c5761c77a8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/StaticNever.vue.txt",
+          "sha256": "5dd0d0ed3c9a29cd908209953a3bb2905a771dd470032261c4bc9c1fedceba19",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/StaticOpen.vue.txt",
+          "sha256": "61b1d6c91fb8aefbe91f7edac927fd8ade86a9e2f15346910048e2be8020cba1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/StaticPattern.vue.txt",
+          "sha256": "420b2b929a34d88b6dc881691ffd3598b31fe25235fc3533e76d4f6cb71d754f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/Valid.vue.txt",
+          "sha256": "cce2220c4c9d47e9de9bed7f12ee9247ab865e29d2c4cc1dc0bd4a00852c2f59",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/controls.ts.txt",
+          "sha256": "97f6e6bd28686fd49d1fb68a2a2701fe0175ccd09a1739233461dfe076599644",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/Augmented.vue.txt",
+          "sha256": "ad64a61efdc22531a97d1ab322a13d165c3e3f614255fa0a254bcfda47b2d712",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/any.d.ts.txt",
+          "sha256": "959d4648c2c7e2426e2170392f0cd23b10e1fcaf22dd3e01545bd36f8ff32755",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/controls.ts.txt",
+          "sha256": "7cd952b1b0d46c5a3002775c08241de07e89e3e0bbac279884e3b53b05d3eec3",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/never.d.ts.txt",
+          "sha256": "4cdfd712f50f9b402f1cdf43ce95c8f4c740a6899e90eeb995562ca09738caf8",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/object-controls.ts.txt",
+          "sha256": "00760a50978890ebaea7aacfb205f0deadab8abe6d9ea81fdd21298444749965",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/object.d.ts.txt",
+          "sha256": "84f97c2f07e558c98fdf65de97a92c5edf5437fe490a1d12ab737e1be050b28c",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/globals/unknown.d.ts.txt",
+          "sha256": "045e2357c908bff9a960d59791b4567320f2a7166d944005a48ff55e70feccad",
+          "role": "regression-control"
+        },
+        {
+          "path": "component-intersection-props-13689/lazy.ts.txt",
+          "sha256": "6762d38493bca69beb44d5d18d9cfd878530797dbaf5bae1a002abfe668d9b75",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/tsconfig.json.txt",
+          "sha256": "ca0b006d5729313973d4b5c50385be6159e6e97e5c9efeb24aa982c2ccc6abaf",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/tsconfig.oracle.json.txt",
+          "sha256": "e53efc679be6e155b46b99177af08ad03ae9a89699bcd5232acd9e3917081953",
+          "role": "regression-control"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "intersection_component_props::intersection_props_match_the_vue_tsc_negative_controls and content_mapper::tests::intersection_props::intersection_props_preserve_complete_inline_and_shared_typescript_contracts; complete real-Vue imports in both intersection orders, strict own/wrapper values, defaults/requiredness, empty components, repeated/closure/root-slot constructor-pair usage, complete inline/shared TS6 modules and native batch diagnostics; input registration, no whole-product performance or native parity credit"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/component-listener-branch-narrowing-11730",
       "state": "active",
       "targets": [

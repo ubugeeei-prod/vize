@@ -1,0 +1,7 @@
+<script lang="ts">
+import { defineComponent, type DefineComponent } from 'vue';
+type PrivateInstance = InstanceType<DefineComponent<{}>>;
+declare const Base: { readonly __vizeRawProps?: { inherited: number }; new(): PrivateInstance };
+export default defineComponent({}) as unknown as typeof Base;
+</script>
+<template><div /></template>

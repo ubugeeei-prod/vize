@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ own: string }>();
+defineExpose<{ $emit: null }>();
+</script>
+<template><div /></template>

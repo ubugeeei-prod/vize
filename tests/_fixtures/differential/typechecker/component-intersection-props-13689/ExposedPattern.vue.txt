@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{own:string}>();type Surface={[key:`__vize${string}`]:{fromPattern:number}};defineExpose({} as Surface);</script>

@@ -1,0 +1,1 @@
+<script lang="ts">import {defineComponent} from 'vue'; export default defineComponent({props:{own:{type:String,required:true}},methods:{__vizeRawProps(){return {fromMethods:1}}}});</script>

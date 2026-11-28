@@ -1,0 +1,10 @@
+import type { DefineComponent } from 'vue';
+import Child from './Child.vue';
+import Empty from './Empty.vue';
+type HydrationStrategies = { hydrateOnIdle?: number | true };
+export declare const Left: DefineComponent<HydrationStrategies> & typeof Child;
+export declare const Right: typeof Child & DefineComponent<HydrationStrategies>;
+export declare const EmptyLeft: DefineComponent<HydrationStrategies> & typeof Empty;
+export declare const EmptyRight: typeof Empty & DefineComponent<HydrationStrategies>;
+export declare const RequiredLeft: DefineComponent<{ token: string }> & typeof Child;
+export declare const RequiredRight: typeof Child & DefineComponent<{ token: string }>;

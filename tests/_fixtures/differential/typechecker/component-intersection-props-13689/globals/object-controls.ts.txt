@@ -1,0 +1,6 @@
+const original: Raw<typeof Augmented> = { own: 'Ready', augmented: 1 };
+const complete: Usage<typeof Augmented> = { own: 'Ready', augmented: 1 };
+// @ts-expect-error global raw metadata remains typed
+const invalid: Usage<typeof Augmented> = { own: 'Ready', augmented: 'wrong' };
+// @ts-expect-error global raw metadata remains required
+const missing: Usage<typeof Augmented> = { own: 'Ready' };

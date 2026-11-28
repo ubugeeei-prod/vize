@@ -1,0 +1,10 @@
+import Augmented from './Augmented.vue';
+import type { $ComponentRawProps as Raw, $ComponentUsageProps as Usage } from 'vize:virtual-ts';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+const same: Equal<Raw<typeof Augmented>, Usage<typeof Augmented>> = true;
+declare const prior: Raw<typeof Augmented>;
+declare const next: Usage<typeof Augmented>;
+const priorToNext: Usage<typeof Augmented> = prior;
+const nextToPrior: Raw<typeof Augmented> = next;
+// @ts-expect-error raw metadata does not widen an own value
+const wrong: Usage<typeof Augmented> = { own: 123 };

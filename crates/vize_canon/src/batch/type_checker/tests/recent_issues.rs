@@ -53,6 +53,7 @@ mod import_meta;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
 mod instance_input_keys;
+mod intersection_component_props;
 mod javascript_sfc_membership;
 mod jsx_map_template_refs;
 mod large_declaration_identity;

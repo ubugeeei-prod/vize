@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{own:string}>();type Surface={readonly __vizeRawProps:{fromUnion:number}}|{other:true};defineExpose({} as Surface);</script>

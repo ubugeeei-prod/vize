@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { Left, Right, EmptyLeft, EmptyRight, RequiredLeft, RequiredRight } from './lazy';
+</script>
+<template>
+  <EmptyLeft hydrate-on-idle />
+  <EmptyRight :hydrate-on-idle="100" />
+  <Left label="Ready" hydrate-on-idle />
+  <Left label="Again" :hydrate-on-idle="200" />
+  <Right label="Ready" :enabled="false" hydrate-on-idle />
+  <RequiredLeft label="Ready" token="yes" />
+  <RequiredRight label="Ready" token="yes" />
+  <Left label="Slots" hydrate-on-idle><template #default="{ item }">{{ item.toUpperCase() }}</template></Left>
+  <Right label="Slots" hydrate-on-idle><template #default="{ item }">{{ item.toUpperCase() }}</template></Right>
+  <Left v-for="n in 2" :key="n" :label="String(n)" hydrate-on-idle />
+</template>
