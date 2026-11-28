@@ -12,8 +12,17 @@ const commands: readonly (readonly [string, readonly string[]])[] = [
   [process.execPath, ["tools/ci/workflows/06-native-application-host/scripts/qualify-sdk.ts"]],
   [process.execPath, ["npm/native-host-fixture/scripts/build-compiler.ts"]],
   ["vp", ["run", "--filter", "./npm/marquette", "build"]],
+  ["vp", ["run", "--filter", "./npm/builder/vite", "build"]],
   ["vp", ["run", "--filter", "./npm/native-host-fixture", "check:types"]],
-  [process.execPath, ["--test", "npm/native-host-fixture/test/application.test.ts"]],
+  [
+    process.execPath,
+    [
+      "--test",
+      "--test-concurrency=1",
+      "npm/native-host-fixture/test/application.test.ts",
+      "npm/native-host-fixture/test/development.test.ts",
+    ],
+  ],
   [process.execPath, ["npm/native-host-fixture/scripts/qualify-host.ts"]],
 ];
 for (const [program, args] of commands) {

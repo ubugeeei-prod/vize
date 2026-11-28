@@ -4,6 +4,11 @@ import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createNativeRefreshFixture,
+  runNativeRefreshInteractions,
+  type NativeRefreshFixture,
+} from "./refresh-fixture.ts";
 
 const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 const ios = path.join(packageRoot, "ios");
@@ -34,6 +39,67 @@ function command(program: string, args: readonly string[], log?: string): string
       JSON.stringify({ event: "native-qualification-phase", phase: log, state: "passed" }),
     );
   return result.stdout.trim();
+}
+
+interface NativeTestSummary {
+  readonly result: string;
+  readonly totalTestCount: number;
+  readonly passedTests: number;
+  readonly failedTests: number;
+  readonly skippedTests: number;
+  readonly expectedFailures: number;
+}
+
+function nativeTestSummary(bundle: string, expected: number, name: string): NativeTestSummary {
+  const summary = JSON.parse(
+    command("xcrun", [
+      "xcresulttool",
+      "get",
+      "test-results",
+      "summary",
+      "--path",
+      bundle,
+      "--compact",
+    ]),
+  ) as NativeTestSummary;
+  writeFileSync(path.join(output, name), `${JSON.stringify(summary, null, 2)}\n`);
+  if (
+    summary.result !== "Passed" ||
+    summary.totalTestCount !== expected ||
+    summary.passedTests !== expected ||
+    summary.failedTests !== 0 ||
+    summary.skippedTests !== 0 ||
+    summary.expectedFailures !== 0
+  ) {
+    throw new Error(`Native qualification requires ${expected} passing UI cases without skips.`);
+  }
+  return summary;
+}
+
+function nativeTestArguments(
+  configuration: "Debug" | "Release",
+  device: string,
+  derived: string,
+  resultBundle: string,
+): string[] {
+  return [
+    "test",
+    "-project",
+    path.join(ios, "VizeNativeHostFixture.xcodeproj"),
+    "-scheme",
+    "VizeNativeHostFixture",
+    "-configuration",
+    configuration,
+    "-destination",
+    `platform=iOS Simulator,id=${device}`,
+    "-derivedDataPath",
+    derived,
+    "-resultBundlePath",
+    resultBundle,
+    "CODE_SIGNING_ALLOWED=NO",
+    "-parallel-testing-enabled",
+    "NO",
+  ];
 }
 
 function totalBytes(directory: string): number {
@@ -155,13 +221,16 @@ command(
 );
 const packets = readFileSync(packetResults, "utf8");
 const packetTestCount = [...packets.matchAll(/<testcase\b/g)].length;
-if (packetTestCount !== 10 || /<(?:failure|error|skipped)\b/.test(packets)) {
-  throw new Error("Native packet qualification requires ten passing XCTest cases without skips.");
+if (packetTestCount !== 18 || /<(?:failure|error|skipped)\b/.test(packets)) {
+  throw new Error(
+    "Native packet qualification requires eighteen passing XCTest cases without skips.",
+  );
 }
 let ownedDevice = "";
 let selectedDeviceName = "";
 const refusedTypes: { readonly identifier: string; readonly message: string }[] = [];
 let cleanupFailed = false;
+let refreshFixture: NativeRefreshFixture | undefined;
 try {
   for (const [identifier, name] of candidates) {
     const result = spawnSync(
@@ -194,62 +263,23 @@ try {
   command("xcrun", ["simctl", "bootstatus", ownedDevice, "-b"], "simulator-boot.log");
   const derived = path.join(output, "DerivedData");
   const resultBundle = path.join(output, "interaction.xcresult");
+  refreshFixture = await createNativeRefreshFixture(output);
+  await runNativeRefreshInteractions(
+    nativeTestArguments("Debug", ownedDevice, derived, resultBundle),
+    output,
+    refreshFixture,
+  );
+  const interaction = nativeTestSummary(resultBundle, 3, "interaction-summary.json");
+  const releaseResult = path.join(output, "release-refusal.xcresult");
   command(
     "xcodebuild",
     [
-      "test",
-      "-project",
-      path.join(ios, "VizeNativeHostFixture.xcodeproj"),
-      "-scheme",
-      "VizeNativeHostFixture",
-      "-configuration",
-      "Debug",
-      "-destination",
-      `platform=iOS Simulator,id=${ownedDevice}`,
-      "-derivedDataPath",
-      derived,
-      "-resultBundlePath",
-      resultBundle,
-      "CODE_SIGNING_ALLOWED=NO",
-      "-parallel-testing-enabled",
-      "NO",
+      ...nativeTestArguments("Release", ownedDevice, derived, releaseResult),
+      "-only-testing:VizeNativeHostFixtureUITests/NativeHostInteractionTests/testReleaseDevelopmentOptionIsRefused",
     ],
-    "interaction-tests.log",
+    "release-refusal-tests.log",
   );
-  const interaction = JSON.parse(
-    command("xcrun", [
-      "xcresulttool",
-      "get",
-      "test-results",
-      "summary",
-      "--path",
-      resultBundle,
-      "--compact",
-    ]),
-  ) as {
-    readonly result: string;
-    readonly totalTestCount: number;
-    readonly passedTests: number;
-    readonly failedTests: number;
-    readonly skippedTests: number;
-    readonly expectedFailures: number;
-  };
-  writeFileSync(
-    path.join(output, "interaction-summary.json"),
-    `${JSON.stringify(interaction, null, 2)}\n`,
-  );
-  if (
-    interaction.result !== "Passed" ||
-    interaction.totalTestCount !== 2 ||
-    interaction.passedTests !== 2 ||
-    interaction.failedTests !== 0 ||
-    interaction.skippedTests !== 0 ||
-    interaction.expectedFailures !== 0
-  ) {
-    throw new Error(
-      "Native interaction qualification requires two passing UI cases without skips.",
-    );
-  }
+  const release = nativeTestSummary(releaseResult, 1, "release-interaction-summary.json");
   const application = path.join(
     derived,
     "Build/Products/Debug-iphonesimulator/VizeNativeHostFixture.app",
@@ -288,20 +318,28 @@ try {
     maximumBytes,
     packetTests: packetTestCount,
     nativeInteractionTests: interaction.passedTests,
+    releaseDevelopmentRefusalTests: release.passedTests,
     resultBundle,
   };
   writeFileSync(path.join(output, "qualification.json"), `${JSON.stringify(receipt, null, 2)}\n`);
   console.log(JSON.stringify(receipt));
 } finally {
-  // Only this invocation's new simulator is shut down and removed.
-  if (ownedDevice !== "") {
-    const shutdown = spawnSync("xcrun", ["simctl", "shutdown", ownedDevice], { encoding: "utf8" });
-    const deletion = spawnSync("xcrun", ["simctl", "delete", ownedDevice], { encoding: "utf8" });
-    writeFileSync(
-      path.join(output, "simulator-cleanup.log"),
-      `${shutdown.stdout ?? ""}${shutdown.stderr ?? ""}${deletion.stdout ?? ""}${deletion.stderr ?? ""}`,
-    );
-    cleanupFailed = deletion.error !== undefined || deletion.status !== 0;
+  try {
+    // Only this invocation's new simulator is shut down and removed.
+    if (ownedDevice !== "") {
+      const shutdown = spawnSync("xcrun", ["simctl", "shutdown", ownedDevice], {
+        encoding: "utf8",
+      });
+      const deletion = spawnSync("xcrun", ["simctl", "delete", ownedDevice], { encoding: "utf8" });
+      writeFileSync(
+        path.join(output, "simulator-cleanup.log"),
+        `${shutdown.stdout ?? ""}${shutdown.stderr ?? ""}${deletion.stdout ?? ""}${deletion.stderr ?? ""}`,
+      );
+      cleanupFailed = deletion.error !== undefined || deletion.status !== 0;
+    }
+  } finally {
+    await refreshFixture?.close();
   }
 }
+
 if (cleanupFailed) throw new Error("The invocation-owned native simulator could not be removed.");
