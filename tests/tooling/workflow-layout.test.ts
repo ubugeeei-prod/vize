@@ -97,7 +97,11 @@ function workflowRunnerLabels(
     );
     if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
     if (file === "shipped-profile-measure.yml" && id === "measure") {
-      assert.equal(value["runs-on"], "${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}");
+      assert.equal(typeof value["runs-on"], "string");
+      assert.match(
+        value["runs-on"] as string,
+        /^\$\{\{\s*inputs\.runner\s*\|\|\s*'blacksmith-32vcpu-ubuntu-2404'\s*\}\}$/u,
+      );
       const on = workflow.on;
       assert.ok(isRecord(on) && isRecord(on.workflow_dispatch));
       const inputs = on.workflow_dispatch.inputs;
@@ -217,6 +221,17 @@ test("release measurement retains its default and restricts the explicit worker 
   const file = "shipped-profile-measure.yml";
   const source = readRepoFile(`.github/workflows/${file}`);
   assert.deepEqual(workflowRunnerLabels(source, [], file), []);
+  const whitespace = parseDocument(source);
+  whitespace.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{  inputs.runner  ||  'blacksmith-32vcpu-ubuntu-2404'  }}",
+  );
+  assert.deepEqual(workflowRunnerLabels(whitespace.toString(), [], file), []);
+  const changedRunner = parseDocument(source);
+  changedRunner.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{ inputs.unreviewed || 'blacksmith-32vcpu-ubuntu-2404' }}",
+  );
   const changedDefault = parseDocument(source);
   changedDefault.setIn(
     ["on", "workflow_dispatch", "inputs", "runner", "default"],
@@ -225,7 +240,7 @@ test("release measurement retains its default and restricts the explicit worker 
   for (const changed of [
     source.replace("blacksmith-16vcpu-ubuntu-2404", "unreviewed-runner"),
     changedDefault.toString(),
-    source.replaceAll("inputs.runner ||", "inputs.unreviewed ||"),
+    changedRunner.toString(),
   ])
     assert.throws(() => workflowRunnerLabels(changed, [], file));
 });
