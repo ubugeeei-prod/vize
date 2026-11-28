@@ -1,0 +1,37 @@
+import { defineVaporComponent as _defineVaporComponent } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, insert as _insert, child as _child, setInsertionState as _setInsertionState, template as _template } from 'vue';
+
+const t0 = _template("<div>a baseline finding the seeds must move, not change</div>")
+const t1 = _template("<main><p>Intro </p></main>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n2 = t1()
+  const n0 = _child(n2)
+  const n3 = t0()
+  _insert(n3, n0)
+  const _component_Child = _ctx.Child
+  _setInsertionState(n2, 1)
+  const n1 = _createComponentWithFallback(_component_Child, null, null, false)
+  return n2
+}
+const __vaporRender = render
+
+import Child from './Child.vue'
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'Page',
+  props: {
+    item: { type: null, required: true }
+  },
+  render: __vaporRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = { Child }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

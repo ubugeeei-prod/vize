@@ -68,7 +68,11 @@ fn authored_html_nesting_compiles_on_the_legacy_vapor_lane() {
         Ok(Lane::Legacy("structure".to_owned()))
     );
     assert!(selected.errors.is_empty(), "{:?}", selected.errors);
-    assert!(selected.code.contains("_insert("), "{}", selected.code);
+    // The `<div>` comes from its own template, inserted into the `<p>`.
+    assert_eq!(
+        selected.code.as_str(),
+        include_str!("../fixtures/davinci_production_reach/html_nesting.vapor.expected.txt")
+    );
 
     let mut actual = Tally::default();
     crate::measure(&descriptor, name, Shape::Vapor, &mut actual);
