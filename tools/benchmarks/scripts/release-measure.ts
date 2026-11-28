@@ -26,6 +26,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   appendFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -241,6 +242,52 @@ function run(executable: string, args: string[], cwd: string, env: NodeJS.Proces
   assert.equal(result.status, 0, `${executable} ${args.join(" ")} failed in ${cwd}`);
 }
 
+/** Keep the actual Valgrind executable path independent of report labels. */
+export function collectInstructionSuite(
+  source: string,
+  scratch: string,
+  destination: string,
+  flags: readonly string[],
+  env: NodeJS.ProcessEnv,
+  collect: typeof run = run,
+): string {
+  // The collector puts executable links beside its output directory. Using
+  // base/head/base-twin/head-twin there changes argv0 length and guest stack
+  // alignment, even when the independently rebuilt executables are identical.
+  const capture = join(scratch, "instruction-capture");
+  rmSync(capture, { recursive: true, force: true });
+  mkdirSync(capture, { recursive: true });
+  const dir = join(capture, "measurement");
+  const failures: unknown[] = [];
+  try {
+    collect(
+      "node",
+      ["tools/benchmarks/scripts/instruction-counts.mjs", ...flags, "--collect", "--out", dir],
+      source,
+      env,
+    );
+  } catch (error) {
+    failures.push(error);
+  } finally {
+    try {
+      if (existsSync(dir))
+        cpSync(dir, destination, { recursive: true, force: false, errorOnExist: true });
+    } catch (error) {
+      failures.push(error);
+    } finally {
+      try {
+        rmSync(capture, { recursive: true, force: true });
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+  }
+  if (failures.length === 1) throw failures[0];
+  if (failures.length > 1)
+    throw new AggregateError(failures, "instruction collection or evidence retention failed");
+  return destination;
+}
+
 /**
  * Build and measure one side into `<out>/<label>`. Every side builds in the
  * same, freshly emptied target directory with the pair's pinned build clock.
@@ -268,13 +315,11 @@ export function measureSide(
   const rows: Record<string, InstructionRow> = {};
   const binaries: Record<string, string> = {};
   for (const [suite, flags] of SUITES) {
-    // instruction-counts.mjs keeps its guest links beside the out directory,
-    // so every suite gets its own parent.
-    const dir = join(side, suite, "measurement");
-    run(
-      "node",
-      ["tools/benchmarks/scripts/instruction-counts.mjs", ...flags, "--collect", "--out", dir],
+    const dir = collectInstructionSuite(
       source,
+      scratch,
+      join(side, suite, "measurement"),
+      flags,
       env,
     );
     const folded = foldRuns(JSON.parse(readFileSync(join(dir, "measurement.json"), "utf8")));
