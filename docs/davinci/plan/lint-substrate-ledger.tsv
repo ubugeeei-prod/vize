@@ -50,7 +50,7 @@ ecosystem/vue-i18n-no-missing-key	L1 syntax	sfc-descriptor	legacy-rule	atelier_s
 ecosystem/vue-router-prefer-named-link	L1 syntax	markup-l2	legacy-rule	relief	-	ecosystem/vue_router_prefer_named_link.rs
 ecosystem/vue-router-prefer-named-push	L1 script	script-oxc	legacy-engine	-	-	script/vue_router_prefer_named_push.rs
 ecosystem/vue-test-utils-no-html-snapshot	L1 script	script-oxc	legacy-engine	-	-	script/vue_test_utils_no_html_snapshot.rs
-html/deprecated-attr	L1 syntax	markup-l2	legacy-rule	relief	-	html/deprecated_attr.rs
+html/deprecated-attr	L1 syntax	markup-l2	legacy-rule	relief	yes	html/deprecated_attr.rs
 html/deprecated-element	L1 syntax	markup-l2	legacy-rule	relief	-	html/deprecated_element.rs
 html/id-duplication	L1 syntax	markup-l2	legacy-rule	relief	-	html/id_duplication.rs
 html/no-consecutive-br	L1 syntax	markup-l2	legacy-rule	relief	-	html/no_consecutive_br.rs
@@ -256,7 +256,7 @@ vue/no-duplicate-attributes	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/no
 vue/no-empty-component-block	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	atelier_sfc	-	opinionated/vue/no_empty_component_block.rs
 vue/no-empty-pattern	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/core_rules/no_empty_pattern.rs
 vue/no-implicit-coercion	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/compatibility_template/core_rules/no_implicit_coercion.rs
-vue/no-inline-style	L1 syntax	markup-l2	legacy-rule	relief	-	opinionated/vue/no_inline_style.rs
+vue/no-inline-style	L1 syntax	markup-l2	legacy-rule	relief	yes	opinionated/vue/no_inline_style.rs
 vue/no-invalid-html-attribute	L1 syntax	markup-l2	legacy-rule	atelier_jsx,relief	-	vue/no_invalid_html_attribute.rs
 vue/no-irregular-whitespace	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/compatibility_template/core_rules/no_irregular_whitespace.rs
 vue/no-literals-in-template	L1 syntax	relief-visitor	legacy-rule	armature,relief	-	vue/compatibility_template/template_rules/no_literals_in_template.rs

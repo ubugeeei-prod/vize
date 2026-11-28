@@ -11,6 +11,7 @@ use vize_l0::{Span, String, config::VueVersion};
 use vize_l1::markup::ComponentTagAnalysis;
 
 mod event;
+mod formatted_attribute;
 pub use event::{NativeTemplateEventModifier, NativeTemplateEventModifiers};
 
 /// Normal configured output from the genuine original bare component.
@@ -327,17 +328,25 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         variables: &[(&str, &str)],
         help_key: &str,
     ) {
-        let mut diagnostic = LintDiagnostic::warn(
-            self.current_rule,
+        self.report_translated_with_help(
+            default_severity,
+            range,
             t_fmt(self.linter.locale, message_key, variables),
-            range.start,
-            range.end,
+            t(self.linter.locale, help_key).as_ref(),
         );
+    }
+
+    fn report_translated_with_help(
+        &mut self,
+        default_severity: Severity,
+        range: Span,
+        message: impl Into<String>,
+        help: &str,
+    ) {
+        let mut diagnostic =
+            LintDiagnostic::warn(self.current_rule, message, range.start, range.end);
         diagnostic.severity = default_severity;
-        diagnostic.help = self
-            .linter
-            .help_level
-            .process(t(self.linter.locale, help_key).as_ref());
+        diagnostic.help = self.linter.help_level.process(help);
         if let Some(severity) = self.linter.severity_overrides.get(self.current_rule) {
             diagnostic.severity = *severity;
         }

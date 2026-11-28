@@ -29,6 +29,8 @@ use vize_relief::{ElementNode, ElementType, PropNode};
 
 use super::helpers::{deprecated_attr_suggestion, deprecated_attr_suggestion_by_tag};
 
+mod native;
+
 static META: RuleMeta = RuleMeta {
     name: "html/deprecated-attr",
     description: "Disallow deprecated HTML attributes",
@@ -107,6 +109,10 @@ impl Rule for DeprecatedAttr {
     }
 
     fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
         Some(self)
     }
 

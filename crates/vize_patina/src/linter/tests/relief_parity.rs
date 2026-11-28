@@ -13,6 +13,7 @@ mod configured_headers;
 mod directives;
 mod fallback_ports;
 mod ids;
+mod native_attributes;
 mod unsafe_url;
 mod vapor_inline;
 

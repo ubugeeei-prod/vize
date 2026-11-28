@@ -114,7 +114,7 @@ fn enabled_empty_and_incremental_empty_registry_have_complete_clean_results() {
 }
 
 #[test]
-fn default_and_enabled_unprovided_existing_header_rules_refuse() {
+fn default_and_unprovided_rules_refuse_while_the_actual_attribute_callback_keeps_full_packets() {
     assert!(matches!(
         Linter::new().lint_native_template(SOURCE, "myComponent.vue"),
         Err(Refusal::UnprovidedRule { .. })
@@ -127,6 +127,33 @@ fn default_and_enabled_unprovided_existing_header_rules_refuse() {
     ] {
         let linter = Linter::with_preset(LintPreset::Incremental)
             .with_enabled_rules(Some(vec![name.into()]));
+        if name == "html/deprecated-attr" {
+            // This same original input is now served by its real capability.
+            // Keep the complete clean packet and a fixed positive witness.
+            let linter = linter.with_help_level(HelpLevel::Full);
+            assert_pair(
+                &linter,
+                SOURCE,
+                "myComponent.vue",
+                expected("myComponent.vue", vec![]),
+            );
+            assert_pair(
+                &linter,
+                "<div align=\"center\">Content</div>",
+                "myComponent.vue",
+                expected(
+                    "myComponent.vue",
+                    vec![serde_json::json!({
+                        "rule_name": "html/deprecated-attr", "severity": "warning",
+                        "message": "The \"align\" attribute on <div> is deprecated",
+                        "start": 5, "end": 19,
+                        "help": "Use CSS `text-align` or `margin: auto` instead.",
+                        "labels": [], "fix": null,
+                    })],
+                ),
+            );
+            continue;
+        }
         assert_eq!(
             linter
                 .lint_native_template(SOURCE, "myComponent.vue")
