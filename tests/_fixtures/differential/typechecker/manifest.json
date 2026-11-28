@@ -63397,6 +63397,34 @@
       }
     },
     {
+      "id": "typechecker/editor-retained-native-owner-gc-race/stale-marker-observation",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "corsa_bridge::editor_session::retained_tests::stale_sweep_observation_keeps_retention_armed_before_owner_unlock",
+      "inputs": [
+        {
+          "path": "editor-retained-native-owner-gc-race/generated.ts.txt",
+          "role": "generated-input-owned-by-incompletely-retired-native-session",
+          "sha256": "407dd07d7a6f655a0521969d40083553ba4856c803b79e10859717234fb20522"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "The ordinary Rust regression test reads these exact generated input bytes, observes no retention marker, opens the reaper lock, arms and retains the owner, drops it, then resumes the sweep and checks the complete bytes. Input-only lifecycle registration; no batch, native diagnostic parity or historical execution credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/editor-vite-stub-11145/whole-install-ownership",
       "state": "active",
       "targets": [
