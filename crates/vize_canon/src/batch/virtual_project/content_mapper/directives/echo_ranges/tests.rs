@@ -50,13 +50,31 @@ fn arbitrary_admission_order_matches_the_original_strict_overlap_rule() {
         let mut index = EchoRanges::new(&existing, INDEX_THRESHOLD + 1);
         for _ in 0..512 {
             let start = next();
-            let end = start + 1 + next() % 16;
+            let end = start + next() % 17;
             let expected = overlaps(&existing, start, end);
             assert_eq!(index.overlaps(&existing, start, end), expected);
             if !expected {
                 index.insert(start, end);
                 existing.push(directive(start, end));
             }
+        }
+    }
+}
+
+#[test]
+fn empty_echo_keeps_existing_coverage_at_the_same_start() {
+    let mut existing = vec![directive(1, 5)];
+    let mut index = EchoRanges::new(&existing, INDEX_THRESHOLD + 1);
+    assert!(!index.overlaps(&existing, 1, 1));
+    index.insert(1, 1);
+    existing.push(directive(1, 1));
+    for start in 0..7 {
+        for end in start..7 {
+            assert_eq!(
+                index.overlaps(&existing, start, end),
+                overlaps(&existing, start, end),
+                "probe={start}..{end}"
+            );
         }
     }
 }

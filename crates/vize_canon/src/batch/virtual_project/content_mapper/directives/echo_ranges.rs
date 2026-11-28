@@ -57,7 +57,12 @@ impl EchoRanges {
     /// Call only after `overlaps` rejected every existing interval.
     pub(super) fn insert(&mut self, start: usize, end: usize) {
         if let Some(index) = &mut self.0 {
-            index.insert(start, end);
+            // An empty echo at the left boundary does not strictly overlap
+            // the interval starting there. Keep that interval's coverage.
+            index
+                .entry(start)
+                .and_modify(|existing_end| *existing_end = (*existing_end).max(end))
+                .or_insert(end);
         }
     }
 }
