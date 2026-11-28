@@ -5,6 +5,8 @@ import { readFileSync } from "node:fs";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
 import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
 
+import { beforeSerializedIslandPropsSource } from "./serialized-island-props-transition.ts";
+
 export const propValueOrRecord = "tests/_fixtures/tooling/prop-value-or-12431.json";
 export const propValueOrRecordSha256 =
   "3d59c50e8efb0b0b983302d422397af84a830a4b8ab2477886e91f0520ab9c6b";
@@ -54,6 +56,7 @@ export function applyPropValueOrIn(previous: string): string {
 
 /** The exact pre-addition bytes of a recorded helper's current image; others pass through. */
 export function beforePropValueOr(path: string, current: string): string {
+  current = beforeSerializedIslandPropsSource(path, current);
   current = beforeSharedUsageGates(path, current);
   current = beforeSharedUsageHelpersSource(path, current);
   const file = load().files.find((entry) => entry.path === path);

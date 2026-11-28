@@ -68552,6 +68552,50 @@
       }
     },
     {
+      "id": "typechecker/regression/nuxt-island-props-13820",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-island-props-13820/App.vue.txt",
+          "sha256": "52c27c08794b513e339a0761a1da9ab2ca92e8889e8c35ad62a625fc899692d7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/ServerProps.server.vue.txt",
+          "sha256": "5d687a66242bb77733927c447b86af87ac3b66b278b116fef1ff22d417584f5b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/components.d.ts.txt",
+          "sha256": "ff9c3575343c84074a85f6b3665fbb34a46a5bb822ea8161477917062263b30f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-island-props-13820/tsconfig.json.txt",
+          "sha256": "bc79059c0f41127361bdc5b835649e4229253fb02875cb9b5a8237b8c602bd50",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nuxt_island_props::serialized_islands_check_wrong_and_missing_props_like_plain_components; a generated SFC keeps wrong-type and missing-required-prop diagnostics through the serialized IslandComponent constructor used by Nuxt. Plain-component controls use the same source. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/options-array-native-root-13113",
       "state": "active",
       "targets": [
