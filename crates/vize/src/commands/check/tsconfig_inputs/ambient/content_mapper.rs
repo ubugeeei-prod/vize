@@ -11,9 +11,8 @@ use super::super::matching::{is_nuxt_import_manifest_path, matches_tsconfig_patt
 use super::super::spec::{InputSelection, ProgramInputOptions};
 use super::super::type_references::DeclarationContents;
 use super::super::{collect_default_check_files_for_tsconfig, tsconfig_selects_any_input};
-use super::{
-    collect_declaration_reference_graph_reading, collect_tsconfig_type_declaration_files_reading,
-};
+use super::collect_tsconfig_type_declaration_files_reading;
+use super::graph::collect_declaration_reference_graph_reading;
 
 /// The declaration graph a content-mapper project owns.
 pub(crate) struct ContentMapperAmbientDeclarations {
