@@ -2,7 +2,14 @@
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Shipped CLI Nuxt consumer
 on:
-  workflow_dispatch: { inputs: { mode: { description: Verify retained records or measure the reviewed source receipt, required: true, type: choice, options: [ replay, measure ], default: replay } } }
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify retained records or measure the reviewed source receipt
+        required: true
+        type: choice
+        options: [replay, measure]
+        default: replay
   pull_request:
     paths:
       - .github/workflows/03-shipped-cli-nuxt.yml
