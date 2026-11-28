@@ -1,0 +1,1 @@
+{"name":"sandbox","exports":{"./web":{"types":"./dist/web.d.ts"}}}

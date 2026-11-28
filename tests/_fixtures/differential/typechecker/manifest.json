@@ -24997,6 +24997,178 @@
       }
     },
     {
+      "id": "typechecker/legacy-package-declarations-13298/generated-declaration-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "legacy-package-declarations-13298",
+      "case": "generated-declaration-valid",
+      "test": "fix_history_cases::legacy_package_declarations_13298::legacy_package_resolution_consumes_generated_declarations",
+      "regressionCommit": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+      "sourceRevision": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+      "checkerOptions": {
+        "packageRoutes": [
+          {
+            "importer": "src/App.vue",
+            "specifier": "sandbox/web"
+          }
+        ],
+        "workspaceLinks": [
+          {
+            "package": "packages/sandbox",
+            "link": "node_modules/sandbox"
+          }
+        ]
+      },
+      "packReference": {
+        "path": "legacy-package-declarations-13298/cases.json",
+        "sha256": "312f776a7fbf140f1cd99998c2f7309c9c92aae41d126d36026f4a192d2ed0ed"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-package-declarations-13298/tsconfig.json.txt",
+          "sha256": "633c35c9d31ecbed90df22ae3023beab1d1b3bc9fb4ce303dee9052b5c1c48a3"
+        },
+        {
+          "file": "packages/sandbox/package.json",
+          "path": "legacy-package-declarations-13298/sandbox-package.json.txt",
+          "sha256": "e93dd7a586c61b1cf83f912e5a5af3271b9406343e02ab1c3e88ef615dd843ba"
+        },
+        {
+          "file": "packages/sandbox/web.d.ts",
+          "path": "legacy-package-declarations-13298/web.d.ts.txt",
+          "sha256": "26cc01245653ce20a83a9b124930a896f0d4b71d897481097bd893b178b43d02"
+        },
+        {
+          "file": "packages/sandbox/dist/web/index.d.ts",
+          "path": "legacy-package-declarations-13298/generated-index.d.ts.txt",
+          "sha256": "5b095158565286ccce1e5cb97ee851ae71b35930dcc090638fa77a6618b72c51"
+        },
+        {
+          "file": "packages/sandbox/src/web/index.ts",
+          "path": "legacy-package-declarations-13298/source-index.ts.txt",
+          "sha256": "e093f25b8c11cb18533d42097a5c3dc858a3bce28c46c5df5026af3e970944bf"
+        },
+        {
+          "file": "packages/sandbox/src/worker.ts",
+          "path": "legacy-package-declarations-13298/source-worker.ts.txt",
+          "sha256": "ce4b0c4b875d5f24e18901ae38bff976b30509aa39dbf1b7202bc9001ca62870"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "legacy-package-declarations-13298/valid.vue.txt",
+          "sha256": "878050ab53be8a86684d8afed6badf4b3459a104012385557a4c373344423f58"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/legacy-package-declarations-13298/generated-declaration-invalid-consumer",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "legacy-package-declarations-13298",
+      "case": "generated-declaration-invalid-consumer",
+      "test": "fix_history_cases::legacy_package_declarations_13298::legacy_package_resolution_consumes_generated_declarations",
+      "regressionCommit": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+      "sourceRevision": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+      "checkerOptions": {
+        "packageRoutes": [
+          {
+            "importer": "src/App.vue",
+            "specifier": "sandbox/web"
+          }
+        ],
+        "workspaceLinks": [
+          {
+            "package": "packages/sandbox",
+            "link": "node_modules/sandbox"
+          }
+        ]
+      },
+      "packReference": {
+        "path": "legacy-package-declarations-13298/cases.json",
+        "sha256": "312f776a7fbf140f1cd99998c2f7309c9c92aae41d126d36026f4a192d2ed0ed"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "legacy-package-declarations-13298/tsconfig.json.txt",
+          "sha256": "633c35c9d31ecbed90df22ae3023beab1d1b3bc9fb4ce303dee9052b5c1c48a3"
+        },
+        {
+          "file": "packages/sandbox/package.json",
+          "path": "legacy-package-declarations-13298/sandbox-package.json.txt",
+          "sha256": "e93dd7a586c61b1cf83f912e5a5af3271b9406343e02ab1c3e88ef615dd843ba"
+        },
+        {
+          "file": "packages/sandbox/web.d.ts",
+          "path": "legacy-package-declarations-13298/web.d.ts.txt",
+          "sha256": "26cc01245653ce20a83a9b124930a896f0d4b71d897481097bd893b178b43d02"
+        },
+        {
+          "file": "packages/sandbox/dist/web/index.d.ts",
+          "path": "legacy-package-declarations-13298/generated-index.d.ts.txt",
+          "sha256": "5b095158565286ccce1e5cb97ee851ae71b35930dcc090638fa77a6618b72c51"
+        },
+        {
+          "file": "packages/sandbox/src/web/index.ts",
+          "path": "legacy-package-declarations-13298/source-index.ts.txt",
+          "sha256": "e093f25b8c11cb18533d42097a5c3dc858a3bce28c46c5df5026af3e970944bf"
+        },
+        {
+          "file": "packages/sandbox/src/worker.ts",
+          "path": "legacy-package-declarations-13298/source-worker.ts.txt",
+          "sha256": "ce4b0c4b875d5f24e18901ae38bff976b30509aa39dbf1b7202bc9001ca62870"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "legacy-package-declarations-13298/invalid.vue.txt",
+          "sha256": "7a83036375431b37ee90c9eb195e24f0fc9c2e243726af8ee086f6d47084500b"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/legacy-vue2-branch-alias-narrowing-2544/nested-v-for-else-branch-alias-narrowing",
       "state": "active",
       "targets": [
