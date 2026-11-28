@@ -1,0 +1,9 @@
+import { ssrInterpolate as _ssrInterpolate } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[--><form><form><button>x</button></form></form><p><ul><li>a</li></ul></p><p>one<p>two</p></p><a href="/x"><a href="/y">y</a></a><table><tr><td>${_ssrInterpolate(_ctx.cell)}</td></tr></table><!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main
