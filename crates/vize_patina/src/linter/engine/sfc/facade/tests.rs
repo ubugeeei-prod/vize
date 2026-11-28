@@ -49,6 +49,9 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::A11yImgAlt));
+    linter
+        .registry
+        .register(Box::new(crate::rules::vapor::NoInlineTemplate));
     linter.registry.mark_has_exit_element_rules();
     linter
 }

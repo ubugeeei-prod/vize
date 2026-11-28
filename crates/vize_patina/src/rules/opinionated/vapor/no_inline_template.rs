@@ -25,8 +25,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
+
+mod native;
 
 static META: RuleMeta = RuleMeta {
     name: "vapor/no-inline-template",
@@ -39,6 +42,38 @@ static META: RuleMeta = RuleMeta {
 /// Disallow inline-template
 pub struct NoInlineTemplate;
 
+impl NoInlineTemplate {
+    fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_eq_ignore_ascii_case("inline-template")
+            {
+                ctx.error_at_with_help(
+                    ctx.t("vapor/no-inline-template.message"),
+                    binding.range(),
+                    ctx.t("vapor/no-inline-template.help"),
+                );
+            }
+        });
+    }
+}
+
+impl MarkupRule for NoInlineTemplate {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !ctx.is_jsx_attribute_value() {
+            Self::check(ctx.lint(), element);
+        }
+    }
+}
+
 impl Rule for NoInlineTemplate {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -48,18 +83,21 @@ impl Rule for NoInlineTemplate {
         crate::rule::RuleHooks::ELEMENT
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // Keep the legacy lane's lowering-only parser diagnostic admission.
+        true
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name.eq_ignore_ascii_case("inline-template")
-            {
-                ctx.error_with_help(
-                    ctx.t("vapor/no-inline-template.message"),
-                    &attr.loc,
-                    ctx.t("vapor/no-inline-template.help"),
-                );
-            }
-        }
+        Self::check(ctx, &MarkupElement::new(element));
     }
 }
 

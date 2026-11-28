@@ -101,6 +101,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/role-img-has-name",
     "vue/a11y-img-alt",
     "vue/no-unsafe-url",
+    "vapor/no-inline-template",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
