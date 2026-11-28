@@ -1,0 +1,19 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  sudo apt-get update -qq
+  sudo apt-get install -y --no-install-recommends linux-tools-generic
+  sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
+  for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+    if [ -x "$candidate" ]; then
+      echo "IMPORTED_PROPS_PERF=$candidate" >> "$GITHUB_ENV"
+      exit 0
+    fi
+  done
+  exit 1
+  """#
+}

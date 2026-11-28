@@ -20,6 +20,11 @@ on {
         required = true
         type = "string"
       }
+      profile {
+        description = "Sample separate native invocations with perf after measurements"
+        type = "boolean"
+        ["default"] = false
+      }
     }
   }
 }
@@ -72,6 +77,11 @@ jobs {
           `node-version` = "24.14.0"
           `package-manager-cache` = false
         }
+      }
+      new Dynamic {
+        name = "Prepare optional CPU sampling"
+        `if` = "${{ inputs.profile == true }}"
+        run = "bash tools/ci/workflows/03-imported-props/scripts/prepare-cpu-sampling.sh"
       }
       new Dynamic {
         name = "Test the dependency union, shared walks, cycles and freshness"

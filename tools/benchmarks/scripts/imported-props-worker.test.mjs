@@ -10,6 +10,25 @@ import {
   prototypeIsolation,
 } from "./imported-props-worker.mjs";
 import { separateDependencies } from "./imported-props-fixture.mjs";
+import { measuredStacks } from "./imported-props-profile.mjs";
+
+await test("sample attribution keeps only cold and warm compile intervals", () => {
+  const block = (time, frame) => `node 10/11 ${time}: cycles:\n 123 ${frame} (head.node)\n`;
+  const script = [
+    block("0.1", "startup"),
+    block("1.25", "cold"),
+    block("2.01", "validation"),
+    block("3.000000001", "warm"),
+    block("4.1", "freshness"),
+  ].join("\n");
+  const selected = measuredStacks(script, {
+    cold: { startNs: "1000000000", endNs: "2000000000" },
+    warm: { startNs: "3000000000", endNs: "4000000000" },
+  });
+  assert.equal(selected.length, 2);
+  assert(selected[0].includes("cold"));
+  assert(selected[1].includes("warm"));
+});
 
 await test("array controls reject shared mutable dependency arrays", () => {
   const shared = ["/type.ts"];

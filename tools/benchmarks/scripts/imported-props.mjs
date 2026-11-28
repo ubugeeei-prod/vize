@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { separateDependencies } from "./imported-props-fixture.mjs";
+import { profileNative } from "./imported-props-profile.mjs";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -307,6 +308,7 @@ for (const [mode, modules] of [
       }
     }
   }
+  profileNative(run, worker, images.head, fixture, out, shape);
 }
 report.status = "measured";
 retain();

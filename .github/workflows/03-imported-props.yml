@@ -17,6 +17,10 @@ on:
         description: Exact 40-character baseline commit
         required: true
         type: string
+      profile:
+        description: Sample separate native invocations with perf after measurements
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -56,6 +60,9 @@ jobs:
         with:
           node-version: 24.14.0
           package-manager-cache: false
+      - name: Prepare optional CPU sampling
+        if: ${{ inputs.profile == true }}
+        run: bash tools/ci/workflows/03-imported-props/scripts/prepare-cpu-sampling.sh
       - name: Test the dependency union, shared walks, cycles and freshness
         run: cargo test --locked -p vize_atelier_sfc --lib script::context::external_types
       - name: Test measurement controls

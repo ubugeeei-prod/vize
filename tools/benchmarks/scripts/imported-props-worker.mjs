@@ -14,6 +14,7 @@ export function measureNative(native, files, chunkSize) {
   const packets = [];
   let calls = 0;
   let nativeCoreMs = 0;
+  const startNs = process.hrtime.bigint();
   const startCpu = process.cpuUsage();
   const start = performance.now();
   const window = native.beginTypeResolutionBatch();
@@ -42,7 +43,10 @@ export function measureNative(native, files, chunkSize) {
   }
   const wallMs = performance.now() - start;
   const cpu = process.cpuUsage(startCpu);
+  const endNs = process.hrtime.bigint();
   return {
+    startNs: startNs.toString(),
+    endNs: endNs.toString(),
     wallMs,
     cpuMs: (cpu.user + cpu.system) / 1000,
     calls,
