@@ -17,6 +17,15 @@ use crate::batch::error::CorsaError;
 
 pub(super) const EXTERNAL_MIRROR_DIR: &str = "__vize_external__";
 
+/// Resolve a mirror-relative directory in the authored filesystem.
+pub(super) fn original_directory(project_root: &Path, relative: &Path) -> Option<PathBuf> {
+    if relative.starts_with(EXTERNAL_MIRROR_DIR) {
+        external_mirror_original_path(relative)
+    } else {
+        Some(project_root.join(relative))
+    }
+}
+
 /// Recover the authored absolute path replayed below the external mirror.
 pub fn external_mirror_original_path(path: &Path) -> Option<PathBuf> {
     let mut components = path.components();

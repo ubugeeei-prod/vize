@@ -350,9 +350,12 @@ impl VirtualProject {
             }
             if before_node_modules {
                 let scope = self.virtual_root.join(&relative).join("node_modules");
-                let target = self.project_root.join(&relative).join("node_modules");
                 scopes.push(scope.clone());
-                targets.push((scope, target));
+                if let Some(original) =
+                    super::external_mirror::original_directory(&self.project_root, &relative)
+                {
+                    targets.push((scope, original.join("node_modules")));
+                }
             }
         }
         scopes.sort();
