@@ -1,0 +1,20 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  set -euo pipefail
+  report="$RUNNER_TEMP/native-script-checker-products"
+  mkdir -p "$report"
+  git rev-parse HEAD > "$report/revision.txt"
+  rustc --version --verbose > "$report/rustc.txt"
+  uname -a > "$report/host.txt"
+  export VIZE_SCRIPT_QUERY_INPUTS="$report/tracked-vue-inputs"
+  git ls-files -z -- '*.vue' > "$VIZE_SCRIPT_QUERY_INPUTS"
+  flags=(--locked --profile ci-opt -p vize_maestro --features experimental-checker-script-queries,micro-profiling --lib)
+  cargo test "${flags[@]}" source_project::script_queries:: -- --nocapture --test-threads=1 2>&1 | tee "$report/controlled-parity.log"
+  cargo test "${flags[@]}" original_native_editor_and_checker_packets -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/original-sources.log"
+  cargo test "${flags[@]}" native_editor_checker_resources -- --ignored --nocapture --test-threads=1 2>&1 | tee "$report/paired-resources.log"
+  """#
+}
