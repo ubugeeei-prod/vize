@@ -47,6 +47,10 @@
     "test": "fix_history_cases::camel_case_sfc_prop_checks_2169::camel_case_sfc_child_props_are_still_checked",
     "sourceRevision": "fffcb76482df4002955407669003ec45dd0615ba"
   },
+  "check-option-probe-mode-13300": {
+    "test": "fix_history_cases::check_option_probe_mode_13300::check_option_probe_accepts_ts_extensions_without_authored_no_emit",
+    "sourceRevision": "65a280aca9684d4577ad04ef75da8da05ad235ff"
+  },
   "check-unknown-props-config-4918": {
     "test": "fix_history_cases::check_unknown_props_config_4918::unknown_component_props_follow_vue_compiler_options",
     "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531"

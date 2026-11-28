@@ -39,6 +39,10 @@ pub(super) fn option_diagnostics(corsa_path: &Path, project: &VirtualProject) ->
     let Ok(output) = profile!("canon.corsa.cli.option_probe", {
         Command::new(corsa_path)
             .current_dir(project.virtual_root())
+            // This probe belongs to a check operation. The same command-line
+            // mode permits allowImportingTsExtensions in vue-tsc --noEmit even
+            // when the authored build config leaves noEmit unset.
+            .arg("--noEmit")
             .arg("--pretty")
             .arg("false")
             .arg("--project")

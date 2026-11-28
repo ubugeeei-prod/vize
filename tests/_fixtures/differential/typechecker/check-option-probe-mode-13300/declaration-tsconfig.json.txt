@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "src",
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": [],
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true
+  },
+  "include": [
+    "src/**/*.vue",
+    "src/**/*.ts"
+  ]
+}

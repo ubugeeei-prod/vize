@@ -219,8 +219,9 @@ fn option_probe_is_needed(
 /// resolves from the real tree alone cannot turn into a spurious `TS2688` here;
 /// the generated config still carries the user's `types` and reports that case
 /// itself. Nothing else is touched — an option added here could *invent* a
-/// diagnostic the user's own config does not have (`noEmit` alone conflicts with
-/// several emit options), and a program with no inputs emits nothing regardless.
+/// diagnostic the user's own config does not have. The executor supplies the
+/// operation's `--noEmit` flag separately, matching the actual check invocation;
+/// the authored emit options remain available for native option validation.
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn option_probe_value(mut declared: Map<std::string::String, Value>) -> Value {
     declared.insert("types".into(), Value::Array(Vec::new()));
