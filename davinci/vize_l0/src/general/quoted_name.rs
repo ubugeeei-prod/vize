@@ -18,6 +18,10 @@ pub fn name_needs_escape(name: &str) -> bool {
 }
 
 #[inline(always)]
+#[expect(
+    clippy::manual_contains,
+    reason = "names are short: an inlined byte loop, not a call into memchr"
+)]
 fn holds_backslash(bytes: &[u8]) -> bool {
     bytes.iter().any(|&byte| byte == b'\\')
 }
