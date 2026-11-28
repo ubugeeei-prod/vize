@@ -9,7 +9,7 @@ use vize_l4::module::RenderFunctionName;
 use crate::compile_template::{compile_template_block_vapor, compile_template_block_with_capture};
 use crate::types::{SfcCompileResult, SfcError, SfcScriptBlock};
 
-use super::helpers::{is_ts_lang, trim_trailing_newlines};
+use super::helpers::{source_type_for_script_lang, trim_trailing_newlines};
 use super::output_module::{
     append_component_render_export, append_css_modules_assignment, finalize_output_mode,
     rewrite_client_render_for_sfc_main,
@@ -43,8 +43,8 @@ pub(super) fn compile(
         codegen_options.runtime_module_name.as_str(),
     );
 
-    // Check if source script is TypeScript
-    let source_is_ts = is_ts_lang(script.lang.as_deref());
+    // The source script's grammar: TypeScript, and JSX for `tsx`/`jsx`.
+    let source_type = source_type_for_script_lang(script.lang.as_deref());
 
     // A script-only SFC needs no mutable component binding unless the
     // compiler must attach generated metadata. Preserve its default export
@@ -54,7 +54,7 @@ pub(super) fn compile(
     let (mut final_script, script_runs, needs_component_binding) = module_trace::script_module(
         &script_content,
         script_runs,
-        source_is_ts,
+        source_type,
         prelude.is_ts,
         requires_generated_component,
     );

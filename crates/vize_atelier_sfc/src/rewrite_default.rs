@@ -14,28 +14,32 @@ use crate::module_map::{Runs, TracedText};
 /// Rewrite `export default` to a const declaration with the given name.
 /// Returns (rewritten_code, has_default_export)
 pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool) {
-    let (code, has_default, _) = rewrite_default_traced(input, as_name, is_ts);
-    (code, has_default)
-}
-
-/// [`rewrite_default`] plus the rewritten code's provenance in `input`: text
-/// outside the rewritten statements is copied, and each rewrite is anchored at
-/// the statement it replaced (Davinci P3-9 source maps).
-pub(crate) fn rewrite_default_traced(
-    input: &str,
-    as_name: &str,
-    is_ts: bool,
-) -> (String, bool, Runs) {
     let source_type = if is_ts {
         SourceType::ts()
     } else {
         SourceType::mjs()
     };
+    let (code, has_default, _) = rewrite_default_traced(input, as_name, source_type);
+    (code, has_default)
+}
 
+/// [`rewrite_default`] for `input` in the `source_type` grammar, plus the
+/// rewritten code's provenance in `input`: text outside the rewritten
+/// statements is copied, and each rewrite is anchored at the statement it
+/// replaced (Davinci P3-9 source maps).
+pub(crate) fn rewrite_default_traced(
+    input: &str,
+    as_name: &str,
+    source_type: SourceType,
+) -> (String, bool, Runs) {
     let allocator = Allocator::default();
     let ret = profile!(
         "atelier.normal_script.rewrite_default.parse",
-        Parser::new(&allocator, input, source_type).parse()
+        if source_type.is_jsx() {
+            crate::script::parse_script_block(&allocator, input, source_type)
+        } else {
+            Parser::new(&allocator, input, source_type).parse()
+        }
     );
 
     if !ret.diagnostics.is_empty() {

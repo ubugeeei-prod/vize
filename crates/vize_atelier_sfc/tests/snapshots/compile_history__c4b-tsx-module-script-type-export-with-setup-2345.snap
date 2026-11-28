@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport type Foo = { label: string };\nexport const renderFoo = (foo: Foo) => <span>{foo.label}</span>;\n\nexport default {\n  __name: 'History',\n  props: {\n    foo: { type: Object, required: false }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n}\n\n}",
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport const renderFoo = (foo) => <span>{foo.label}</span>;\n\nexport default {\n  __name: 'History',\n  props: {\n    foo: { type: Object, required: false }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n}\n\n}",
             css: None,
             map: None,
             errors: [],

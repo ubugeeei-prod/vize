@@ -6,7 +6,7 @@ use vize_carton::{String, ToCompactString, profile};
 use crate::module_map::{Runs, reprint_points};
 use crate::types::SfcDescriptor;
 
-use super::helpers::is_ts_lang;
+use super::helpers::source_type_for_script_lang;
 
 /// The normal `<script>` content kept beside `<script setup>`, and, when
 /// `trace` asks for it, that content's provenance in `.vue` offsets (Davinci
@@ -19,10 +19,10 @@ pub(super) fn extract_for_setup(
     let Some(script) = descriptor.script.as_ref() else {
         return (None, None);
     };
-    let source_is_ts = is_ts_lang(script.lang.as_deref());
+    let source_type = source_type_for_script_lang(script.lang.as_deref());
     let (content, runs) = profile!(
         "atelier.sfc.normal_script.extract",
-        extract_traced(&script.content, source_is_ts, output_is_ts, trace)
+        extract_traced(&script.content, source_type, output_is_ts, trace)
     );
     (
         Some(content),
@@ -44,14 +44,20 @@ pub(super) fn extract_normal_script_content(
     source_is_ts: bool,
     output_is_ts: bool,
 ) -> String {
-    extract_traced(content, source_is_ts, output_is_ts, false).0
+    let source_type = if source_is_ts {
+        oxc_span::SourceType::ts()
+    } else {
+        oxc_span::SourceType::mjs()
+    };
+    extract_traced(content, source_type, output_is_ts, false).0
 }
 
-/// [`extract_normal_script_content`] plus, when `trace` is set, the result's
-/// provenance in `content` (`None` when a fallback path cannot say).
+/// [`extract_normal_script_content`] for `content` in the `source_type`
+/// grammar, plus, when `trace` is set, the result's provenance in `content`
+/// (`None` when a fallback path cannot say).
 fn extract_traced(
     content: &str,
-    source_is_ts: bool,
+    source_type: oxc_span::SourceType,
     output_is_ts: bool,
     trace: bool,
 ) -> (String, Option<Runs>) {
@@ -60,20 +66,17 @@ fn extract_traced(
     use oxc_codegen::Codegen;
     use oxc_parser::Parser;
     use oxc_semantic::SemanticBuilder;
-    use oxc_span::{GetSpan, SourceType};
-    use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
-
-    // Always parse as TypeScript if source is TypeScript
-    let source_type = if source_is_ts {
-        SourceType::ts()
-    } else {
-        SourceType::mjs()
-    };
+    use oxc_span::GetSpan;
+    use oxc_transformer::{JsxOptions, TransformOptions, Transformer, TypeScriptOptions};
 
     let allocator = Allocator::default();
     let ret = profile!(
         "atelier.normal_script.extract.parse",
-        Parser::new(&allocator, content, source_type).parse()
+        if source_type.is_jsx() {
+            crate::script::parse_script_block(&allocator, content, source_type)
+        } else {
+            Parser::new(&allocator, content, source_type).parse()
+        }
     );
 
     if !ret.diagnostics.is_empty() {
@@ -88,6 +91,9 @@ fn extract_traced(
     }
 
     let program = ret.program;
+    // Whether the block parsed with JSX: a `lang="tsx"` block holding a
+    // `<T>value` assertion parses as TypeScript.
+    let has_jsx = program.source_type.is_jsx();
     let mut output = String::default();
     let mut runs = Runs::default();
     let mut last_end = 0;
@@ -161,12 +167,17 @@ fn extract_traced(
     let runs = runs.slice(lead, extracted.len());
 
     // If source is TypeScript and we need JavaScript output, transpile
-    if source_is_ts && !output_is_ts {
+    if source_type.is_typescript() && !output_is_ts {
         // Re-parse the extracted content
         let allocator2 = Allocator::default();
         let ret2 = profile!(
             "atelier.normal_script.extract.ts_parse",
-            Parser::new(&allocator2, &extracted, SourceType::ts()).parse()
+            Parser::new(
+                &allocator2,
+                &extracted,
+                oxc_span::SourceType::ts().with_jsx(has_jsx)
+            )
+            .parse()
         );
         if ret2.diagnostics.is_empty() {
             let mut program2 = ret2.program;
@@ -199,11 +210,18 @@ fn extract_traced(
 
                 // Transform TypeScript to JavaScript
                 // Use only_remove_type_imports to preserve imports that might be used in template
+                // `lang="tsx"` keeps its JSX for the bundler's JSX plugin.
+                let jsx = if has_jsx {
+                    JsxOptions::disable()
+                } else {
+                    JsxOptions::default()
+                };
                 let transform_options = TransformOptions {
                     typescript: TypeScriptOptions {
                         only_remove_type_imports: true,
                         ..Default::default()
                     },
+                    jsx,
                     ..Default::default()
                 };
                 let transform_ret = profile!(

@@ -223,7 +223,9 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     Some((rewritten, demoted_ids, starts))
 }
 
-fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
+/// The grammar of a script block's `lang`: a `tsx` or `jsx` block reads its
+/// JSX, which the TypeScript and JavaScript grammars reject.
+pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
     match lang {
         Some("ts") => SourceType::ts(),
         Some("tsx") => SourceType::tsx(),
