@@ -9,6 +9,7 @@ import {
   type Stats,
 } from "node:fs";
 import path from "node:path";
+import { typecheckProvider } from "./typecheck-baseline-provider.mjs";
 
 export interface TypecheckInputOverlay {
   readonly source: string;
@@ -144,10 +145,31 @@ export function verifyTypecheckInputOverlays(
 /** Preserve existing stamp identities for projects without additional generated data. */
 export function typecheckPreparationIdentity(
   revision: string,
-  baseline: { readonly inputOverlays?: unknown; readonly prepare?: unknown } | undefined,
+  baseline:
+    | {
+        readonly inputOverlays?: unknown;
+        readonly prepare?: unknown;
+        readonly provider?: unknown;
+      }
+    | undefined,
 ): string {
   const inputs = typecheckInputOverlays(baseline?.inputOverlays);
-  return inputs.length === 0
+  const provider = typecheckProvider(baseline?.provider);
+  return inputs.length === 0 && provider == null
     ? revision
-    : `${revision}\n${sha256(Buffer.from(JSON.stringify({ inputs, prepare: baseline?.prepare })))}`;
+    : `${revision}\n${sha256(
+        Buffer.from(
+          JSON.stringify({
+            inputs,
+            prepare: baseline?.prepare,
+            provider:
+              provider == null
+                ? undefined
+                : {
+                    id: provider.id,
+                    descriptorSha256: provider.descriptorSha256,
+                  },
+          }),
+        ),
+      )}`;
 }

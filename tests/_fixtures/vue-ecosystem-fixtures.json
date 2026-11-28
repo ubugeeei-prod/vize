@@ -1023,6 +1023,14 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.26.1",
         "lockfile": "pnpm-lock.yaml",
+        "baseline": {
+          "tsconfig": "packages/vuetify/tsconfig.json",
+          "provider": "vue-language-tools-6371",
+          "prepare": [
+            ["pnpm", "--filter", "vuetify", "run", "build:lib"],
+            ["pnpm", "--filter", "vuetify", "run", "build:types:lib"]
+          ]
+        },
         "targets": [
           {
             "id": "lib",
@@ -1032,11 +1040,7 @@
           {
             "id": "docs",
             "tsconfig": "packages/docs/tsconfig.json",
-            "corpusGlobs": ["packages/docs/src/**/*.vue"],
-            "configurationOnly": {
-              "reason": "The docs tsconfig has no project reference to the library, so one program checks the library sources with the docs @/ paths; vue-tsc also stops at TS1005 in 4 docs SFCs",
-              "issue": 13300
-            }
+            "corpusGlobs": ["packages/docs/src/**/*.vue"]
           }
         ],
         "hangTimeoutMs": 2400000,

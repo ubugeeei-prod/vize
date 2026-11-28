@@ -1,0 +1,33 @@
+{
+  "id": "vue-language-tools-6371",
+  "repository": "https://github.com/vuejs/language-tools.git",
+  "revision": "b77bba35e9fa78b4bdab6baf8588a4e4c9469ce7",
+  "upstreamFix": "https://github.com/vuejs/language-tools/pull/6371",
+  "packageManagerVersion": "11.9.0",
+  "typescriptPeerVersion": "6.0.3",
+  "bin": "packages/tsc/bin/vue-tsc.js",
+  "sourceBlobs": {
+    "pnpm-lock.yaml": "b6a5f22d3cd609dcf2e18ec7be9881aa1edda280",
+    "packages/language-core/lib/codegen/template/element.ts": "abcb5bc787f74eeb295ce20d829ac08e957977a1",
+    "packages/language-core/package.json": "48ffb05c6932d3916ee5ebb537d7ab8c5f365821",
+    "packages/tsc/package.json": "be8d09fdd2476e8320b208be249b0a6eddb24269",
+    "tsconfig.base.json": "e3ef101a4e58b26b42b28130975db10b72ee4477"
+  },
+  "install": [
+    "--filter",
+    "vue-tsc...",
+    "--filter",
+    ".",
+    "install",
+    "--frozen-lockfile",
+    "--ignore-scripts",
+    "--prefer-offline"
+  ],
+  "build": ["exec", "tsc", "-b", "packages/tsc/tsconfig.json"],
+  "outputs": [
+    "packages/tsc/index.js",
+    "packages/language-core/index.js",
+    "packages/language-core/lib/codegen/template/element.js"
+  ],
+  "reason": "The latest published vue-tsc 3.3.14 corrupts URL text in template props and stops before semantic checking. This is a clean build of the official merged fix, with an explicit source-provider identity; it is not qualification against the unmodified published 3.3.14 package."
+}

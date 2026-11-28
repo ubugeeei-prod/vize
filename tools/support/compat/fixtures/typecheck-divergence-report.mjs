@@ -50,7 +50,6 @@ export async function runTypecheckDivergenceReport(argv = process.argv.slice(2))
   const artifacts = [];
   const documentedDifferences = readDocumentedDifferences();
   const vizeLaunch = resolveVizeLaunch(args.vizeBin, false);
-  const vueTsc = await resolveVueTsc(args.vueTscBin);
   for (const project of selected) {
     validatePerformanceConfig(project.typecheckPerformance);
     const fixtureRoot = resolve(repoRoot, project.fixturePath);
@@ -62,6 +61,7 @@ export async function runTypecheckDivergenceReport(argv = process.argv.slice(2))
       fixtureRoot,
       commitSha: summary.evidence.commitSha,
     });
+    const vueTsc = await resolveVueTsc(preparation.provider?.path ?? args.vueTscBin);
     const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
     const baselineProject = materializeBaselineProject(
       fixtureRoot,
@@ -156,6 +156,7 @@ export async function runTypecheckDivergenceReport(argv = process.argv.slice(2))
           readFileSync(resolve(fixtureRoot, baselineProject.sourceProject)),
         ),
         version: vueTsc.version,
+        ...(preparation.provider == null ? {} : { provider: preparation.provider.identity }),
         durationMs: baseline.durationMs,
         coverageDurationMs: coverageBaseline.durationMs,
         exitCode: baseline.exitCode,

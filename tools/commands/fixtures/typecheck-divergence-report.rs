@@ -33,7 +33,7 @@ mod typecheck_dependency_preparation;
 use typecheck_dependency_preparation::read_and_validate_dependency_preparation;
 mod typecheck_input_overlays;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Args {
     deadline_worker: Option<String>,
     deadline_state: Option<PathBuf>,
@@ -215,8 +215,48 @@ fn write_project_artifact(
         );
     }
     let vize_run = read_and_validate_vize_run(root, &args.report_dir, project, &summary)?;
-    let preparation =
+    let mut preparation =
         read_and_validate_dependency_preparation(root, &args.report_dir, project, &summary)?;
+    // An unreleased official source build is an explicit project-level oracle.
+    // Revalidate its sealed source and emitted modules under this project's
+    // deadline before either diagnostics or mutation controls can use it.
+    let mut provider_args = args.clone();
+    let mut provider_identity = Value::Null;
+    if let Some(provider) = project
+        .pointer("/typecheckPerformance/baseline/provider")
+        .and_then(Value::as_str)
+    {
+        let source_id = typecheck_source_project_id(project)?;
+        let verified = run_capture_limited(
+            context,
+            Path::new("node"),
+            &[
+                root.join("tools/support/compat/fixtures/typecheck-baseline-provider.mjs")
+                    .display()
+                    .to_string(),
+                "verify".into(),
+                fixture_root.display().to_string(),
+                provider.into(),
+                args.report_dir
+                    .join(format!("{source_id}-typecheck-dependencies.json"))
+                    .display()
+                    .to_string(),
+            ],
+            root,
+            30_000,
+            "pinned vue-tsc provider verification",
+            &[0],
+        )?;
+        let verified: Value = serde_json::from_str(&verified.stdout).map_err(|e| e.to_string())?;
+        provider_args.vue_tsc_bin = PathBuf::from(
+            verified["path"]
+                .as_str()
+                .ok_or("missing pinned provider executable")?,
+        );
+        provider_identity = verified["identity"].clone();
+        preparation["provider"] = provider_identity.clone();
+    }
+    let args = &provider_args;
     let source_project = project
         .pointer("/typecheckPerformance/baseline/tsconfig")
         .and_then(Value::as_str)
@@ -358,6 +398,9 @@ fn write_project_artifact(
             "stderr": coverage_baseline.run.stderr,
         },
     });
+    if !provider_identity.is_null() {
+        observations["baseline"]["provider"] = provider_identity.clone();
+    }
     let observations_path = args
         .report_dir
         .join(format!("{project_id}-typecheck-observations.json"));
@@ -573,7 +616,7 @@ fn write_project_artifact(
         &ambient,
     )?;
     context.phase("report serialization")?;
-    let artifact = json!({
+    let mut artifact = json!({
         "schema": "vize.fixtureTypecheckDivergenceRun",
         "version": 7,
         "project": project_id.clone(),
@@ -608,6 +651,9 @@ fn write_project_artifact(
         "budget": budget,
         "divergence": divergence,
     });
+    if !provider_identity.is_null() {
+        artifact["baseline"]["provider"] = provider_identity;
+    }
     if let Some(error) = ledger_error {
         // A stale waiver must still fail in every budget mode. Retain the
         // complete observations under a distinct failure schema, rather than

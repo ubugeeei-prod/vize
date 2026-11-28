@@ -8,6 +8,7 @@ import {
   typecheckInputOverlays,
   verifyTypecheckInputOverlays,
 } from "./typecheck-input-overlays.ts";
+import { verifyPreparedTypecheckProvider } from "./typecheck-baseline-provider.mjs";
 import {
   buildSeededMutation,
   executeSeededMutationOracle,
@@ -74,11 +75,17 @@ export function readAndValidateDependencyPreparation({
   assertQualificationLockfile(artifact.qualificationLockfile, performance, fixtureRoot, project.id);
   assertInstall(artifact.install, performance, fixtureRoot, project.id);
   assertBaselinePrepare(artifact.baselinePrepare, performance, project.id, fixtureRoot);
+  const provider = verifyPreparedTypecheckProvider(
+    fixtureRoot,
+    performance.baseline?.provider,
+    artifact.baselinePrepare?.provider,
+  );
 
   return {
     schema: preparationSchema,
     version: 1,
     payloadSha256: sha256(rawPayload),
+    ...(provider == null ? {} : { provider }),
     packageManager: artifact.packageManager,
     lockfile: artifact.lockfile,
     install: {
@@ -365,6 +372,7 @@ function assertBaselinePrepare(baselinePrepare, performance, projectId, fixtureR
       ...(typecheckInputOverlays(performance.baseline?.inputOverlays).length > 0
         ? ["inputOverlays"]
         : []),
+      ...(performance.baseline?.provider === undefined ? [] : ["provider"]),
     ],
     "typecheck baseline preparation evidence",
   );

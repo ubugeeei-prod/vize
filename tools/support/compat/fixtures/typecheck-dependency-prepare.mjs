@@ -31,6 +31,7 @@ import {
 import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.ts";
 import { typecheckUnitTsconfigs } from "./typecheck-targets.ts";
 import { prepareTypecheckInputOverlays } from "./typecheck-input-overlays.ts";
+import { prepareTypecheckProvider } from "./typecheck-baseline-provider.mjs";
 
 export { installArguments } from "./typecheck-package-manager.ts";
 
@@ -269,11 +270,17 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
     stdout += prepared.stdout ?? "";
     stderr += prepared.stderr ?? "";
   }
-  const durationMs = Date.now() - startedAt;
   if (project.id === "misskey") validateMisskeyBuildOutputs(fixtureRoot);
+  const provider = await prepareTypecheckProvider(
+    fixtureRoot,
+    project.typecheckPerformance.baseline?.provider,
+    timeoutMs,
+  );
+  const durationMs = Date.now() - startedAt;
   return {
     command,
     ...(inputOverlays.length > 0 ? { inputOverlays } : {}),
+    ...(provider == null ? {} : { provider }),
     durationMs,
     exitCode: 0,
     stdoutSha256: sha256(stdout),
