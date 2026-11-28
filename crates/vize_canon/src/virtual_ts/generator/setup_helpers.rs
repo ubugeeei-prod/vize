@@ -104,6 +104,7 @@ pub(super) fn emit_return_artifacts(
 }
 
 pub(super) fn emit_setup_helpers(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     ts: &mut crate::virtual_ts::TextBuf,
     component_context: SetupHelperComponentContext<'_>,
     script_content: Option<&str>,
@@ -178,8 +179,9 @@ pub(super) fn emit_setup_helpers(
             ts.push_str("  const __vize_refs = undefined as unknown as $DollarRefs;\n");
         }
     }
-    let boolean_keys =
-        generic_param.and_then(|_| script_content.and_then(collect_define_props_boolean_keys));
+    let boolean_keys = generic_param.and_then(|_| {
+        script_content.and_then(|script| collect_define_props_boolean_keys(parses, script))
+    });
     if let Some(keys) = boolean_keys.as_ref() {
         emit_define_props_boolean_keys_type(ts, keys);
     }

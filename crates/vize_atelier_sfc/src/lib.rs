@@ -95,7 +95,7 @@ pub use compile::{
 };
 pub use compile_script::props::{
     script_setup_has_semantic_validator_candidates, validate_script_setup_semantics,
-    validate_script_setup_semantics_located,
+    validate_script_setup_semantics_located, validate_script_setup_semantics_with_parses,
 };
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,

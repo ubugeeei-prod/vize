@@ -223,12 +223,13 @@ pub(super) fn parse_ts<R>(
 
 /// [`parse_ts`] through the projection's shared parse of `source`.
 pub(super) fn parse_shared_ts<R>(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     source: &str,
     path: impl AsRef<Path>,
     f: impl for<'a> FnOnce(&'a oxc_ast::ast::Program<'a>) -> R,
 ) -> Option<R> {
     let source_type = SourceType::from_path(path.as_ref()).unwrap_or_default();
-    vize_croquis::script_parser::with_shared_parse(source, source_type, |ret| {
+    vize_croquis::script_parser::with_shared_parse(parses, source, source_type, |ret| {
         (!ret.panicked).then(|| f(&ret.program))
     })
 }

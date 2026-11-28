@@ -37,7 +37,7 @@ use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use std::ops::Range;
 
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 use vize_croquis::{BindingType, Croquis};
 use vize_l0::{FxHashMap, FxHashSet, String, append};
 
@@ -49,6 +49,7 @@ use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 /// ref unwrapping; shadowing one twice would redeclare it with a conflicting
 /// type.
 pub(super) fn collect_deferred_setup_bindings(
+    parses: Option<&ScriptParses<'_>>,
     summary: &Croquis,
     script_content: Option<&str>,
     template_referenced_names: Option<&FxHashSet<String>>,
@@ -65,7 +66,7 @@ pub(super) fn collect_deferred_setup_bindings(
         return Vec::new();
     };
 
-    let mut names: Vec<String> = collect_uninitialized_bindings(script)
+    let mut names: Vec<String> = collect_uninitialized_bindings(parses, script)
         .into_iter()
         .filter(|name| referenced.contains(name.as_str()))
         .filter(|name| {
@@ -129,8 +130,8 @@ pub(super) fn emit_template_variables(
 /// Only the statement list the setup body itself emits is walked: a binding
 /// declared inside a nested block or function is never in scope for the
 /// template, so it can never be the one TypeScript flags.
-fn collect_uninitialized_bindings(script: &str) -> Vec<String> {
-    with_setup_parse(script, uninitialized_bindings)
+fn collect_uninitialized_bindings(parses: Option<&ScriptParses<'_>>, script: &str) -> Vec<String> {
+    with_setup_parse(parses, script, uninitialized_bindings)
 }
 
 fn uninitialized_bindings(parsed: &ParserReturn<'_>) -> Vec<String> {
@@ -170,13 +171,17 @@ fn uninitialized_bindings(parsed: &ParserReturn<'_>) -> Vec<String> {
 /// kept only when it parses strictly better; a TS parse that merely recovered
 /// would otherwise drop the declarations after the error and leave the deferred
 /// set incomplete, re-exposing those template reads to TS2454.
-fn with_setup_parse<R>(script: &str, read: impl for<'a> FnOnce(&ParserReturn<'a>) -> R) -> R {
-    with_shared_parse(script, SourceType::ts(), |as_ts| {
+fn with_setup_parse<R>(
+    parses: Option<&ScriptParses<'_>>,
+    script: &str,
+    read: impl for<'a> FnOnce(&ParserReturn<'a>) -> R,
+) -> R {
+    with_shared_parse(parses, script, SourceType::ts(), |as_ts| {
         if !as_ts.panicked && as_ts.diagnostics.is_empty() {
             return read(as_ts);
         }
         let ts_failures = (as_ts.panicked, as_ts.diagnostics.len());
-        with_shared_parse(script, SourceType::tsx(), |as_tsx| {
+        with_shared_parse(parses, script, SourceType::tsx(), |as_tsx| {
             if (as_tsx.panicked, as_tsx.diagnostics.len()) < ts_failures {
                 read(as_tsx)
             } else {

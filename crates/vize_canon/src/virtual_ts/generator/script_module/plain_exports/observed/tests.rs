@@ -41,7 +41,10 @@ fn parses<'a>(
     (ts, retry)
 }
 
-fn previous(block: SourceBlock<'_>) -> PlainScriptBridge<'_> {
+fn previous<'b>(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
+    block: SourceBlock<'b>,
+) -> PlainScriptBridge<'b> {
     let script = block.source();
     let mut exports = collect_normal_script_named_value_exports(Some(script), false, true);
     let hoist = NamespaceHoistPlan::collect(Some(script), false, true);
@@ -50,7 +53,7 @@ fn previous(block: SourceBlock<'_>) -> PlainScriptBridge<'_> {
         block,
         exports,
         hoist,
-        keywords: collect_named_value_export_starts(script),
+        keywords: collect_named_value_export_starts(parses, script),
     }
 }
 
@@ -178,7 +181,7 @@ export { forwarded } from 'other';
     let (ts, tsx) = parses(&arena, block);
     let observed = PlainScriptBridge::new(&descriptor, &ts, tsx.as_ref()).unwrap();
     let summary = analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full());
-    compare_plans(&observed, &previous(block), &summary);
+    compare_plans(&observed, &previous(None, block), &summary);
     let mut expected_text = block.source().to_owned();
     for keyword in ["const", "enum", "function", "class"] {
         expected_text = expected_text.replace(
@@ -237,7 +240,7 @@ fn checker_grammar_retry_and_descriptor_identity_are_required() {
     ));
     let observed = PlainScriptBridge::new(&descriptor, &ts, Some(&retry)).unwrap();
     let summary = analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full());
-    compare_plans(&observed, &previous(block), &summary);
+    compare_plans(&observed, &previous(None, block), &summary);
     public_footer(&observed, &summary);
 }
 
@@ -288,6 +291,6 @@ fn owned_projection_outlives_both_original_arenas() {
         "       const identity = <T>(v: T) => v;"
     );
     let summary = analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full());
-    compare_plans(&plan, &previous(block), &summary);
+    compare_plans(&plan, &previous(None, block), &summary);
     assert_eq!(public_footer(&plan, &summary).2, 1);
 }

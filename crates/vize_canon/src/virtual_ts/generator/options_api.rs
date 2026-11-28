@@ -14,9 +14,9 @@ mod computed;
 mod default_export;
 mod variables;
 
+pub(super) use default_export::{OptionsApiScriptFacts, analyze_options_script_source};
 #[cfg(test)]
-pub(super) use default_export::find_default_export_targets;
-pub(super) use default_export::{OptionsApiScriptFacts, analyze_options_api_script};
+pub(super) use default_export::{analyze_options_api_script, find_default_export_targets};
 pub(super) use variables::emit_options_api_variables;
 
 fn unresolved_extends_template_names(

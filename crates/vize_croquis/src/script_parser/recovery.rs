@@ -65,11 +65,12 @@ pub fn recover_program_for_analysis<'a>(
 /// from [`super::with_shared_parse`] so every reader of one script shares it.
 /// A repaired parse stays private to this read.
 pub fn with_shared_program_for_analysis<R>(
+    parses: Option<&super::ScriptParses<'_>>,
     source: &str,
     source_type: SourceType,
     read: impl for<'a> FnOnce(&ParserReturn<'a>) -> R,
 ) -> R {
-    super::with_shared_parse(source, source_type, |original| {
+    super::with_shared_parse(parses, source, source_type, |original| {
         let allocator = Allocator::default();
         match recover_program_for_analysis(&allocator, source, original) {
             Some(repaired) => read(&repaired),

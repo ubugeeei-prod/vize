@@ -137,6 +137,7 @@ fn type_check_analyzed(
     }
     if let Some(ref script) = descriptor.script {
         let script_diagnostics = collect_script_parse_diagnostics(
+            None,
             &script.content,
             script.loc.start as u32,
             script.lang.as_deref(),
@@ -148,6 +149,7 @@ fn type_check_analyzed(
     }
     if let Some(ref script_setup) = descriptor.script_setup {
         let script_diagnostics = collect_script_parse_diagnostics(
+            None,
             &script_setup.content,
             script_setup.loc.start as u32,
             script_setup.lang.as_deref(),

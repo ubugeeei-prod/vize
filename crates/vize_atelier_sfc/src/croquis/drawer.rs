@@ -21,7 +21,7 @@ pub(super) fn apply_options_api_mode(
 
 pub(super) fn analyze_scripts(
     descriptor: &SfcDescriptor<'_>,
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
@@ -31,7 +31,7 @@ pub(super) fn analyze_scripts(
 
 pub(super) fn analyze_scripts_with_occurrences(
     descriptor: &SfcDescriptor<'_>,
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
@@ -41,7 +41,7 @@ pub(super) fn analyze_scripts_with_occurrences(
 
 pub(super) fn analyze_scripts_with_empty_module_exports(
     descriptor: &SfcDescriptor<'_>,
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
@@ -60,7 +60,7 @@ pub(super) fn analyze_scripts_with_empty_module_exports(
 
 fn analyze_scripts_impl<D: ScriptDemand>(
     descriptor: &SfcDescriptor<'_>,
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,

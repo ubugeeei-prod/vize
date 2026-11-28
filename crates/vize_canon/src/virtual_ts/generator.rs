@@ -47,6 +47,7 @@ use self::component_constructors::{ComponentInstanceAliases, emit_component_cons
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::component_public_types::{SlotsTypeOptions, emit_exposed_type, emit_slots_type};
 use self::emits::emit_emits_type;
+pub(crate) use self::entry::generate_virtual_ts_with_offsets_and_checks;
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
@@ -60,7 +61,7 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
-use self::options_api::{analyze_options_api_script, emit_options_api_variables};
+use self::options_api::emit_options_api_variables;
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
@@ -81,7 +82,7 @@ use super::{
     },
 };
 use vize_carton::{FxHashMap, String, append, config::VueVersion, cstr, profile};
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, script_parser::ScriptParses};
 use vize_l0::ts;
 
 #[expect(
@@ -89,14 +90,14 @@ use vize_l0::ts;
     clippy::needless_borrow,
     reason = "the ts! interpolation closure reborrows its named writer throughout generation"
 )]
-pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+pub(crate) fn generate_virtual_ts_with_shared_parses(
     summary: &Croquis,
     script_content: Option<&str>,
     template_ast: Option<&vize_relief::RootNode<'_>>,
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
-    generation_options: VirtualTsGenerationOptions<'_>,
+    (generation_options, parses): (VirtualTsGenerationOptions<'_>, Option<&ScriptParses<'_>>),
 ) -> VirtualTsOutput {
     let _bindings_scope = super::script_facts::cache_bindings(summary);
     let check_options = generation_options.check_options;
@@ -173,20 +174,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let classify_default_export = !has_script_setup || has_plain_script_scope;
     let collect_options_facts =
         options_api && has_template_scope && check_options.check_template_bindings;
-    let options_script = if classify_default_export || collect_options_facts {
-        profile!(
-            "canon.virtual_ts.find_default_export_targets",
-            options_script_source
-                .map(|script| analyze_options_api_script(
-                    script,
-                    classify_default_export,
-                    collect_options_facts
-                ))
-                .unwrap_or_default()
-        )
-    } else {
-        Default::default()
-    };
+    let options_script = options_api::analyze_options_script_source(
+        parses,
+        options_script_source,
+        classify_default_export,
+        collect_options_facts,
+    );
     let default_export_object = options_script.default_export.object;
     let irregular_default = (!has_script_setup)
         .then(|| {
@@ -199,7 +192,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
     let module_plan = script_content
-        .map(|script| script_module::collect(script, recover_lone_setup, generation_options))
+        .map(|script| {
+            script_module::collect(parses, script, recover_lone_setup, generation_options)
+        })
         .unwrap_or_default();
     let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
     let (hoisted_generic_aliases, mut module_spans) = script_blocks.plan(
@@ -237,7 +232,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         preserve_unused_diagnostics,
     };
     let setup_helpers =
-        SetupHelperPlan::for_generation(summary, script_content, generation_options);
+        SetupHelperPlan::for_generation(parses, summary, script_content, generation_options);
     let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
@@ -382,6 +377,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         source_offset,
     );
     let has_ref_registry = emit_setup_helpers(
+        parses,
         &mut ts,
         SetupHelperComponentContext {
             helpers: &setup_helpers,
@@ -402,7 +398,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let mut boundaries =
                 setup_lines::ScriptBoundaries::new(generation_options.script_syntax_boundaries);
             let named_value_export_starts =
-                self::script_module::collect_named_value_export_starts(script);
+                self::script_module::collect_named_value_export_starts(parses, script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
             let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);
             let mut pending_default = standard_default::PendingDefault::default();
@@ -532,6 +528,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
             let template_ref_unwraps = template_refs::collect_and_emit_scope_preamble(
+                parses,
                 &mut ts,
                 summary,
                 options_api,
@@ -578,6 +575,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 )
             });
             emit_options_api_variables(
+                parses,
                 options_api,
                 (&mut ts, &mut semantic_links, &mut mappings),
                 summary,
@@ -617,13 +615,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             };
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
-                TemplateBindingAccess::for_template(summary, &scope_options)
+                TemplateBindingAccess::for_template(parses, summary, &scope_options)
             );
             template_binding_access.emit_instance_receiver_alias(&mut ts);
             if check_options.any_enabled() {
                 profile!(
                     "canon.virtual_ts.generate_scope_closures",
                     generate_scope_closures(
+                        parses,
                         &mut ts,
                         &mut ScopeMappings::new(&mut mappings, &mut diagnostic_mappings),
                         &mut semantic_links,

@@ -94,6 +94,7 @@ fn render_generic_projection(
                 shared_template_refs: false,
             },
             packets,
+            None,
         ),
     );
     result.1.extend(diagnostics);

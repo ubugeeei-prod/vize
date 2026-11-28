@@ -1,13 +1,35 @@
 //! Public entry points for virtual TypeScript generation: thin wrappers that
 //! fix offsets and generation flags before delegating to
-//! [`super::generate_virtual_ts_with_offsets_and_checks`].
+//! [`super::generate_virtual_ts_with_shared_parses`].
 
 use vize_croquis::Croquis;
 
 use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput};
 
-use super::generate_virtual_ts_with_offsets_and_checks;
+use super::generate_virtual_ts_with_shared_parses;
+
+/// [`generate_virtual_ts_with_shared_parses`] with every script read parsed
+/// privately, for callers outside a projection that shares its parses.
+pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_shared_parses(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        (generation_options, None),
+    )
+}
 
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///

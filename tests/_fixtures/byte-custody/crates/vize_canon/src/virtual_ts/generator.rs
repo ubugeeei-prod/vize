@@ -1,0 +1,792 @@
+mod anchors;
+mod auto_import_stubs;
+mod binding_output;
+mod component_constructors;
+mod component_export;
+mod component_public_types;
+mod emits;
+pub(super) mod entry;
+mod fallthrough;
+mod file_directives;
+#[cfg(feature = "native")]
+pub(crate) mod generic_recovery;
+pub(super) mod generics;
+mod global_components;
+mod glued_import;
+mod imports;
+mod irregular_default;
+mod legacy_vue2;
+mod macro_anchors;
+mod module_projection;
+mod module_statements;
+mod options_api;
+mod options_api_bridge;
+mod options_api_props_identifiers;
+mod options_api_support;
+mod preamble;
+mod root_element;
+mod script_blocks;
+mod script_metadata;
+mod script_module;
+pub(super) mod setup_helpers;
+mod setup_imports;
+mod setup_lines;
+mod setup_props;
+pub(super) mod setup_scope;
+mod setup_type_exports;
+mod spans;
+mod standard_default;
+mod template_record;
+mod template_ref_keys;
+mod template_refs;
+mod type_only_imports;
+mod unresolved_components;
+use self::anchors::SetupBindingAnchors;
+use self::auto_import_stubs::emit_auto_import_stubs;
+use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
+use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
+use self::component_public_types::{SlotsTypeOptions, emit_exposed_type, emit_slots_type};
+use self::emits::emit_emits_type;
+pub use self::entry::{
+    generate_virtual_ts, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_options_api,
+};
+pub(crate) use self::fallthrough::fallthrough_component_root_starts;
+use self::global_components::{GlobalComponentDiagnostics, GlobalComponentPlan};
+pub(crate) use self::imports::extract_declared_name;
+use self::imports::{
+    ImportNames, collect_component_imported_names, emit_reference_path_directives,
+    emit_reference_type_directives,
+};
+pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
+use self::macro_anchors::emit_setup_scope_macro_anchors;
+use self::options_api::{analyze_options_api_script, emit_options_api_variables};
+use self::options_api_bridge::generate_options_api_bridge;
+use self::options_api_props_identifiers::PropsConstAssertions;
+use self::options_api_support::find_options_api_props;
+use self::script_blocks::ScriptBlockScopes;
+use self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};
+use self::setup_imports::SetupImportPlan;
+use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
+use self::setup_type_exports::SetupTypeExportsPlan;
+use self::spans::template_usage;
+use self::type_only_imports::syntactic_type_only_imported_names;
+use super::{
+    macro_type_mappings::MacroTypeMappings,
+    scope::{ScopeGenerationOptions, ScopeMappings, generate_scope_closures},
+    template_binding_access::TemplateBindingAccess,
+    types::{
+        DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
+        VizeMapping, emit_lib_reference_directives,
+    },
+};
+use vize_carton::{FxHashMap, String, append, config::VueVersion, cstr, profile};
+use vize_croquis::Croquis;
+use vize_l0::ts;
+
+#[expect(
+    clippy::redundant_closure_call,
+    clippy::needless_borrow,
+    reason = "the ts! interpolation closure reborrows its named writer throughout generation"
+)]
+pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
+) -> VirtualTsOutput {
+    let _bindings_scope = super::script_facts::cache_bindings(summary);
+    let check_options = generation_options.check_options;
+    let check_props = check_options.check_props;
+    let script_source_offset =
+        |offset| generation_options.script_source_offset(script_offset, offset);
+    let dialect = generation_options.dialect;
+    let legacy_vue2 =
+        generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    let _ = generation_options.template_syntax_quirks;
+    let options_api = generation_options.options_api || legacy_vue2;
+    let hoist_shared_preamble = generation_options.hoist_shared_preamble;
+    let mut ts = crate::virtual_ts::TextBuf::with_capacity(32 * 1024);
+    file_directives::emit(
+        &mut ts,
+        script_content,
+        generation_options
+            .split_script_setup_offsets
+            .map(|(start, _)| start),
+    );
+    let mut mappings: Vec<VizeMapping> = Vec::new();
+    let mut diagnostic_mappings = Vec::new();
+    let mut semantic_links = Vec::new();
+    let mut prop_default_key_links = Vec::new();
+    let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
+    let (template_usage_names, template_value_usage_names, has_template_scope) =
+        template_usage(summary, template_ast, generation_options);
+    let mut setup_imports =
+        SetupImportPlan::new(script_content, summary, template_ast, check_options);
+    let inferred_slots = setup_imports.infers_slots();
+    let lib_references = generation_options
+        .lib_references
+        .unwrap_or(DEFAULT_LIB_REFERENCES);
+    emit_lib_reference_directives(&mut ts, lib_references);
+    emit_reference_path_directives(&mut ts, &options.reference_paths);
+    let has_script_reference_types = emit_reference_type_directives(&mut ts, script_content);
+    ts.push_str("// ============================================\n// Virtual TypeScript for Vue SFC Type Checking\n// Generated by vize\n// ============================================\n\n");
+    let script_metadata::ScriptMetadata {
+        authored_generic,
+        generic_param,
+        is_async,
+        has_script_setup,
+        has_plain_script_scope,
+        recover_lone_setup,
+        options_script_source,
+    } = script_metadata::ScriptMetadata::new(summary, script_content, generation_options);
+    let local_generic_parameters = generation_options
+        .generic_parameters
+        .is_none()
+        .then(|| generic_param.map(crate::virtual_ts::generic_parameters::GenericParameters::parse))
+        .flatten();
+    let generic_parameters = generation_options
+        .generic_parameters
+        .or(local_generic_parameters.as_ref());
+    let _generated_names = super::generated_names::bind(generic_parameters, summary);
+    preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
+    let mut named_value_exports = self::script_module::collect_normal_script_named_value_exports(
+        script_content,
+        has_script_setup,
+        has_plain_script_scope,
+    );
+    // A `namespace` cannot stay in `__setup()` (TS1235), so it and merged declarations move to
+    // module scope instead of through the export bridge.
+    let namespace_hoist = self::script_module::NamespaceHoistPlan::collect(
+        script_content,
+        has_script_setup,
+        has_plain_script_scope,
+    );
+    namespace_hoist.reconcile_exports(&mut named_value_exports);
+    let script_blocks = ScriptBlockScopes::collect(summary, script_content, has_script_setup);
+    let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content, &script_blocks);
+    // Share the default-export parse with Options API facts. Plain objects keep
+    // Vue's `this` typing; classes keep decorators; setup-only skips rewrites.
+    let classify_default_export = !has_script_setup || has_plain_script_scope;
+    let collect_options_facts =
+        options_api && has_template_scope && check_options.check_template_bindings;
+    let options_script = if classify_default_export || collect_options_facts {
+        profile!(
+            "canon.virtual_ts.find_default_export_targets",
+            options_script_source
+                .map(|script| analyze_options_api_script(
+                    script,
+                    classify_default_export,
+                    collect_options_facts
+                ))
+                .unwrap_or_default()
+        )
+    } else {
+        Default::default()
+    };
+    let default_export_object = options_script.default_export.object;
+    let irregular_default = (!has_script_setup)
+        .then(|| {
+            script_content.and_then(|script| {
+                irregular_default::IrregularDefault::new(script, &options_script)
+            })
+        })
+        .flatten();
+    if default_export_object.is_some() {
+        ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));
+    }
+    let module_plan = script_content
+        .map(|script| script_module::collect(script, recover_lone_setup, generation_options))
+        .unwrap_or_default();
+    let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
+    let (hoisted_generic_aliases, mut module_spans) = script_blocks.plan(
+        summary,
+        script_content,
+        generic_parameters,
+        &module_plan,
+        &namespace_hoist,
+    );
+    let glued_import = glued_import::GluedImportSection::plan(
+        script_content,
+        generation_options.split_script_setup_offsets,
+        recover_lone_setup,
+        &mut module_spans,
+    );
+    let mut ambient =
+        script_blocks::AmbientProjection::plan(summary, script_content, &mut module_spans);
+    // Re-declare SFC generics on hoisted declarations with safe defaults.
+    let generic_injection = generics::generic_injection(generic_parameters);
+    let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
+        script_blocks.hoisted_type_spans(summary, script_content)
+    } else {
+        FxHashMap::default()
+    };
+
+    namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
+    // Track whether a default-export rewrite declared `__default__`; generated helpers and user
+    // code can also mention the name (#3888), so grepping the output is not authoritative.
+    let binding_anchors = SetupBindingAnchors {
+        summary,
+        imports: &imports.values,
+        usage: &module_plan.identifier_usage,
+        template_usage_names: &template_usage_names,
+        template_value_usage_names: &template_value_usage_names,
+        preserve_unused_diagnostics,
+    };
+    let setup_helpers =
+        SetupHelperPlan::for_generation(summary, script_content, generation_options);
+    let mut declared_default_alias = false;
+    if let Some(script) = script_content {
+        profile!("canon.virtual_ts.emit_module_statements", {
+            // Emit each module-level statement with source mapping
+            for &(start, end) in &module_spans {
+                let span = (start, end);
+                if glued_import::GluedImportSection::emit(
+                    glued_import.as_ref(),
+                    span,
+                    &mut ts,
+                    &mut mappings,
+                    script,
+                    &script_source_offset,
+                ) || ambient.emit_module_statement(
+                    &mut ts,
+                    &mut mappings,
+                    script,
+                    span,
+                    script_source_offset,
+                ) {
+                    continue;
+                }
+                let Some(text) = script.get(start as usize..end as usize) else {
+                    continue;
+                };
+
+                if module_statements::emit_generic_injected(
+                    &mut ts,
+                    &mut mappings,
+                    text,
+                    script_source_offset(start as usize),
+                    generic_injection.as_ref(),
+                    module_statements::hoisted(&hoisted_type_spans, script, span),
+                ) {
+                    continue;
+                }
+
+                declared_default_alias |= module_projection::emit(
+                    &mut ts,
+                    &mut mappings,
+                    text,
+                    span,
+                    &script_source_offset,
+                    &options_script,
+                );
+            }
+
+            setup_helpers.emit_import_anchors(&mut ts);
+            setup_imports.emit_import_anchors(&mut ts);
+        });
+    }
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_module_aliases(&mut ts);
+    }
+
+    let mut global_components = GlobalComponentPlan::new(
+        (summary, template_ast),
+        legacy_vue2,
+        has_script_reference_types || check_options.check_unknown_components,
+        generation_options.self_component_name,
+    );
+    let options_api_props = options_api
+        .then(|| script_content.and_then(find_options_api_props))
+        .flatten();
+    let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
+        summary,
+        &global_components,
+        options_api_props.is_some(),
+        imports.type_only,
+    );
+    let imported_names = collect_component_imported_names(
+        summary,
+        script_content,
+        options,
+        global_components.enabled(),
+        &syntactic_type_only_imported_names,
+    );
+    let _component_aliases = super::component_aliases::cache_aliases(
+        summary,
+        options,
+        &syntactic_type_only_imported_names,
+        &imported_names,
+    );
+    emit_auto_import_stubs(
+        &mut ts,
+        summary,
+        options,
+        &imported_names,
+        &syntactic_type_only_imported_names,
+    );
+    global_components.emit(
+        &mut ts,
+        summary,
+        options,
+        &imported_names,
+        &syntactic_type_only_imported_names,
+        GlobalComponentDiagnostics::new(check_options, &mut mappings, template_offset),
+    );
+    ts.push('\n');
+    let source_offset = &script_source_offset;
+    let setup_props_plan = generate_setup_props(
+        &mut ts,
+        prop_source(&mut mappings, summary, script_content, source_offset),
+        generic_parameters,
+        options_api_props.as_ref(),
+        &syntactic_type_only_imported_names,
+        setup_type_exports.exports_public_type("Props"),
+        generation_options.component_name.is_some(),
+    );
+    let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(
+        summary,
+        options,
+        &syntactic_type_only_imported_names,
+        check_options,
+    );
+    let template_record = self::template_record::TemplateRecord::plan(
+        &fallthrough_scope,
+        template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
+        generic_param.is_some() && !legacy_vue2,
+        setup_helpers.template_refs.needs_registry(),
+        hoist_shared_preamble && !generation_options.local_template_ref_unwrap,
+    );
+    setup_imports.read_template_slots_from(template_record.slots_value().as_str());
+    ts.push_str("// ========== Setup Scope ==========\n");
+    generics::emit_setup_signature(&mut ts, &mut mappings, is_async, generic_parameters);
+    let mut has_root_el = false;
+    let mut define_emits_runtime_args: Option<&String> = None;
+    let mut authored_default = super::types::AuthoredDefaultKind::None;
+    ts! { &mut ts =>
+        #("() ") {
+            #("\n")
+            #{
+                (|mut ts: &mut crate::virtual_ts::TextBuf| {
+    if let Some(aliases) = &hoisted_generic_aliases {
+        aliases.emit_setup_aliases(&mut ts);
+    }
+    setup_imports.emit_setup(
+        &mut ts,
+        options,
+        &mut mappings,
+        &mut semantic_links,
+        source_offset,
+    );
+    let has_ref_registry = emit_setup_helpers(
+        &mut ts,
+        SetupHelperComponentContext {
+            helpers: &setup_helpers,
+            scope: &fallthrough_scope,
+            template_record: &template_record,
+        },
+        script_content,
+        generic_parameters,
+        hoist_shared_preamble,
+        template_ast,
+    );
+    ts.push_str("\n\n");
+    if let Some(script) = script_content {
+        profile!("canon.virtual_ts.emit_script_body", {
+            ts.push_str("  // User setup code\n");
+            let script_gen_start = ts.len();
+            let mut module_span_index = 0usize;
+            let mut boundaries =
+                setup_lines::ScriptBoundaries::new(generation_options.script_syntax_boundaries);
+            let named_value_export_starts =
+                self::script_module::collect_named_value_export_starts(script);
+            let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
+            let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);
+            let mut pending_default = standard_default::PendingDefault::default();
+            let mut emitted_default_alias = false;
+            for (src_byte_offset, raw_line) in ambient.script_lines(script) {
+                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
+                ambient.emit_setup_captures(
+                    src_byte_offset,
+                    script,
+                    &mut ts,
+                    &mut mappings,
+                    script_source_offset,
+                );
+                let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
+
+                let line_start = src_byte_offset;
+                let line_end = line_start + raw_line.len(); // use raw length for span check
+                let Some(mut setup_line) = setup_lines::setup_line(
+                    line,
+                    line_start,
+                    &module_spans,
+                    &mut module_span_index,
+                ) else {
+                    continue;
+                };
+                script_module::strip_named_value_exports(
+                    &mut setup_line,
+                    line_start,
+                    &named_value_export_starts,
+                );
+                let line = setup_line.as_ref();
+                ref_keys.emit_for_line(
+                    &mut ts,
+                    &mut mappings,
+                    (line_start, line_end),
+                    source_offset,
+                );
+                let mut output_line = std::borrow::Cow::Borrowed(line);
+                setup_type_exports.strip_projected_modifiers(&mut output_line, line_start as u32);
+
+                // Close the `defineComponent(` wrap right after the wrapped
+                // options object's closing brace.
+                if let Some(close_offset) = pending_default.wrap_close
+                    && close_offset > line_start
+                    && close_offset <= line_end
+                    && let Some((head, tail)) = line.split_at_checked(close_offset - line_start)
+                {
+                    output_line = std::borrow::Cow::Owned(cstr!("{head}){tail}").into());
+                    pending_default.wrap_close = None;
+                }
+
+                let irregular_projection = irregular_default.as_ref().and_then(|rewrite| {
+                    let offsets = props_const_assertions.take_line_offsets(line_start, line_end);
+                    rewrite.project_line(&output_line, line_start, offsets)
+                });
+                if let Some(projected) = irregular_projection {
+                    if projected.declares_alias {
+                        emitted_default_alias = true;
+                        declared_default_alias = true;
+                    }
+                    projected.emit(&mut ts, &mut mappings, &ref_keys, line_start, source_offset);
+                } else {
+                    props_const_assertions.splice_output_line(&mut output_line, line_start);
+                    if standard_default::rewrite_line(
+                        &mut output_line,
+                        line,
+                        (line_start, line_end),
+                        script,
+                        standard_default::Context {
+                            facts: &options_script,
+                            has_script_setup,
+                            inside_literal: module_plan.inside_literal(line_start),
+                        },
+                        &mut pending_default,
+                    ) {
+                        emitted_default_alias = true;
+                        declared_default_alias = true;
+                    }
+                    ref_keys.emit_line(
+                        &mut ts, &mut mappings, output_line,
+                        (line_start, line), source_offset,
+                    );
+                }
+                if let Some(name) = irregular_default.as_ref()
+                    .and_then(|rewrite| rewrite.class_alias(line_start, line_end)) {
+                    append!(ts, "  const __default__ = {name};\n");
+                }
+                // Once the class body has closed, append the deferred
+                // `const __default__ = <Name>` alias for the class component.
+                if let Some((class_end, name)) = pending_default.class_alias
+                    && class_end <= line_end
+                {
+                    append!(ts, "  const __default__ = {name};\n");
+                    pending_default.class_alias = None;
+                }
+            }
+            boundaries.emit_through(script.len(), &mut ts, &mut mappings, source_offset);
+            setup_lines::finish_script(
+                &mut ts,
+                pending_default.class_alias.map(|(_, name)| name),
+                pending_default.wrap_close.is_some(),
+                emitted_default_alias,
+                script_gen_start,
+                script.len(),
+            );
+            // Vue 2 only; see the bridge module doc for why Vue 3 skips it.
+            if legacy_vue2 {
+                let offset = script_offset as usize;
+                generate_options_api_bridge(&mut ts, &mut mappings, summary, script, offset);
+            }
+        });
+    }
+    setup_props_plan.emit_artifact(
+        &mut ts,
+        prop_source(&mut mappings, summary, script_content, source_offset),
+        generic_parameters,
+    );
+    has_root_el = template_refs::emit_setup_artifacts(
+        &mut ts,
+        summary,
+        (options, generation_options),
+        &syntactic_type_only_imported_names,
+        template_ast,
+        check_options,
+    );
+    if has_template_scope && check_options.check_template_bindings {
+        profile!("canon.virtual_ts.emit_template_scope", {
+            ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
+            let template_ref_unwraps = template_refs::collect_and_emit_scope_preamble(
+                &mut ts,
+                summary,
+                options_api,
+                &template_usage_names,
+                &template_value_usage_names,
+                &imports.values.without_script_value_use,
+                script_content,
+                &imported_names,
+                options,
+                generation_options,
+                generic_param.is_some(),
+                inferred_slots || template_record.any(),
+                template_ast.map_or("", |root| root.source),
+                &script_source_offset,
+                (&mut semantic_links, &mut mappings, template_offset),
+            );
+            // Vue template context (available in template expressions)
+            setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
+            let template_emit =
+                setup_helpers.template_emit_initializer(&mut ts, summary, generic_parameters);
+            emit_template_context(
+                &mut ts,
+                options,
+                summary,
+                (dialect, legacy_vue2),
+                &setup_imports,
+                &template_record,
+                template_emit.as_deref(),
+            );
+            let maps = &mut mappings;
+            let src = prop_source(maps, summary, script_content, &script_source_offset);
+            let keyed_prop_bindings = profile!("canon.virtual_ts.generate_props_variables", {
+                setup_props_plan.generate_props_variables(
+                    &mut ts,
+                    src,
+                    check_props && !legacy_vue2,
+                    &mut semantic_links,
+                    &mut prop_default_key_links,
+                    crate::virtual_ts::props::TemplatePropsScope::new(
+                        template_ref_unwraps.props_shadow_anchor(),
+                        template_ref_unwraps.props_object_binding(),
+                        generic_parameters,
+                    ),
+                )
+            });
+            emit_options_api_variables(
+                options_api,
+                (&mut ts, &mut semantic_links, &mut mappings),
+                summary,
+                options,
+                script_content,
+                (
+                    &options_script,
+                    declared_default_alias && !legacy_vue2 && !has_script_setup,
+                ),
+                &script_source_offset,
+            );
+            let scope_options = ScopeGenerationOptions {
+                component_props_contract: setup_props_plan.component_props_type_ref(),
+                diagnostic_ownership: generation_options.diagnostic_ownership,
+                generic_parameters,
+                check_options,
+                virtual_ts_options: options,
+                hoist_shared_preamble,
+                share_listener_relations: (script_content.is_none() && generic_parameters.is_none())
+                    || module_plan.shares_listener_relations(generic_parameters),
+                setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
+                keyed_prop_bindings: &keyed_prop_bindings,
+                syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
+                template_ast,
+                component_binding_check: global_components.component_check(),
+                legacy_vue2,
+                options_api,
+                preserve_event_navigation: generation_options.preserve_event_navigation,
+                omit_navigation_references: generation_options.omit_navigation_references,
+                has_default_alias: declared_default_alias,
+                script_content,
+                experimental_strict_slot_children: generation_options
+                    .experimental_strict_slot_children,
+                forwarded_root_starts: template_record.forwarded.starts(),
+                instantiated_ref_starts: template_record.ref_starts(),
+                shared_template_refs: template_record.shares_refs(),
+            };
+            let template_binding_access = profile!(
+                "canon.virtual_ts.collect_template_prop_names",
+                TemplateBindingAccess::for_template(summary, &scope_options)
+            );
+            template_binding_access.emit_instance_receiver_alias(&mut ts);
+            if check_options.any_enabled() {
+                profile!(
+                    "canon.virtual_ts.generate_scope_closures",
+                    generate_scope_closures(
+                        &mut ts,
+                        &mut ScopeMappings::new(&mut mappings, &mut diagnostic_mappings),
+                        &mut semantic_links,
+                        summary,
+                        &template_binding_access,
+                        template_offset,
+                        scope_options,
+                    )
+                );
+            }
+            template_binding_access.append_instance_diagnostic_prefixes(&mut diagnostic_mappings);
+            binding_anchors.emit_with_components(
+                &mut ts,
+                options,
+                &global_components,
+                &syntactic_type_only_imported_names,
+            );
+            ts.push_str("  })();\n");
+        });
+    }
+    if has_template_scope && !check_options.check_template_bindings && preserve_unused_diagnostics {
+        binding_anchors.emit(
+            &mut ts,
+            "canon.virtual_ts.emit_no_check_template_binding_anchors",
+        );
+    }
+    if generation_options.preserve_event_navigation {
+        setup_helpers.emit_event_navigation(
+            &mut ts,
+            &mut mappings,
+            summary,
+            generic_parameters,
+            &script_source_offset,
+        );
+    }
+    emit_setup_scope_macro_anchors(&mut ts, &setup_helpers);
+    define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
+    let mut setup_return_fields: Vec<String> = Vec::new();
+    template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
+    self::script_module::push_setup_return_fields(&named_value_exports, &mut setup_return_fields);
+    namespace_hoist.push_captured_return_fields(&named_value_exports, &mut setup_return_fields);
+    setup_type_exports.emit_setup_artifacts(&mut ts, &mut setup_return_fields);
+    setup_props_plan.push_setup_return_fields(&mut setup_return_fields);
+    authored_default =
+        generation_options.authored_default(declared_default_alias, has_script_setup);
+    let preserve_authored_value = authored_default != super::types::AuthoredDefaultKind::None;
+    setup_helpers::emit_return_artifacts(
+        &mut ts,
+        summary,
+        &mut setup_return_fields,
+        preserve_authored_value,
+    );
+    setup_props_plan.emit_options_api_artifact(&mut ts, options_api_props.as_ref());
+    ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
+
+                })(__ts);
+            }
+        }
+        #("\n\n")
+    }
+    ts.push_str("// Invoke setup to verify types\n");
+    semantic_links.extend(script_module::emit_exports(
+        &mut ts,
+        &mut mappings,
+        &named_value_exports,
+        script_offset,
+    ));
+    setup_type_exports.emit_module_exports(&mut ts);
+    setup_props_plan.emit_module_export(
+        &mut ts,
+        options_api_props.as_ref(),
+        generic_parameters,
+        &template_record.forwarded,
+    );
+    emit_authored_component_aliases(&mut ts, authored_default);
+    let emits_info = emit_emits_type(
+        &mut ts,
+        summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
+        generation_options.preserve_event_navigation,
+        generic_parameters,
+        define_emits_runtime_args.is_some(),
+    );
+    let slots_is_generic = emit_slots_type(
+        &mut ts,
+        summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
+        SlotsTypeOptions {
+            generic_injection: generic_injection.as_ref(),
+            export_slots: !module_plan.exported_types.contains("Slots"),
+            authored_slots_binding: module_plan.bound_types.contains("Slots")
+                && component_public_types::uses_module_scoped_authored_slots_binding(summary),
+            options_api_slots: options_api && generation_options.projects_editor_component(),
+            inferred_slots,
+            untyped_script_slots: setup_imports.has_untyped_script_slots(),
+        },
+    );
+    let (has_exposed_type, exposed_is_generic) =
+        emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
+    ts.push('\n');
+    let forwards = template_record.forwarded.emit_helpers(&mut ts);
+    let emit_mode = (legacy_vue2, hoist_shared_preamble);
+    emits_info.emit(&mut ts, summary, forwards, emit_mode);
+    let generic_component_params =
+        setup_props_plan.generic_component_params(generic_parameters, authored_generic);
+    let public_component_type = emit_component_constructors(
+        &mut ts,
+        &setup_props_plan,
+        &ComponentInstanceAliases {
+            generic_params: generic_component_params.as_ref(),
+            generic_parameters,
+            slots_is_generic,
+            emits_is_generic: emits_info.has_generic_emits(),
+            exposed_is_generic,
+            has_emits_for_props: emits_info.has_emits_for_props,
+            has_exposed_type,
+            has_root_el,
+            has_refs: template_record.has_instance_refs(),
+            jsx_slots: check_options.jsx_slots,
+            has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
+            hoist_shared_preamble,
+            named_component_export: generation_options.component_name.is_some(),
+        },
+        generic_parameters
+            .map(|plan| plan.authored())
+            .or(authored_generic)
+            .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
+        legacy_vue2,
+        dialect,
+    );
+    let public_names = component_export::names(&ts, summary, generation_options, script_content);
+    emit_default_export_declaration(
+        &mut ts,
+        &emits_info,
+        public_component_type,
+        authored_default,
+        setup_props_plan
+            .component_value_props_type_ref(generic_component_params.as_ref(), legacy_vue2)
+            .as_deref(),
+        (summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic,
+        (
+            self::fallthrough::fallthrough_props_type_ref(
+                &fallthrough_scope,
+                template_ast,
+                legacy_vue2,
+            )
+            .as_deref(),
+            check_options.infers_omitted_native_fallthrough_listeners(legacy_vue2)
+                && self::fallthrough::has_only_native_fallthrough_targets(summary, template_ast),
+            check_options,
+            hoist_shared_preamble,
+        ),
+        public_names
+            .as_ref()
+            .map(component_export::ComponentNames::type_name),
+    );
+    let export = component_export::default_export(&mut ts, public_names.as_ref());
+    binding_output::publish(
+        binding_output::finish(ts, generation_options),
+        mappings,
+        diagnostic_mappings,
+        semantic_links,
+        prop_default_key_links,
+        export,
+    )
+}
