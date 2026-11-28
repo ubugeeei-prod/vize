@@ -15,7 +15,12 @@ and package metadata continue to own release maturity.
 
 ## Fresh consumers and application sources
 
-The Prettier matrix installs the public tarball in an isolated consumer and
+Prettier and ESLint qualify source-built tarballs through their public exports.
+They remain experimental workspace-only packages and are excluded from the normal
+[release package inventory](../../tools/config/pkl/workflows/release/release.pkl).
+Shipping these repository changes does not publish or promote either adapter.
+
+The Prettier matrix installs the packed source tarball in an isolated consumer and
 formats every SFC in the [Vite Musea](../../examples/vite-musea) and
 [JSX/TSX](../../examples/jsx-tsx) example applications. Complete direct-native,
 installed API, repeated API, and CLI outputs must agree. A rejected host option
@@ -23,7 +28,7 @@ must leave the copied application intact. Both Node versions execute the same
 tarball, authenticated native image, and emitted test helper; the complete
 application packet must agree across runtimes.
 
-The ESLint matrix installs both public packages and runs every SFC from those
+The ESLint matrix installs both source-built package tarballs and runs every SFC from those
 same applications through the standalone adapter and its original shared bridge.
 The rule objects must be identical. Every native call, source, option, diagnostic,
 range, suggestion, and fix retains its original order and must agree. Real host
