@@ -1,4 +1,4 @@
-// Tooling selection follows what a test reads, not what shared data names (#6830).
+// Tooling selection follows what a test reads, not what shared data names.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { matchesGlob } from "node:path";

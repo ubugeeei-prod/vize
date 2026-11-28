@@ -291,7 +291,7 @@ void test("the existing source job appends development qualification after produ
   assert.equal(artifact.if, "always()");
   assert.ok(artifact.with?.path?.includes("${{ runner.temp }}/nuxt5-dev-runtime-proof"));
   assert.ok(job.steps.indexOf(artifact) > job.steps.indexOf(development));
-  // #6830: main runs this lane per commit; merge candidates call it.
+  // Main runs this lane per commit; merge candidates call it.
   assert.equal(workflow.on.pull_request, undefined);
   for (const trigger of [workflow.on.push]) {
     for (const file of [

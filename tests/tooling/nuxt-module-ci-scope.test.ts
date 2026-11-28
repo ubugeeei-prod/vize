@@ -39,7 +39,7 @@ const campaigns = (event: string, source: Step[] = steps) =>
     .flatMap((step) => step.run?.match(/compat\/nuxt\/([\w-]+-build\.(?:mjs|ts))/)?.[1] ?? []);
 
 test("main and merge candidates retain source-built Nuxt 3 SSR, hydration and navigation", () => {
-  // #6830: off the PR tier; merge candidates call it and main runs it per commit.
+  // Off the PR tier: merge candidates call it and main runs it per commit.
   assert.equal(workflow.on.pull_request, undefined);
   assert.ok(workflow.on.push.paths?.includes("crates/**"));
   assert.ok(workflow.on.push.paths?.includes("davinci/**"));

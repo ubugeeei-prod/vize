@@ -194,7 +194,7 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-smoke-runtime-oracle.test.ts",
     ],
   },
-  // Audited 2026-11-19 (#6830): these release tests execute the source CLI or
+  // Audited 2026-11-19: these release tests execute the source CLI or
   // native addon, so product sources stay their inputs.
   {
     input: "tooling",

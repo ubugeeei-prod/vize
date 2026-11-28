@@ -3,7 +3,7 @@
 name: V1 qualification manifest
 
 on:
-  # #6830: off the PR tier; nightly Full qualification calls it.
+  # Off the PR tier: nightly Full qualification calls it.
   workflow_call:
     inputs:
       enforce_complete:

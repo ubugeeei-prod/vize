@@ -1,4 +1,4 @@
-// The serial PR report gates check out only their script closure (#6830).
+// The serial PR report gates check out only their script closure.
 // A full checkout cost 13–14 s per report on the PR critical path.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";

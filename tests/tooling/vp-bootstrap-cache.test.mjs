@@ -178,7 +178,7 @@ const dependencyConsumers = [
 
 const frontendConsumerRunners = new Map([
   ["check.yml/check-js", "blacksmith-32vcpu-ubuntu-2404"],
-  // #6830: a planner-selected skip runs hosted; selected work keeps the maximum runner.
+  // A planner-selected skip runs hosted; selected work keeps the maximum runner.
   ["check.yml/security-audit", plannedRunner(plannedRunnerJobs["check.yml"]["security-audit"])],
   [
     "check.yml/node-engine-compat",

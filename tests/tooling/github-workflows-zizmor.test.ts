@@ -47,7 +47,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
   assert.equal(parsed.env?.FORCE_JAVASCRIPT_ACTIONS_TO_NODE24, true);
   assert.deepEqual(parsed.on?.push?.branches, ["main", "davinci"]);
   assert.deepEqual(parsed.on?.push?.paths, [".github/**"]);
-  // #6830: PRs audit workflows only when they change them.
+  // PRs audit workflows only when they change them.
   assert.deepEqual(parsed.on?.pull_request, { paths: [".github/**"] });
   assert.deepEqual(parsed.on?.release?.types, ["published"]);
   assert.deepEqual(parsed.on?.schedule, [{ cron: "17 2 * * 2" }]);

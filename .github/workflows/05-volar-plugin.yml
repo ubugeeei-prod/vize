@@ -3,7 +3,7 @@
 name: Volar Plugin
 
 on:
-  # #6830: off the PR tier; main runs it nightly.
+  # Off the PR tier: main runs it nightly.
   schedule:
     - cron: "7 4 * * *"
   workflow_dispatch: {}

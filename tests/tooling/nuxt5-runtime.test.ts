@@ -120,7 +120,7 @@ void test("#11802 Nuxt 5 lazy hydration inputs and runtime oracle stay pinned", 
 });
 
 void test("Nuxt runtime ownership and frozen consumer inputs trigger the existing source lane", () => {
-  // #6830: main runs this lane per commit; merge candidates call it.
+  // Main runs this lane per commit; merge candidates call it.
   assert.equal(workflow.on.pull_request, undefined);
   for (const trigger of [workflow.on.push]) {
     for (const file of [

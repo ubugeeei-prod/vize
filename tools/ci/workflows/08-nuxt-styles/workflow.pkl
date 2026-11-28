@@ -1,7 +1,7 @@
 import "../../lib/Actions.pkl" as ci
 
 name = "Nuxt scoped style build"
-// #6830: off the PR tier; main runs it per commit and nightly.
+// Off the PR tier: main runs it per commit and nightly.
 on {
   push {
     branches = List("main", "davinci")

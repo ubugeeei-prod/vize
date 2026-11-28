@@ -245,7 +245,7 @@ export const cacheInputs = {
     "crates/vize/tests/fixtures/content_mapper_project/**",
   ],
   // Release contracts without product execution (tooling-test-scopes.ts), audited
-  // 2026-11-19 (#6830): release-owned scripts, fixtures, workflows and manifests.
+  // 2026-11-19: release-owned scripts, fixtures, workflows and manifests.
   // Their import closures and literally named paths still select them too.
   toolingReleaseSurfaces: [
     "package.json",

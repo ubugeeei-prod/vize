@@ -2,7 +2,7 @@ import "../../lib/Actions.pkl" as ci
 
 name = "Canon ecosystem producer qualification"
 
-// #6830: off the PR tier; main runs it nightly.
+// Off the PR tier: main runs it nightly.
 on {
   schedule = new Listing {
     new Dynamic { cron = "19 4 * * *" }
