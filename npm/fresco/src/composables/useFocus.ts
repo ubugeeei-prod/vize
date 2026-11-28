@@ -14,22 +14,24 @@ import {
   type Ref,
 } from "vue";
 
+/** Injection key for the application focus registry. */
 export const FOCUS_KEY: InjectionKey<FocusManager> = Symbol("fresco-focus");
 const FOCUS_PARENT_KEY: InjectionKey<string | null | Ref<string | null | undefined>> =
   Symbol("fresco-focus-parent");
 
+/** Component focus registration, ancestry, delegation, and subtree trapping. */
 export interface UseFocusOptions {
-  /** Enable or disable this focus target while keeping its logical identity */
+  /** Whether this focus target participates in traversal. @default true */
   isActive?: boolean | Ref<boolean>;
-  /** Auto-focus this component when nothing else is focused */
+  /** Focus this target when no target already owns focus. @default false */
   autoFocus?: boolean;
-  /** Focus ID for this element */
+  /** Stable logical identity for this focus target. @default A generated "focus-" identifier */
   id?: string;
-  /** Parent focus ID used to derive descendant-focus state */
+  /** Parent used for descendant state; explicitly supplied undefined or null clears inherited ancestry. @default The injected focus scope, or null */
   parentId?: string | null | Ref<string | null | undefined>;
-  /** Descendant that receives focus when this target is focused */
+  /** Registered descendant that receives delegated focus. @default null */
   delegateFocusTo?: string | null | Ref<string | null | undefined>;
-  /** Keep programmatic and sequential focus inside this target subtree */
+  /** Keep programmatic and sequential focus inside this target subtree. @default false */
   trapFocus?: boolean | Ref<boolean>;
 }
 
@@ -45,6 +47,7 @@ export interface FocusRegistrationOptions {
   delegateFocusTo?: string | null | undefined;
 }
 
+/** Ordered focus registry with activation, delegated descendants, and nested trap boundaries. */
 export interface FocusManager {
   /** Currently focused element ID */
   focusedId: Ref<string | null>;

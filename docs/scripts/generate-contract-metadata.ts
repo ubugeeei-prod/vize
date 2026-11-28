@@ -54,7 +54,10 @@ const evidence = {
     "npm/ui/scripts/check-renderers.ts",
   ],
   fresco: [
+    "npm/fresco/package.json",
+    "npm/fresco/src/index.ts",
     "docs/fresco/compatibility.md",
+    "tests/tooling/docs-public-api.test.ts",
     "tests/tooling/fresco-public-docs.test.ts",
     "tests/tooling/fresco-testing-node.test.ts",
   ],

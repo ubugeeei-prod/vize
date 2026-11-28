@@ -1,5 +1,6 @@
 import type { CSSProperties } from "vue";
 
+/** Direction, glyph, optional title, and color of a terminal divider. */
 export interface DividerProps {
   /** Divider direction */
   direction?: "horizontal" | "vertical";
@@ -13,6 +14,7 @@ export interface DividerProps {
   titleFg?: string;
 }
 
+/** Direction, spacing, alignment, and justification of a flex stack. */
 export interface StackProps {
   /** Stack direction */
   direction?: "horizontal" | "vertical";
@@ -26,8 +28,10 @@ export interface StackProps {
   wrap?: boolean;
 }
 
+/** Shared spacing and alignment inputs for fixed-direction stack components. */
 export type ConvenienceStackProps = Pick<StackProps, "gap" | "align" | "justify">;
 
+/** Translate public stack alignment names to renderer flex alignment values. */
 export const stackAlignValues: Record<
   NonNullable<StackProps["align"]>,
   NonNullable<CSSProperties["alignItems"]>
@@ -38,6 +42,7 @@ export const stackAlignValues: Record<
   stretch: "stretch",
 };
 
+/** Translate public stack justification names to renderer flex distribution values. */
 export const stackJustifyValues: Record<
   NonNullable<StackProps["justify"]>,
   NonNullable<CSSProperties["justifyContent"]>

@@ -2,8 +2,10 @@
 
 import { computed, ref, type ComputedRef, type Ref } from "vue";
 
+/** Alignment used when revealing a collection item. */
 export type VirtualScrollAlignment = "nearest" | "start" | "center" | "end";
 
+/** Visible and overscanned half-open item-index ranges. */
 export interface VirtualViewportRange {
   /** First item occupying the viewport. */
   visibleStart: number;
@@ -15,13 +17,17 @@ export interface VirtualViewportRange {
   overscanEnd: number;
 }
 
+/** Collection size, visible capacity, overscan, and initial scroll offset. */
 export interface VirtualViewportOptions {
   itemCount: number;
   viewportSize: number;
+  /** Extra retained items before and after the visible range. @default 2 */
   overscan?: number;
+  /** Initial item offset, clamped to the current scrollable range. @default 0 */
   initialOffset?: number;
 }
 
+/** Bounded reactive collection offsets and range controls; counts must be nonnegative safe integers. */
 export interface VirtualViewport {
   readonly itemCount: Readonly<Ref<number>>;
   readonly viewportSize: Readonly<Ref<number>>;

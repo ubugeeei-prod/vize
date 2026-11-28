@@ -27,6 +27,7 @@ export type {
   TableViewportRange,
 } from "./table-types.js";
 
+/** Render terminal rows with selection, sorting, resizing, and a bounded row viewport. */
 export const Table = defineComponent({
   name: "Table",
   props: {

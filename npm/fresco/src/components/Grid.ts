@@ -4,6 +4,7 @@
 
 import { defineComponent, h, type VNode } from "vue";
 
+/** Column count and terminal-cell spacing for a fixed-column grid. */
 export interface GridProps {
   /** Number of columns */
   columns?: number;
@@ -15,6 +16,7 @@ export interface GridProps {
   columnGap?: number;
 }
 
+/** Arrange default-slot nodes into rows with a fixed number of columns. */
 export const Grid = defineComponent({
   name: "Grid",
   props: {

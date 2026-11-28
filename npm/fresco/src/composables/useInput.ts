@@ -7,6 +7,7 @@ import { lastCompositionEvent, lastKeyEvent, lastPasteEvent, type KeyEvent } fro
 import { hasActivePasteHandlers } from "./usePaste.js";
 import { useStreamsContext } from "./useStreams.js";
 
+/** Normalized compatibility flags for a delivered terminal key event. */
 export interface Key {
   upArrow: boolean;
   downArrow: boolean;
@@ -31,37 +32,40 @@ export interface Key {
   eventType?: "press" | "repeat" | "release";
 }
 
+/** Receive a normalized key name and exact modifier state. */
 export interface KeyHandler {
   (key: string, modifiers: { ctrl: boolean; alt: boolean; shift: boolean; meta: boolean }): void;
 }
 
+/** Activation and callbacks for key, character, paste, and composition input. */
 export interface UseInputOptions {
-  /** Whether to capture input (boolean or Ref<boolean>) */
+  /** Activation flag used when isActive is omitted. @default true */
   active?: boolean | Ref<boolean>;
-  /** Whether to capture input (alias for active, boolean or Ref<boolean>) */
+  /** Activation flag that takes precedence over active. @default active ?? true */
   isActive?: boolean | Ref<boolean>;
-  /** Ink-compatible input callback */
+  /** Receive printable input and normalized compatibility key flags. @default undefined */
   handler?: (input: string, key: Key) => void;
-  /** Called on key press */
+  /** Receive normalized key names with exact modifier state. @default undefined */
   onKey?: KeyHandler;
-  /** Called on character input */
+  /** Receive printable text without command modifiers. @default undefined */
   onChar?: (char: string) => void;
-  /** Called on Enter */
+  /** Receive the normalized Enter key. @default undefined */
   onSubmit?: () => void;
-  /** Called on Escape */
+  /** Receive the normalized Escape key. @default undefined */
   onEscape?: () => void;
-  /** Called on arrow keys */
+  /** Receive normalized arrow directions. @default undefined */
   onArrow?: (direction: "up" | "down" | "left" | "right") => void;
-  /** Called when an IME composition starts */
+  /** Receive the start of IME preedit. @default undefined */
   onCompositionStart?: () => void;
-  /** Called when IME preedit text changes */
+  /** Receive an IME preedit update. @default undefined */
   onCompositionUpdate?: (text: string, cursor: number) => void;
-  /** Called when IME commits text */
+  /** Receive committed IME composition text. @default undefined */
   onCompositionEnd?: (text: string) => void;
-  /** Deliver Ctrl+C to this handler instead of reserving it for app exit. */
+  /** Whether this handler owns Ctrl+C delivery. @default false */
   captureCtrlC?: boolean;
 }
 
+/** Mutable activation and the latest delivered key or printable text. */
 export interface UseInputReturn {
   isActive: Ref<boolean>;
   lastKey: Ref<string | null>;
@@ -69,9 +73,12 @@ export interface UseInputReturn {
   disable: () => void;
 }
 
+/** Receive printable input with normalized compatibility key flags. */
 export type InputHandler = (input: string, key: Key) => void;
 
+/** Activation for the callback overload of useInput. */
 export interface UseInputHandlerOptions {
+  /** Whether the callback overload receives terminal input. @default true */
   isActive?: boolean | Ref<boolean>;
 }
 
@@ -178,6 +185,7 @@ function handleStructuredOptions(
   if (inkKey.rightArrow) options.onArrow?.("right");
 }
 
+/** Observe normalized terminal input while active and release input watchers and mode requests when the component unmounts. */
 export function useInput(handler: InputHandler, options?: UseInputHandlerOptions): UseInputReturn;
 export function useInput(options?: UseInputOptions): UseInputReturn;
 export function useInput(

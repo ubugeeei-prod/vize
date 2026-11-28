@@ -4,17 +4,19 @@
 
 import { ref, computed, type Ref } from "vue";
 
+/** Initial composition mode and optional mode, preedit, and commit notifications. */
 export interface UseImeOptions {
-  /** Initial IME mode */
+  /** Initial composition mode; the manager still starts disabled. @default "direct" */
   mode?: ImeMode;
-  /** Called when IME mode changes */
+  /** Receive composition-mode changes. @default undefined */
   onModeChange?: (mode: ImeMode) => void;
-  /** Called when composition updates */
+  /** Receive updated preedit text and cursor state. @default undefined */
   onCompositionUpdate?: (text: string, cursor: number) => void;
-  /** Called when text is committed */
+  /** Receive committed composition text. @default undefined */
   onCommit?: (text: string) => void;
 }
 
+/** Composition-mode identifiers exposed by the terminal input manager. */
 export type ImeMode =
   | "direct"
   | "hiragana"
@@ -24,6 +26,7 @@ export type ImeMode =
   | "pinyin"
   | "hangul";
 
+/** Composition activation, preedit, cursor, candidate state, and synchronous editing commands. */
 export interface ImeManager {
   /** Whether IME is active */
   isActive: Ref<boolean>;
@@ -71,6 +74,7 @@ const MODE_DISPLAY: Record<ImeMode, string> = {
   hangul: "한",
 };
 
+/** Create initially disabled composition state with caller-supplied conversion candidates. */
 export function useIme(options: UseImeOptions = {}): ImeManager {
   const { mode: initialMode = "direct", onModeChange, onCompositionUpdate, onCommit } = options;
 

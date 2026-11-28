@@ -5,6 +5,7 @@
 import { onMounted, onUnmounted, reactive, type Ref } from "vue";
 import { getLastRenderLayout, updateLastRenderLayouts, type DOMElement } from "../layoutMetrics.js";
 
+/** Last measured layout rectangle in terminal cells. */
 export interface BoxMetrics {
   width: number;
   height: number;
@@ -12,12 +13,14 @@ export interface BoxMetrics {
   top: number;
 }
 
+/** Measured rectangle, measurement-state flag, and an explicit refresh request. */
 export interface UseBoxMetricsResult extends BoxMetrics {
   hasMeasured: boolean;
   /** Refresh from the latest completed native layout snapshot. */
   refresh(): void;
 }
 
+/** Host node or component element accepted by terminal layout measurement. */
 export type MetricTarget = DOMElement;
 
 async function loadNative() {
@@ -28,6 +31,7 @@ function targetId(target: MetricTarget | null | undefined): number | undefined {
   return target?.id ?? target?.$el?.id;
 }
 
+/** Read completed layout measurements, falling back to native measurement; poll after mount and stop on unmount. */
 export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResult {
   const metrics = reactive({
     width: 0,

@@ -4,8 +4,10 @@
 
 import { ref, provide, inject, type InjectionKey, type Ref } from "vue";
 
+/** Injection key for application lifecycle controls and terminal dimensions. */
 export const APP_KEY: InjectionKey<UseAppReturn> = Symbol("fresco-app");
 
+/** Reactive terminal dimensions and lifecycle controls supplied by the application. */
 export interface UseAppReturn {
   /** Terminal width */
   width: Ref<number>;
@@ -23,6 +25,7 @@ export interface UseAppReturn {
   waitUntilRenderFlush: () => Promise<void>;
 }
 
+/** Host lifecycle callbacks and initial terminal dimensions for an application context. */
 export interface AppContextControls {
   exit?: (errorOrResult?: unknown) => void;
   render?: () => void;

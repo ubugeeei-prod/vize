@@ -33,6 +33,7 @@ import {
   textAreaPointToPosition,
 } from "./textarea-editing.js";
 
+/** Controlled or initial multiline text, editing state, viewport, and emitted events. */
 export interface TextAreaProps {
   /** Controlled text value. */
   modelValue?: string;
@@ -66,6 +67,7 @@ export interface TextAreaProps {
   validate?: (value: string) => boolean | string | null | undefined;
 }
 
+/** Edit multiline terminal text with grapheme-aware selection and bounded visible rows. */
 export const TextArea = defineComponent({
   name: "TextArea",
   props: {

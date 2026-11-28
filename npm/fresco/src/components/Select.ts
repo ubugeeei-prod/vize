@@ -19,6 +19,7 @@ import {
   type RuntimeCollectionBy,
 } from "./collection-values.js";
 
+/** Labelled selectable value with stable render identity and disabled state. */
 export interface SelectOption<Value = string> {
   /** Stable render identity when the value is not a Vue vnode key. */
   key?: string | number | symbol;
@@ -27,9 +28,12 @@ export interface SelectOption<Value = string> {
   disabled?: boolean;
 }
 
+/** Object property accepted as the selected-value comparison key. */
 export type SelectValueKey<Value> = CollectionValueKey<Value>;
+/** Property-key or callback policy for comparing selected values. */
 export type SelectBy<Value> = CollectionBy<Value>;
 
+/** Options, selected value, comparison policy, focus, and appearance for Select. */
 export interface SelectProps<Value = string> {
   /** Options to display */
   options: readonly SelectOption<Value>[];
@@ -65,6 +69,7 @@ function optionKey(option: SelectOption<unknown>, index: number): string | numbe
     : index;
 }
 
+/** Navigate enabled options and emit the selected terminal option value. */
 export const Select = defineComponent({
   name: "Select",
   props: {

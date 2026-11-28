@@ -2,18 +2,23 @@
 
 import { computed, defineComponent, h, type PropType } from "vue";
 
+/** Correction-level identifiers passed to the consumer-owned encoder. */
 export type QrCodeErrorCorrection = "low" | "medium" | "quartile" | "high";
+/** Readonly boolean modules; QrCode validates that the matrix is nonempty and square. */
 export type QrCodeMatrix = readonly (readonly boolean[])[];
 
+/** Correction policy passed to the consumer-owned QR encoder. */
 export interface QrCodeProviderOptions {
   errorCorrection: QrCodeErrorCorrection;
 }
 
+/** Synchronous consumer-owned encoder from a string to boolean modules. */
 export type QrCodeProvider = (
   value: string,
   options: Readonly<QrCodeProviderOptions>,
 ) => QrCodeMatrix;
 
+/** Encoded value, provider, terminal-cell styling, and quiet-zone layout. */
 export interface QrCodeProps {
   value: string;
   provider: QrCodeProvider;

@@ -7,18 +7,28 @@ import { inject, type InjectionKey } from "vue";
 const BRACKETED_PASTE_ENABLE = "\x1B[?2004h";
 const BRACKETED_PASTE_DISABLE = "\x1B[?2004l";
 
+/** Injection key for application streams and the terminal-mode controller. */
 export const STREAMS_KEY: InjectionKey<StreamsContext> = Symbol("fresco-streams");
 
+/** Host streams, output writers, and interactive terminal-mode policy. */
 export interface StreamsContextOptions {
+  /** Input stream whose terminal modes the context manages. @default process.stdin */
   stdin?: NodeJS.ReadStream;
+  /** Output stream used for terminal output and mode control. @default process.stdout */
   stdout?: NodeJS.WriteStream;
+  /** Error output stream. @default process.stderr */
   stderr?: NodeJS.WriteStream;
+  /** Application exit policy exposed to input composables. @default true */
   exitOnCtrlC?: boolean;
+  /** Whether raw-mode and bracketed-paste mode changes are permitted. @default true */
   interactive?: boolean;
+  /** Writer for the configured output stream. @default data => stdout.write(data) */
   writeToStdout?: (data: string) => void;
+  /** Writer for the configured error stream. @default data => stderr.write(data) */
   writeToStderr?: (data: string) => void;
 }
 
+/** Shared streams with reference-counted raw-mode and bracketed-paste controls. */
 export interface StreamsContext {
   stdin: NodeJS.ReadStream;
   stdout: NodeJS.WriteStream;
@@ -31,6 +41,7 @@ export interface StreamsContext {
   internal_exitOnCtrlC: boolean;
 }
 
+/** Input stream, raw-mode capability, and application exit policy. */
 export interface UseStdinReturn {
   stdin: NodeJS.ReadStream;
   setRawMode: (isRawMode: boolean) => void;
@@ -38,16 +49,19 @@ export interface UseStdinReturn {
   internal_exitOnCtrlC: boolean;
 }
 
+/** Output stream and its configured writer. */
 export interface UseStdoutReturn {
   stdout: NodeJS.WriteStream;
   write: (data: string) => void;
 }
 
+/** Error stream and its configured writer. */
 export interface UseStderrReturn {
   stderr: NodeJS.WriteStream;
   write: (data: string) => void;
 }
 
+/** Create stream controls that balance nested mode requests and defer final raw-mode release to a microtask. */
 export function createStreamsContext(options: StreamsContextOptions = {}): StreamsContext {
   const stdin = options.stdin ?? process.stdin;
   const stdout = options.stdout ?? process.stdout;
@@ -110,10 +124,12 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
   };
 }
 
+/** Read the injected stream context, or create one for process streams outside an application. */
 export function useStreamsContext(): StreamsContext {
   return inject(STREAMS_KEY) ?? createStreamsContext();
 }
 
+/** Read the application input stream and raw-mode controls. */
 export function useStdin(): UseStdinReturn {
   const streams = useStreamsContext();
 
@@ -125,6 +141,7 @@ export function useStdin(): UseStdinReturn {
   };
 }
 
+/** Read the application output stream and configured output writer. */
 export function useStdout(): UseStdoutReturn {
   const { stdout, writeToStdout } = useStreamsContext();
 
@@ -134,6 +151,7 @@ export function useStdout(): UseStdoutReturn {
   };
 }
 
+/** Read the application error stream and configured error writer. */
 export function useStderr(): UseStderrReturn {
   const { stderr, writeToStderr } = useStreamsContext();
 

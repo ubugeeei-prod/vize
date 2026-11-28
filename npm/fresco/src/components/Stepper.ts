@@ -4,14 +4,17 @@
 
 import { defineComponent, h, type PropType } from "vue";
 
+/** Stable step key, visible label, and optional description. */
 export interface Step {
   key: string;
   label: string;
   description?: string;
 }
 
+/** Pending, current, completed, or error state of a displayed step. */
 export type StepStatus = "pending" | "current" | "completed" | "error";
 
+/** Step definitions, status indices, layout, and appearance for Stepper. */
 export interface StepperProps {
   /** Steps */
   steps: Step[];
@@ -35,6 +38,7 @@ export interface StepperProps {
   pendingIcon?: string;
 }
 
+/** Display progress through labelled steps with explicit completion and error states. */
 export const Stepper = defineComponent({
   name: "Stepper",
   props: {

@@ -4,13 +4,15 @@
 
 import { computed, onMounted, onUnmounted, reactive, watch } from "vue";
 
+/** Tick interval and activation for component-scoped shared animation scheduling. */
 export interface UseAnimationOptions {
-  /** Time between ticks in milliseconds */
+  /** Tick interval in milliseconds; finite values clamp to 1 through 2,147,483,647 and nonfinite values use 100. @default 100 */
   interval?: number;
-  /** Whether the animation is running */
+  /** Whether the shared animation subscription is active. @default true */
   isActive?: boolean;
 }
 
+/** Reactive frame count, elapsed milliseconds, last tick delta, and reset command. */
 export interface AnimationResult {
   frame: number;
   time: number;
@@ -100,6 +102,7 @@ function subscribeToAnimation(callback: AnimationCallback, interval: number) {
   };
 }
 
+/** Subscribe after mount to shared animation ticks; restart measurements on option changes and unsubscribe on unmount. */
 export function useAnimation(options: UseAnimationOptions = {}): AnimationResult {
   const safeInterval = computed(() =>
     normalizeAnimationInterval(options.interval ?? defaultAnimationInterval),

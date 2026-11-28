@@ -2,11 +2,16 @@ import type { AriaRole, AriaState } from "../accessibility.js";
 import type { FrescoNode } from "../renderer.js";
 import { findNodes } from "./mount.js";
 
+/** Exact text or a regular expression used by terminal semantic queries. */
 export type FrescoTextMatcher = string | RegExp;
 
+/** Optional accessible-name, description, and state filters for role queries. */
 export interface FrescoRoleQueryOptions {
+  /** Accessible-name filter; omission accepts every name. @default undefined */
   readonly name?: FrescoTextMatcher;
+  /** Accessible-description filter; omission accepts every description. @default undefined */
   readonly description?: FrescoTextMatcher;
+  /** Requested state subset compared with strict equality; omission accepts every state. @default undefined */
   readonly state?: AriaState;
 }
 
@@ -89,6 +94,7 @@ function uniqueNode(nodes: readonly FrescoNode[], description: string): FrescoNo
   return nodes[0]!;
 }
 
+/** Return every node with the requested semantic role and optional accessibility filters. */
 export function queryAllByRole(
   root: FrescoNode,
   role: AriaRole,
@@ -107,6 +113,7 @@ export function queryAllByRole(
   });
 }
 
+/** Return the only role match; throw when no node or multiple nodes match. */
 export function getByRole(
   root: FrescoNode,
   role: AriaRole,
@@ -115,6 +122,7 @@ export function getByRole(
   return uniqueNode(queryAllByRole(root, role, options), describeRole(role, options));
 }
 
+/** Return every node whose own text matches exactly or satisfies the regular expression. */
 export function queryAllByText(root: FrescoNode, text: FrescoTextMatcher): FrescoNode[] {
   return findNodes(root, (node) => {
     const value = ownText(node);
@@ -122,10 +130,12 @@ export function queryAllByText(root: FrescoNode, text: FrescoTextMatcher): Fresc
   });
 }
 
+/** Return the only text match; throw when no node or multiple nodes match. */
 export function getByText(root: FrescoNode, text: FrescoTextMatcher): FrescoNode {
   return uniqueNode(queryAllByText(root, text), `text ${String(text)}`);
 }
 
+/** Return every node whose accessible description matches the text or regular expression. */
 export function queryAllByDescription(
   root: FrescoNode,
   description: FrescoTextMatcher,
@@ -136,14 +146,17 @@ export function queryAllByDescription(
   });
 }
 
+/** Return the only description match; throw when no node or multiple nodes match. */
 export function getByDescription(root: FrescoNode, description: FrescoTextMatcher): FrescoNode {
   return uniqueNode(queryAllByDescription(root, description), `description ${String(description)}`);
 }
 
+/** Return every node with the exact test-id or data-testid value. */
 export function queryAllByTestId(root: FrescoNode, testId: string): FrescoNode[] {
   return findNodes(root, (node) => testIdOf(node) === testId);
 }
 
+/** Return the only test-id match; throw when no node or multiple nodes match. */
 export function getByTestId(root: FrescoNode, testId: string): FrescoNode {
   return uniqueNode(queryAllByTestId(root, testId), `test id ${JSON.stringify(testId)}`);
 }

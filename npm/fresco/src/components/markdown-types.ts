@@ -107,15 +107,15 @@ export type MarkdownBlock =
 
 /** Theme and extension inputs supplied to Markdown renderers. */
 export interface MarkdownRenderOptions {
-  /** Foreground color used for headings. */
+  /** Foreground color used for headings. @default undefined */
   headingFg?: string;
-  /** Foreground color used for links. */
+  /** Foreground color used for links. @default undefined */
   linkFg?: string;
-  /** Foreground color used for quoted markers. */
+  /** Foreground color used for quoted markers. @default undefined */
   quoteFg?: string;
-  /** Foreground color used for code. */
+  /** Foreground color used for code. @default undefined */
   codeFg?: string;
-  /** Providers consulted before the built-in block renderer. */
+  /** Optional custom providers consulted before the built-in block renderer. @default undefined */
   providers?: readonly MarkdownBlockProvider[];
 }
 

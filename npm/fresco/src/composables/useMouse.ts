@@ -4,11 +4,13 @@ import { computed, isRef, ref, watch, type Ref } from "vue";
 import { lastMouseEvent } from "../app.js";
 import type { MouseEvent } from "../protocol.js";
 
+/** External activation gate for normalized terminal mouse and wheel events. */
 export interface UseMouseOptions {
-  /** Whether the handler receives events. */
+  /** External activation gate; local enable cannot override a false external ref. @default true */
   isActive?: boolean | Readonly<Ref<boolean>>;
 }
 
+/** Readonly effective activation, local enable and disable commands, and explicit watcher disposal. */
 export interface UseMouseReturn {
   isActive: Readonly<Ref<boolean>>;
   /** Start delivering normalized mouse events. */

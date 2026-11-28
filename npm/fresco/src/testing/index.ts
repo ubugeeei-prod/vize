@@ -60,9 +60,13 @@ export {
 } from "./queries.js";
 export type { FrescoRenderNode } from "../protocol.js";
 
+/** Initial terminal dimensions, accessibility mode, and renderer observers for the harness. */
 export type RenderTuiOptions = MountFrescoOptions;
+/** Vue component or render function mounted by the terminal test harness. */
 export type RenderTuiRoot = Component | (() => VNodeChild);
+/** Key event fields; the driver supplies the event discriminator and false modifier defaults. */
 export type KeyInput = Partial<Omit<KeyEvent, "type">>;
+/** Mouse event fields; the driver supplies the event discriminator. */
 export type MouseInput = Omit<MouseEvent, "type">;
 
 /** A single recorded harness frame. */

@@ -27,12 +27,16 @@ interface TreeNodeBase<Value> {
   disabled?: boolean;
 }
 
+/** Hierarchical display metadata paired with a selected value or string key. */
 export type TreeNode<Value = string> = TreeNodeBase<Value> &
   ([Value] extends [string] ? { value?: Value } : { value: Value });
 
+/** Object property accepted as the selected-node comparison key. */
 export type TreeValueKey<Value> = CollectionValueKey<Value>;
+/** Property-key or callback policy for comparing selected tree values. */
 export type TreeBy<Value> = CollectionBy<Value>;
 
+/** Tree nodes, expansion, selection, comparison policy, and keyboard ownership. */
 export interface TreeProps<Value = string> {
   /** Tree data */
   data: readonly TreeNode<Value>[];
@@ -62,6 +66,7 @@ export interface TreeProps<Value = string> {
   selectedFg?: string;
 }
 
+/** Erased recursive node shape used by the Vue runtime prop declaration. */
 export interface RuntimeTreeNode {
   key: string;
   label: string;
@@ -75,6 +80,7 @@ function treeNodeValue(node: RuntimeTreeNode): unknown {
   return Object.hasOwn(node, "value") ? node.value : node.key;
 }
 
+/** Navigate visible tree nodes and emit expansion and selection changes. */
 export const Tree = defineComponent({
   name: "Tree",
   props: {

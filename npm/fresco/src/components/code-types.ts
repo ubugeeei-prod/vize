@@ -7,13 +7,16 @@ export interface CodePosition {
   readonly column: number;
 }
 
+/** Anchor and focus positions defining a grapheme-based code selection. */
 export interface CodeSelection {
   readonly anchor: CodePosition;
   readonly focus: CodePosition;
 }
 
+/** Display severity of an annotation in the code viewport. */
 export type CodeDiagnosticSeverity = "error" | "warning" | "info" | "hint";
 
+/** Message and optional grapheme range attached to one logical code line. */
 export interface CodeDiagnostic {
   /** Zero-based logical line in the buffer. */
   readonly line: number;
@@ -23,10 +26,12 @@ export interface CodeDiagnostic {
   readonly message: string;
 }
 
+/** A literal source fragment with optional terminal appearance. */
 export interface CodeSyntaxToken extends FrescoAppearance {
   readonly text: string;
 }
 
+/** Language and line coordinates supplied to a synchronous syntax provider. */
 export interface CodeSyntaxContext {
   readonly language?: string;
   readonly line: number;
@@ -46,6 +51,7 @@ export interface CodeBuffer {
   clear(): void;
 }
 
+/** Source, buffer, selection, diagnostics, syntax provider, and viewport inputs for Code. */
 export interface CodeProps {
   code?: string;
   buffer?: CodeBuffer;

@@ -12,12 +12,14 @@ import {
   typeaheadIndex,
 } from "./collection-navigation.js";
 
+/** Labelled radio value with an optional disabled state. */
 export interface RadioOption {
   label: string;
   value: string;
   disabled?: boolean;
 }
 
+/** Options, selection, focus, direction, and appearance for a radio group. */
 export interface RadioGroupProps {
   /** Radio options */
   options: RadioOption[];
@@ -39,6 +41,7 @@ export interface RadioGroupProps {
   selectedFg?: string;
 }
 
+/** Navigate enabled radio options and emit the selected string value. */
 export const RadioGroup = defineComponent({
   name: "RadioGroup",
   props: {

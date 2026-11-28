@@ -145,6 +145,7 @@ function renderedSpans(
   return spans.length > 0 ? spans : [{ text: " " }];
 }
 
+/** Render a bounded code viewport with selection, diagnostics, and optional syntax tokens. */
 export const Code = defineComponent({
   name: "Code",
   props: {
