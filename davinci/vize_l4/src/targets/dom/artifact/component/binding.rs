@@ -26,7 +26,10 @@ pub(in crate::targets::dom::artifact) fn resolve<'a>(
         Some((base, suffix)) => (base, Some(suffix)),
         None => (component, None),
     };
-    let (name, kind) = resolve_base(table, base)?;
+    let (mut name, mut kind) = resolve_base(table, base)?;
+    if kind == BindingKind::PropsAliased {
+        (name, kind) = first_prop_spelling(table, base)?;
+    }
     Some(ComponentBinding { name, kind, suffix })
 }
 
@@ -105,21 +108,36 @@ fn push_prop_tag(cx: &mut EmitCx<'_>, binding: &ComponentBinding<'_>, inline: bo
     }
 }
 
+/// A renamed props destructure (`{ icon: Icon }`) is not a setup reference
+/// (Vue's `resolveSetupReference`): only a plain prop under another spelling
+/// resolves, otherwise the tag is an asset. Out of line: reached only when
+/// the first props spelling of a tag is a renamed destructure.
+#[cold]
+#[inline(never)]
+fn first_prop_spelling(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    [name, camel.as_str(), pascal.as_str()]
+        .into_iter()
+        .find(|spelling| table.kind(spelling) == Some(BindingKind::Props))
+        .map(|spelling| (String::from(spelling), BindingKind::Props))
+}
+
 fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {
     let mut prop_fallback = None;
-    if let Some(binding) = candidate(table, name, &mut prop_fallback) {
+    if let Some(binding) = candidate(table, String::from(name), &mut prop_fallback) {
         return Some(binding);
     }
     let camel = camelize(name);
     if camel.as_str() != name
-        && let Some(binding) = candidate(table, camel.as_str(), &mut prop_fallback)
+        && let Some(binding) = candidate(table, camel.clone(), &mut prop_fallback)
     {
         return Some(binding);
     }
     let pascal = capitalize(&camel);
     if pascal.as_str() != name
         && pascal.as_str() != camel.as_str()
-        && let Some(binding) = candidate(table, pascal.as_str(), &mut prop_fallback)
+        && let Some(binding) = candidate(table, pascal, &mut prop_fallback)
     {
         return Some(binding);
     }
@@ -128,23 +146,17 @@ fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind
 
 fn candidate(
     table: &BindingTable,
-    candidate: &str,
+    candidate: String,
     prop_fallback: &mut Option<(String, BindingKind)>,
 ) -> Option<(String, BindingKind)> {
-    // Vue's `resolveSetupReference`: setup bindings first, then a prop. A
-    // renamed props destructure (`{ icon: Icon }`) is not a setup
-    // reference, so its tag resolves as an asset.
-    let kind = table.kind(candidate)?;
-    match kind {
-        BindingKind::Props => {
-            if prop_fallback.is_none() {
-                *prop_fallback = Some((String::from(candidate), kind));
-            }
-            None
+    let kind = table.kind(candidate.as_str())?;
+    if kind.is_props() {
+        if prop_fallback.is_none() {
+            *prop_fallback = Some((candidate, kind));
         }
-        BindingKind::PropsAliased => None,
-        _ => Some((String::from(candidate), kind)),
+        return None;
     }
+    Some((candidate, kind))
 }
 
 #[cfg(test)]

@@ -101,31 +101,23 @@ impl CodegenContext {
 
         let resolve_base = |name: &str| {
             let mut prop_fallback = None;
-            // Vue's `resolveSetupReference`: setup bindings first, then a
-            // prop. A renamed props destructure (`{ icon: Icon }`) is not a
-            // setup reference, so its tag resolves as an asset.
-            let mut resolve_candidate = |candidate: &str| {
-                match metadata.bindings.get(candidate) {
-                    Some(BindingType::Props) => {
-                        if prop_fallback.is_none() {
-                            prop_fallback =
-                                Some((candidate.to_compact_string(), BindingType::Props));
-                        }
-                    }
-                    Some(BindingType::PropsAliased) | None => {}
-                    Some(binding_type) => {
-                        return Some((candidate.to_compact_string(), *binding_type));
+            let mut resolve_candidate = |candidate: String| {
+                if let Some(binding_type) = metadata.bindings.get(candidate.as_str()) {
+                    if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
+                        prop_fallback.get_or_insert((candidate, *binding_type));
+                    } else {
+                        return Some((candidate, *binding_type));
                     }
                 }
                 None
             };
 
-            if let Some(binding) = resolve_candidate(name) {
+            if let Some(binding) = resolve_candidate(name.to_compact_string()) {
                 return Some(binding);
             }
             let camel = camelize(name);
             if camel.as_str() != name
-                && let Some(binding) = resolve_candidate(camel.as_str())
+                && let Some(binding) = resolve_candidate(camel.clone())
             {
                 return Some(binding);
             }
@@ -133,7 +125,7 @@ impl CodegenContext {
             let pascal = capitalize(&camel);
             if pascal.as_str() != name
                 && pascal.as_str() != camel.as_str()
-                && let Some(binding) = resolve_candidate(pascal.as_str())
+                && let Some(binding) = resolve_candidate(pascal)
             {
                 return Some(binding);
             }
@@ -142,7 +134,10 @@ impl CodegenContext {
         };
 
         if let Some((base, suffix)) = component.split_once('.') {
-            let (name, binding_type) = resolve_base(base)?;
+            let (mut name, mut binding_type) = resolve_base(base)?;
+            if binding_type == BindingType::PropsAliased {
+                (name, binding_type) = first_prop_spelling(metadata, base)?;
+            }
             return Some(ComponentBinding {
                 name,
                 binding_type,
@@ -150,11 +145,32 @@ impl CodegenContext {
             });
         }
 
-        let (name, binding_type) = resolve_base(component)?;
+        let (mut name, mut binding_type) = resolve_base(component)?;
+        if binding_type == BindingType::PropsAliased {
+            (name, binding_type) = first_prop_spelling(metadata, component)?;
+        }
         Some(ComponentBinding {
             name,
             binding_type,
             suffix: None,
         })
     }
+}
+
+/// A renamed props destructure (`{ icon: Icon }`) is not a setup reference
+/// (Vue's `resolveSetupReference`): only a plain prop under another spelling
+/// resolves, otherwise the tag is an asset. Out of line: reached only when
+/// the first props spelling of a tag is a renamed destructure.
+#[cold]
+#[inline(never)]
+fn first_prop_spelling(
+    metadata: &crate::options::BindingMetadata,
+    name: &str,
+) -> Option<(String, BindingType)> {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    [name, camel.as_str(), pascal.as_str()]
+        .into_iter()
+        .find(|spelling| metadata.bindings.get(*spelling) == Some(&BindingType::Props))
+        .map(|spelling| (spelling.to_compact_string(), BindingType::Props))
 }

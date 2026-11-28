@@ -10,19 +10,71 @@ impl<'a> GenerateContext<'a> {
         }
 
         let bindings = self.binding_metadata?;
-        let (base, suffix) = match component.split_once('.') {
-            Some((base, suffix)) => (base, Some(suffix)),
-            None => (component, None),
+        let resolve_base = |name: &str| {
+            if bindings.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+            let camel = camelize(name);
+            if bindings.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+            let pascal = capitalize(&camel);
+            if bindings.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+            None
         };
-        let (binding, is_prop) = resolve_setup_reference(bindings, base)?;
-        // A prop is read off the render function's `$props`, as Vue does.
-        let owner = if self.jsx_closure {
-            ""
-        } else if is_prop {
-            "$props."
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            if is_props_binding(bindings, &resolved_base) {
+                return self.resolve_props_component_expr(bindings, base, Some(suffix));
+            }
+            return Some(if self.jsx_closure {
+                cstr!("{}.{}", resolved_base, suffix)
+            } else {
+                cstr!("_ctx.{}.{}", resolved_base, suffix)
+            });
+        }
+        let binding = resolve_base(component)?;
+        if is_props_binding(bindings, &binding) {
+            return self.resolve_props_component_expr(bindings, component, None);
+        }
+        Some(if self.jsx_closure {
+            binding
         } else {
-            "_ctx."
-        };
+            cstr!("_ctx.{}", binding)
+        })
+    }
+
+    /// Vue's `resolveSetupReference` once a spelling of the tag names a prop:
+    /// a setup binding under any spelling wins, then a prop, read off the
+    /// render function's `$props`. A renamed props destructure
+    /// (`{ icon: Icon }`) is not a setup reference, so its tag resolves as an
+    /// asset. Out of line: an ordinary tag never takes this path.
+    #[cold]
+    #[inline(never)]
+    fn resolve_props_component_expr(
+        &self,
+        bindings: &BindingMetadata,
+        name: &str,
+        suffix: Option<&str>,
+    ) -> Option<String> {
+        let camel = camelize(name);
+        let pascal = capitalize(&camel);
+        let spellings = [name, camel.as_str(), pascal.as_str()];
+        let kind = |spelling: &str| bindings.bindings.get(spelling).copied();
+        let (binding, owner) = spellings
+            .iter()
+            .find(|spelling| kind(spelling).is_some_and(|kind| !is_props_kind(kind)))
+            .map(|spelling| (*spelling, "_ctx."))
+            .or_else(|| {
+                spellings
+                    .iter()
+                    .find(|spelling| kind(spelling) == Some(BindingType::Props))
+                    .map(|spelling| (*spelling, "$props."))
+            })?;
+        let owner = if self.jsx_closure { "" } else { owner };
         Some(match suffix {
             Some(suffix) => cstr!("{owner}{binding}.{suffix}"),
             None => cstr!("{owner}{binding}"),
@@ -66,41 +118,13 @@ impl<'a> GenerateContext<'a> {
     }
 }
 
-/// The binding a component tag names, and whether it is a prop: Vue's
-/// `resolveSetupReference` tries the tag, its camelized and its PascalCased
-/// spelling for a setup binding first and for a prop last. A renamed props
-/// destructure (`{ icon: Icon }`) is not a setup reference, so its tag
-/// resolves as an asset.
-pub(crate) fn resolve_setup_reference(
-    bindings: &BindingMetadata,
-    name: &str,
-) -> Option<(String, bool)> {
-    let mut prop = None;
-    let mut candidate = |candidate: &str| match bindings.bindings.get(candidate) {
-        Some(BindingType::Props) => {
-            if prop.is_none() {
-                prop = Some(candidate.to_compact_string());
-            }
-            None
-        }
-        Some(BindingType::PropsAliased) | None => None,
-        Some(_) => Some(candidate.to_compact_string()),
-    };
-    if let Some(binding) = candidate(name) {
-        return Some((binding, false));
-    }
-    let camel = camelize(name);
-    if camel.as_str() != name
-        && let Some(binding) = candidate(camel.as_str())
-    {
-        return Some((binding, false));
-    }
-    let pascal = capitalize(&camel);
-    if pascal.as_str() != name
-        && pascal.as_str() != camel.as_str()
-        && let Some(binding) = candidate(pascal.as_str())
-    {
-        return Some((binding, false));
-    }
-    prop.map(|binding| (binding, true))
+fn is_props_kind(kind: BindingType) -> bool {
+    matches!(kind, BindingType::Props | BindingType::PropsAliased)
+}
+
+fn is_props_binding(bindings: &BindingMetadata, name: &str) -> bool {
+    bindings
+        .bindings
+        .get(name)
+        .is_some_and(|kind| is_props_kind(*kind))
 }

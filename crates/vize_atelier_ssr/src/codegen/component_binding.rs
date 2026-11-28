@@ -69,42 +69,61 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let metadata = self.options.binding_metadata.as_ref()?;
-        // Vue's `resolveSetupReference`: setup bindings first, then a prop.
-        // A renamed props destructure (`{ icon: Icon }`) is not a setup
-        // reference, so its tag resolves as an asset.
         let resolve_base = |name: &str| {
-            let mut prop_fallback = None;
-            let mut candidate = |candidate: &str| match metadata.bindings.get(candidate) {
-                Some(BindingType::Props) => {
-                    if prop_fallback.is_none() {
-                        prop_fallback = Some((candidate.to_compact_string(), BindingType::Props));
-                    }
-                    None
-                }
-                Some(BindingType::PropsAliased) | None => None,
-                Some(binding_type) => Some((candidate.to_compact_string(), *binding_type)),
-            };
-            if let Some(binding) = candidate(name) {
-                return Some(binding);
+            if let Some(binding_type) = metadata.bindings.get(name) {
+                return Some((name.to_compact_string(), *binding_type));
             }
             let camel = camelize(name);
-            if let Some(binding) = candidate(camel.as_str()) {
-                return Some(binding);
+            if let Some(binding_type) = metadata.bindings.get(camel.as_str()) {
+                return Some((camel, *binding_type));
             }
-            if let Some(binding) = candidate(capitalize(camel.as_str()).as_str()) {
-                return Some(binding);
-            }
-            prop_fallback
+            let pascal = capitalize(camel.as_str());
+            metadata
+                .bindings
+                .get(pascal.as_str())
+                .map(|binding_type| (pascal, *binding_type))
         };
 
         let (base, suffix) = component
             .split_once('.')
             .map_or((component, None), |(base, suffix)| (base, Some(suffix)));
-        let (name, binding_type) = resolve_base(base)?;
+        let (mut name, mut binding_type) = resolve_base(base)?;
+        if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
+            (name, binding_type) = resolve_props_spelling(metadata, base)?;
+        }
         Some(ComponentBinding {
             name,
             binding_type,
             suffix: suffix.map(|suffix| suffix.to_compact_string()),
         })
     }
+}
+
+/// Vue's `resolveSetupReference` once a spelling of the tag names a prop: a
+/// setup binding under any spelling wins, then a prop. A renamed props
+/// destructure (`{ icon: Icon }`) is not a setup reference, so its tag
+/// resolves as an asset. Out of line: an ordinary tag never takes this path.
+#[cold]
+#[inline(never)]
+fn resolve_props_spelling(
+    metadata: &vize_atelier_core::options::BindingMetadata,
+    name: &str,
+) -> Option<(String, BindingType)> {
+    let camel = camelize(name);
+    let pascal = capitalize(camel.as_str());
+    let spellings = [name, camel.as_str(), pascal.as_str()];
+    let kind = |spelling: &str| metadata.bindings.get(spelling).copied();
+    spellings
+        .iter()
+        .find_map(|spelling| {
+            kind(spelling)
+                .filter(|kind| !matches!(kind, BindingType::Props | BindingType::PropsAliased))
+                .map(|kind| (spelling.to_compact_string(), kind))
+        })
+        .or_else(|| {
+            spellings
+                .iter()
+                .find(|spelling| kind(spelling) == Some(BindingType::Props))
+                .map(|spelling| (spelling.to_compact_string(), BindingType::Props))
+        })
 }
