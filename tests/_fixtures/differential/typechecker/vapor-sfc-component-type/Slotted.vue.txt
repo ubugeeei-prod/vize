@@ -1,0 +1,7 @@
+<script setup lang="ts" vapor>
+defineSlots<{ default(props: { count: number }): any }>()
+</script>
+
+<template>
+  <div><slot :count="1" /></div>
+</template>

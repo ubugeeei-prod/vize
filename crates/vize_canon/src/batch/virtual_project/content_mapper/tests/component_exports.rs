@@ -127,3 +127,24 @@ fn avoids_a_filename_collision_with_an_authored_module_binding() {
         assert_declared_export(&result.text, value);
     }
 }
+
+/// A setup `vapor` attribute types the component as Vue's language tools
+/// type a bare `generic`: a function that `createVaporApp` accepts.
+#[test]
+fn a_vapor_setup_exports_the_functional_component_signature() {
+    let source = "<script setup lang=\"ts\" vapor>\nconst count = 0;\n</script>\n<template><p>{{ count }}</p></template>";
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let component = result
+        .text
+        .lines()
+        .find(|line| line.starts_with("type AppComponent = "));
+    assert_eq!(
+        component,
+        Some(
+            "type AppComponent = {   readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<$NativeElement<\"p\">>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<$NativeElement<\"p\">>; } & $GenericComponent;"
+        ),
+        "{}",
+        result.text
+    );
+}

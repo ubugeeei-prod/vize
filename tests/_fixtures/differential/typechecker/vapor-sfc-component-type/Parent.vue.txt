@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Plain from './Plain.vue'
+import Slotted from './Slotted.vue'
+import Typed from './Typed.vue'
+
+function onChange(value: number) {
+  return value
+}
+</script>
+
+<template>
+  <Plain />
+  <Typed msg="ok" @change="onChange" v-slot="{ count }">{{ count.toFixed() }}</Typed>
+  <Slotted v-slot="{ count }">{{ count.toFixed() }}</Slotted>
+  <Typed :msg="1" />
+</template>

@@ -203,6 +203,9 @@ pub(crate) struct AuthoredScriptMetadata<'a> {
     pub(crate) has_setup: bool,
     pub(crate) has_plain: bool,
     pub(crate) setup_generic: Option<&'a str>,
+    /// `<script setup vapor>`: Vue's language tools type the component as a
+    /// function, as they type a bare `generic` attribute.
+    pub(crate) setup_vapor: bool,
 }
 
 #[cfg(feature = "native")]
@@ -216,6 +219,10 @@ impl<'a> AuthoredScriptMetadata<'a> {
                 .as_ref()
                 .and_then(|setup| setup.attrs.get("generic"))
                 .map(|value| value.as_ref()),
+            setup_vapor: descriptor
+                .script_setup
+                .as_ref()
+                .is_some_and(|setup| setup.attrs.contains_key("vapor")),
         }
     }
 }

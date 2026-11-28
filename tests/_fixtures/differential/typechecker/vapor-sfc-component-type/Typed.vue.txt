@@ -1,0 +1,10 @@
+<script setup lang="ts" vapor>
+const props = defineProps<{ msg: string }>()
+const emit = defineEmits<{ change: [value: number] }>()
+</script>
+
+<template>
+  <button type="button" @click="emit('change', props.msg.length)">
+    <slot :count="props.msg.length" />
+  </button>
+</template>
