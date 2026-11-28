@@ -42,6 +42,7 @@ mod fallthrough_known_attributes;
 mod generic_component_cast;
 mod generic_component_mount_slots;
 mod generic_component_parity;
+mod generic_constructor_model_payload;
 mod generic_constructor_slots;
 mod generic_inherit_attrs_open_tail;
 mod generic_local_indexing;

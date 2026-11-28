@@ -63946,6 +63946,46 @@
       }
     },
     {
+      "id": "typechecker/generic-constructor-model-payload/bound-instance-payloads",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::generic_constructor_model_payload::generic_constructor_listeners_read_the_props_bound_instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "generic-constructor-model-payload/tsconfig.json.txt",
+          "sha256": "a4fdcbdc5bf4f4b94f97041df67c33ec2ce139a1790e22587adfd0bbb4c9e30f"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "generic-constructor-model-payload/App.vue.txt",
+          "sha256": "65266e8fdfb49794e24b0c146f5a0e5adc4a9100d2acabb33517b707d9ac2c2d"
+        },
+        {
+          "file": "cases.json",
+          "path": "generic-constructor-model-payload/cases.json",
+          "sha256": "dc9623591d6ea2ee83bcd281332eda7ac704ea68589e7aa8f9e0fbe6eb47c53c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::generic_constructor_model_payload::generic_constructor_listeners_read_the_props_bound_instance; an unmarked generic constructor intersection, or a lone generic constructor without $emit, is constructed with the bound props as vue-tsc's new Component(props), so its update:modelValue payload is the bound modelValue type instead of the erased unknown, for both listener spellings and under v-if; a non-generic constructor keeps its declared payload. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/generic-hoisted-alias-forwarding",
       "state": "active",
       "targets": [

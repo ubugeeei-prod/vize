@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "issue": 13856,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "bound-instance-payloads",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "src/App.vue", "source": "App.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 25,
+          "column": 61,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string[]' is not assignable to parameter of type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 26,
+          "column": 84,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string[]' is not assignable to parameter of type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 27,
+          "column": 60,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string[]' is not assignable to parameter of type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 28,
+          "column": 55,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string[]'."
+        }
+      ]
+    }
+  ]
+}

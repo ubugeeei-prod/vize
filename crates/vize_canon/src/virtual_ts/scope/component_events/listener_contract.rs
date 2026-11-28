@@ -70,6 +70,12 @@ pub(super) fn library_listener_args(emit_props: &str, prop_key: &str, raw_key: &
     let props = cstr!(
         "(typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}})"
     );
+    listener_args(&props, prop_key, raw_key)
+}
+
+/// The arguments of the listener prop `prop_key` of the props type `props`,
+/// falling back to the authored kebab key `raw_key`, or `unknown[]`.
+pub(super) fn listener_args(props: &str, prop_key: &str, raw_key: &str) -> String {
     let missing = if raw_key == "never" {
         String::from("unknown[]")
     } else {

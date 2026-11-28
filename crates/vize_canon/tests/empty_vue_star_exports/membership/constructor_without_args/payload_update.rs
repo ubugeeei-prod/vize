@@ -24,6 +24,7 @@ mod emit_props_twins;
 mod entry_package_exports;
 mod extra_keys_policy;
 mod forwarded_slot_exports;
+mod generic_constructor_bound_instance;
 mod generic_event_specialization;
 mod generic_hoisted_alias;
 mod generic_slot_payload;
