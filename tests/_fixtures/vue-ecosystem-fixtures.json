@@ -2922,6 +2922,7 @@
         "lockfile": "pnpm-lock.yaml",
         "requiredOutputs": ["node_modules/@intlify/unplugin-vue-i18n/package.json"]
       },
+      "note": "Typecheck corpus compared with vue-tsc 3.3.14 on frontend/tsconfig.app.json: both report no diagnostics. The matrix only checks it, because typecheckPerformance has no working directory for the frontend/ package.",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },
@@ -3985,6 +3986,7 @@
         "prepare": ["yarn", "nuxt", "prepare"],
         "requiredOutputs": [".nuxt/tsconfig.json"]
       },
+      "note": "use-recipe-tools.ts imports '~/types/vuetify', which the pinned source does not contain: plain tsc and vue-tsc report the same TS2307, an authored error that qualifies as findings. vue-tsc 3.3.14 stops on this project with a TypeScript Debug Failure in its unreachable-code check, so the matrix has no vue-tsc baseline for it.",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },

@@ -18,9 +18,12 @@ use super::type_references::{
     resolve_type_reference_declaration_files_reading,
 };
 
+mod augmentation_imports;
 mod content_mapper;
 mod realpaths;
 mod top_level;
+
+pub(crate) use augmentation_imports::AugmentationImports;
 
 pub(crate) use content_mapper::{
     collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
@@ -109,6 +112,7 @@ fn collect_ambient_declaration_files_from(
         .collect::<FxHashSet<_>>();
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut realpaths = ReferenceRealpaths::default();
+    let augmentation_imports = AugmentationImports::default();
     for path in &explicit_type_declarations {
         if seen.insert(path.clone()) {
             files.push(path.clone());
@@ -128,7 +132,13 @@ fn collect_ambient_declaration_files_from(
             continue;
         };
         if !is_declaration_file(&path) {
-            if augments_modules(&path, &content) {
+            // A hidden run drops visible sources from its result, so their
+            // imports are not probed.
+            if is_module_source(&path, &content)
+                && (declares_augmentation(&content)
+                    || (visible_files.is_none_or(|visible| !visible.contains(&path))
+                        && augmentation_imports.source_loads_augmentation(&path, &content)))
+            {
                 declarations.push(path);
             }
             continue;
@@ -304,15 +314,20 @@ fn declares_shadowing_ambient_module(content: &str) -> bool {
 
 /// A source module the tsconfig selects that augments another module
 /// (`declare module 'vue' { interface GlobalComponents }` in misskey's
-/// `components/index.ts`) changes types for every file of the program, as
-/// under `tsc -p`, even when nothing checked imports it.
-fn augments_modules(path: &Path, content: &str) -> bool {
+/// `components/index.ts`), or that imports a plugin entry doing so (an app
+/// entry's `import relativeTime from 'dayjs/plugin/relativeTime'`), changes
+/// types for every file of the program, as under `tsc -p`, even when nothing
+/// checked imports it.
+fn is_module_source(path: &Path, content: &str) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension, "ts" | "mts" | "cts" | "tsx"))
         && has_top_level_import_or_export(content)
-        && (contains_declare_scope(content, "declare global")
-            || contains_declare_scope(content, "declare module"))
+}
+
+fn declares_augmentation(content: &str) -> bool {
+    contains_declare_scope(content, "declare global")
+        || contains_declare_scope(content, "declare module")
 }
 
 fn contributes_ambient_declarations(content: &str) -> bool {
@@ -460,6 +475,9 @@ fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod augmentation_import_tests;
 
 #[cfg(test)]
 mod path_manifest_tests;

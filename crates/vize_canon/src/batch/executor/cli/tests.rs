@@ -1,3 +1,4 @@
+mod augmentation_imports;
 mod checkers_support;
 mod keyof_scope;
 mod shared_leaves;

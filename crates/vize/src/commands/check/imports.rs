@@ -30,7 +30,8 @@ mod parallel;
 mod reachability;
 use reachability::ImportReachabilityGraph;
 mod specifiers;
-use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};
+pub(super) use specifiers::extract_module_specifier_occurrences;
+use specifiers::is_relative_specifier;
 mod session;
 pub(super) use session::LocalImportSession;
 

@@ -233,6 +233,19 @@ impl VirtualProject {
         self.jsx_typecheck = enabled;
     }
 
+    pub(crate) fn set_module_augmentation_probe(
+        &mut self,
+        probe: crate::batch::ModuleAugmentationProbe,
+    ) {
+        self.module_augmentation_probe = Some(probe);
+    }
+
+    pub(crate) fn module_augmentation_probe(
+        &self,
+    ) -> Option<&super::super::ModuleAugmentationCheck> {
+        self.module_augmentation_probe.as_deref()
+    }
+
     /// Set the configured Vue dialect (default [`VueVersion::V3`]).
     ///
     /// Carried into virtual-TS generation for dialect-aware instance and helper

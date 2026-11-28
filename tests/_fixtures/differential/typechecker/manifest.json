@@ -65306,6 +65306,71 @@
       }
     },
     {
+      "id": "typechecker/plugin-augmentation-imports/entry-registered-plugin",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "check_plugin_augmentation_imports_cli::explicit_check_sees_plugin_augmentations_registered_by_the_entry",
+      "inputs": [
+        {
+          "path": "plugin-augmentation-imports/tsconfig.json.txt",
+          "role": "project-config",
+          "sha256": "5e65fa9277e3b0ba7949df9088e8a33535d8b04970e651297a7a8201ba7dcab0"
+        },
+        {
+          "path": "plugin-augmentation-imports/main.ts.txt",
+          "role": "entry-registering-plugin",
+          "sha256": "70aa2ada8031f7c5decf84ee48bed671c71055081a2222982b57c7f87bbd7919"
+        },
+        {
+          "path": "plugin-augmentation-imports/App.vue.txt",
+          "role": "checked-sfc-using-augmented-member",
+          "sha256": "edfbc64d7b3ed1ef42fb0b5198f0fb167391ef33b8dec508090325dfba934c95"
+        },
+        {
+          "path": "plugin-augmentation-imports/Misuse.vue.txt",
+          "role": "checked-sfc-misusing-augmented-member",
+          "sha256": "9379e9cacc9bae29d6eed6ee9f9b6b2d802afe39b7429e25b9e276a7377d3f64"
+        },
+        {
+          "path": "plugin-augmentation-imports/dayjs-package.json.txt",
+          "role": "host-package-manifest",
+          "sha256": "fc7e8b46730188ac6831a399d759e7e17472b194d2d7e85c0b127c577c102103"
+        },
+        {
+          "path": "plugin-augmentation-imports/dayjs-index.d.ts.txt",
+          "role": "host-package-declaration",
+          "sha256": "e9dd9e1a12ba5c44409045e9eea8a22331443b939ce3f1703363ab8502b37336"
+        },
+        {
+          "path": "plugin-augmentation-imports/dayjs-relativeTime.d.ts.txt",
+          "role": "plugin-augmentation-declaration",
+          "sha256": "de211877c871bfbc36d9a27c176ce2443572c96107cc0e66c15534dd0acfd174"
+        },
+        {
+          "path": "plugin-augmentation-imports/check.observed.json",
+          "role": "complete-current-observation",
+          "sha256": "cb507096e8b80726b0658859dfd52287441a097cb110dc2a9913aa9a6a0d72d7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "source-built `vize check src/App.vue src/Misuse.vue --tsconfig tsconfig.json` where only src/main.ts imports dayjs/plugin/relativeTime: the entry becomes a program root, so the plugin's `declare module 'dayjs'` augmentation reaches the checked SFCs and the diagnostics equal vue-tsc 3.3.14 -p tsconfig.json (one TS2345, no TS2339)."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/project-session-retirement-11168/crlf-both-repaired",
       "state": "active",
       "targets": [

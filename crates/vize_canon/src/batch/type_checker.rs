@@ -152,6 +152,12 @@ impl BatchTypeChecker {
         self.project.set_jsx_typecheck(true);
     }
 
+    /// Keep sources whose bare imports load a module augmentation visible to
+    /// every CLI shard. Without a probe only sources that declare one do.
+    pub fn set_module_augmentation_probe(&mut self, probe: crate::batch::ModuleAugmentationProbe) {
+        self.project.set_module_augmentation_probe(probe);
+    }
+
     /// Configure which virtual TypeScript checks are generated for Vue files.
     pub fn set_virtual_ts_checks(
         &mut self,
