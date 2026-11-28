@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { freshness, measureNative } from "./imported-props-worker.mjs";
 
-test("measurements compile every input for all three targets inside one closed window", () => {
+await test("measurements compile every input for all three targets inside one closed window", () => {
   const files = Array.from({ length: 1000 }, (_, index) => ({
     path: `${index}.vue`,
     source: String(index),
@@ -48,7 +48,7 @@ test("measurements compile every input for all three targets inside one closed w
   }
 });
 
-test("failed compilation closes the stability window", () => {
+await test("failed compilation closes the stability window", () => {
   let closed = false;
   const native = {
     beginTypeResolutionBatch() {
@@ -101,7 +101,7 @@ function fakeNative(file, metadataOnly) {
   };
 }
 
-test("freshness controls retain exact timestamps and restore remounted sources", () => {
+await test("freshness controls retain exact timestamps and restore remounted sources", () => {
   freshnessFixture((root, file, original) => {
     const receipt = freshness(fakeNative(file, false), root);
     assert.equal(receipt.restoredMtimeNs, receipt.editedMtimeNs);
@@ -110,7 +110,7 @@ test("freshness controls retain exact timestamps and restore remounted sources",
   });
 });
 
-test("freshness controls reject a cache using only length and timestamp", () => {
+await test("freshness controls reject a cache using only length and timestamp", () => {
   freshnessFixture((root, file) => {
     assert.throws(() => freshness(fakeNative(file, true), root), /Number/u);
   });

@@ -91,6 +91,24 @@ function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8A
 function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
   bytes = dependencyOwnershipPredecessor(file, bytes);
   if (
+    file === "crates/vize/src/type_projects.rs" &&
+    blob(bytes) === "d55de514198731aef58724fe60ef0771ad6f266b"
+  ) {
+    // Script classification now shares identical script inputs across distinct
+    // templates. The absent-setup fast path above this call is unchanged.
+    // Authenticate the complete one-call replacement before the older law;
+    // this inverse grants no execution or comparison credit to the new memo.
+    const text = Buffer.from(bytes).toString("utf8");
+    const current = "        let facts = self.source_facts.for_descriptor(descriptor);";
+    const previous =
+      "        let facts = self\n" +
+      "            .source_facts\n" +
+      "            .record(&descriptor.source, || Facts::for_descriptor(descriptor));";
+    assert.equal(text.split(current).length, 2, "unique reviewed script-fact call");
+    bytes = Buffer.from(text.replace(current, previous));
+    assert.equal(blob(bytes), "4d567c1bf5eff482c9ce78d02d30761514973cc1");
+  }
+  if (
     file === "crates/vize_atelier_sfc/src/compile/script_context.rs" &&
     blob(bytes) === "def91c11cd7e5c5f5c0531f0a0de67db2c300352"
   ) {
