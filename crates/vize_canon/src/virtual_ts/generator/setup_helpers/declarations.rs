@@ -17,6 +17,8 @@ pub(crate) struct SetupHelperPlan {
     pub(crate) macro_results: Vec<CompactString>,
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
     pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
+    /// Native JSX refs of a script whose calls the registry types.
+    pub(super) script_jsx_refs: Vec<super::script_jsx_refs::ScriptJsxRef>,
     active_template_ref: bool,
     /// Editor projections keep authored prop JSDoc on `withDefaults` results.
     pub(super) with_defaults_docs: bool,
@@ -201,6 +203,7 @@ fn shadowed_helpers(
         macro_results: Vec::new(),
         emit_calls: Vec::new(),
         template_refs: TemplateRefUsage::default(),
+        script_jsx_refs: Vec::new(),
         // Escapes may spell the identifier or imported name without its literal
         // bytes. Keep this conservative even when recovery cannot build an AST.
         active_template_ref: source.is_some_and(|source| {
@@ -280,6 +283,10 @@ fn read_helpers(
             source,
             configured_global_template_ref,
         );
+        // Only the TSX parse of a script can hold JSX.
+        if plan.template_refs.needs_registry() && parsed.program.source_type.is_jsx() {
+            plan.script_jsx_refs = super::script_jsx_refs::collect(&parsed.program);
+        }
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
     if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {

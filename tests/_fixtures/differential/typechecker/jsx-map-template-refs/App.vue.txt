@@ -1,0 +1,23 @@
+<script lang="tsx">
+import { defineComponent, useTemplateRef } from 'vue'
+
+export default defineComponent({
+  setup() {
+    const items = ['a', 'b']
+    const rows = useTemplateRef('row')
+    const box = useTemplateRef('box')
+    const other = useTemplateRef('other')
+    const count: number = rows.value?.length ?? 0
+    const first: HTMLLIElement | undefined = rows.value?.[0]
+    const single: HTMLLIElement | null = rows.value
+    const width: number = box.value?.clientWidth ?? 0
+    const unregistered: string = other.value
+    void [count, first, single, width, unregistered]
+    return () => (
+      <div ref="box">
+        <ul>{items.map((item) => <li ref="row">{item}</li>)}</ul>
+      </div>
+    )
+  },
+})
+</script>
