@@ -84,7 +84,7 @@ impl<'source, 'read> TemplateRead<'source, 'read> {
     #[must_use]
     pub fn authored_span(&self, relative: Span) -> Option<Span> {
         let (start, end) = projection::authored(
-            self.block.source(),
+            self.block.source().as_bytes(),
             self.block.start(),
             relative.start,
             relative.end,

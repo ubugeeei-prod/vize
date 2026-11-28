@@ -296,16 +296,25 @@ test (4^7 inputs against the sorting reference) pins its output.
 
 ## Editor template projection (`crates/vize_incremental/src/template`)
 
-`projection::authored` maps a block-relative UTF-8 range to file offsets
-through `str::get`, which has no Creusot 0.14 specification, and the
-character-boundary law needs `str::is_char_boundary`, which has none either.
-Writing one is an `extern_spec`, a trusted declaration the proofs do not
-admit, so the Kani harness stays in `ir-pass-composition.yml` and the row is
-`owed`.
+The editor passes its `SourceBlock` body's bytes to the shipped
+`projection::authored` kernel. It checks order, bounds and the two UTF-8
+boundaries directly, then shifts each endpoint by the block's base. This
+keeps the proof on bytes and avoids trusted specifications for `str::get`,
+`str::is_char_boundary` and `str::as_bytes`. The caller's `&str` supplies valid
+UTF-8; `SourceBlock` supplies `base + body.len() <= u32::MAX`.
 
-| Kani harness                                                  | Law                                                                                                                                                       | Kani bound                         | Creusot replacement               | Status |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------- | ------ |
-| `all_utf8_ranges_match_the_reference_and_fit_the_source_file` | `authored` accepts exactly the ordered ranges whose ends are character boundaries of the block, and shifts both ends by the block's base without overflow | 5 bytes, whole `u32` base and ends | owed: needs a spec for `str::get` | owed   |
+The candidate contracts use `davinci_unicode::boundary`, which walks whole
+UTF-8 forms, and its proved lead-byte and end-boundary lemmas. The package
+`tests/formal/creusot/editor-projection` compiles the product's kernel by
+ordinary module discovery. The Kani harness remains in
+`07-ir-pass-composition.yml` and compares that same byte kernel with
+`str::get`, including cover checks for the successful and refused cases.
+Certificate generation and replay are still pending; this row is not yet
+counted as proved.
+
+| Kani harness | Law | Kani bound | Creusot replacement | Status |
+| --- | --- | --- | --- | --- |
+| `all_utf8_ranges_match_the_reference_and_fit_the_source_file` | `authored` accepts exactly ordered scalar-boundary ranges and shifts both ends without overflow | 5 bytes, whole `u32` base and ends | `template/creusot.rs::all_utf8_ranges_match_the_reference_and_fit_the_source_file` over the shipped byte kernel, every length | pending certificates and replay |
 
 ## Template line breaks (`crates/vize_glyph/src/template/formatter/suppression`)
 

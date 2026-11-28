@@ -27,6 +27,7 @@ members = [
   "template-labels",
   "glyph-line-breaks",
   "recovery-positions",
+  "editor-projection",
 ]
 
 [workspace.dependencies]

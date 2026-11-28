@@ -1,0 +1,15 @@
+[package]
+name = "vize_incremental_editor_projection_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_incremental/src/template/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+davinci_unicode = { path = "../unicode" }
+
+[lints]
+workspace = true

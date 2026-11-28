@@ -20,6 +20,8 @@ on {
       "crates/vize_croquis/src/scope/chain/rows.rs"
       "crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs"
       "crates/vize_incremental/providers/graph/src/recovery/positions/window.rs"
+      "crates/vize_incremental/src/template/creusot.rs"
+      "crates/vize_incremental/src/template/projection.rs"
       "crates/vize_maestro/src/source_project/style_format/creusot.rs"
       "crates/vize_maestro/src/source_project/style_format/header.rs"
       "crates/vize_glyph/src/template/formatter/suppression/creusot.rs"
@@ -72,6 +74,8 @@ on {
       "crates/vize_croquis/src/scope/chain/rows.rs"
       "crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs"
       "crates/vize_incremental/providers/graph/src/recovery/positions/window.rs"
+      "crates/vize_incremental/src/template/creusot.rs"
+      "crates/vize_incremental/src/template/projection.rs"
       "crates/vize_maestro/src/source_project/style_format/creusot.rs"
       "crates/vize_maestro/src/source_project/style_format/header.rs"
       "crates/vize_glyph/src/template/formatter/suppression/creusot.rs"
@@ -112,7 +116,16 @@ on {
       "tests/formal/creusot/unicode/creusot.rs"
     }
   }
-  workflow_dispatch = null
+  workflow_dispatch {
+    inputs {
+      discover_editor_projection {
+        description = "Generate candidate editor projection certificates for review; grants no replay acceptance"
+        type = "boolean"
+        default = false
+        required = false
+      }
+    }
+  }
 }
 permissions { contents = "read" }
 
@@ -157,6 +170,56 @@ jobs {
         // for new ones; why3find exits non-zero on any unproved goal.
         `working-directory` = "tests/formal/creusot"
         run = "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked"
+      }
+    }
+  }
+  `editor-projection-discovery` {
+    name = "Discover editor projection certificates"
+    if = "${{ github.event_name == 'workflow_dispatch' && inputs.discover_editor_projection }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3"
+        with {
+          extra_nix_config = """
+          keep-derivations = true
+          keep-outputs = true
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Cache the Creusot toolchain"
+        uses = "nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569"
+        with {
+          `primary-key` = "creusot-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/nix/creusot/flake.nix', 'tools/nix/creusot/flake.lock') }}"
+          `restore-prefixes-first-match` = "creusot-${{ runner.os }}-${{ runner.arch }}-"
+          `gc-max-store-size-linux` = "8G"
+        }
+      }
+      new Dynamic {
+        name = "Build the pinned toolchain"
+        run = #"nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs"#
+      }
+      new Dynamic {
+        name = "Search the actual editor projection goals"
+        `working-directory` = "tests/formal/creusot"
+        run = "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_incremental_editor_projection_proofs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        if = "always()"
+        with {
+          name = "editor-projection-certificates-${{ github.sha }}"
+          path = "tests/formal/creusot/verif/vize_incremental_editor_projection_proofs_rlib/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
       }
     }
   }

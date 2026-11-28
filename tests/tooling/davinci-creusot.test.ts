@@ -22,6 +22,8 @@ const inventoryFile = path.join(
 
 type Step = {
   run?: string;
+  uses?: string;
+  with?: Record<string, unknown>;
   if?: unknown;
   "continue-on-error"?: unknown;
   "working-directory"?: string;
@@ -32,7 +34,7 @@ type Workflow = {
     push: { branches: string[]; paths: string[] };
     workflow_dispatch: unknown;
   };
-  jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
+  jobs: Record<string, { name?: string; steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
 /** Each proof package's library root, which sits next to its kernel. */
@@ -85,19 +87,52 @@ test("the Creusot workflow replays every proof whenever a proved kernel changes"
   assert.deepEqual(workflow.on.push.branches, ["main"]);
   assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
 
-  const runs = Object.values(workflow.jobs).flatMap((job) => {
-    assert.equal(job.if, undefined);
-    assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
-    return job.steps.flatMap((step) => {
-      assert.equal(step.if, undefined);
-      assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
-      return step.run ? [[step["working-directory"] ?? ".", step.run.trim()]] : [];
-    });
+  assert.deepEqual(Object.keys(workflow.jobs).sort(), ["editor-projection-discovery", "prove"]);
+  const job = workflow.jobs.prove!;
+  assert.equal(job.name, "Creusot proofs");
+  assert.equal(job.if, undefined, "full replay always runs, including discovery dispatches");
+  assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
+  const runs = job.steps.flatMap((step) => {
+    assert.equal(step.if, undefined);
+    assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
+    return step.run ? [[step["working-directory"] ?? ".", step.run.trim()]] : [];
   });
   assert.deepEqual(runs.at(-1), [
     "tests/formal/creusot",
     "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked",
   ]);
+});
+
+test("certificate discovery has a separate manual check and never substitutes for replay", () => {
+  const workflow = parseYaml(fs.readFileSync(workflowFile, "utf8")) as Workflow;
+  const job = workflow.jobs["editor-projection-discovery"]!;
+  assert.equal(job.name, "Discover editor projection certificates");
+  assert.equal(
+    job.if,
+    "${{ github.event_name == 'workflow_dispatch' && inputs.discover_editor_projection }}",
+  );
+  assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
+  for (const step of job.steps) {
+    assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
+    if (step.uses?.startsWith("actions/upload-artifact@")) {
+      assert.equal(step.if, "always()");
+      assert.equal(
+        step.with?.path,
+        "tests/formal/creusot/verif/vize_incremental_editor_projection_proofs_rlib/",
+      );
+    } else {
+      assert.equal(step.if, undefined);
+    }
+  }
+  const search = job.steps.filter((step) => step.run?.includes("cargo creusot"));
+  assert.deepEqual(
+    search.map((step) => [step["working-directory"], step.run]),
+    [[
+      "tests/formal/creusot",
+      "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_incremental_editor_projection_proofs",
+    ]],
+  );
+  assert.equal(workflow.jobs.prove!.if, undefined);
 });
 
 test("the product workspace never depends on Creusot", () => {

@@ -20,6 +20,8 @@ on:
       - crates/vize_croquis/src/scope/chain/rows.rs
       - crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs
       - crates/vize_incremental/providers/graph/src/recovery/positions/window.rs
+      - crates/vize_incremental/src/template/creusot.rs
+      - crates/vize_incremental/src/template/projection.rs
       - crates/vize_maestro/src/source_project/style_format/creusot.rs
       - crates/vize_maestro/src/source_project/style_format/header.rs
       - crates/vize_glyph/src/template/formatter/suppression/creusot.rs
@@ -70,6 +72,8 @@ on:
       - crates/vize_croquis/src/scope/chain/rows.rs
       - crates/vize_incremental/providers/graph/src/recovery/positions/creusot.rs
       - crates/vize_incremental/providers/graph/src/recovery/positions/window.rs
+      - crates/vize_incremental/src/template/creusot.rs
+      - crates/vize_incremental/src/template/projection.rs
       - crates/vize_maestro/src/source_project/style_format/creusot.rs
       - crates/vize_maestro/src/source_project/style_format/header.rs
       - crates/vize_glyph/src/template/formatter/suppression/creusot.rs
