@@ -22,13 +22,37 @@ export type QrCodeProvider = (
 export interface QrCodeProps {
   value: string;
   provider: QrCodeProvider;
+  /** Correction policy passed to the consumer-owned encoder.
+   * @default "medium"
+   */
   errorCorrection?: QrCodeErrorCorrection;
+  /** Quiet-zone module count; finite values truncate and clamp to zero.
+   * @default 2
+   */
   quietZone?: number;
+  /** Repetitions of each module glyph, clamped to at least one.
+   * @default 2
+   */
   cellWidth?: number;
+  /** Glyph used for dark modules before cell-width repetition.
+   * @default "█"
+   */
   dark?: string;
+  /** Glyph used for light modules and the quiet zone.
+   * @default " "
+   */
   light?: string;
+  /** Foreground color of rendered QR rows.
+   * @default undefined
+   */
   fg?: string;
+  /** Background color of rendered QR rows.
+   * @default undefined
+   */
   bg?: string;
+  /** Swap the dark and light module glyphs.
+   * @default false
+   */
   invert?: boolean;
 }
 

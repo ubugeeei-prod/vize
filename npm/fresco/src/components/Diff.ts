@@ -19,22 +19,73 @@ export type DiffView = "unified" | "split";
 export interface DiffProps {
   oldText: string;
   newText: string;
+  /** Unified or side-by-side layout.
+   * @default "unified"
+   */
   view?: DiffView;
+  /** Context lines retained around changes.
+   * @default 3
+   */
   context?: number;
+  /** Render old and new line-number gutters.
+   * @default true
+   */
   showLineNumbers?: boolean;
+  /** First requested diff row when viewportSize is supplied.
+   * @default 0
+   */
   viewportStart?: number;
+  /** Requested visible row count; omission renders every diff row.
+   * @default undefined
+   */
   viewportSize?: number;
+  /** Extra rows retained before and after the requested viewport.
+   * @default 2
+   */
   overscan?: number;
+  /** Optional label for the old source.
+   * @default undefined
+   */
   oldLabel?: string;
+  /** Optional label for the new source.
+   * @default undefined
+   */
   newLabel?: string;
+  /** Foreground color of unchanged text.
+   * @default "white"
+   */
   contextFg?: string;
+  /** Foreground color of added text.
+   * @default "green"
+   */
   addedFg?: string;
+  /** Background color of added text.
+   * @default undefined
+   */
   addedBg?: string;
+  /** Foreground color of removed text.
+   * @default "red"
+   */
   removedFg?: string;
+  /** Background color of removed text.
+   * @default undefined
+   */
   removedBg?: string;
+  /** Foreground color of hunk headers.
+   * @default "cyan"
+   */
   hunkFg?: string;
+  /** Foreground color of line-number gutters.
+   * @default "gray"
+   */
   lineNumberFg?: string;
+  /** Background color of changed segments in added lines.
+   * @default "darkgreen"
+   */
   addedHighlightBg?: string;
+  /** Background color of changed segments in removed lines.
+   * @default "darkred"
+   */
   removedHighlightBg?: string;
 }
 

@@ -6,13 +6,21 @@ import { defineComponent, h, type VNode } from "vue";
 
 /** Column count and terminal-cell spacing for a fixed-column grid. */
 export interface GridProps {
-  /** Number of columns */
+  /** Number of columns
+   * @default 2
+   */
   columns?: number;
-  /** Gap between cells */
+  /** Gap between cells
+   * @default 1
+   */
   gap?: number;
-  /** Row gap */
+  /** Row gap
+   * @default undefined
+   */
   rowGap?: number;
-  /** Column gap */
+  /** Column gap
+   * @default undefined
+   */
   columnGap?: number;
 }
 

@@ -38,25 +38,45 @@ export type TabsBy<Value> = CollectionBy<Value>;
 export interface TabsProps<Value = string> {
   /** Tab definitions */
   tabs: readonly Tab<Value>[];
-  /** Currently active tab value */
+  /** Currently active tab value
+   * @default undefined
+   */
   modelValue?: Value;
-  /** Compare active values by an object key or a custom equality function */
+  /** Compare active values by an object key or a custom equality function
+   * @default undefined
+   */
   by?: TabsBy<Value>;
-  /** Whether the tab list owns keyboard input */
+  /** Whether the tab list owns keyboard input
+   * @default false
+   */
   focused?: boolean;
-  /** Maximum visible tabs before the tab strip scrolls */
+  /** Maximum visible tabs before the tab strip scrolls
+   * @default undefined
+   */
   maxItems?: number;
-  /** Tab bar position */
+  /** Tab bar position
+   * @default "top"
+   */
   position?: "top" | "bottom";
-  /** Separator between tabs */
+  /** Separator between tabs
+   * @default " | "
+   */
   separator?: string;
-  /** Active tab foreground color */
+  /** Active tab foreground color
+   * @default "cyan"
+   */
   activeFg?: string;
-  /** Active tab background color */
+  /** Active tab background color
+   * @default undefined
+   */
   activeBg?: string;
-  /** Inactive tab foreground color */
+  /** Inactive tab foreground color
+   * @default undefined
+   */
   inactiveFg?: string;
-  /** Show underline for active tab */
+  /** Underline the active tab; the focused highlight is independently underlined.
+   * @default true
+   */
   underline?: boolean;
 }
 

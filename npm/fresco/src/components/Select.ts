@@ -37,27 +37,49 @@ export type SelectBy<Value> = CollectionBy<Value>;
 export interface SelectProps<Value = string> {
   /** Options to display */
   options: readonly SelectOption<Value>[];
-  /** Currently selected value */
+  /** Currently selected value
+   * @default undefined
+   */
   modelValue?: Value;
-  /** Compare values by an object key or a custom equality function */
+  /** Compare values by an object key or a custom equality function
+   * @default undefined
+   */
   by?: SelectBy<Value>;
-  /** Placeholder text */
+  /** Reserved placeholder value; the current renderer does not display it.
+   * @default "Select an option"
+   */
   placeholder?: string;
-  /** Maximum visible options before the selection window scrolls */
+  /** Maximum visible options before the selection window scrolls
+   * @default undefined
+   */
   maxHeight?: number;
-  /** Whether the select is focused */
+  /** Whether the select is focused
+   * @default false
+   */
   focused?: boolean;
-  /** Indicator for selected item */
+  /** Indicator for the highlighted item.
+   * @default "> "
+   */
   indicator?: string;
-  /** Indicator for unselected item */
+  /** Indicator for items outside the highlight.
+   * @default "  "
+   */
   indicatorEmpty?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Background color */
+  /** Background color
+   * @default undefined
+   */
   bg?: string;
-  /** Selected item foreground color */
+  /** Highlighted item foreground color.
+   * @default "cyan"
+   */
   selectedFg?: string;
-  /** Selected item background color */
+  /** Highlighted item background color.
+   * @default undefined
+   */
   selectedBg?: string;
 }
 

@@ -38,23 +38,41 @@ export type ListBy<Value> = CollectionBy<Value>;
 export interface ListProps<Value = string> {
   /** List items */
   items: readonly ListItem<Value>[];
-  /** Currently selected value */
+  /** Currently selected value
+   * @default undefined
+   */
   modelValue?: Value;
-  /** Compare values by an object key or a custom equality function */
+  /** Compare values by an object key or a custom equality function
+   * @default undefined
+   */
   by?: ListBy<Value>;
-  /** Maximum visible items (enables scrolling) */
+  /** Maximum visible items (enables scrolling)
+   * @default undefined
+   */
   maxHeight?: number;
-  /** Whether the list is focused */
+  /** Whether the list is focused
+   * @default false
+   */
   focused?: boolean;
-  /** Item indicator */
+  /** Indicator for the highlighted item.
+   * @default "> "
+   */
   indicator?: string;
-  /** Empty indicator */
+  /** Indicator for items outside the highlight.
+   * @default "  "
+   */
   indicatorEmpty?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Selected foreground color */
+  /** Highlighted item foreground color.
+   * @default "cyan"
+   */
   selectedFg?: string;
-  /** Selected background color */
+  /** Highlighted item background color.
+   * @default undefined
+   */
   selectedBg?: string;
 }
 

@@ -1,6 +1,6 @@
 /** Match documented component inputs to their actual Vue runtime prop declarations. */
 import ts from "typescript";
-import { memberName, readDoc } from "./ts-scope.ts";
+import { commentText, memberName } from "./ts-scope.ts";
 
 /** Default evidence for one optional public component input. */
 export interface ComponentPropDefault {
@@ -88,6 +88,15 @@ function runtimeDefault(node: ts.Expression): string {
     return constructorDefault(descriptor.get("type"));
   }
   return constructorDefault(node);
+}
+
+function documentedDefault(member: ts.PropertySignature): string | null {
+  const tags = ts
+    .getJSDocTags(member)
+    .filter((tag) => tag.tagName.text === "default" || tag.tagName.text === "defaultValue");
+  if (tags.length > 1) throw new Error(`Duplicate public prop default: ${memberName(member.name)}`);
+  // Preserve spaces within quoted literals, including a two-space empty indicator.
+  return tags[0] ? commentText(tags[0].comment).trim() : null;
 }
 
 /**
@@ -188,7 +197,7 @@ export function componentPropDefaults(
     return [
       {
         name,
-        documented: readDoc(member).defaultValue,
+        documented: documentedDefault(member),
         runtime: implementation ? runtimeDefault(implementation) : "undefined",
       },
     ];

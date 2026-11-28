@@ -23,21 +23,37 @@ export interface RadioOption {
 export interface RadioGroupProps {
   /** Radio options */
   options: RadioOption[];
-  /** Currently selected value */
+  /** Currently selected value
+   * @default undefined
+   */
   modelValue?: string;
-  /** Layout direction */
+  /** Layout direction
+   * @default "vertical"
+   */
   direction?: "horizontal" | "vertical";
-  /** Focused option index */
+  /** Focused option index
+   * @default undefined
+   */
   focusedIndex?: number;
-  /** Whether the radio group owns keyboard input */
+  /** Whether the radio group owns keyboard input
+   * @default false
+   */
   focused?: boolean;
-  /** Selected indicator */
+  /** Selected indicator
+   * @default "◉"
+   */
   selected?: string;
-  /** Unselected indicator */
+  /** Unselected indicator
+   * @default "○"
+   */
   unselected?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Selected foreground color */
+  /** Selected foreground color
+   * @default "green"
+   */
   selectedFg?: string;
 }
 

@@ -8,19 +8,33 @@ import { computed, defineComponent, h } from "vue";
 export interface LineNumberProps {
   /** Line number displayed in the gutter. */
   value: number;
-  /** Minimum character width reserved for the number. */
+  /** Minimum character width reserved for the number.
+   * @default 0
+   */
   width?: number;
-  /** Text placed between the number and its content. */
+  /** Text following the padded line number.
+   * @default "│"
+   */
   separator?: string;
-  /** Spaces rendered on each side of the separator. */
+  /** Spaces rendered on each side of the separator.
+   * @default 1
+   */
   padding?: number;
-  /** Default foreground color. */
+  /** Default foreground color.
+   * @default "gray"
+   */
   fg?: string;
-  /** Whether this line is the active line. */
+  /** Whether this line is the active line.
+   * @default false
+   */
   active?: boolean;
-  /** Foreground color used for the active line. */
+  /** Foreground color used for the active line.
+   * @default "white"
+   */
   activeFg?: string;
-  /** Background color used for the active line. */
+  /** Background color used for the active line.
+   * @default undefined
+   */
   activeBg?: string;
 }
 
@@ -29,7 +43,7 @@ function normalizeInteger(value: number, minimum: number): number {
   return Math.max(minimum, Math.trunc(value));
 }
 
-/** Render a padded source-line gutter before its default-slot content. */
+/** Render a padded source-line gutter as one terminal text node. */
 export const LineNumber = defineComponent({
   name: "LineNumber",
   props: {

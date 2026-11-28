@@ -30,23 +30,41 @@ export type MenuItem<Value = string> = MenuItemBase &
 export interface MenuProps<Value = string> {
   /** Menu items */
   items: readonly MenuItem<Value>[];
-  /** Focused item index */
+  /** Focused item index
+   * @default 0
+   */
   focusedIndex?: number;
-  /** Whether the menu owns keyboard input */
+  /** Whether the menu owns keyboard input
+   * @default false
+   */
   focused?: boolean;
-  /** Maximum visible items before the command window scrolls */
+  /** Maximum visible items before the command window scrolls
+   * @default undefined
+   */
   maxHeight?: number;
-  /** Show border */
+  /** Show border
+   * @default "single"
+   */
   border?: "single" | "double" | "rounded" | "none";
-  /** Width */
+  /** Width
+   * @default undefined
+   */
   width?: number;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Focused foreground color */
+  /** Focused foreground color
+   * @default "black"
+   */
   focusedFg?: string;
-  /** Focused background color */
+  /** Focused background color
+   * @default "cyan"
+   */
   focusedBg?: string;
-  /** Shortcut foreground color */
+  /** Shortcut foreground color
+   * @default "gray"
+   */
   shortcutFg?: string;
 }
 
