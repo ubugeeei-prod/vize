@@ -2,7 +2,7 @@
 //! Deleted once a second SFC facade rule is chosen.
 
 use super::{TEMPLATES, rule_fixtures};
-use crate::context::LintContext;
+use crate::context::{LintContext, TemplateCommentDirectives};
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::TemplateSyntax;
 use crate::markup::{LintL2Template, MarkupContext, MarkupDocument};
@@ -124,6 +124,7 @@ fn probe_sfc_facade_candidates() {
         let lowered = LintL2Template::lower(&allocator, source);
         let markup = lowered.markup();
         let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
+        let directives = TemplateCommentDirectives::new(lowered.surface());
 
         for (slot, &index) in indexes.iter().enumerate() {
             if failed[slot].is_some() {
@@ -132,13 +133,21 @@ fn probe_sfc_facade_candidates() {
             let name = names[index];
             let relief = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 fingerprint(
-                    &relief_diagnostics(&registry, index, &allocator, source, &root),
+                    &relief_diagnostics(&registry, index, &allocator, source, &root, &directives),
                     name,
                 )
             }));
             let facade = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 fingerprint(
-                    &facade_diagnostics(&registry, index, &allocator, source, &root, &document),
+                    &facade_diagnostics(
+                        &registry,
+                        index,
+                        &allocator,
+                        source,
+                        &root,
+                        &document,
+                        &directives,
+                    ),
                     name,
                 )
             }));
@@ -236,8 +245,10 @@ fn relief_diagnostics<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &vize_relief::RootNode<'a>,
+    directives: &TemplateCommentDirectives<'_, 'a>,
 ) -> Vec<LintDiagnostic> {
     let mut ctx = LintContext::new(allocator, source, "probe.vue");
+    directives.prescan(&mut ctx);
     let mut keep = vec![false; registry.rules().len()];
     keep[index] = true;
     let mut visitor = LintVisitor::with_rule_filter(
@@ -246,7 +257,8 @@ fn relief_diagnostics<'a>(
         registry.rule_names(),
         registry.has_exit_element_rules(),
         &keep,
-    );
+    )
+    .with_template_directives(directives);
     visitor.visit_root(root);
     ctx.into_diagnostics()
 }
@@ -258,8 +270,10 @@ fn facade_diagnostics<'a>(
     source: &'a str,
     root: &vize_relief::RootNode<'a>,
     document: &MarkupDocument<'a>,
+    directives: &TemplateCommentDirectives<'_, 'a>,
 ) -> Vec<LintDiagnostic> {
     let mut ctx = LintContext::new(allocator, source, "probe.vue");
+    directives.prescan(&mut ctx);
     let keep = vec![false; registry.rules().len()];
     {
         let mut visitor = LintVisitor::with_rule_filter(
@@ -268,7 +282,8 @@ fn facade_diagnostics<'a>(
             registry.rule_names(),
             registry.has_exit_element_rules(),
             &keep,
-        );
+        )
+        .with_template_directives(directives);
         visitor.visit_root(root);
     }
     if let Some(rule) = registry.rules()[index].as_markup_rule() {

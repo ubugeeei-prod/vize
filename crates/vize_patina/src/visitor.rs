@@ -2,9 +2,7 @@
 //!
 //! High-performance visitor with minimal allocations.
 
-use crate::context::{
-    CallbackSite, ElementContext, LintContext, TemplateCommentDirectives, process_vize_directive,
-};
+use crate::context::{CallbackSite, ElementContext, LintContext, TemplateCommentDirectives};
 use crate::rule::{IndexedRulePlans, Rule};
 use std::borrow::Cow;
 use vize_l0::{CompactString, profile};
@@ -140,6 +138,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
     }
 
+    /// Replay the L1 comment directives the caller prescanned at their
+    /// comment visits. Without them comments have no lint effect.
     pub(crate) fn with_template_directives(
         mut self,
         directives: &'ctx TemplateCommentDirectives<'ctx, 'a>,
@@ -193,15 +193,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             }
             TemplateChildNode::Comment(comment) => {
                 if let Some(directives) = self.template_directives {
-                    if directives.contains(comment.loc.span.start) {
-                        self.ctx
-                            .record_callback_site(CallbackSite::Comment(comment.loc.span.start));
-                        directives.process_at(self.ctx, comment.loc.span.start);
-                    }
-                } else if let Some(kind) = comment.directive {
-                    self.ctx
-                        .record_callback_site(CallbackSite::Comment(comment.loc.span.start));
-                    process_vize_directive(self.ctx, comment.content, comment.loc.span, kind);
+                    directives.replay_comment(self.ctx, comment.loc.span.start);
                 }
             }
             TemplateChildNode::Text(text) => {
@@ -322,10 +314,4 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         self.ctx.pop_element();
         self.ctx.aria_hidden_inert = previous_inert;
     }
-}
-
-fn element_has_directive(el: &ElementNode, name: &str) -> bool {
-    el.props
-        .iter()
-        .any(|p| matches!(p, PropNode::Directive(d) if d.name == name))
 }
