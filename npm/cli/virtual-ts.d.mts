@@ -279,11 +279,24 @@ type $ComponentPublicOverloads<C> = C extends {
       $PublicInstanceProps<D> &
       $PublicInstanceProps<E>
   : {};
-type $StaticRawKeys<C> = C extends { readonly __vizeRawProps?: infer P }
-  ? $IsAny<P> extends true
+type $FinitePropKeys<P> =
+  $IsAny<P> extends true
     ? never
-    : keyof P
+    : [P] extends [never]
+      ? never
+      : keyof { [K in keyof P as {} extends Record<K, unknown> ? never : K]: unknown };
+type $StaticRawKeys<C> = C extends { readonly __vizeRawProps?: infer P }
+  ? $FinitePropKeys<P>
   : never;
+type $ComponentSourcePropKeys<C> =
+  NoInfer<C> extends { readonly __vizeComponentSelf?: { readonly props: infer P } }
+    ? unknown extends P
+      ? $StaticRawKeys<C>
+      : [P] extends [never]
+        ? never
+        : $SetupPropKeys<P>
+    : $StaticRawKeys<C>;
+type $SetupPropKeys<P> = P extends unknown ? keyof P : never;
 type $AdditionalComponentProps<C, P, K, U = $ComponentPublicOverloads<C>> = [K] extends [never]
   ? P
   : P & Pick<U, Extract<K, keyof U>>;
@@ -303,8 +316,8 @@ type $ExpandedComponentUsageProps<C> =
           C,
           $ComponentRawProps<C>,
           Exclude<
-            keyof A | keyof B | keyof D | keyof E,
-            keyof $ComponentRawProps<C> | $StaticRawKeys<C>
+            $SetupPropKeys<A> | $SetupPropKeys<B> | $SetupPropKeys<D> | $SetupPropKeys<E>,
+            keyof $ComponentRawProps<C> | $ComponentSourcePropKeys<C>
           >
         >
     : $ComponentRawProps<C>;
@@ -312,14 +325,15 @@ export type $ComponentUsageProps<
   C,
   __P = NoInfer<C> extends {
     readonly __vizeComponentMarker: true;
-    readonly __vizeComponentSelf?: () => infer S;
-    readonly __vizeRawProps?: infer P;
+    readonly __vizeComponentSelf?: { (): infer S; readonly raw: infer P };
   }
     ? $IsAny<S> extends true
       ? $ExpandedComponentUsageProps<C>
-      : (<T>() => T extends S ? 1 : 2) extends <T>() => T extends C ? 1 : 2
-        ? P
-        : $ExpandedComponentUsageProps<C>
+      : unknown extends P
+        ? $ExpandedComponentUsageProps<C>
+        : (<T>() => T extends S ? 1 : 2) extends <T>() => T extends C ? 1 : 2
+          ? P
+          : $ExpandedComponentUsageProps<C>
     : $ExpandedComponentUsageProps<C>,
 > = unknown extends __P ? Record<string, unknown> : __P;
 export type $UsageProps<C> =

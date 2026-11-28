@@ -188,14 +188,21 @@ pub(super) fn emit_default_export_declaration(
             component_contract_fields,
             " readonly __vizeRawProps?: {props_ref};"
         );
-        if generic_component_params.is_none() && authored_default != AuthoredDefaultKind::Component
-        {
-            // The unchanged component can read its identical static raw props
-            // without instantiating the generic input constructor. A function
-            // return retains one original identity when two SFCs intersect;
-            // an intersected self property would merge into the intersection.
-            component_contract_fields
-                .push_str(" readonly __vizeComponentSelf?: () => typeof __vize_component__;");
+        if generic_component_params.is_none() {
+            // Read the default instance directly, avoiding the generic input
+            // constructor while retaining global/exposed raw metadata. An
+            // authored constructor keeps the original fallback authoritative.
+            let raw = if authored_default == AuthoredDefaultKind::Component {
+                "unknown"
+            } else {
+                "$ComponentInstance extends { readonly __vizeRawProps?: infer __P } ? __P : unknown"
+            };
+            // Callable identity stays separate for intersected components;
+            // covariant fields retain each branch of a generated union.
+            append!(
+                component_contract_fields,
+                " readonly __vizeComponentSelf?: (() => typeof __vize_component__) & {{ readonly raw: {raw}; readonly props: {props_ref} }};"
+            );
         }
     }
     // `defineSlots` describes the callable payload for each slot; it does not

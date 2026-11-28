@@ -1,0 +1,2 @@
+<script setup lang="ts">defineProps<{ own: string; hydrateOnIdle?: number }>();</script>
+<template><div /></template>

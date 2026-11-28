@@ -1,0 +1,9 @@
+<script lang="ts">
+import { defineComponent, type DefineComponent } from 'vue';
+declare const Base: {
+  readonly __vizeRawProps?: Record<string, unknown>;
+  new(): InstanceType<DefineComponent<{}>>;
+};
+export default defineComponent({}) as unknown as typeof Base;
+</script>
+<template><div /></template>
