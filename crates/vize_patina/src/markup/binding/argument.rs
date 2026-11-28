@@ -55,7 +55,7 @@ impl MarkupBinding<'_> {
 
 impl<'a> MarkupBinding<'a> {
     /// Preserve a JSX namespace rather than mistaking its local name for a DOM sink.
-    pub(crate) fn authored_argument(&self, source: &'a str) -> Option<&'a str> {
+    pub(crate) fn authored_argument<'b>(&'b self, source: &'b str) -> Option<&'b str> {
         if let MarkupBindingInner::Jsx { node, offset } = self.inner
             && let JSXAttributeName::NamespacedName(name) = &node.name
         {
@@ -68,5 +68,15 @@ impl<'a> MarkupBinding<'a> {
             );
         }
         self.arg_name()
+    }
+
+    /// Borrow the expression text for this callback, including a direct OXC view.
+    pub(crate) fn source_expression<'b>(&'b self, source: &'b str) -> Option<&'b str> {
+        if let Some(expression) = self.expression() {
+            return Some(expression);
+        }
+        let retained = self.retained_expression()?;
+        let range = retained.authored_range(retained.ast.span())?;
+        source.get(range.start as usize..range.end as usize)
     }
 }

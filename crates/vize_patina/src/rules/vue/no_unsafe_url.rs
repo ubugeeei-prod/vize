@@ -192,7 +192,7 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
 }
 
 impl NoUnsafeUrl {
-    fn check_static<'a>(ctx: &mut LintContext<'a>, element: &MarkupElement<'a>) {
+    fn check_static(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         if is_router_link_tag(element.tag()) {
             return;
         }
@@ -222,10 +222,10 @@ impl NoUnsafeUrl {
         });
     }
 
-    fn check_dynamic<'a>(
-        ctx: &mut LintContext<'a>,
-        element: &MarkupElement<'a>,
-        binding: &MarkupBinding<'a>,
+    fn check_dynamic(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        binding: &MarkupBinding<'_>,
     ) {
         // Only check v-bind
         if binding.kind() != MarkupBindingKind::Bind {
@@ -255,11 +255,7 @@ impl NoUnsafeUrl {
             return;
         }
 
-        let expression = binding.expression().or_else(|| {
-            let retained = binding.retained_expression()?;
-            let range = retained.authored_range(retained.ast.span())?;
-            ctx.source.get(range.start as usize..range.end as usize)
-        });
+        let expression = binding.source_expression(ctx.source);
         if expression.map(str::trim).is_some_and(|expression| {
             (attr_name.eq_ignore_ascii_case("href") && is_hash_prefixed_expression(expression))
                 || expression_is_sanitizer_call(expression)
