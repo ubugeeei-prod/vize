@@ -200,6 +200,44 @@ void test("installed hosts lint original TSRX through authenticated carriers and
       false,
     );
   }
+  fs.writeFileSync(
+    configFile,
+    JSON.stringify({ ...base, rules: { ...base.rules, "vize/a11y/alt-text": "error" } }),
+  );
+  const markupError = invoke(cli, ["-f", "json", "--threads", "1", "src/Avatar.tsrx"]);
+  assert.equal(markupError.status, 1, markupError.stderr);
+  const nativeAvatar = native.lintPatinaSfc(source, {
+    filename: path.join(root, "src/Avatar.tsrx"),
+    preset: "incremental",
+    helpLevel: "full",
+    enabledRules,
+  });
+  assert.deepEqual(
+    JSON.parse(markupError.stdout).diagnostics,
+    expected("src/Avatar.tsrx", source, nativeAvatar.diagnostics, "full").map((packet) => ({
+      ...packet,
+      severity: packet.code === "vize(a11y/alt-text)" ? "error" : packet.severity,
+    })),
+  );
+  for (const parserSeverity of ["off", "warn", "error"]) {
+    fs.writeFileSync(
+      configFile,
+      JSON.stringify({ ...base, rules: { ...base.rules, "vize/parser/tsrx": parserSeverity } }),
+    );
+    const result = invoke(cli, ["--quiet", "-f", "json", "--threads", "1", "src/Broken.tsrx"]);
+    assert.equal(result.status, 1, result.stderr);
+    const direct = native.lintPatinaSfc(malformed, {
+      filename: path.join(root, "src/Broken.tsrx"),
+      preset: "incremental",
+      enabledRules,
+    });
+    assert.deepEqual(
+      JSON.parse(result.stdout).diagnostics,
+      expected("src/Broken.tsrx", malformed, direct.diagnostics, "full"),
+      "quiet and authored parser severities cannot hide operational syntax failures",
+    );
+  }
+  fs.writeFileSync(configFile, JSON.stringify(base));
   for (const format of ["unix", "stylish", "default"]) {
     const result = invoke(cli, ["-f", format, "--threads", "1", "src/Broken.tsrx"]);
     assert.equal(result.status, 1, result.stderr);
@@ -221,11 +259,24 @@ void test("installed hosts lint original TSRX through authenticated carriers and
     assert.match(wrapper.stderr, /vize lint/u);
   }
   fs.writeFileSync(configFile, JSON.stringify(base));
-  for (const flags of [["--fix"], ["-W", "all"], ["--ignore-path", "../outside"]]) {
+  for (const flags of [["--fix"], ["-W", "all"]]) {
     const result = invoke(cli, [...flags, "-f", "json", "src/Avatar.tsrx"]);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /unavailable/u);
   }
+  fs.mkdirSync(path.join(root, "custom-ignore"));
+  fs.writeFileSync(path.join(root, "custom-ignore/.ignore"), "");
+  const externalIgnore = invoke(cli, [
+    "--ignore-path",
+    "custom-ignore/.ignore",
+    "-f",
+    "json",
+    "src/Avatar.tsrx",
+  ]);
+  assert.equal(externalIgnore.status, 1);
+  assert.match(externalIgnore.stderr, /CustomIgnoreFilename/u);
+  assert.match(externalIgnore.stderr, /vize lint/u);
+  fs.rmSync(path.join(root, "custom-ignore"), { recursive: true });
   for (const mutation of ["source", "ignore", "membership"] as const) {
     const module = path.join(root, `mutate-${mutation}.mjs`);
     const changed =

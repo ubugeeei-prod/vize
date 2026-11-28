@@ -171,7 +171,11 @@ async function prepareScopedSelectionInner(
     : undefined;
   // Stock --debug files runs after original CLI/VCS/config ignore selection and
   // config validation, before linting or fixing. The engine owns this predicate.
-  const selection = await run(["--debug", "files", ...originalArgs]);
+  // Unknown extensions alone produce NoFilesFound before the stock walker can
+  // return an empty set. A genuine selected TSRX original owns that extension
+  // domain; all other target/config errors still pass through the host.
+  const selectionArgs = tsrx ? ["--no-error-on-unmatched-pattern", ...originalArgs] : originalArgs;
+  const selection = await run(["--debug", "files", ...selectionArgs]);
   if (selection.status !== 0) return { result: selection };
   config = await loadScopedConfig(config);
   const selected = parseFiles(cwd, selection);
@@ -219,7 +223,11 @@ async function prepareScopedSelectionInner(
     // files changes complete native/core packet order even with one thread.
     const source = writeOriginalProjectConfig(phases.original);
     try {
-      const sourceArgs = replaceConfigArgs(originalArgs, source.file);
+      const authoredSourceArgs = replaceConfigArgs(originalArgs, source.file);
+      const sourceArgs =
+        selectedTsrx.length > 0
+          ? ["--no-error-on-unmatched-pattern", ...authoredSourceArgs]
+          : authoredSourceArgs;
       const sourceSelection = await run(["--debug", "files", ...sourceArgs]);
       if (sourceSelection.status !== 0 || !equalFiles(selected, parseFiles(cwd, sourceSelection)))
         throw new Error("Original-path project checks changed Oxlint's selected files.");
