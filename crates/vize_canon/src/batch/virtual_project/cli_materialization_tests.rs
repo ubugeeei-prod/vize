@@ -1,6 +1,7 @@
 //! CLI topology authority stays local to one completed, locked transaction.
 
 use std::fs;
+#[cfg(unix)]
 use std::path::PathBuf;
 
 use crate::batch::materialize_lock::MaterializeLock;
