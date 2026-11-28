@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { collectRuntimePackageInventory } from "./runtime-package-inventory.ts";
 declare const Bun: {
   Glob: new (pattern: string) => {
     scan(options: { cwd: string; onlyFiles: boolean }): AsyncIterable<string>;
@@ -42,26 +43,14 @@ for (const [name, specifier] of Object.entries(runtimeDependencies)) {
   ) as { name?: string; version: string };
   assert.equal(installed.version, specifier, `${name} deployment version differs`);
 }
-const runtimePackages = new Map<string, Set<string>>();
-for await (const path of filesMatching("server/node_modules/**/package.json", deploy)) {
-  const manifest = JSON.parse(await readFile(`${deploy}/${path}`, "utf8")) as {
-    name?: string;
-    version: string;
-  };
-  if (typeof manifest.name !== "string" || typeof manifest.version !== "string") continue;
-  const versions = runtimePackages.get(manifest.name) ?? new Set();
-  versions.add(manifest.version);
-  runtimePackages.set(manifest.name, versions);
-}
-const runtimeInventory = `${JSON.stringify(
-  Object.fromEntries(
-    [...runtimePackages]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, versions]) => [name, [...versions].sort()]),
-  ),
+const observed = await collectRuntimePackageInventory(`${deploy}/server`, runtimeManifestText);
+const runtimeInventory = `${JSON.stringify(observed.packages, null, 2)}\n`;
+const manifestSources = `${JSON.stringify(
+  { runtime: observed.runtimeManifest, direct: observed.direct, manifests: observed.manifests },
   null,
   2,
 )}\n`;
+await writeFile(`${evidence}/server-manifests.json`, manifestSources);
 await writeFile(`${evidence}/server-packages.json`, runtimeInventory);
 const response = await readFile(`${evidence}/response.html`, "utf8");
 let assets = 0;
@@ -89,6 +78,7 @@ await writeFile(
       lockSha256: createHash("sha256").update(lock).digest("hex"),
       runtimeManifestSha256: createHash("sha256").update(runtimeManifestText).digest("hex"),
       runtimeInventorySha256: createHash("sha256").update(runtimeInventory).digest("hex"),
+      runtimeManifestSourcesSha256: createHash("sha256").update(manifestSources).digest("hex"),
       responseSha256: createHash("sha256").update(response).digest("hex"),
     },
     null,

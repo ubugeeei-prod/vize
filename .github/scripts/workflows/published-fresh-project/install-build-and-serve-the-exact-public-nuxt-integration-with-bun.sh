@@ -3,6 +3,7 @@
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+bun test --timeout 5000 "$VIZE_CI_FILES/runtime-package-inventory.test.ts"
 mkdir -p "$PROJECT/app" "$EVIDENCE"
 bun "$VIZE_CI_FILES/install-build-and-serve-the-exact-public-nuxt-integration-with-bun.ts"
 
