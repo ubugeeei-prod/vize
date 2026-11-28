@@ -28,6 +28,7 @@ test("unknown exports and modules cannot acquire the original loader authority",
     "beginTypeResolutionBatch",
     "formatFile",
     "formatFileSync",
+    "nuxtTemplateDiagnostics",
   ]) {
     assert.throws(() =>
       originalNativeLoaderModule(
@@ -80,6 +81,29 @@ test("source formatting exports require their exact canonical facade slot", () =
       "module.exports.formatFileSync = nativeBinding.formatFileSync;\n" +
         "module.exports.formatFile = nativeBinding.formatFile;\n",
     ),
+  ]) {
+    assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(changed)));
+  }
+});
+
+test("the Nuxt template diagnostics export requires its exact canonical facade slot", () => {
+  const current = fs.readFileSync(new URL("../../npm/native/index.js", import.meta.url), "utf8");
+  const addition =
+    "module.exports.nuxtTemplateDiagnostics = nativeBinding.nuxtTemplateDiagnostics;\n";
+  const without = current.replace(addition, "");
+  assert.notEqual(without, current);
+  assert.deepEqual(
+    originalNativeLoaderModule("index.js", Buffer.from(without)),
+    originalNativeLoaderModule("index.js", Buffer.from(current)),
+    "the previously recognized facade retains the same original loader authority",
+  );
+  for (const changed of [
+    addition + without,
+    without + addition,
+    without.replace("const ", addition + "const "),
+    current + addition,
+    current.replace(addition, addition + addition),
+    current.replace("nativeBinding.nuxtTemplateDiagnostics;", "nativeBinding.formatSfc;"),
   ]) {
     assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(changed)));
   }
