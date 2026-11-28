@@ -297,3 +297,6 @@ fn original_event_documents() {
 
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+#[cfg(feature = "experimental-component-listeners")]
+mod admission;
