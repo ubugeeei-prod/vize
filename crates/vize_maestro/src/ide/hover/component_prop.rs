@@ -23,30 +23,7 @@ pub(super) fn hover_attribute_documented(
     let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
     if let Some(metadata) = component_metadata(ctx, &component_name) {
         let prop = metadata.props.iter().find(|prop| prop.name == prop_name)?;
-        let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
-        let required = native_signature::native_requirement(native).unwrap_or(prop.required);
-        let optional = if required { "" } else { "?" };
-        let signature = format!("{}{}: {}", prop.name, optional, type_detail);
-        let requirement = if required { "Required" } else { "Optional" };
-        let builder = HoverBuilder::new().title(&prop.name).meta("Component prop");
-        let mut builder = native_signature::documented_prop_signature(builder, &signature, native)
-            .section("Requirement", requirement)
-            .example(
-                "vue",
-                &format!(
-                    "<{component_name} {attr_name}=\"...\" />\n<{component_name} :{attr_name}=\"value\" />"
-                ),
-            )
-            .docs(
-                "Vue Component Props",
-                "https://vuejs.org/guide/components/props.html",
-            );
-
-        if let Some(default) = prop.default_value.as_deref() {
-            builder = builder.section("Default", &format!("`{default}`"));
-        }
-
-        return Some(builder.build());
+        return Some(prop_card(&component_name, &attr_name, prop, native));
     }
 
     let import_path = crate::ide::definition::helpers::find_import_path(ctx, &component_name)?;
@@ -80,6 +57,74 @@ pub(super) fn hover_attribute_documented(
             )
             .build(),
     )
+}
+
+fn prop_card(
+    component_name: &str,
+    attr_name: &str,
+    prop: &crate::ide::completion::template::ComponentProp,
+    native: Option<&Hover>,
+) -> Hover {
+    let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
+    let required = native_signature::native_requirement(native).unwrap_or(prop.required);
+    let optional = if required { "" } else { "?" };
+    let signature = format!("{}{}: {}", prop.name, optional, type_detail);
+    let requirement = if required { "Required" } else { "Optional" };
+    let builder = HoverBuilder::new().title(&prop.name).meta("Component prop");
+    let mut builder = native_signature::documented_prop_signature(builder, &signature, native)
+        .section("Requirement", requirement)
+        .example(
+            "vue",
+            &format!(
+                "<{component_name} {attr_name}=\"...\" />\n<{component_name} :{attr_name}=\"value\" />"
+            ),
+        )
+        .docs(
+            "Vue Component Props",
+            "https://vuejs.org/guide/components/props.html",
+        );
+
+    if let Some(default) = prop.default_value.as_deref() {
+        builder = builder.section("Default", &format!("`{default}`"));
+    }
+
+    builder.build()
+}
+
+/// Only replace an empty/open generic native anchor. A concrete native answer
+/// keeps its existing path and does not ask for another module definition.
+#[cfg(feature = "native")]
+pub(super) async fn native_attribute_hover(
+    ctx: &IdeContext<'_>,
+    native: Option<&Hover>,
+    bridge: Option<&std::sync::Arc<vize_canon::CorsaBridge>>,
+) -> Option<Hover> {
+    if native.is_some_and(|hover| !native_signature::is_unknown_hover(hover)) {
+        return None;
+    }
+    let raw = crate::ide::definition::helpers::raw_attribute_with_source_span_at_offset(ctx)?;
+    if raw.raw_name.starts_with(['@', '#'])
+        || raw.raw_name.starts_with("v-on:")
+        || raw.raw_name.starts_with("v-slot:")
+        || raw.raw_name.contains('[')
+    {
+        return None;
+    }
+    let (attr_name, component_name) =
+        crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)?;
+    if !crate::ide::is_component_tag(&component_name) {
+        return None;
+    }
+    let path = crate::ide::definition::component_import::resolve_native_component_file(
+        ctx,
+        &component_name,
+        bridge?,
+    )
+    .await?;
+    let metadata = crate::ide::completion::template::cached_component_metadata(ctx, &path)?;
+    let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
+    let prop = metadata.props.iter().find(|prop| prop.name == prop_name)?;
+    Some(prop_card(&component_name, &attr_name, prop, native))
 }
 
 pub(super) fn hover_event(ctx: &IdeContext<'_>) -> Option<Hover> {

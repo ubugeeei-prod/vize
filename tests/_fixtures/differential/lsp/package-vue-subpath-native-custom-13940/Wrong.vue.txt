@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ depth: boolean }>();
+</script>
+<template><div /></template>

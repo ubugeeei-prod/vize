@@ -77,6 +77,27 @@ impl super::DefinitionService {
         }
     }
 
+    #[cfg(feature = "native")]
+    async fn component_tag_native_target(
+        ctx: &IdeContext<'_>,
+        bridge: Option<&CorsaBridge>,
+    ) -> Option<GotoDefinitionResponse> {
+        let name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+        if !is_component_tag(&name) {
+            return None;
+        }
+        let path =
+            super::component_import::resolve_native_component_file(ctx, &name, bridge?).await?;
+        let uri = tower_lsp::lsp_types::Url::from_file_path(path).ok()?;
+        let origin = tower_lsp::lsp_types::Position::new(0, 0);
+        Some(GotoDefinitionResponse::Scalar(
+            tower_lsp::lsp_types::Location {
+                uri,
+                range: tower_lsp::lsp_types::Range::new(origin, origin),
+            },
+        ))
+    }
+
     /// Find definition in art variant template with Corsa.
     #[cfg(feature = "native")]
     async fn definition_in_art_variant_with_corsa(
@@ -91,6 +112,11 @@ impl super::DefinitionService {
         }
         if import_target::component_tag_import_target_is_deleted(ctx) {
             return None;
+        }
+        if let Some(definition) =
+            Self::component_tag_native_target(ctx, corsa_bridge.as_deref()).await
+        {
+            return Some(definition);
         }
 
         if let Some(definition) = component_event::definition(ctx) {
@@ -165,6 +191,11 @@ impl super::DefinitionService {
         }
         if import_target::component_tag_import_target_is_deleted(ctx) {
             return None;
+        }
+        if let Some(definition) =
+            Self::component_tag_native_target(ctx, corsa_bridge.as_deref()).await
+        {
+            return Some(definition);
         }
 
         if let Some(definition) = component_event::definition(ctx) {

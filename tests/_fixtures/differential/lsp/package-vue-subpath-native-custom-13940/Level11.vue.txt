@@ -1,0 +1,4 @@
+<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ depth: number; items?: readonly T[] }>();
+</script>
+<template><div /></template>

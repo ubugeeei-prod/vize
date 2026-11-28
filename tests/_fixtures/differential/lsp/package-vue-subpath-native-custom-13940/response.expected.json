@@ -1,0 +1,19 @@
+{
+  "position": {
+    "line": 4,
+    "character": 12
+  },
+  "result": {
+    "uri": "${workspace}/node_modules/@scope/ui/src/Custom.vue",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  }
+}

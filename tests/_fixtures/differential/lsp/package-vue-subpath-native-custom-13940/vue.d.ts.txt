@@ -1,0 +1,5 @@
+declare module "vue" {
+  export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
+  export interface Ref<T = unknown> { value: T }
+  export interface ShallowRef<T = unknown> extends Ref<T> {}
+}

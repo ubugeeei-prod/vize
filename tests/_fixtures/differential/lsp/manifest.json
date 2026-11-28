@@ -4178,6 +4178,144 @@
       }
     },
     {
+      "id": "lsp/regression/package-vue-subpath-native-custom-13940",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "package-vue-subpath-native-custom-13940",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f7caca37bdc106a8e588b704194bb37bd61c099dd13514aa5abfab9207b98e98"
+          },
+          {
+            "path": "Level11.vue.txt",
+            "sha256": "4826669c2070a90d36e47c7d19ee988e09bee5d386a3ea0c04ed6798b0d7aa1e"
+          },
+          {
+            "path": "Custom.vue.txt",
+            "sha256": "b50bc4228c329da4b1ec11f68441c05e2caac721c08f12fe9e5cefddf45e90cc"
+          },
+          {
+            "path": "Wrong.vue.txt",
+            "sha256": "fb10a235a9b2630457bdae9b62ceb6a8d843e87cee340ca5189db78f931f5236"
+          },
+          {
+            "path": "package.json.txt",
+            "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8"
+          },
+          {
+            "path": "ui-package.json.txt",
+            "sha256": "1e433d3453a8b4577de1b1d034a3ebb42146d54b3d2f97cdeccef658608302cc"
+          },
+          {
+            "path": "vue.d.ts.txt",
+            "sha256": "6048acfe193fc228d070021ae1c5fe3fb81b6c2a3b4ca111f797fb37ac157a4a"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "ea634b31b689cda40d733f6e353be7053a98baa26d226c07cb2c8aef576e18b3"
+          }
+        ]
+      },
+      "case": {
+        "path": "package-vue-subpath-native-custom-13940/case.json",
+        "sha256": "c39b5c46bb7ed40be61707ad11f2ed80c3c23cdb42aae7c33d3207447170505f"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/package-vue-subpath-native-types-13940",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "package-vue-subpath-native-types-13940",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f7caca37bdc106a8e588b704194bb37bd61c099dd13514aa5abfab9207b98e98"
+          },
+          {
+            "path": "Level11.vue.txt",
+            "sha256": "4826669c2070a90d36e47c7d19ee988e09bee5d386a3ea0c04ed6798b0d7aa1e"
+          },
+          {
+            "path": "Custom.vue.txt",
+            "sha256": "b50bc4228c329da4b1ec11f68441c05e2caac721c08f12fe9e5cefddf45e90cc"
+          },
+          {
+            "path": "Wrong.vue.txt",
+            "sha256": "fb10a235a9b2630457bdae9b62ceb6a8d843e87cee340ca5189db78f931f5236"
+          },
+          {
+            "path": "package.json.txt",
+            "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8"
+          },
+          {
+            "path": "ui-package.json.txt",
+            "sha256": "1e433d3453a8b4577de1b1d034a3ebb42146d54b3d2f97cdeccef658608302cc"
+          },
+          {
+            "path": "vue.d.ts.txt",
+            "sha256": "6048acfe193fc228d070021ae1c5fe3fb81b6c2a3b4ca111f797fb37ac157a4a"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "be0baa0c291d0d00eda82cce5cf84519ce5f602a2bba1045b0edeb88e5cda12e"
+          }
+        ]
+      },
+      "case": {
+        "path": "package-vue-subpath-native-types-13940/case.json",
+        "sha256": "150477338c8665092fadf989923cd8349791cfa7bdb73515be2e2e6e62b40a34"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/precise-template-suppression-12022",
       "state": "active",
       "targets": [

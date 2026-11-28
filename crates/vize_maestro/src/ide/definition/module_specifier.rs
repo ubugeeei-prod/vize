@@ -42,10 +42,20 @@ pub(super) async fn definition_with_corsa(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
 ) -> Option<GotoDefinitionResponse> {
-    specifier_at_offset(&ctx.content, ctx.offset)?;
+    definition_at_offset_with_corsa(ctx, bridge, ctx.offset).await
+}
+
+/// Resolve another authored import position through this request's exact text
+/// and canonical-project snapshot; component tags reuse their bound import.
+#[cfg(feature = "native")]
+pub(super) async fn definition_at_offset_with_corsa(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+    offset: usize,
+) -> Option<GotoDefinitionResponse> {
+    specifier_at_offset(&ctx.content, offset)?;
     let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
-    let (line, character) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+    let (line, character) = corsa_support::canonical_source_offset_to_position(&document, offset)?;
     let selected = bridge
         .definition(&document.request_uri, line, character)
         .await

@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "id": "lsp/regression/package-vue-subpath-native-types-13940",
+  "provenance": {
+    "fixCommit": "114065228056c0cb07063c9bb06e91ac9020e8d2",
+    "issue": 12093,
+    "witnessPath": "crates/vize_maestro/src/ide/definition/component_import/native_target/tests.rs",
+    "witnessTest": "native_selected_package_branch_supplies_tag_definition_and_generic_prop_hover",
+    "inputOrigin": "Typed Vue subpath package with types, custom and wrong default exports and no legacy root Vue file. The import is preceded by Unicode text.",
+    "contractOrigin": "The native TypeScript project selects src/Level11.vue; the tag definition must return that authored module at its origin, never the inactive default branch."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "f7caca37bdc106a8e588b704194bb37bd61c099dd13514aa5abfab9207b98e98"
+    },
+    {
+      "source": "Level11.vue.txt",
+      "runtimePath": "node_modules/@scope/ui/src/Level11.vue",
+      "sha256": "4826669c2070a90d36e47c7d19ee988e09bee5d386a3ea0c04ed6798b0d7aa1e"
+    },
+    {
+      "source": "Custom.vue.txt",
+      "runtimePath": "node_modules/@scope/ui/src/Custom.vue",
+      "sha256": "b50bc4228c329da4b1ec11f68441c05e2caac721c08f12fe9e5cefddf45e90cc"
+    },
+    {
+      "source": "Wrong.vue.txt",
+      "runtimePath": "node_modules/@scope/ui/src/Wrong.vue",
+      "sha256": "fb10a235a9b2630457bdae9b62ceb6a8d843e87cee340ca5189db78f931f5236"
+    },
+    {
+      "source": "package.json.txt",
+      "runtimePath": "package.json",
+      "sha256": "609158e6c5fbc237939fa3ddf7faab80ab690bdc0c8d584414a885130103c4e8"
+    },
+    {
+      "source": "ui-package.json.txt",
+      "runtimePath": "node_modules/@scope/ui/package.json",
+      "sha256": "1e433d3453a8b4577de1b1d034a3ebb42146d54b3d2f97cdeccef658608302cc"
+    },
+    {
+      "source": "vue.d.ts.txt",
+      "runtimePath": "src/vue.d.ts",
+      "sha256": "6048acfe193fc228d070021ae1c5fe3fb81b6c2a3b4ca111f797fb37ac157a4a"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "be0baa0c291d0d00eda82cce5cf84519ce5f602a2bba1045b0edeb88e5cda12e"
+    }
+  ],
+  "entry": "src/App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "b3335cab5b617d906618700e57cab7dc59add268f9be89819977dd222ef32b3e"
+  },
+  "method": "textDocument/definition",
+  "scope": "Complete native-backed definition Location for the selected package Vue source. Hover, full-workspace accuracy and performance are qualified separately."
+}
