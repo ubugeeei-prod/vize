@@ -18,6 +18,7 @@ use self::signature::{destructured_prop_names, formal_parameters_range, type_par
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::JsxOutputMode;
+use crate::syntax::{PlainRoots, RootProjection};
 use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan, l2};
 use vize_l1_to_l2::framework::vue::jsx::{
     EnteredFunction, FunctionNode, JsxComponent, JsxRoot, ModuleVisitor, PrologueIssue,
@@ -27,12 +28,12 @@ use vize_l2::component::Exec;
 use vize_relief::RootNode;
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
-pub(crate) fn lower_program_roots<'a>(
+pub(crate) fn lower_program_roots<'a, P: RootProjection<'a>>(
     program: &Program<'_>,
     lowerer: &mut Lowerer<'a, '_, '_>,
     default_mode: JsxOutputMode,
-) -> std::vec::Vec<LoweredRoot<'a>> {
-    let mut collector = RootLowerer {
+) -> std::vec::Vec<P::Root> {
+    let mut collector = RootLowerer::<P> {
         lowerer,
         roots: std::vec::Vec::new(),
         setups: std::vec::Vec::new(),
@@ -42,9 +43,9 @@ pub(crate) fn lower_program_roots<'a>(
     collector.roots
 }
 
-struct RootLowerer<'l, 'a, 'm, 's> {
+struct RootLowerer<'l, 'a, 'm, 's, P: RootProjection<'a> = PlainRoots> {
     lowerer: &'l mut Lowerer<'a, 'm, 's>,
-    roots: std::vec::Vec<LoweredRoot<'a>>,
+    roots: std::vec::Vec<P::Root>,
     /// The setup span of each enclosing function, innermost last.
     setups: std::vec::Vec<Option<ComponentSetupSpan>>,
     default_mode: JsxOutputMode,
@@ -57,39 +58,44 @@ const fn mode_of(exec: Exec) -> JsxOutputMode {
     }
 }
 
-impl<'a> RootLowerer<'_, 'a, '_, '_> {
+impl<'a, P: RootProjection<'a>> RootLowerer<'_, 'a, '_, '_, P> {
     fn lower_l2(
         &self,
         mode: Option<JsxOutputMode>,
         name: Option<&str>,
         oxc_root: JsxRoot<'_, '_>,
         root: &RootNode<'a>,
-    ) -> Result<l2::JsxL2Root<'a>, l2::L2Refusal> {
+    ) -> (Result<l2::JsxL2Root<'a>, l2::L2Refusal>, P::Facts) {
         let exec = match mode.unwrap_or(self.default_mode) {
             JsxOutputMode::Vdom => Exec::ReRender,
             JsxOutputMode::Vapor => Exec::RunOnce,
         };
         let name = name.map(|name| -> &'a str { self.lowerer.bump().alloc_str(name) });
-        l2::lower_root(self.lowerer, JsxComponent { name, exec }, oxc_root, root)
+        P::lower(self.lowerer, JsxComponent { name, exec }, oxc_root, root)
     }
 }
 
-impl RootLowerer<'_, '_, '_, '_> {
+impl<'a, P: RootProjection<'a>> RootLowerer<'_, 'a, '_, '_, P> {
     fn append_typecheck_roots(&mut self, mode: Option<JsxOutputMode>, name: Option<&str>) {
         for retained in self.lowerer.take_typecheck_roots() {
             let root = retained.root;
             let (scoped_css, scoped_style_exprs) = Self::scoped_style(retained.scoped_style);
-            let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
-            self.roots.push(LoweredRoot {
-                root,
-                l2,
-                vdom_value_children: retained.vdom_value_children,
-                mode,
-                component_name: name.map(String::from),
-                component_setup: None,
-                scoped_css,
-                scoped_style_exprs,
-            });
+            let (l2, syntax) =
+                P::project(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+            self.roots.push(P::seal(
+                LoweredRoot {
+                    root,
+                    l2,
+                    vdom_value_children: retained.vdom_value_children,
+                    mode,
+                    component_name: name.map(String::from),
+                    component_setup: None,
+                    scoped_css,
+                    scoped_style_exprs,
+                },
+                self.lowerer.mapper().source(),
+                syntax,
+            ));
         }
     }
 
@@ -214,7 +220,7 @@ fn jsx_expression_span(expression: &Expression<'_>) -> Option<Span> {
     }
 }
 
-impl<'x> ModuleVisitor<'x> for RootLowerer<'_, '_, '_, '_> {
+impl<'a, 'x, P: RootProjection<'a>> ModuleVisitor<'x> for RootLowerer<'_, 'a, '_, '_, P> {
     fn enter_function(&mut self, function: EnteredFunction<'_, 'x>) {
         let setup = match (function.node, function.declaration) {
             (FunctionNode::Arrow(arrow), Some(declaration)) if !arrow.expression => {
@@ -241,20 +247,24 @@ impl<'x> ModuleVisitor<'x> for RootLowerer<'_, '_, '_, '_> {
             JsxRoot::Element(element) => self.lowerer.lower_element_root(element),
             JsxRoot::Fragment(fragment) => self.lowerer.lower_fragment_root(fragment),
         };
-        let l2 = self.lower_l2(mode, context.name, oxc_root, &root);
+        let (l2, syntax) = self.lower_l2(mode, context.name, oxc_root, &root);
         let (scoped_css, scoped_style_exprs) =
             Self::scoped_style(self.lowerer.take_scoped_styles());
-        self.roots.push(LoweredRoot {
-            root,
-            l2,
-            vdom_value_children: self.lowerer.take_vdom_value_children(),
-            mode,
-            component_name: context.name.map(String::from),
-            component_setup: self
-                .current_setup_for_span(Span::new(context.span.start, context.span.end)),
-            scoped_css,
-            scoped_style_exprs,
-        });
+        self.roots.push(P::seal(
+            LoweredRoot {
+                root,
+                l2,
+                vdom_value_children: self.lowerer.take_vdom_value_children(),
+                mode,
+                component_name: context.name.map(String::from),
+                component_setup: self
+                    .current_setup_for_span(Span::new(context.span.start, context.span.end)),
+                scoped_css,
+                scoped_style_exprs,
+            },
+            self.lowerer.mapper().source(),
+            syntax,
+        ));
         self.append_typecheck_roots(mode, context.name);
     }
 }

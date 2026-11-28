@@ -19,6 +19,7 @@ mod module_tests;
 mod slots;
 #[cfg(test)]
 mod slots_tests;
+mod syntax;
 #[cfg(test)]
 mod tests;
 
@@ -28,6 +29,7 @@ pub use module::{
     EnteredFunction, FunctionNode, JsxModule, ModuleOptions, ModuleRoot, ModuleVisitor,
     PrologueIssue, RootContext, lower_module, walk_module,
 };
+pub use syntax::JsxSyntaxFacts;
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
 use oxc_semantic::Scoping;
@@ -152,7 +154,7 @@ pub enum JsxRefusal {
     Span,
 }
 
-struct Cx<'a, 's> {
+struct Cx<'a, 's, S: syntax::SyntaxSink = syntax::NoSyntax> {
     allocator: &'a Allocator,
     dialect: JsxDialect,
     file: JsxL2Ir<'a, 's>,
@@ -160,9 +162,10 @@ struct Cx<'a, 's> {
     next_scope: u32,
     scopes: SideTable<ScopeAnalysis>,
     features: LoweringFeatures,
+    syntax: S,
 }
 
-impl<'a> Cx<'a, '_> {
+impl<'a, S: syntax::SyntaxSink> Cx<'a, '_, S> {
     /// Count one op and return its page-order id.
     fn mint(&mut self) -> Option<NodeId> {
         let id = NodeId::from_index(self.op_count);
@@ -217,6 +220,40 @@ pub fn lower_component<'a>(
     component: JsxComponent<'a>,
     root: JsxRoot<'_, '_>,
 ) -> Result<ComponentDef<'a>, JsxRefusal> {
+    lower_component_with_sink(allocator, file, dialect, component, root, syntax::NoSyntax)
+        .map(|(component, _)| component)
+}
+
+/// Retain sparse original syntax observations while lowering this root.
+///
+/// Facts match only the exact arena objects minted by this invocation. This
+/// low-level AST entry does not authenticate a caller-constructed tree against
+/// source; source-facing consumers seal these facts inside their parse factory.
+pub fn lower_component_with_syntax<'a>(
+    allocator: &'a Allocator,
+    file: &JsxL2Ir<'a, '_>,
+    dialect: &JsxDialect,
+    component: JsxComponent<'a>,
+    root: JsxRoot<'_, '_>,
+) -> Result<(ComponentDef<'a>, JsxSyntaxFacts<'a>), JsxRefusal> {
+    lower_component_with_sink(
+        allocator,
+        file,
+        dialect,
+        component,
+        root,
+        JsxSyntaxFacts::new(file.source),
+    )
+}
+
+fn lower_component_with_sink<'a, S: syntax::SyntaxSink>(
+    allocator: &'a Allocator,
+    file: &JsxL2Ir<'a, '_>,
+    dialect: &JsxDialect,
+    component: JsxComponent<'a>,
+    root: JsxRoot<'_, '_>,
+    syntax: S,
+) -> Result<(ComponentDef<'a>, S), JsxRefusal> {
     if *dialect != VIZE || component.exec != Exec::ReRender {
         return Err(JsxRefusal::Dialect);
     }
@@ -228,6 +265,7 @@ pub fn lower_component<'a>(
         next_scope: 0,
         scopes: SideTable::new(),
         features: LoweringFeatures::EMPTY,
+        syntax,
     };
     let (ops, root_span) = match root {
         JsxRoot::Element(element) => {
@@ -241,7 +279,8 @@ pub fn lower_component<'a>(
             (ops, fragment.span)
         }
     };
-    Ok(ComponentDef {
+    cx.syntax.finish();
+    let component = ComponentDef {
         name: component.name,
         exec: component.exec,
         scope: RenderScope::Lexical,
@@ -252,7 +291,8 @@ pub fn lower_component<'a>(
             ..L2TemplateParts::new(file.source, Region { ops })
         },
         op_count: cx.op_count,
-    })
+    };
+    Ok((component, cx.syntax))
 }
 
 #[cfg(feature = "module-ir")]

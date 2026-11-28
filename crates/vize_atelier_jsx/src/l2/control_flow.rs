@@ -14,7 +14,7 @@ pub(super) fn lower_if<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     if_node: &IfNode<'a>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
 ) -> Result<Op<'a>, L2Refusal> {
     let mut branches = Vec::new_in(&allocator);
     for branch in &if_node.branches {
@@ -45,7 +45,7 @@ pub(super) fn lower_for<'a>(
     source: &'a str,
     for_node: &ForNode<'a>,
     node: Option<NodeId>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
 ) -> Result<Op<'a>, L2Refusal> {
     // A lexical binding scope executes once and renders its body directly.
     // It must never become ui.for, which iterates the source as a list.
@@ -99,7 +99,11 @@ fn empty_expression_at<'a>(allocator: &'a Allocator, source: &'a str, offset: u3
     )
 }
 
-fn attach_for_scope(cx: &mut ProjectCx, node: Option<NodeId>, binding: &ForBinding<'_>) {
+fn attach_for_scope(
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
+    node: Option<NodeId>,
+    binding: &ForBinding<'_>,
+) {
     let tag = cx.mint_scope();
     let mut bindings = StdVec::new();
     for expr in [

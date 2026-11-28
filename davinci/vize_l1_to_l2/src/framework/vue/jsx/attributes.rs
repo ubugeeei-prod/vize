@@ -58,7 +58,7 @@ impl<'a> Props<'a> {
 }
 
 pub(super) fn props<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     items: &[JSXAttributeItem<'_>],
     owner: Owner<'a, '_, '_>,
     out: &mut Props<'a>,
@@ -85,7 +85,7 @@ pub(super) fn props<'a>(
 }
 
 fn attribute<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     attribute: &JSXAttribute<'_>,
     owner: Owner<'a, '_, '_>,
     out: &mut Props<'a>,
@@ -171,12 +171,15 @@ fn attribute<'a>(
     Ok(())
 }
 
-fn value<'a>(cx: &Cx<'a, '_>, at: oxc_span::Span) -> Result<ExprRef<'a>, JsxRefusal> {
+fn value<'a>(
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    at: oxc_span::Span,
+) -> Result<ExprRef<'a>, JsxRefusal> {
     Ok(ExprRef::parse_js_in(cx.allocator, cx.slice(at)?, span(at)))
 }
 
 fn bind<'a>(
-    cx: &Cx<'a, '_>,
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
     name: Option<DynamicName<'a>>,
     value: ExprRef<'a>,
     at: oxc_span::Span,

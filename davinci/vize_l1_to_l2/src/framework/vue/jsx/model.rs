@@ -32,7 +32,7 @@ struct Model<'a> {
 /// `v-model` (`name` is `model` or `model_<modifiers>`), with the argument
 /// of a `v-model:arg` spelling.
 pub(super) fn model<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     name: &'a str,
     argument: Option<&'a str>,
     value: Option<&Expression<'_>>,
@@ -71,7 +71,7 @@ pub(super) fn model<'a>(
 /// `v-models={[[x, 'arg', ['m']], …]}`: one `ui.model` per entry, on a
 /// component.
 pub(super) fn models<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     value: Option<&Expression<'_>>,
     at: oxc_span::Span,
     owner: Owner<'a, '_, '_>,
@@ -94,7 +94,10 @@ pub(super) fn models<'a>(
 }
 
 /// The array spelling with an assignable target.
-fn array_model<'a>(cx: &Cx<'a, '_>, array: &ArrayExpression<'_>) -> Result<Model<'a>, JsxRefusal> {
+fn array_model<'a>(
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
+    array: &ArrayExpression<'_>,
+) -> Result<Model<'a>, JsxRefusal> {
     let spelling = ArraySpelling::of(array).ok_or(JsxRefusal::Attribute)?;
     if !is_assignable(spelling.value) {
         return Err(JsxRefusal::Attribute);
@@ -112,7 +115,7 @@ fn array_model<'a>(cx: &Cx<'a, '_>, array: &ArrayExpression<'_>) -> Result<Model
 /// native `input`, `select` or `textarea` takes no argument and only `lazy`,
 /// `number` and `trim`.
 fn push<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     model: Model<'a>,
     at: oxc_span::Span,
     owner: Owner<'a, '_, '_>,
@@ -173,7 +176,7 @@ fn push<'a>(
 /// same static `checkbox`, `radio` or `text`, and no spread or bound `type`
 /// can change it.
 fn input_type_admits_model(
-    cx: &Cx<'_, '_>,
+    cx: &Cx<'_, '_, impl super::syntax::SyntaxSink>,
     items: &[JSXAttributeItem<'_>],
 ) -> Result<bool, JsxRefusal> {
     let mut static_type = None;

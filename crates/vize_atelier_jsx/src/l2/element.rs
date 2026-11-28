@@ -11,7 +11,7 @@ pub(super) fn lower_element<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     element: &ElementNode<'a>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl super::syntax::ProjectionSink>,
 ) -> Result<Op<'a>, L2Refusal> {
     let native_element_model_kind = native_model_kind(element);
     let props = lower_props(
@@ -45,7 +45,7 @@ pub(super) fn lower_element<'a>(
         ))),
         ElementType::Element | ElementType::Component => {
             cx.observe(OpFamily::SlotCarrier);
-            Ok(Op::Component(Box::new_in(
+            let component = Box::new_in(
                 ComponentOp {
                     name: element.tag,
                     attributes: props.attributes,
@@ -54,12 +54,16 @@ pub(super) fn lower_element<'a>(
                     span: element.loc.span,
                 },
                 &allocator,
-            )))
+            );
+            if dynamic_component {
+                cx.syntax.intrinsic_component(&component);
+            }
+            Ok(Op::Component(component))
         }
         ElementType::Template if has_slot_content(&props.bindings) => {
             cx.observe(OpFamily::SlotCarrier);
             let span = slot_template_span(element.loc.span, &props.bindings);
-            Ok(Op::Element(Box::new_in(
+            let template = Box::new_in(
                 ElementOp {
                     tag: element.tag,
                     namespace: namespace(element.ns),
@@ -69,7 +73,9 @@ pub(super) fn lower_element<'a>(
                     span,
                 },
                 &allocator,
-            )))
+            );
+            cx.syntax.slot_range(&template, element.loc.span);
+            Ok(Op::Element(template))
         }
         ElementType::Slot | ElementType::Template => Err(L2Refusal::UnsupportedElement),
     }

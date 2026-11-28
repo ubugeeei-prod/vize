@@ -37,7 +37,7 @@ const DEFAULT_SLOT: &str = "default";
 /// Lower `children` as slot templates when they are a slot idiom. `false`
 /// leaves them to ordinary child lowering, the implicit default slot.
 pub(super) fn slot_children<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     children: &[JSXChild<'_>],
     ops: &mut Vec<'a, Op<'a>>,
 ) -> Result<bool, JsxRefusal> {
@@ -66,7 +66,7 @@ pub(super) fn slot_children<'a>(
 /// `{{ header: () => <h1/>, 'footer': (p) => <p/> }}`: one template per
 /// property, named by its identifier or string key.
 fn object_slots<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     object: &ObjectExpression<'_>,
     ops: &mut Vec<'a, Op<'a>>,
 ) -> Result<(), JsxRefusal> {
@@ -89,7 +89,7 @@ fn object_slots<'a>(
 /// The `<template>` of one slot function, its `ui.slot-content` named at
 /// `name_at`.
 fn template<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     name: &'a str,
     name_at: oxc_span::Span,
     function: &Expression<'_>,
@@ -147,7 +147,7 @@ fn template<'a>(
         Expression::JSXFragment(fragment) => push_children(cx, &fragment.children, &mut ops)?,
         inner => ops.push(control_flow(cx, inner, inner.span())?.ok_or(JsxRefusal::Child)?),
     }
-    Ok(Op::Element(Box::new_in(
+    let template = Box::new_in(
         ElementOp {
             tag: "template",
             namespace: Namespace::Html,
@@ -157,7 +157,9 @@ fn template<'a>(
             span: Span::new(at.start.min(name_at.start), at.end.max(name_at.end)),
         },
         &cx.allocator,
-    )))
+    );
+    cx.syntax.slot_range(&template, span(at));
+    Ok(Op::Element(template))
 }
 
 /// What a slot function renders: its expression body or sole `return`, with
@@ -252,7 +254,7 @@ pub(super) fn slots_attribute(
 
 /// The templates of the `v-slots` object among `items`, after the children.
 pub(super) fn v_slots_templates<'a>(
-    cx: &mut Cx<'a, '_>,
+    cx: &mut Cx<'a, '_, impl super::syntax::SyntaxSink>,
     items: &[JSXAttributeItem<'_>],
     ops: &mut Vec<'a, Op<'a>>,
 ) -> Result<(), JsxRefusal> {
@@ -274,7 +276,7 @@ pub(super) fn v_slots_templates<'a>(
 
 /// `ui.slots-object` for the forwarded value at `at`.
 pub(super) fn slots_object<'a>(
-    cx: &Cx<'a, '_>,
+    cx: &Cx<'a, '_, impl super::syntax::SyntaxSink>,
     at: oxc_span::Span,
 ) -> Result<BindingOp<'a>, JsxRefusal> {
     Ok(BindingOp::SlotsObject(Box::new_in(

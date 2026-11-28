@@ -24,6 +24,10 @@ use self::directives::lower_vue_directive;
 use self::element::lower_element;
 use self::model::lower_model;
 use self::slots::lower_slot_content;
+pub(crate) use self::syntax::ProjectionFacts;
+use self::syntax::{NoSyntax, ProjectionSink};
+
+mod syntax;
 
 /// A JSX render root represented as L2 operations.
 #[derive(Debug)]
@@ -44,7 +48,7 @@ pub struct JsxL2Root<'a> {
 }
 
 impl<'a> JsxL2Root<'a> {
-    fn from_component(def: vize_l2::component::ComponentDef<'a>) -> Self {
+    pub(crate) fn from_component(def: vize_l2::component::ComponentDef<'a>) -> Self {
         Self {
             source: def.body.source,
             root: def.body.root,
@@ -101,20 +105,22 @@ pub enum L2Refusal {
     CompoundExpression,
 }
 
-struct ProjectCx {
+struct ProjectCx<S: ProjectionSink = NoSyntax> {
     op_count: u32,
     next_scope: u32,
     scopes: SideTable<ScopeAnalysis>,
     features: LoweringFeatures,
+    syntax: S,
 }
 
-impl ProjectCx {
-    fn new() -> Self {
+impl<S: ProjectionSink> ProjectCx<S> {
+    fn new(syntax: S) -> Self {
         Self {
             op_count: 0,
             next_scope: 0,
             scopes: SideTable::new(),
             features: LoweringFeatures::EMPTY,
+            syntax,
         }
     }
 
@@ -151,23 +157,42 @@ pub fn try_lower_root<'a>(
     source: &'a str,
     root: &RootNode<'a>,
 ) -> Result<JsxL2Root<'a>, L2Refusal> {
-    let mut cx = ProjectCx::new();
+    project_with_sink(allocator, source, root, NoSyntax).map(|(root, _)| root)
+}
+
+pub(crate) fn try_lower_root_with_syntax<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &RootNode<'a>,
+) -> Result<(JsxL2Root<'a>, ProjectionFacts), L2Refusal> {
+    project_with_sink(allocator, source, root, ProjectionFacts::new())
+}
+
+fn project_with_sink<'a, S: ProjectionSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &RootNode<'a>,
+    syntax: S,
+) -> Result<(JsxL2Root<'a>, S), L2Refusal> {
+    let mut cx = ProjectCx::new(syntax);
     let ops = lower_children(allocator, source, &root.children, &mut cx)?;
-    Ok(JsxL2Root {
+    cx.syntax.finish();
+    let root = JsxL2Root {
         source,
         root: Region { ops },
         op_count: cx.op_count,
         scopes: cx.scopes,
         features: cx.features,
         native: false,
-    })
+    };
+    Ok((root, cx.syntax))
 }
 
 fn lower_children<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     children: &[TemplateChildNode<'a>],
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl ProjectionSink>,
 ) -> Result<Vec<'a, Op<'a>>, L2Refusal> {
     let mut ops = Vec::new_in(&allocator);
     for child in children {
@@ -180,7 +205,7 @@ fn lower_child<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     child: &TemplateChildNode<'a>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl ProjectionSink>,
 ) -> Result<Op<'a>, L2Refusal> {
     let node = cx.mint_op();
     match child {
@@ -243,7 +268,7 @@ fn lower_props<'a>(
     props: &[PropNode<'a>],
     element_type: ElementType,
     native_model_kind: Option<&'a str>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl ProjectionSink>,
 ) -> Result<LoweredProps<'a>, L2Refusal> {
     let mut attributes = Vec::new_in(&allocator);
     let mut bindings = Vec::new_in(&allocator);
@@ -279,7 +304,7 @@ fn lower_binding<'a>(
     element_type: ElementType,
     native_model_kind: Option<&'a str>,
     node: Option<NodeId>,
-    cx: &mut ProjectCx,
+    cx: &mut ProjectCx<impl ProjectionSink>,
 ) -> Result<BindingOp<'a>, L2Refusal> {
     match directive.name {
         "bind" => {
