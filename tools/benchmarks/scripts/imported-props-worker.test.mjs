@@ -3,7 +3,65 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { freshness, measureNative } from "./imported-props-worker.mjs";
+import {
+  arrayIsolation,
+  freshness,
+  measureNative,
+  prototypeIsolation,
+} from "./imported-props-worker.mjs";
+import { separateDependencies } from "./imported-props-fixture.mjs";
+
+await test("array controls reject shared mutable dependency arrays", () => {
+  const shared = ["/type.ts"];
+  assert.throws(() => arrayIsolation([{ dependencies: shared }, { dependencies: shared }]));
+  const left = ["/type.ts"];
+  const right = ["/type.ts"];
+  arrayIsolation([{ dependencies: left }, { dependencies: right }]);
+  assert.deepEqual(left, ["/type.ts"]);
+  assert.deepEqual(right, ["/type.ts"]);
+});
+
+await test("prototype controls reject inherited setters and restore the prototype", () => {
+  const unsafeBoundary = {
+    compileSfcBatchWithResults() {
+      const holder = {};
+      holder.packet = {};
+    },
+    compileSfcBatchForTargets() {},
+  };
+  assert.throws(() => prototypeIsolation(unsafeBoundary, []), /inherited packet setter/u);
+  assert.equal(Object.getOwnPropertyDescriptor(Object.prototype, "packet"), undefined);
+});
+
+await test("the dependency miss control retains distinct complete module lists", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-imported-props-paths-"));
+  const components = path.join(root, "src/components");
+  fs.mkdirSync(components, { recursive: true });
+  for (const index of [0, 1]) {
+    fs.writeFileSync(
+      path.join(components, `Item${index}.vue`),
+      '<script setup lang="ts">import type { ItemProps } from "../types"; defineProps<ItemProps>()</script>',
+    );
+  }
+  try {
+    const expected = separateDependencies(root, 20);
+    const entries = Object.entries(expected);
+    assert.equal(entries.length, 2);
+    for (const [file, dependencies] of entries) {
+      assert.equal(dependencies.length, 26);
+      assert.equal(new Set(dependencies).size, 26);
+      assert.deepEqual(dependencies, [...dependencies].sort());
+      assert(fs.readFileSync(file, "utf8").includes('"./types"'));
+      for (const dependency of dependencies.filter(
+        (dependency) => !dependency.endsWith("tsconfig.json"),
+      ))
+        assert(fs.statSync(dependency).isFile());
+    }
+    assert.equal(entries[0][1].filter((name) => entries[1][1].includes(name)).length, 3);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
 
 await test("measurements compile every input for all three targets inside one closed window", () => {
   const files = Array.from({ length: 1000 }, (_, index) => ({
@@ -31,13 +89,14 @@ await test("measurements compile every input for all three targets inside one cl
         assert.equal(open, true);
         assert.equal(options.threads, undefined, "use the process-global pool");
         seen.push(...batch.map((file) => [file.path, options.ssr]));
-        return { failedCount: 0, successCount: batch.length, results: batch };
+        return { failedCount: 0, successCount: batch.length, results: batch, timeMs: 2 };
       },
     };
     const measured = measureNative(native, files, chunk);
     assert.equal(opened, 1);
     assert.equal(closed, 1);
     assert.equal(measured.calls, 3 * Math.ceil(files.length / chunk));
+    assert.equal(measured.nativeCoreMs, 2 * measured.calls);
     assert.deepEqual(
       seen,
       [false, true, false].flatMap((ssr) => files.map((file) => [file.path, ssr])),

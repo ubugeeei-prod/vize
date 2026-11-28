@@ -6,6 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { separateDependencies } from "./imported-props-fixture.mjs";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -40,6 +41,7 @@ const report = {
     components: 1000,
     environments: 3,
     uniqueScriptsControl: true,
+    uniqueDependenciesControl: true,
   },
   recipe: {
     profile: "ci-opt",
@@ -139,8 +141,9 @@ run(
   "install-oracle",
 );
 report.oracleLockSha256 = hash(fs.readFileSync(path.join(provider, "package-lock.json")));
-const fixture = path.join(out, "fixture");
-fs.mkdirSync(fixture);
+const fixturePath = path.join(out, "fixture");
+fs.mkdirSync(fixturePath);
+const fixture = fs.realpathSync(fixturePath);
 fs.writeFileSync(path.join(out, "generate.mjs"), generatorBytes);
 const outputs = new Map();
 for (const [mode, modules] of [
@@ -149,6 +152,7 @@ for (const [mode, modules] of [
   ["barrel", 200],
   ["barrel", 800],
   ["unique", 1],
+  ["separate", 20],
 ]) {
   const shape = `${mode}-${modules}`;
   run(
@@ -157,7 +161,7 @@ for (const [mode, modules] of [
       path.join(out, "generate.mjs"),
       "1000",
       "0",
-      mode === "unique" ? "local" : mode,
+      mode === "unique" || mode === "separate" ? "local" : mode,
       String(modules),
     ],
     fixture,
@@ -186,22 +190,24 @@ for (const [mode, modules] of [
     '{"compilerOptions":{"moduleResolution":"bundler","strict":true},"include":["src"]}\n',
   );
   const dependencies =
-    mode === "inline"
-      ? []
-      : [
-          "tsconfig.json",
-          "src/tsconfig.json",
-          "src/components/tsconfig.json",
-          "src/types.ts",
-          ...(mode === "barrel"
-            ? [
-                "src/models/index.ts",
-                ...Array.from({ length: modules }, (_, index) => `src/models/Model${index}.ts`),
-              ]
-            : []),
-        ]
-          .map((name) => path.join(fixture, name))
-          .sort();
+    mode === "separate"
+      ? separateDependencies(fixture, modules)
+      : mode === "inline"
+        ? []
+        : [
+            "tsconfig.json",
+            "src/tsconfig.json",
+            "src/components/tsconfig.json",
+            "src/types.ts",
+            ...(mode === "barrel"
+              ? [
+                  "src/models/index.ts",
+                  ...Array.from({ length: modules }, (_, index) => `src/models/Model${index}.ts`),
+                ]
+              : []),
+          ]
+            .map((name) => path.join(fixture, name))
+            .sort();
   fs.writeFileSync(path.join(fixture, "dependencies.json"), JSON.stringify(dependencies));
   const inventory = fs
     .readdirSync(path.join(fixture, "src"), { recursive: true, withFileTypes: true })
@@ -261,6 +267,7 @@ for (const [mode, modules] of [
               wallMs: sample.cold.wallMs,
               cpuMs: sample.cold.cpuMs,
               calls: sample.cold.calls,
+              nativeCoreMs: sample.cold.nativeCoreMs,
               rssBytes: sample.cold.rssBytes,
               maxRssKiB: sample.cold.maxRssKiB,
             },
@@ -268,6 +275,7 @@ for (const [mode, modules] of [
               wallMs: sample.warm.wallMs,
               cpuMs: sample.warm.cpuMs,
               calls: sample.warm.calls,
+              nativeCoreMs: sample.warm.nativeCoreMs,
               rssBytes: sample.warm.rssBytes,
               maxRssKiB: sample.warm.maxRssKiB,
             },
@@ -288,8 +296,8 @@ const lines = [
   "| :-- | --: | --: | :-- | --: | --: | --: | --: |",
 ];
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
-for (const mode of ["inline", "local", "barrel", "unique"]) {
-  for (const modules of mode === "barrel" ? [200, 800] : [1]) {
+for (const mode of ["inline", "local", "barrel", "unique", "separate"]) {
+  for (const modules of mode === "barrel" ? [200, 800] : mode === "separate" ? [20] : [1]) {
     for (const threads of report.recipe.threads) {
       for (const chunk of report.recipe.chunks) {
         for (const side of ["base", "head"]) {

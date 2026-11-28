@@ -16,7 +16,7 @@
 //! `dependencies` that are the first target's (see `dependenciesShared`).
 
 use super::codegen_options::sfc_codegen_options;
-use napi::{Result, Status};
+use napi::{Env, Result, Status, bindgen_prelude::Object};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::time::Instant;
@@ -67,7 +67,20 @@ pub struct BatchCompileTargetsResultNapi {
     pub time_ms: f64,
 }
 
-#[napi(js_name = "compileSfcBatchForTargets")]
+#[napi(
+    js_name = "compileSfcBatchForTargets",
+    ts_return_type = "BatchCompileTargetsResultNapi"
+)]
+pub fn compile_sfc_batch_for_targets_napi<'env>(
+    env: &'env Env,
+    files: Vec<BatchFileInputNapi>,
+    options: Option<BatchCompileOptionsNapi>,
+    targets: Vec<BatchCompileTargetNapi>,
+) -> Result<Object<'env>> {
+    super::batch_boundary::for_targets(env, compile_sfc_batch_for_targets(files, options, targets)?)
+}
+
+/// Compile each file for every target into owned Rust products before JavaScript conversion.
 pub fn compile_sfc_batch_for_targets(
     files: Vec<BatchFileInputNapi>,
     options: Option<BatchCompileOptionsNapi>,

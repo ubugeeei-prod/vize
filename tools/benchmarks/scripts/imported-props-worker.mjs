@@ -13,6 +13,7 @@ const hash = (value) => createHash("sha256").update(value).digest("hex");
 export function measureNative(native, files, chunkSize) {
   const packets = [];
   let calls = 0;
+  let nativeCoreMs = 0;
   const startCpu = process.cpuUsage();
   const start = performance.now();
   const window = native.beginTypeResolutionBatch();
@@ -28,6 +29,8 @@ export function measureNative(native, files, chunkSize) {
           includeSourceMap: true,
         });
         calls++;
+        assert(Number.isFinite(packet.timeMs) && packet.timeMs >= 0);
+        nativeCoreMs += packet.timeMs;
         assert.equal(packet.failedCount, 0);
         assert.equal(packet.successCount, Math.min(chunkSize, files.length - offset));
         results.push(...packet.results);
@@ -43,6 +46,7 @@ export function measureNative(native, files, chunkSize) {
     wallMs,
     cpuMs: (cpu.user + cpu.system) / 1000,
     calls,
+    nativeCoreMs,
     packets,
     rssBytes: process.memoryUsage().rss,
     maxRssKiB: process.resourceUsage().maxRSS,
@@ -61,10 +65,15 @@ function validate(packets, files, expectedDependencies) {
       assert.equal(typeof result.code, "string");
       assert(result.code.length > 0);
       assert(result.map, "real generated source maps must be present");
-      assert.deepEqual(result.dependencies ?? [], expectedDependencies);
+      const expected = Array.isArray(expectedDependencies)
+        ? expectedDependencies
+        : expectedDependencies[result.path];
+      assert(Array.isArray(expected), `missing dependency oracle for ${result.path}`);
+      assert.deepEqual(result.dependencies ?? [], expected);
       complete.update(JSON.stringify(result));
       complete.update("\n");
     }
+    arrayIsolation(results);
   }
   // Retain the complete first component and hash every complete result, including
   // dependency names, diagnostics and maps. No payload is dropped for measurement.
@@ -78,6 +87,71 @@ function validate(packets, files, expectedDependencies) {
       })),
     ),
   };
+}
+
+/** Sharing immutable string values must never alias a caller's mutable arrays. */
+export function arrayIsolation(results) {
+  const [left, right] = results.map((result) => result.dependencies).filter(Array.isArray);
+  if (!left || !right) return;
+  assert.notEqual(left, right);
+  assert.equal(Object.getPrototypeOf(left), Array.prototype);
+  assert(left.every((value) => typeof value === "string"));
+  const original = [...left];
+  const retained = [...right];
+  left[0] = "dependency-mutation-control";
+  left.push("additional-dependency-control");
+  assert.deepEqual(right, retained);
+  left.splice(0, left.length, ...original);
+}
+
+export function targetParity(native, files) {
+  const input = files.slice(0, 2);
+  const options = { inlineTemplate: true, isProd: true, vueVersion: "3", includeSourceMap: true };
+  const combined = native.compileSfcBatchForTargets(input, options, [
+    { ssr: false },
+    { ssr: true },
+  ]);
+  assert.equal(combined.targets.length, 2);
+  assert.equal(combined.dependenciesShared.length, input.length);
+  arrayIsolation(combined.targets[0].results);
+  const restored = structuredClone(combined);
+  for (const [index, target] of restored.targets.entries()) {
+    const separate = native.compileSfcBatchWithResults(input, { ...options, ssr: index === 1 });
+    assert.equal(target.successCount, separate.successCount);
+    assert.equal(target.failedCount, separate.failedCount);
+    for (const [file, shared] of restored.dependenciesShared.entries()) {
+      if (shared && index > 0) {
+        assert.equal(target.results[file].dependencies, undefined);
+        target.results[file].dependencies = [...restored.targets[0].results[file].dependencies];
+      }
+    }
+    assert.deepEqual(target.results, separate.results);
+  }
+  return {
+    sha256: hash(JSON.stringify(restored.targets.map((target) => target.results))),
+    combined,
+  };
+}
+
+export function prototypeIsolation(native, files) {
+  let intercepted = 0;
+  assert.equal(Object.getOwnPropertyDescriptor(Object.prototype, "packet"), undefined);
+  Object.defineProperty(Object.prototype, "packet", {
+    configurable: true,
+    set() {
+      intercepted++;
+      throw new Error("inherited packet setter must remain unobserved");
+    },
+  });
+  try {
+    const input = files.slice(0, 2);
+    native.compileSfcBatchWithResults(input, { isProd: true });
+    native.compileSfcBatchForTargets(input, { isProd: true }, [{ ssr: false }, { ssr: true }]);
+  } finally {
+    delete Object.prototype.packet;
+  }
+  assert.equal(intercepted, 0);
+  return { intercepted };
 }
 
 export function freshness(native, root) {
@@ -166,10 +240,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [kind, provider, fixture, chunk, output] = process.argv.slice(2);
   assert(kind && provider && fixture && chunk && output);
   const files = fs
-    .readdirSync(path.join(fixture, "src/components"))
+    .readdirSync(path.join(fixture, "src/components"), { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".vue"))
+    .map((entry) => path.join(entry.parentPath, entry.name))
     .sort()
-    .map((name) => {
-      const filename = path.join(fixture, "src/components", name);
+    .map((filename) => {
       return { path: filename, source: fs.readFileSync(filename, "utf8") };
     });
   assert.equal(files.length, 1000);
@@ -204,6 +279,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         buildToken: native.getNativeBuildToken(),
         threads: process.env.RAYON_NUM_THREADS,
         ...phases,
+        targetParity: targetParity(native, files),
+        prototypeIsolation: prototypeIsolation(native, files),
         freshness: freshness(native, fixture),
       }),
     );

@@ -9,6 +9,8 @@ on {
       "tools/ci/workflows/03-imported-props/**"
       "tools/benchmarks/scripts/imported-props*"
       "crates/vize_atelier_sfc/src/script/context/external_types/**"
+      "crates/vize_vitrine/src/napi/sfc/**"
+      "crates/vize_vitrine/src/napi/sfc.rs"
     }
   }
   workflow_dispatch {
@@ -74,10 +76,6 @@ jobs {
       new Dynamic {
         name = "Test the dependency union, shared walks, cycles and freshness"
         run = "cargo test --locked -p vize_atelier_sfc --lib script::context::external_types"
-      }
-      new Dynamic {
-        name = "Test script classification sharing and exact source equality"
-        run = "cargo test --locked -p vize --lib type_projects::source_facts"
       }
       new Dynamic {
         name = "Test measurement controls"

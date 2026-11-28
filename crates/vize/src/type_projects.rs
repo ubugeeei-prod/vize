@@ -150,7 +150,9 @@ impl ImportedTypeProjects {
         {
             return Ok(SelectedTypeProject::default());
         }
-        let facts = self.source_facts.for_descriptor(descriptor);
+        let facts = self
+            .source_facts
+            .record(&descriptor.source, || Facts::for_descriptor(descriptor));
         self.for_facts(facts, filename).map_err(|mut error| {
             error.loc = descriptor
                 .script_setup
