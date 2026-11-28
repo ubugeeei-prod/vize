@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "id": "lsp/regression/vapor-sfc-component-type",
+  "provenance": {
+    "fixCommit": "58a422e8bfb0c7b11e168f0881fd63307b4ff682",
+    "inputOrigin": "A <script setup vapor> SFC and a VDOM SFC passed to a local callable parameter, the shape Vue's FunctionalVaporComponent requires; the fixture workspace carries no Vue package, so the contract is declared in the entry.",
+    "contractOrigin": "vue-tsc 3.3.14 types a setup vapor attribute as a bare generic, so the Vapor SFC export is callable and only the VDOM SFC reports TS2345; vize 0.811.0 reported TS2345 for both."
+  },
+  "files": [
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+    },
+    {
+      "source": "Counter.vue.txt",
+      "runtimePath": "src/components/Counter.vue",
+      "sha256": "4dba5c1b009db65f176700921fcd50eee41487dac799749d2e109bc20afb8ab4"
+    },
+    {
+      "source": "Options.vue.txt",
+      "runtimePath": "src/components/Options.vue",
+      "sha256": "f3f7108c9402bf40a7e4524d251e0bcf94bb03b1777b6a65fc9590f56b3cacd3"
+    },
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "873aec488e8eb3f660f8e6a9e00b99ac9fbaf09f0bfd691c6ce272daae5eea39"
+    }
+  ],
+  "entry": "src/App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 7,
+          "character": 11
+        },
+        "end": {
+          "line": 7,
+          "character": 18
+        }
+      },
+      "severity": 1,
+      "code": 2345,
+      "source": "vize/types",
+      "message": "Argument of type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeFallthroughSource?: Record<string, unknown> | undefined; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions' is not assignable to parameter of type '(props: any, ctx: any) => unknown'.\n  Type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeFallthroughSource?: Record<string, unknown> | undefined; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions' provides no match for the signature '(props: any, ctx: any): unknown'."
+    }
+  ],
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "3f90a53a6f052c8ae15b432b6898f5ba1d129ead88454197d5ae86ade1b55617"
+  },
+  "scope": "The typecheck-only initial diagnostic packet is the regression contract: the editor types a Vapor SFC's default export as the functional component a Vapor app accepts, and still rejects a VDOM SFC."
+}

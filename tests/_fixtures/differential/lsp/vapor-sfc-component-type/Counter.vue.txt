@@ -1,0 +1,7 @@
+<script setup lang="ts" vapor>
+const count = 0
+</script>
+
+<template>
+  <button type="button">{{ count }}</button>
+</template>
