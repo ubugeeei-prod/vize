@@ -7,7 +7,7 @@ type RequestFacts = ReturnType<(typeof import("@vizejs/native"))["classifyVitePl
 // Wrap before the source modules capture the binding's classifier. The oracle
 // calls the original native function, independently of the importer cache.
 const native = createRequire(import.meta.url)("@vizejs/native") as {
-  classifyVitePluginRequest(id: string): RequestFacts;
+  classifyVitePluginRequest: (id: string) => RequestFacts;
 };
 const classifyNative = native.classifyVitePluginRequest;
 let classifications = 0;
@@ -56,7 +56,7 @@ const importers = [
   "/app/Foo%3F.vue?vue&vize",
 ];
 
-test("interleaved importer facts equal the native classifier in independent states", () => {
+void test("interleaved importer facts equal the native classifier in independent states", () => {
   const states = [makeDevState("/app/first"), makeDevState("/app/second")];
   const sequence = [...importers, ...importers.toReversed(), ...importers];
   for (const [index, importer] of sequence.entries()) {
@@ -66,11 +66,16 @@ test("interleaved importer facts equal the native classifier in independent stat
     assert.deepEqual(actual, expected, importer);
     assert.equal(state.viteImporterRequest?.id, importer, importer);
     assert.equal(state.viteImporterRequest?.request, actual, importer);
-    assert.deepEqual(Reflect.ownKeys(state.viteImporterRequest!).sort(), ["id", "request"]);
+    assert.deepEqual(
+      Reflect.ownKeys(state.viteImporterRequest!).sort((left, right) =>
+        String(left).localeCompare(String(right), "en"),
+      ),
+      ["id", "request"],
+    );
   }
 });
 
-test("only the last exact importer is retained, with no sharing between states", () => {
+void test("only the last exact importer is retained, with no sharing between states", () => {
   const first = makeDevState("/app/first");
   const second = makeDevState("/app/second");
   const client = "/app/Foo.vue?vue&vize";
@@ -115,7 +120,12 @@ test("only the last exact importer is retained, with no sharing between states",
   for (let index = 0; index < 64; index++) {
     const importer = `/app/Item${index}.vue?vue&vize`;
     const facts = classifyImporterRequest(first, importer);
-    assert.deepEqual(Reflect.ownKeys(first.viteImporterRequest!).sort(), ["id", "request"]);
+    assert.deepEqual(
+      Reflect.ownKeys(first.viteImporterRequest!).sort((left, right) =>
+        String(left).localeCompare(String(right), "en"),
+      ),
+      ["id", "request"],
+    );
     assert.equal(first.viteImporterRequest?.id, importer);
     assert.equal(first.viteImporterRequest?.request, facts);
   }
@@ -123,7 +133,7 @@ test("only the last exact importer is retained, with no sharing between states",
   assert.equal(classifyImporterRequest(second, client), secondClient);
 });
 
-test("SSR queries retain their uncached meaning without mutating or reclassifying supplied facts", () => {
+void test("SSR queries retain their uncached meaning without mutating or reclassifying supplied facts", () => {
   const state = makeDevState("/app");
   for (const importer of importers) {
     const expectedSsr = isPluginVisibleSsrVirtualId(importer);
@@ -145,7 +155,7 @@ test("SSR queries retain their uncached meaning without mutating or reclassifyin
   }
 });
 
-test("builds classify every request afresh and retain the native SSR predicate path", () => {
+void test("builds classify every request afresh and retain the native SSR predicate path", () => {
   const state = makeState("/app");
   const initial = classifications;
   assert.equal(classifyImporterRequest(state, undefined), null);
@@ -171,7 +181,7 @@ test("builds classify every request afresh and retain the native SSR predicate p
   }
 });
 
-test("a build neither reuses nor mutates a slot retained from an earlier dev state", () => {
+void test("a build neither reuses nor mutates a slot retained from an earlier dev state", () => {
   const state = makeDevState("/app");
   const importer = "/app/Foo.vue?vue&vize-ssr";
   const seeded = classifyImporterRequest(state, importer);
