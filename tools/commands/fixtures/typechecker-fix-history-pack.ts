@@ -59,6 +59,8 @@ type CheckerOptions = {
   packageRoutes?: Array<{ importer: string; specifier: string }>;
   // Workspace packages linked into node_modules.
   workspaceLinks?: Array<{ package: string; link: string }>;
+  // Explicit authored check roots, as selected by the CLI's owning input scope.
+  scanPaths?: string[];
 };
 type Spec = {
   pack: string;

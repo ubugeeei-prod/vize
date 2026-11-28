@@ -64,6 +64,9 @@ pub(crate) struct CheckerOptions {
     /// Workspace packages linked into `node_modules`, as `(package, link)`.
     #[serde(default)]
     pub(crate) workspace_links: Vec<WorkspaceLink>,
+    /// Explicit authored check roots, matching the CLI's owning input scope.
+    #[serde(default)]
+    pub(crate) scan_paths: Vec<String>,
 }
 
 #[derive(Deserialize)]

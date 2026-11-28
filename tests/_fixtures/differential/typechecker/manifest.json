@@ -25023,11 +25023,14 @@
             "package": "packages/sandbox",
             "link": "node_modules/sandbox"
           }
+        ],
+        "scanPaths": [
+          "src/App.vue"
         ]
       },
       "packReference": {
         "path": "legacy-package-declarations-13298/cases.json",
-        "sha256": "312f776a7fbf140f1cd99998c2f7309c9c92aae41d126d36026f4a192d2ed0ed"
+        "sha256": "cc71e8edaf2cebda87bc308ad4323fe213593ad3f7abc7dad80b4d5c7137c0e1"
       },
       "inputs": [
         {
@@ -25109,11 +25112,14 @@
             "package": "packages/sandbox",
             "link": "node_modules/sandbox"
           }
+        ],
+        "scanPaths": [
+          "src/App.vue"
         ]
       },
       "packReference": {
         "path": "legacy-package-declarations-13298/cases.json",
-        "sha256": "312f776a7fbf140f1cd99998c2f7309c9c92aae41d126d36026f4a192d2ed0ed"
+        "sha256": "cc71e8edaf2cebda87bc308ad4323fe213593ad3f7abc7dad80b4d5c7137c0e1"
       },
       "inputs": [
         {

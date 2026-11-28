@@ -16,6 +16,9 @@
         "package": "packages/sandbox",
         "link": "node_modules/sandbox"
       }
+    ],
+    "scanPaths": [
+      "src/App.vue"
     ]
   },
   "diagnosticContract": {

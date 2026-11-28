@@ -401,7 +401,19 @@ pub(crate) fn check_pack_with_capture_policy(
         {
             checker.set_virtual_ts_checks(checks.props, checks.template_bindings, checks.emits);
         }
-        checker.scan_project().expect("the project must scan");
+        let scan_paths = pack
+            .checker_options
+            .iter()
+            .flat_map(|options| &options.scan_paths)
+            .map(|path| project_root.join(safe_relative(path)))
+            .collect::<Vec<_>>();
+        if scan_paths.is_empty() {
+            checker.scan_project().expect("the project must scan");
+        } else {
+            checker
+                .scan_paths(&scan_paths)
+                .expect("the authored roots must scan");
+        }
         let result = checker
             .check_project()
             .expect("the production checker must finish");
