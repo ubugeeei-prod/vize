@@ -9,21 +9,37 @@ export type TimerMode = "countdown" | "stopwatch";
 
 /** Mode, initial seconds, automatic start, display style, and timer events. */
 export interface TimerProps {
-  /** Timer mode */
+  /** Timer mode
+   * @default "stopwatch"
+   */
   mode?: TimerMode;
-  /** Initial seconds (for countdown) */
+  /** Initial seconds (for countdown)
+   * @default 0
+   */
   initialSeconds?: number;
-  /** Auto start */
+  /** Auto start
+   * @default true
+   */
   autoStart?: boolean;
-  /** Show hours */
+  /** Force the hours field; times of at least one hour include it automatically.
+   * @default false
+   */
   showHours?: boolean;
-  /** Show milliseconds */
+  /** Show a two-digit fractional-second suffix.
+   * @default false
+   */
   showMilliseconds?: boolean;
-  /** Foreground color */
+  /** Foreground color
+   * @default "white"
+   */
   fg?: string;
-  /** Warning color (when < 10 seconds in countdown) */
+  /** Countdown color above five and at most ten seconds remaining.
+   * @default "yellow"
+   */
   warningFg?: string;
-  /** Danger color (when < 5 seconds in countdown) */
+  /** Countdown color at five seconds or less remaining.
+   * @default "red"
+   */
   dangerFg?: string;
 }
 

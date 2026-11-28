@@ -5,12 +5,30 @@ import { test } from "node:test";
 import { componentPropDefaults } from "../../npm/ui/scripts/reference-docs/component-defaults.ts";
 
 const cases = [
-  { component: "TextInput", count: 21 },
-  { component: "TextArea", count: 15 },
+  { component: "TextInput", count: 21, file: "components/TextInput.ts" },
+  { component: "TextArea", count: 15, file: "components/TextArea.ts" },
+  { component: "Checkbox", count: 8, file: "components/Checkbox.ts" },
+  { component: "Confirm", count: 7, file: "components/Confirm.ts" },
+  { component: "RadioGroup", count: 8, file: "components/RadioGroup.ts" },
+  { component: "Select", count: 11, file: "components/Select.ts" },
+  { component: "List", count: 9, file: "components/List.ts" },
+  { component: "Menu", count: 9, file: "components/Menu.ts" },
+  { component: "Tabs", count: 10, file: "components/Tabs.ts" },
+  { component: "Grid", count: 4, file: "components/Grid.ts" },
+  { component: "KeyHint", count: 5, file: "components/KeyHint.ts" },
+  { component: "LineNumber", count: 7, file: "components/LineNumber.ts" },
+  { component: "ProgressBar", count: 9, file: "components/ProgressBar.ts" },
+  { component: "StatusBar", count: 3, file: "components/StatusBar.ts" },
+  { component: "Timer", count: 8, file: "components/Timer.ts" },
+  { component: "Diff", count: 17, file: "components/Diff.ts" },
+  { component: "AsciiFont", count: 3, file: "ascii-font/index.ts" },
+  { component: "QrCode", count: 8, file: "qr-code/index.ts" },
 ] as const;
 
 function source(component: string): { filename: string; text: string } {
-  const filename = `npm/fresco/src/components/${component}.ts`;
+  const contract = cases.find((contract) => contract.component === component);
+  assert.ok(contract, `Expected a public component contract: ${component}`);
+  const filename = `npm/fresco/src/${contract.file}`;
   return { filename, text: readFileSync(new URL(`../../${filename}`, import.meta.url), "utf8") };
 }
 
@@ -23,6 +41,22 @@ for (const { component, count } of cases) {
       assert.equal(record.documented, record.runtime, `${component}.${record.name}`);
   });
 }
+
+void test("quoted default literals preserve whitespace and refuse duplicate tags", () => {
+  const { filename, text } = source("Select");
+  const changed = text.replace('@default "  "', '@default " "');
+  assert.notEqual(changed, text);
+  const records = componentPropDefaults(filename, changed, "SelectProps", "Select");
+  assert.deepEqual(
+    records.filter(({ documented, runtime }) => documented !== runtime),
+    [{ name: "indicatorEmpty", documented: '" "', runtime: '"  "' }],
+  );
+  const duplicate = text.replace('@default "  "', '@default "  "\n   * @default " "');
+  assert.notEqual(duplicate, text);
+  assert.throws(() => componentPropDefaults(filename, duplicate, "SelectProps", "Select"), {
+    message: "Duplicate public prop default: indicatorEmpty",
+  });
+});
 
 void test("changing a runtime default cannot leave its documentation stale", () => {
   const { filename, text } = source("TextArea");

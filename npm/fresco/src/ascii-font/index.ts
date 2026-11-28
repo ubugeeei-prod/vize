@@ -28,8 +28,17 @@ export interface GlyphAsciiFontOptions {
 export interface AsciiFontProps {
   text: string;
   provider: AsciiFontProvider;
+  /** Foreground color of rendered font rows.
+   * @default undefined
+   */
   fg?: string;
+  /** Background color of rendered font rows.
+   * @default undefined
+   */
   bg?: string;
+  /** Render font rows in bold.
+   * @default false
+   */
   bold?: boolean;
 }
 

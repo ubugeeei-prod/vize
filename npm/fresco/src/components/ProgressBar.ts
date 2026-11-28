@@ -11,23 +11,41 @@ import { Text } from "./Text.js";
 export interface ProgressBarProps {
   /** Progress value (0-100) */
   value: number;
-  /** Total width in characters */
+  /** Number of filled/empty track positions, excluding borders and the percentage label.
+   * @default 20
+   */
   width?: number;
-  /** Show percentage label */
+  /** Show percentage label
+   * @default true
+   */
   showLabel?: boolean;
-  /** Label position */
+  /** Label position; inside currently uses the right-hand placement.
+   * @default "right"
+   */
   labelPosition?: "left" | "right" | "inside";
-  /** Filled character */
+  /** Filled character
+   * @default "█"
+   */
   filledChar?: string;
-  /** Empty character */
+  /** Empty character
+   * @default "░"
+   */
   emptyChar?: string;
-  /** Left border character */
+  /** Left border character
+   * @default ""
+   */
   leftBorder?: string;
-  /** Right border character */
+  /** Right border character
+   * @default ""
+   */
   rightBorder?: string;
-  /** Filled color */
+  /** Filled color
+   * @default "green"
+   */
   filledFg?: string;
-  /** Empty color */
+  /** Empty color
+   * @default "gray"
+   */
   emptyFg?: string;
 }
 

@@ -9,19 +9,33 @@ import { useInput } from "../composables/useInput.js";
 export interface ConfirmProps {
   /** Confirmation message */
   message: string;
-  /** Confirm button text */
+  /** Confirm button text
+   * @default "Yes"
+   */
   confirmText?: string;
-  /** Cancel button text */
+  /** Cancel button text
+   * @default "No"
+   */
   cancelText?: string;
-  /** Whether confirm is initially selected */
+  /** Whether confirm is initially selected
+   * @default true
+   */
   defaultConfirm?: boolean;
-  /** Whether the confirmation owns keyboard input */
+  /** Whether the confirmation owns keyboard input
+   * @default false
+   */
   focused?: boolean;
-  /** Confirm button foreground color */
+  /** Confirm button foreground color
+   * @default "green"
+   */
   confirmFg?: string;
-  /** Cancel button foreground color */
+  /** Cancel button foreground color
+   * @default "red"
+   */
   cancelFg?: string;
-  /** Selected button foreground color */
+  /** Selected button foreground color
+   * @default "cyan"
+   */
   selectedFg?: string;
 }
 

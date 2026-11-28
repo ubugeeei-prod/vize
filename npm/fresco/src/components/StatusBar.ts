@@ -18,11 +18,17 @@ export interface StatusBarItem {
 export interface StatusBarProps {
   /** Status bar items */
   items: StatusBarItem[];
-  /** Background color */
+  /** Background color
+   * @default "blue"
+   */
   bg?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default "white"
+   */
   fg?: string;
-  /** Separator between items */
+  /** Separator between items
+   * @default " │ "
+   */
   separator?: string;
 }
 

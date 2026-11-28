@@ -14,15 +14,25 @@ export interface KeyBinding {
 export interface KeyHintProps {
   /** Key bindings to display */
   bindings: KeyBinding[];
-  /** Layout direction */
+  /** Layout direction
+   * @default "horizontal"
+   */
   direction?: "horizontal" | "vertical";
-  /** Key foreground color */
+  /** Key foreground color
+   * @default "black"
+   */
   keyFg?: string;
-  /** Key background color */
+  /** Key background color
+   * @default "white"
+   */
   keyBg?: string;
-  /** Description foreground color */
+  /** Description foreground color
+   * @default "gray"
+   */
   descFg?: string;
-  /** Separator between key and description */
+  /** Separator between key and description
+   * @default " "
+   */
   separator?: string;
 }
 

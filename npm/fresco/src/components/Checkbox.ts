@@ -7,21 +7,37 @@ import { useInput } from "../composables/useInput.js";
 
 /** Checked state, focus, appearance, and change events for a terminal checkbox. */
 export interface CheckboxProps {
-  /** Whether the checkbox is checked */
+  /** Whether the checkbox is checked
+   * @default false
+   */
   modelValue?: boolean;
-  /** Label text */
+  /** Label text
+   * @default undefined
+   */
   label?: string;
-  /** Whether the checkbox is focused */
+  /** Whether the checkbox is focused
+   * @default false
+   */
   focused?: boolean;
-  /** Whether the checkbox is disabled */
+  /** Whether the checkbox is disabled
+   * @default false
+   */
   disabled?: boolean;
-  /** Checked indicator */
+  /** Checked indicator
+   * @default "[x]"
+   */
   checked?: string;
-  /** Unchecked indicator */
+  /** Unchecked indicator
+   * @default "[ ]"
+   */
   unchecked?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Checked foreground color */
+  /** Checked foreground color
+   * @default "green"
+   */
   checkedFg?: string;
 }
 
