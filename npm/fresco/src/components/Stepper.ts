@@ -18,23 +18,41 @@ export type StepStatus = "pending" | "current" | "completed" | "error";
 export interface StepperProps {
   /** Steps */
   steps: Step[];
-  /** Current step index */
+  /** Current step index
+   * @default 0
+   */
   current?: number;
-  /** Completed steps (indices) */
+  /** Completed step indices; omission creates a fresh array per component instance.
+   * @default []
+   */
   completed?: number[];
-  /** Error steps (indices) */
+  /** Error step indices; omission creates a fresh array per component instance.
+   * @default []
+   */
   errors?: number[];
-  /** Direction */
+  /** Direction
+   * @default "horizontal"
+   */
   direction?: "horizontal" | "vertical";
-  /** Show step numbers */
+  /** Show numbers for pending steps.
+   * @default true
+   */
   showNumbers?: boolean;
-  /** Completed icon */
+  /** Completed icon
+   * @default "✓"
+   */
   completedIcon?: string;
-  /** Error icon */
+  /** Error icon
+   * @default "✗"
+   */
   errorIcon?: string;
-  /** Current icon */
+  /** Current icon
+   * @default "●"
+   */
   currentIcon?: string;
-  /** Pending icon */
+  /** Pending icon
+   * @default "○"
+   */
   pendingIcon?: string;
 }
 

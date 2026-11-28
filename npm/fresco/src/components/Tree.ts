@@ -40,29 +40,53 @@ export type TreeBy<Value> = CollectionBy<Value>;
 export interface TreeProps<Value = string> {
   /** Tree data */
   data: readonly TreeNode<Value>[];
-  /** Expanded node keys */
+  /** Expanded node keys; omission creates a fresh array per component instance.
+   * @default []
+   */
   expanded?: readonly string[];
-  /** Selected node value */
+  /** Selected node value
+   * @default undefined
+   */
   selected?: Value;
-  /** Compare selected values by an object key or a custom equality function */
+  /** Compare selected values by an object key or a custom equality function
+   * @default undefined
+   */
   by?: TreeBy<Value>;
-  /** Whether the tree owns keyboard input */
+  /** Whether the tree owns keyboard input
+   * @default false
+   */
   focused?: boolean;
-  /** Maximum visible flattened nodes before the tree window scrolls */
+  /** Maximum visible flattened nodes before the tree window scrolls
+   * @default undefined
+   */
   maxHeight?: number;
-  /** Show lines */
+  /** Show lines
+   * @default true
+   */
   showLines?: boolean;
-  /** Indent size */
+  /** Indent size
+   * @default 2
+   */
   indent?: number;
-  /** Expanded icon */
+  /** Expanded icon
+   * @default "▼"
+   */
   expandedIcon?: string;
-  /** Collapsed icon */
+  /** Collapsed icon
+   * @default "▶"
+   */
   collapsedIcon?: string;
-  /** Leaf icon */
+  /** Leaf icon
+   * @default "•"
+   */
   leafIcon?: string;
-  /** Foreground color */
+  /** Foreground color
+   * @default undefined
+   */
   fg?: string;
-  /** Selected foreground color */
+  /** Foreground color of selected or highlighted nodes.
+   * @default "cyan"
+   */
   selectedFg?: string;
 }
 
