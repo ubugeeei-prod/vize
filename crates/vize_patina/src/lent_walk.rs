@@ -46,12 +46,12 @@ pub(crate) trait LentNodes<'a> {
 
 /// Walk a whole program.
 pub(crate) fn walk_program<'a>(nodes: &mut impl LentNodes<'a>, program: &'a Program<'a>) {
-    generated::walk_program(nodes, program);
+    generated::walk_program(&mut Lending { nodes }, program);
 }
 
 /// Walk one expression.
 pub(crate) fn walk_expression<'a>(nodes: &mut impl LentNodes<'a>, expression: &'a Expression<'a>) {
-    generated::walk_expression(nodes, expression);
+    generated::walk_expression(&mut Lending { nodes }, expression);
 }
 
 /// Walk one JSX expression container.
@@ -59,5 +59,39 @@ pub(crate) fn walk_jsx_expression_container<'a>(
     nodes: &mut impl LentNodes<'a>,
     container: &'a JSXExpressionContainer<'a>,
 ) {
-    generated::walk_jsx_expression_container(nodes, container);
+    generated::walk_jsx_expression_container(&mut Lending { nodes }, container);
+}
+
+/// Keep the walk's concrete visitor behind the same private adapter boundary
+/// as its callers previously used. Every forwarded hook carries the root's
+/// borrow explicitly; forwarding never changes the borrow's lifetime.
+struct Lending<'nodes, N> {
+    nodes: &'nodes mut N,
+}
+
+impl<'a, N: LentNodes<'a>> LentNodes<'a> for Lending<'_, N> {
+    #[inline]
+    fn enter_jsx_element(&mut self, element: &'a JSXElement<'a>) -> bool {
+        self.nodes.enter_jsx_element(element)
+    }
+
+    #[inline]
+    fn leave_jsx_element(&mut self, element: &'a JSXElement<'a>) {
+        self.nodes.leave_jsx_element(element);
+    }
+
+    #[inline]
+    fn enter_jsx_fragment(&mut self, fragment: &'a JSXFragment<'a>) -> bool {
+        self.nodes.enter_jsx_fragment(fragment)
+    }
+
+    #[inline]
+    fn leave_jsx_fragment(&mut self, fragment: &'a JSXFragment<'a>) {
+        self.nodes.leave_jsx_fragment(fragment);
+    }
+
+    #[inline]
+    fn call_expression(&mut self, call: &'a CallExpression<'a>) {
+        self.nodes.call_expression(call);
+    }
 }
