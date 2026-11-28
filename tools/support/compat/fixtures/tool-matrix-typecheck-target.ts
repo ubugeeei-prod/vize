@@ -3,6 +3,7 @@ import { readFileSync, statSync, type Stats } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
 import { typecheckUnits } from "./typecheck-targets.ts";
+import { typecheckProvider } from "./typecheck-baseline-provider.ts";
 import {
   typecheckInputOverlays,
   verifyTypecheckInputOverlays,
@@ -91,7 +92,8 @@ export function validateTypecheckPerformanceTarget(
   if (baseline == null) return;
   if (
     Object.keys(baseline).some(
-      (key) => !["excludedInputs", "inputOverlays", "prepare", "tsconfig"].includes(key),
+      (key) =>
+        !["excludedInputs", "inputOverlays", "prepare", "provider", "tsconfig"].includes(key),
     )
   ) {
     invalid(project, "baseline has unknown fields");
@@ -99,6 +101,10 @@ export function validateTypecheckPerformanceTarget(
   requireRelativePath(project, baseline.tsconfig, "baseline tsconfig");
   validateExcludedInputs(project, fixtureRoot, baseline.excludedInputs);
   const inputs = typecheckInputOverlays(baseline.inputOverlays);
+  const provider = typecheckProvider(baseline.provider);
+  if (provider != null && baseline.prepare == null) {
+    invalid(project, "baseline.provider requires preparation commands");
+  }
   if (inputs.length > 0 && baseline.prepare == null) {
     invalid(project, "baseline.inputOverlays requires a preparation command");
   }
