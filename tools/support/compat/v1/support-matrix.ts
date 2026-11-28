@@ -718,7 +718,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     {
       id: "content-mapper-v1-qualification",
       owner: "typechecker/vize_canon-content-mapper",
-      issues: [13018, 13071],
+      issues: [13018],
       state: "blocking",
       summary:
         "Content Mapper semantic, protocol, lifecycle, performance and real-project obligations are not joined to one exact candidate.",
@@ -728,20 +728,20 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     {
       id: "case-packet-join",
       owner: "testing/v1-qualification",
-      issues: [13037],
+      issues: [13011],
       state: "blocking",
       summary:
-        "Five case names are not joined to exact diagnostics, ranges, edits, output, ordering and exit packets.",
+        "The five-case receipt binder has no admitted receipts: no product lane emits positive, negative, boundary, malformed-edit and repair packets with exact diagnostics, ranges, edits, output, ordering and exit.",
       exitCondition:
         "Every source combination has executable positive, negative, boundary, malformed-edit and repair selectors with receipt identity.",
     },
     {
       id: "host-runtime-join",
       owner: "release/v1-qualification",
-      issues: [13038, 13012],
+      issues: [13011],
       state: "blocking",
       summary:
-        "No single exact candidate has native, Bun, WSL2 and editor evidence for every required product row.",
+        "Exact-candidate admission has no admitted host rows: no single candidate has native, Bun, WSL2 and editor receipts for every required product row.",
       exitCondition: "One candidate SHA produces admitted receipts for every requiredRows entry.",
     },
     {

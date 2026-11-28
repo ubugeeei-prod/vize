@@ -24616,7 +24616,7 @@
     {
       "id": "content-mapper-v1-qualification",
       "owner": "typechecker/vize_canon-content-mapper",
-      "issues": [13018, 13071],
+      "issues": [13018],
       "state": "blocking",
       "summary": "Content Mapper semantic, protocol, lifecycle, performance and real-project obligations are not joined to one exact candidate.",
       "exitCondition": "Every contentMapper obligation has exact positive, negative, boundary, malformed-edit and repair receipts for one candidate source."
@@ -24624,17 +24624,17 @@
     {
       "id": "case-packet-join",
       "owner": "testing/v1-qualification",
-      "issues": [13037],
+      "issues": [13011],
       "state": "blocking",
-      "summary": "Five case names are not joined to exact diagnostics, ranges, edits, output, ordering and exit packets.",
+      "summary": "The five-case receipt binder has no admitted receipts: no product lane emits positive, negative, boundary, malformed-edit and repair packets with exact diagnostics, ranges, edits, output, ordering and exit.",
       "exitCondition": "Every source combination has executable positive, negative, boundary, malformed-edit and repair selectors with receipt identity."
     },
     {
       "id": "host-runtime-join",
       "owner": "release/v1-qualification",
-      "issues": [13038, 13012],
+      "issues": [13011],
       "state": "blocking",
-      "summary": "No single exact candidate has native, Bun, WSL2 and editor evidence for every required product row.",
+      "summary": "Exact-candidate admission has no admitted host rows: no single candidate has native, Bun, WSL2 and editor receipts for every required product row.",
       "exitCondition": "One candidate SHA produces admitted receipts for every requiredRows entry."
     },
     {
@@ -24680,12 +24680,6 @@
       {
         "id": "grouped-disjoint-expect-usage",
         "issue": 6258,
-        "state": "blocked-upstream"
-      },
-      {
-        "id": "diagnostic-code-selector-consumer",
-        "issue": 13057,
-        "external": "microsoft/TypeScript#65517",
         "state": "blocked-upstream"
       }
     ],
@@ -24735,7 +24729,7 @@
       {
         "id": "generics",
         "requirement": "Generic components preserve declared inference, fallthrough and authored errors.",
-        "issues": [11655, 13021, 13057],
+        "issues": [11655, 13018],
         "evidenceCandidates": [
           "crates/vize/tests/content_mapper_tsgo_cli/reported_generic_components.rs",
           "crates/vize/tests/content_mapper_tsgo_cli/generic_constructor_slots.rs"
@@ -24791,7 +24785,7 @@
       {
         "id": "diagnostic-directives",
         "requirement": "Ignore, skip and expect directives suppress only their authored diagnostic owners.",
-        "issues": [6258, 13057],
+        "issues": [6258],
         "evidenceCandidates": [
           "crates/vize/tests/content_mapper_tsgo_cli/directive_tables.rs",
           "crates/vize/tests/content_mapper_tsgo_directives.rs"
@@ -24858,7 +24852,7 @@
       {
         "id": "project-references",
         "requirement": "Referenced projects are checked once without dropping cross-project diagnostics.",
-        "issues": [12102, 12109],
+        "issues": [12102],
         "evidenceCandidates": [
           "crates/vize/tests/content_mapper_tsgo_package_references.rs",
           "crates/vize/src/commands/check/tsconfig_inputs/tests/reference_programs.rs"
@@ -24872,7 +24866,7 @@
       {
         "id": "nuxt-generated-types",
         "requirement": "Nuxt-generated aliases and ambient types participate in the mapper project.",
-        "issues": [11104, 13018],
+        "issues": [13018],
         "evidenceCandidates": [
           ".github/workflows/04-content-mapper-conformance.yml",
           "crates/vize/tests/check_canon_nuxt_parity_cli.rs"
@@ -25203,7 +25197,7 @@
       {
         "id": "suppression-ownership",
         "requirement": "Suppression is selected by authored ownership and never widens to a generated range.",
-        "issues": [6258, 13021, 13057],
+        "issues": [6258],
         "evidenceCandidates": [
           "crates/vize_canon/src/batch/virtual_project/content_mapper/directives.rs",
           "crates/vize/src/commands/content_mapper/dispatch/wire.rs"
@@ -25251,7 +25245,7 @@
         "id": "cold-warm-edit",
         "measurements": ["cold", "warm", "no-op", "leaf-edit", "dependency-edit", "p95", "rss"],
         "scales": [1000, 5000, 20000],
-        "issues": [10620, 12102, 12109],
+        "issues": [10620, 12102],
         "evidenceCandidates": [
           ".github/workflows/03-typecheck-compare.yml",
           ".github/workflows/04-content-mapper-cold-start.yml"
