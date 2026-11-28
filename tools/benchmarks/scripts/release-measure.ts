@@ -37,6 +37,7 @@ import {
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { glibcFloorTarget } from "../../support/github/glibc-floor.ts";
+import { publishMovedAttribution, retainSourceCli } from "./release-measure-attribution.ts";
 
 /** Instruction suites and the instruction-counts.mjs flags that collect them. */
 export const SUITES: ReadonlyArray<readonly [string, readonly string[]]> = [
@@ -272,6 +273,17 @@ export function collectInstructionSuite(
     try {
       if (existsSync(dir))
         cpSync(dir, destination, { recursive: true, force: false, errorOnExist: true });
+      const probes = join(
+        capture,
+        flags.includes("--formatter") ? "formatter-instruction-probes" : "instruction-probes",
+      );
+      if (existsSync(probes))
+        cpSync(probes, join(destination, "probes"), {
+          recursive: true,
+          dereference: true,
+          force: false,
+          errorOnExist: true,
+        });
     } catch (error) {
       failures.push(error);
     } finally {
@@ -370,6 +382,7 @@ export function measureSide(
       join(target, linuxTarget, "release", "libvize_vitrine.so"),
     ).size,
   };
+  retainSourceCli(join(target, linuxTarget, "release", "vize"), side, gitHead(source));
   const result: Side = { rows, sizes, binaries };
   writeFileSync(join(side, "side.json"), JSON.stringify(result, null, 2) + "\n");
   rmSync(target, { recursive: true, force: true });
@@ -460,6 +473,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const summary = join(resolve(publish), "summary.md");
     const destination = process.env.GITHUB_STEP_SUMMARY;
     if (existsSync(summary) && destination) appendFileSync(destination, readFileSync(summary));
+    publishMovedAttribution(resolve(publish), movedRows);
   } else if (reportOnly) {
     report(resolve(reportOnly));
   } else {

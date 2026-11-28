@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -301,6 +309,34 @@ void test("failed collection retains partial evidence, propagates failure and em
     );
     assert.equal(readFileSync(join(destination, "measurement.json"), "utf8"), "original evidence");
     assert.equal(existsSync(join(scratch, "instruction-capture")), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("instruction capture preserves the measured executable before cleaning probe links", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-probe-retention-"));
+  const image = join(root, "measured-image");
+  const bytes = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0, 255, 13, 10]);
+  writeFileSync(image, bytes);
+  try {
+    for (const flags of [[], ["--formatter"]]) {
+      const destination = join(root, flags.length ? "formatter" : "stages");
+      collectInstructionSuite("source", root, destination, flags, {}, (_cmd, args) => {
+        const directory = args[args.indexOf("--out") + 1];
+        mkdirSync(directory, { recursive: true });
+        writeFileSync(join(directory, "measurement.json"), "{}\n");
+        const probes = join(
+          directory,
+          "..",
+          flags.length ? "formatter-instruction-probes" : "instruction-probes",
+        );
+        mkdirSync(probes);
+        symlinkSync(image, join(probes, "probe-00"));
+      });
+      assert.deepEqual(readFileSync(join(destination, "probes", "probe-00")), bytes);
+      assert.equal(existsSync(join(root, "instruction-capture")), false);
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
