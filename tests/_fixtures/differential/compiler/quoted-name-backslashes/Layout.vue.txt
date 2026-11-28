@@ -1,0 +1,8 @@
+<template>
+  <section>
+    <p c\d="1" :e\f="value">text</p>
+    <Card p\q="1" :r\s="value" @t\u="onPick">
+      <template #s\t>slot</template>
+    </Card>
+  </section>
+</template>

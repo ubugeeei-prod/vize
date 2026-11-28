@@ -1,6 +1,7 @@
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, OperationNode, PropValueKind};
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
+use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 use super::{
     super::{context::GenerateContext, setup::escape_js_string_literal},
@@ -258,7 +259,12 @@ fn generate_component_call(
             let name_span = slot.name.loc.span;
             let name_source = (name_span.start < name_span.end).then_some(name_span.start);
             let mut name = EmitDocument::plain("\"");
-            name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
+            if name_needs_escape(slot.name.content) {
+                let contents = escaped_name_contents(slot.name.content);
+                name.push_spanned(&ctx.spanned_at(&contents, name_source));
+            } else {
+                name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
+            }
             name.push_str("\":");
             ctx.push_spanned(&name);
             generate_slot_fn(ctx, slot, element_template_map, kind);

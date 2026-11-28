@@ -239,6 +239,10 @@ struct EmitCx<'facts> {
     untracked_children: bool,
     /// A runtime `class` follows `createVNode`: only truthy non-strings normalize.
     runtime_class: bool,
+    /// A key holding a backslash has been written. A dynamic prop name is
+    /// written only after its element's props object spelled it as a key, so
+    /// the dynamic-props arrays look at names only once this is set.
+    escape_names: bool,
     /// `hoist_static`: static props and static VNode declarations are emitted
     /// only when the public transform option enabled them.
     hoist_static: bool,

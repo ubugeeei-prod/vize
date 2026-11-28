@@ -214,7 +214,18 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.sink.on_dir_name(self.section_start, self.index);
             self.state = State::InDirDynamicArg;
             self.section_start = self.index + 1;
+        } else if c == DOUBLE_QUOTE {
+            self.report_quote_in_directive_name();
         }
+    }
+
+    /// A double quote cannot appear in an attribute name, a directive's
+    /// included: every name is later written inside a double-quoted string.
+    #[cold]
+    #[inline(never)]
+    fn report_quote_in_directive_name(&mut self) {
+        self.sink
+            .on_error(LexErrorCode::UnexpectedCharacterInAttributeName, self.index);
     }
 
     pub(super) fn state_in_dir_arg(&mut self, c: u8) {
@@ -238,6 +249,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             }
             self.state = State::InDirModifier;
             self.section_start = self.index + 1;
+        } else if c == DOUBLE_QUOTE {
+            self.report_quote_in_directive_name();
         }
     }
 
@@ -251,6 +264,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         } else if c == DOT {
             self.sink.on_dir_modifier(self.section_start, self.index);
             self.section_start = self.index + 1;
+        } else if c == DOUBLE_QUOTE {
+            self.report_quote_in_directive_name();
         }
     }
 

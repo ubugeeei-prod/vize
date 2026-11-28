@@ -154,9 +154,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                             if i > 0 {
                                 ctx.push(", ");
                             }
-                            ctx.push("\"");
-                            ctx.push(prop);
-                            ctx.push("\"");
+                            ctx.push_string_literal(prop);
                         }
                         ctx.push("]");
                     }
@@ -334,9 +332,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                             if i > 0 {
                                 ctx.push(", ");
                             }
-                            ctx.push("\"");
-                            ctx.push(prop);
-                            ctx.push("\"");
+                            ctx.push_string_literal(prop);
                         }
                         ctx.push("]");
                     }
@@ -366,9 +362,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                             if i > 0 {
                                 ctx.push(", ");
                             }
-                            ctx.push("\"");
-                            ctx.push(prop);
-                            ctx.push("\"");
+                            ctx.push_string_literal(prop);
                         }
                         ctx.push("]");
                     }

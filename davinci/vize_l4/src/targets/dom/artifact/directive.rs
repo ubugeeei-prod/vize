@@ -224,7 +224,7 @@ fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(),
             if i > 0 {
                 cx.buf.push(", ");
             }
-            cx.buf.push(modifier);
+            super::js::push_ident_key(cx, modifier);
             cx.buf.push(": true");
         }
         cx.buf.push(" }");

@@ -10,8 +10,21 @@
 
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_l0::Span;
+use vize_l0::general::quoted_name::{escaped_name_contents, name_needs_escape};
 
 use super::{SsrCodegenContext, TemplatePart};
+
+/// Push the string-literal contents of a bound attribute name that needs
+/// escaping, mapped at `start` when there is one.
+#[cold]
+#[inline(never)]
+pub(crate) fn push_escaped_bound_name(piece: &mut EmitDocument, name: &str, start: Option<u32>) {
+    let contents = escaped_name_contents(name);
+    match start {
+        Some(start) => piece.push_mapped(&contents, start),
+        None => piece.push_str(&contents),
+    }
+}
 
 /// What a static part needs to stay inert inside a template literal. The
 /// backslash comes first: patterns are tried in order at each byte.
@@ -97,9 +110,14 @@ impl SsrCodegenContext<'_> {
     /// Push `_ssrRenderAttr("name", exp)` for a statically named `v-bind`.
     pub(crate) fn push_bound_attr_part(&mut self, name: &str, dir: &DirectiveNode<'_>, exp: &str) {
         let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
-        match (&dir.arg, self.spans_enabled()) {
-            (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
-            _ => piece.push_str(name),
+        if name_needs_escape(name) {
+            let start = dir.arg.as_ref().map(|arg| arg.loc().span.start);
+            push_escaped_bound_name(&mut piece, name, start.filter(|_| self.spans_enabled()));
+        } else {
+            match (&dir.arg, self.spans_enabled()) {
+                (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
+                _ => piece.push_str(name),
+            }
         }
         piece.push_str("\", ");
         let span = dir.exp.as_ref().map_or(Span::new(0, 0), |e| e.loc().span);

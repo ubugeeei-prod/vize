@@ -9,6 +9,12 @@ use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
 fn compiled(source: &str, retained: bool) -> String {
+    let (code, errors) = compiled_with_errors(source, retained);
+    assert!(errors.is_empty(), "{source}: {errors:?}");
+    code
+}
+
+fn compiled_with_errors(source: &str, retained: bool) -> (String, Vec<String>) {
     let allocator = Allocator::new();
     let result = compile_vapor(
         &allocator,
@@ -18,12 +24,34 @@ fn compiled(source: &str, retained: bool) -> String {
             ..Default::default()
         },
     );
-    assert!(
-        result.error_messages.is_empty(),
-        "{source}: {:?}",
-        result.error_messages
-    );
-    String::from(result.code.as_str())
+    let errors = result
+        .error_messages
+        .iter()
+        .map(|message| String::from(message.as_str()))
+        .collect();
+    (String::from(result.code.as_str()), errors)
+}
+
+const QUOTE_IN_NAME: &str = "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued.";
+
+/// Both lanes report one invalid-name diagnostic per double quote in a
+/// directive name, as Vue does, and write no module, so no broken literal
+/// reaches the output.
+fn assert_quotes_reported(sources: &[&str]) {
+    for source in sources {
+        let quotes = source
+            .split_once('=')
+            .map_or(0, |(name, _)| name.matches('"').count());
+        let expected = (String::new(), vec![String::from(QUOTE_IN_NAME); quotes]);
+        assert_eq!(
+            [
+                compiled_with_errors(source, false),
+                compiled_with_errors(source, true)
+            ],
+            [expected.clone(), expected],
+            "{source}"
+        );
+    }
 }
 
 /// Both lanes compile every source to the module beside it.
@@ -316,59 +344,23 @@ fn a_component_resolves_by_a_string_literal_of_its_name() {
     ]);
 }
 
-/// The module rendering one `<div>` from its imports and its `statement`.
-fn div_module(imports: &str, statement: &str) -> String {
-    [
-        "import { ",
-        imports,
-        ", template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  ",
-        statement,
-        "\n  return n0\n}\n",
-    ]
-    .concat()
+#[test]
+fn a_quote_in_a_bound_prop_name_is_reported() {
+    assert_quotes_reported(&[r#"<div :a",x:f(),"="v"></div>"#]);
 }
 
 #[test]
-fn a_bound_prop_name_is_a_string_literal() {
-    assert_modules(&[(
-        r#"<div :a",x:f(),"="v"></div>"#,
-        div_module(
-            "setProp as _setProp, renderEffect as _renderEffect",
-            r#"_renderEffect(() => _setProp(n0, "a\",x:f(),\"", _ctx.v))"#,
-        ),
-    )]);
-}
-
-#[test]
-fn a_listener_event_name_is_a_string_literal() {
-    assert_modules(&[
-        (
-            r#"<div @a",f(),"="h"></div>"#,
-            div_module("on as _on", r#"_on(n0, "a\",f(),\"", e => _ctx.h(e))"#),
-        ),
-        (
-            r#"<div @a",f(),".once="h"></div>"#,
-            div_module(
-                "on as _on",
-                "_on(n0, \"a\\\",f(),\\\"\", e => _ctx.h(e), {\n    once: true\n  })",
-            ),
-        ),
-        (
-            r#"<div v-once :onA",f(),"="h"></div>"#,
-            div_module("on as _on", r#"_on(n0, "a\",f(),\"", _ctx.h)"#),
-        ),
+fn a_quote_in_a_listener_event_name_is_reported() {
+    assert_quotes_reported(&[
+        r#"<div @a",f(),"="h"></div>"#,
+        r#"<div @a",f(),".once="h"></div>"#,
+        r#"<div v-once :onA",f(),"="h"></div>"#,
     ]);
 }
 
 #[test]
-fn a_listener_modifier_name_is_a_string_literal() {
-    assert_modules(&[(
-        r#"<div @keyup.a",f(),"="h"></div>"#,
-        div_module(
-            "withKeys as _withKeys, on as _on",
-            r#"_on(n0, "keyup", _withKeys(e => _ctx.h(e), ["a\",f(),\""]))"#,
-        ),
-    )]);
+fn a_quote_in_a_listener_modifier_name_is_reported() {
+    assert_quotes_reported(&[r#"<div @keyup.a",f(),"="h"></div>"#]);
 }
 
 #[test]
@@ -381,8 +373,27 @@ fn a_directive_resolves_by_a_string_literal_of_its_name() {
         ]
         .concat()
     };
-    assert_modules(&[
-        (r#"<div v-a"b="x"></div>"#, module(r#""a\"b""#)),
-        (r#"<div v-a\b="x"></div>"#, module(r#""a\\b""#)),
-    ]);
+    assert_quotes_reported(&[r#"<div v-a"b="x"></div>"#]);
+    assert_modules(&[(r#"<div v-a\b="x"></div>"#, module(r#""a\\b""#))]);
+}
+
+#[test]
+fn a_static_slot_name_is_a_string_literal() {
+    assert_modules(&[(
+        r"<Comp><template #s\t>x</template></Comp>",
+        String::from(concat!(
+            "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';\n",
+            "const t0 = _template(\"x\")\n\n",
+            "export function render(_ctx) {\n",
+            "  const _component_Comp = _resolveComponent(\"Comp\")\n",
+            "  const n2 = _createComponentWithFallback(_component_Comp, null, {\n",
+            "    \"s\\\\t\": () => {\n",
+            "      const n0 = t0()\n",
+            "      return n0\n",
+            "    }\n",
+            "  }, true)\n",
+            "  return n2\n",
+            "}\n",
+        )),
+    )]);
 }
