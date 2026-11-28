@@ -67,6 +67,8 @@ fn check_modules(shared: bool, files: &[(&str, &str)]) -> Value {
     .unwrap();
     let mut options = ContentMapperTransformOptions::default().with_shared_virtual_module(shared);
     options.checks.check_unknown_props = true;
+    // Match the fixture's `strictTemplates` policy for undeclared root attrs.
+    options.checks.check_unknown_fallthrough_props = true;
     let mut modules = serde_json::Map::new();
     for &(name, source) in files {
         if name.ends_with(".vue") {
