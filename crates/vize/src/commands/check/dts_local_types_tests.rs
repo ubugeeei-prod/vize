@@ -98,6 +98,23 @@ fn qualifies_type_references_only() {
 }
 
 #[test]
+fn lexical_rejection_keeps_escaped_and_unicode_type_references() {
+    let names = ["Wrapper", "Δ", "$Shape", "_Model"].into_iter().collect();
+    let mut used = FxHashSet::default();
+    let qualified = qualify_local_references(
+        r"\u0057rapper<\u0394> & $Shape & _Model & { Wrapper: 1; Δ: 2 }",
+        &names,
+        "NS",
+        &mut used,
+    );
+    assert_eq!(
+        qualified.as_str(),
+        r"NS.\u0057rapper<NS.\u0394> & NS.$Shape & NS._Model & { Wrapper: 1; Δ: 2 }"
+    );
+    assert_eq!(used.len(), 4);
+}
+
+#[test]
 fn carries_what_a_used_type_names_in_turn_in_source_order() {
     let locals = collect_local_types(NUXT_COMPONENTS);
     let used = [String::from("IslandComponent")].into_iter().collect();

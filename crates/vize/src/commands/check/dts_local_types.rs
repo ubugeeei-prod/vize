@@ -80,7 +80,9 @@ pub(super) fn qualify_local_references(
     namespace: &str,
     used: &mut FxHashSet<String>,
 ) -> String {
-    if names.is_empty() {
+    if names.is_empty()
+        || !super::dts_type_references::may_reference(text, |name| names.contains(name))
+    {
         return text.to_compact_string();
     }
     let mut out = String::with_capacity(text.len());

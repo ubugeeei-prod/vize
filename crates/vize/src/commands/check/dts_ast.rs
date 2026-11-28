@@ -6,7 +6,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_l0::{FxHashMap, String, ToCompactString};
+use vize_l0::{FxHashMap, FxHashSet, String, ToCompactString};
 
 #[derive(Default)]
 struct InterfaceInfo {
@@ -45,11 +45,13 @@ pub(super) fn parse_global_component_members_content(content: &str) -> Vec<(Stri
     let interfaces = collect_interfaces(content);
     let mut members = Vec::new();
     let mut visited = Vec::new();
+    let mut member_names = FxHashSet::default();
     collect_interface_members_recursive(
         "GlobalComponents",
         &interfaces,
         &mut visited,
         &mut members,
+        &mut member_names,
     );
     members
 }
@@ -180,6 +182,7 @@ fn collect_interface_members_recursive(
     interfaces: &FxHashMap<String, InterfaceInfo>,
     visited: &mut Vec<String>,
     members: &mut Vec<(String, String)>,
+    member_names: &mut FxHashSet<String>,
 ) {
     if visited.iter().any(|visited| visited.as_str() == name) {
         return;
@@ -190,15 +193,31 @@ fn collect_interface_members_recursive(
         return;
     };
     for member in &interface.members {
-        if !members
-            .iter()
-            .any(|(existing, _)| existing.as_str() == member.0.as_str())
-        {
+        // Small declarations keep the allocation-free linear lookup. Large
+        // generated manifests index names once, preserving first-declaration
+        // precedence and the original traversal order.
+        let present = if members.len() < 16 {
+            members
+                .iter()
+                .any(|(name, _)| name.as_str() == member.0.as_str())
+        } else {
+            if member_names.is_empty() {
+                member_names.extend(members.iter().map(|(name, _)| name.clone()));
+            }
+            !member_names.insert(member.0.clone())
+        };
+        if !present {
             members.push(member.clone());
         }
     }
     for extended in &interface.extends {
-        collect_interface_members_recursive(extended.as_str(), interfaces, visited, members);
+        collect_interface_members_recursive(
+            extended.as_str(),
+            interfaces,
+            visited,
+            members,
+            member_names,
+        );
     }
 }
 
