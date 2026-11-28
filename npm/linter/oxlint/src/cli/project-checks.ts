@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-import { literalGlob, type ScopedConfig } from "./scoped-config.ts";
+import type { ScopedConfig } from "./scoped-config.ts";
 
 type Config = Record<string, unknown>;
 const isRecord = (value: unknown): value is Config =>
@@ -83,7 +83,9 @@ export function splitProjectConfig(
     original.overrides = [
       ...(Array.isArray(original.overrides) ? original.overrides : []),
       {
-        files: carrierOriginals.map(literalGlob),
+        // Every selected original of these carrier-only dialects is mirrored.
+        // Keep this predicate bounded instead of compiling one glob per file.
+        files: [...new Set(carrierOriginals.map((file) => `**/*${path.extname(file)}`))],
         rules: Object.fromEntries([...names].map((name) => [name, "off"])),
       },
     ];

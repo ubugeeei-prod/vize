@@ -276,3 +276,75 @@ void test("installed hosts lint original TSRX through authenticated carriers and
       "complete native/host packets, parser errors, help, locations, ignore selection, refusal and unchanged normal-file controls passed",
   });
 });
+
+void test(
+  "representative TSRX batches retain complete reports and record CPU and peak RSS",
+  { skip: process.platform !== "linux" },
+  (t) => {
+    assert.ok(fs.existsSync("/usr/bin/time"), "resource qualification requires GNU time");
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tsrx-resources-"));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    fs.mkdirSync(path.join(root, ".git"));
+    fs.mkdirSync(path.join(root, "src"));
+    fs.mkdirSync(path.join(root, "node_modules/oxlint/bin"), { recursive: true });
+    fs.symlinkSync(engine, path.join(root, "node_modules/oxlint/bin/oxlint"));
+    const config = JSON.stringify({
+      jsPlugins: [plugin],
+      settings: { vize: { preset: "incremental" } },
+      rules: { "vize/a11y/alt-text": "warn", "vize/vue/no-multi-spaces": "warn" },
+    });
+    fs.writeFileSync(path.join(root, ".oxlintrc.json"), config);
+    const text = 'export function Badge() @{\n  <img src="avatar" alt="safe" />\n}\n';
+    for (const count of [100, 1000]) {
+      for (let index = 0; index < count; index++)
+        fs.writeFileSync(path.join(root, "src", `${index}.tsrx`), text);
+      for (let sample = 0; sample < 3; sample++) {
+        const usage = path.join(root, "usage.txt");
+        const args = [
+          "-f",
+          "%U %S %M %e",
+          "-o",
+          usage,
+          process.execPath,
+          cli,
+          "-f",
+          "json",
+          "--threads",
+          "1",
+          "src",
+        ];
+        const result = spawnSync("/usr/bin/time", args, {
+          cwd: root,
+          encoding: "utf8",
+          timeout: 60_000,
+          maxBuffer: 8 * 1024 * 1024,
+        });
+        assert.equal(result.error, undefined);
+        assert.equal(result.signal, null);
+        assert.equal(result.status, 0, result.stderr);
+        assert.equal(result.stderr, "");
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.number_of_files, count);
+        assert.deepEqual(report.diagnostics, []);
+        const [userSeconds, systemSeconds, maxRssKiB, elapsedSeconds] = fs
+          .readFileSync(usage, "utf8")
+          .trim()
+          .split(/\s+/u)
+          .map(Number);
+        assert.ok(userSeconds > 0 && systemSeconds >= 0 && maxRssKiB > 0 && elapsedSeconds > 0);
+        save({
+          kind: "tsrx-process-resources",
+          count,
+          sample,
+          userSeconds,
+          systemSeconds,
+          maxRssKiB,
+          elapsedSeconds,
+          args,
+          config,
+          ...result,
+        });
+      }
+    }
+  },
+);

@@ -234,7 +234,7 @@ void test("original script rules stay enabled while only original carrier paths 
   assert.deepEqual(split.original.value.overrides, [
     config.value.overrides[0],
     {
-      files: [String.raw`/project/src/\[Avatar\].vue`, "/project/src/Panel.tsrx"],
+      files: ["**/*.vue", "**/*.tsrx"],
       rules: {
         "vize/a11y/alt-text": "off",
         "vize/vue/no-multi-spaces": "off",
