@@ -216,3 +216,30 @@ void test("an unavailable bridge retains every original JSON field and fatal row
     }
   }
 });
+
+void test("original script rules stay enabled while only original carrier paths are disabled", () => {
+  const config = {
+    file: "/project/.oxlintrc.json",
+    bytes: "authored",
+    value: {
+      rules: { "vize/a11y/alt-text": "warn", "no-debugger": "error" },
+      overrides: [{ files: ["src/*.tsx"], rules: { "vize/vue/no-multi-spaces": "error" } }],
+    },
+  };
+  const split = splitProjectConfig(config, false, [
+    "/project/src/[Avatar].vue",
+    "/project/src/Panel.tsrx",
+  ]);
+  assert.deepEqual(split.original.value.rules, config.value.rules);
+  assert.deepEqual(split.original.value.overrides, [
+    config.value.overrides[0],
+    {
+      files: [String.raw`/project/src/\[Avatar\].vue`, "/project/src/Panel.tsrx"],
+      rules: {
+        "vize/a11y/alt-text": "off",
+        "vize/vue/no-multi-spaces": "off",
+      },
+    },
+  ]);
+  assert.deepEqual(split.bridge.value.rules, { "vize/a11y/alt-text": "warn" });
+});

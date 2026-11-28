@@ -167,3 +167,24 @@ void test("transport failure promotes only otherwise-successful original reports
     );
   }
 });
+
+void test("unqualified TSRX retains the whole stock report and refuses silent success", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tsrx-refusal-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, "Original.tsrx");
+  fs.writeFileSync(file, "export function Avatar() @{ <img/> }\n");
+  const stock = { ...originalPacket, status: 0 };
+  const result = await prepareScopedSelection(
+    root,
+    ["Original.tsrx"],
+    [file],
+    async () => stock,
+    new Set([file]),
+  );
+  assert.ok(result && "result" in result);
+  assert.equal(result.result.stdout, stock.stdout);
+  assert.ok(result.result.stderr.startsWith(stock.stderr));
+  assert.equal(result.result.status, 1);
+  assert.match(result.result.stderr, /TSRX.*regular JSON.*vize lint/u);
+  assert.deepEqual(fs.readdirSync(root), ["Original.tsrx"]);
+});

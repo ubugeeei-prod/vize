@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { hasVueLikeExtension, isStandaloneHtmlFile } from "../file-kinds.ts";
+import { needsSourceCarrier, isStandaloneHtmlFile } from "../file-kinds.ts";
 
 const GLOB_PATTERN = /[*?[\]{}]/u;
 
@@ -69,11 +69,11 @@ function collectVueLikeFilesFromTarget(
     return files;
   }
 
-  return stat.isFile() && hasVueLikeExtension(absoluteTarget) ? [absoluteTarget] : [];
+  return stat.isFile() && needsSourceCarrier(absoluteTarget) ? [absoluteTarget] : [];
 }
 
 function isSupportedLintFile(filename: string): boolean {
-  if (!hasVueLikeExtension(filename)) {
+  if (!needsSourceCarrier(filename)) {
     return false;
   }
 

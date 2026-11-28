@@ -1,5 +1,5 @@
 import path from "node:path";
-import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { isStandaloneHtmlFile, isTsrxFile } from "../file-kinds.ts";
 
 import {
   createScopedMirror,
@@ -17,6 +17,7 @@ import {
   splitProjectConfig,
   writeOriginalProjectConfig,
 } from "./project-checks.ts";
+import { prepareTsrxSelection, type TsrxHost } from "./tsrx-selection.ts";
 import { projectOutputFormat, unavailableProjectTransport } from "./project-output.ts";
 
 export interface OxlintProcessResult {
@@ -42,12 +43,42 @@ export interface OxlintProcessResult {
 type Run = (args: readonly string[]) => Promise<OxlintProcessResult>;
 
 export async function prepareScopedSelection(
+  ...args: Parameters<typeof prepareScopedSelectionInner>
+): ReturnType<typeof prepareScopedSelectionInner> {
+  try {
+    return await prepareScopedSelectionInner(...args);
+  } catch (error) {
+    if (!args[2].some(isTsrxFile)) throw error;
+    const failure = new Error(
+      `TSRX lint unavailable: ${error instanceof Error ? error.message : String(error)} Use \`vize lint\` for this original target/configuration.`,
+    );
+    if (
+      withoutLintTargets(args[1]).some((arg) =>
+        [
+          "--fix",
+          "--fix-suggestions",
+          "--fix-dangerously",
+          "--init",
+          "--suppress-all",
+          "--prune-suppressions",
+          "--lsp",
+        ].includes(arg),
+      )
+    )
+      throw failure;
+    const original = await args[3](args[1]);
+    return { result: unavailableProjectTransport(original, failure) };
+  }
+}
+
+async function prepareScopedSelectionInner(
   cwd: string,
   originalArgs: readonly string[],
   vueFiles: readonly string[],
   run: Run,
   candidates: ReadonlySet<string>,
   platform: NodeJS.Platform = process.platform,
+  tsrxHost?: TsrxHost,
 ): Promise<
   | { result: OxlintProcessResult }
   | { args: string[]; prepared: PreparedWorkaroundFiles; originalResult?: OxlintProcessResult }
@@ -59,6 +90,8 @@ export async function prepareScopedSelection(
   if (vueFiles.every(isStandaloneHtmlFile)) return undefined;
   let config = readScopedConfig(cwd, originalArgs);
   if (config == null) {
+    if (vueFiles.some(isTsrxFile))
+      throw new Error("TSRX transport requires one regular JSON root config.");
     // A safe carrier cannot replace core/custom/parser source ownership. Keep
     // real engine failures and inspection output; refuse unqualified linting
     // instead of falling back to a carrier-only successful report.
@@ -133,6 +166,9 @@ export async function prepareScopedSelection(
     );
   validateSelectionPaths(cwd, candidates);
 
+  const tsrx = vueFiles.some(isTsrxFile)
+    ? prepareTsrxSelection(cwd, originalArgs, config, candidates, tsrxHost)
+    : undefined;
   // Stock --debug files runs after original CLI/VCS/config ignore selection and
   // config validation, before linting or fixing. The engine owns this predicate.
   const selection = await run(["--debug", "files", ...originalArgs]);
@@ -144,9 +180,13 @@ export async function prepareScopedSelection(
     throw new Error(
       "Scoped Vue transport cannot bind every selected file to an original candidate.",
     );
-  const selectedVue = vueFiles.filter((file) => selected.includes(file));
+  const selectedTsrx = tsrx?.select() ?? [];
+  const selectedVue = vueFiles.filter(
+    (file) => selected.includes(file) || selectedTsrx.includes(file),
+  );
   if (selectedVue.length === 0) {
     const original = await run(originalArgs);
+    tsrx?.assertCustody();
     return {
       result: vueFiles.some(isStandaloneHtmlFile)
         ? unavailableProjectTransport(
@@ -164,7 +204,7 @@ export async function prepareScopedSelection(
   const directoryTransport = platform === "win32";
   const bridgeOptions = bridgeProjectArgs(options, directoryTransport);
   projectOutputFormat(options);
-  const phases = splitProjectConfig(config, directoryTransport);
+  const phases = splitProjectConfig(config, directoryTransport, selectedVue);
   validateScopedConfig(phases.bridge, bridgeOptions);
   let originalResult: OxlintProcessResult | undefined;
   let mirror: ReturnType<typeof createScopedMirror> | undefined;
@@ -185,6 +225,7 @@ export async function prepareScopedSelection(
     config = phases.bridge;
     if (vueFiles.some(isStandaloneHtmlFile))
       throw new Error("Scoped Vue transport cannot combine standalone HTML and Vue targets.");
+    tsrx?.assertCustody();
     mirror = createScopedMirror(cwd, config, selectedVue);
     const args = [...bridgeOptions];
     if (config.discovered) args.unshift("--config", mirror.sibling);
@@ -220,6 +261,8 @@ export async function prepareScopedSelection(
         locations: mirror.locations,
         usedScriptlessWorkaround: true,
         cleanup: mirror.cleanup,
+        assertCustody: tsrx?.assertCustody,
+        additionalOriginalFiles: selectedTsrx.length,
       },
     };
   } catch (error) {

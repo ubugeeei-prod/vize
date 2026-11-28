@@ -1,6 +1,8 @@
 import fs from "node:fs";
 
 import type { Context } from "@oxlint/plugins";
+import { isTsrxFile } from "./file-kinds.js";
+import { validateWorkaroundAuthority } from "./workaround.js";
 import { lintPatina } from "./binding.js";
 import {
   diagnosticsForRule,
@@ -106,6 +108,16 @@ export function getActiveRuleDiagnostics(
     cached = { key: selection.cacheKey, diagnostics };
     results.set(state, cached);
   }
+  // Native execution may invoke callbacks. Accept results only while the
+  // authenticated original bytes still own this carrier's source revision.
+  if ((firstExit || finalExit) && isTsrxFile(state.filename)) {
+    try {
+      validateWorkaroundAuthority(state, context.physicalFilename);
+    } catch (error) {
+      programs.delete(program);
+      throw error;
+    }
+  }
   const diagnostics = diagnosticsForRule(state, cached.diagnostics, ruleName);
   collection.remaining!.delete(ruleName);
   if (collection.remaining!.size === 0) programs.delete(program);
@@ -133,6 +145,13 @@ function hasCurrentProgramInputs(
   }
 
   if (checkPhysicalFile) {
+    if (isTsrxFile(collection.state.filename)) {
+      try {
+        validateWorkaroundAuthority(collection.state, context.physicalFilename);
+      } catch {
+        return false;
+      }
+    }
     const currentIdentity = physicalIdentity(context.physicalFilename);
     const expectedIdentity = collection.physicalIdentity;
     if (

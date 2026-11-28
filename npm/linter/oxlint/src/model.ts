@@ -1,4 +1,9 @@
-import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
+import type {
+  OxlintHtmlOptions,
+  OxlintHtmlOutcome,
+  OxlintTsrxOptions,
+  OxlintTsrxSelection,
+} from "@vizejs/native";
 import type { VOnEventHyphenationOptions } from "./v-on-event-options.js";
 import type { AttributeHyphenationOptions } from "./attribute-options.js";
 import type { PropNameCasingOptions } from "./prop-name-options.js";
@@ -76,6 +81,7 @@ export interface NativeSfcDescriptor {
 export interface PatinaBinding {
   parseSfc(source: string): NativeSfcDescriptor;
   lintOxlintHtml?: (options: OxlintHtmlOptions) => OxlintHtmlOutcome;
+  selectOxlintTsrx?: (options: OxlintTsrxOptions) => OxlintTsrxSelection;
   lintPatinaSfc(
     source: string,
     options?: {

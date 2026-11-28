@@ -4,7 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { prepareWorkaroundSource } from "../workaround.ts";
-import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { isStandaloneHtmlFile, isTsrxFile } from "../file-kinds.ts";
 import { registerLocationVariants, registerPathReplacementVariants } from "./workaround-files.ts";
 import type { BridgeLocations } from "./locations.js";
 
@@ -168,9 +168,10 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
           "Scoped Vue transport requires .vue targets; HTML filtering is not equivalent.",
         );
       const relative = path.relative(configDir, file);
-      const copy = contains(configDir, file)
+      const projected = contains(configDir, file)
         ? path.join(root, "inside", relative)
         : path.join(root, "outside", file.slice(path.parse(file).root.length));
+      const copy = isTsrxFile(file) ? `${projected}.vue` : projected;
       if (path.parse(file).root !== path.parse(configDir).root)
         throw new Error("Scoped Vue transport cannot preserve files on another filesystem root.");
       const source = fs.readFileSync(file, "utf8");
@@ -234,6 +235,15 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
       return borrowed;
     };
     const borrowed = project(config.value);
+    // TSRX selection uses the original-path native matcher, whose finite
+    // envelope refuses overrides. Its host carrier must always keep syntax
+    // failures on an error rule, independently of selected warning rules.
+    if (files.some(isTsrxFile)) {
+      borrowed.rules = {
+        ...(isRecord(borrowed.rules) ? borrowed.rules : {}),
+        "vize/parser/tsrx": "error",
+      };
+    }
     // The borrowed config is a sibling: plugin/extends resolution keeps its
     // original directory. Global ignores remain unchanged and apply to original
     // paths; copies live outside this root and were selected by the real engine.

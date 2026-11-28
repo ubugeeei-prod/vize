@@ -34,6 +34,7 @@ export function mergeProjectOutput(
   original: OxlintProcessResult,
   bridge: OxlintProcessResult,
   args: readonly string[],
+  additionalOriginalFiles = 0,
 ): OxlintProcessResult {
   const format = projectOutputFormat(args);
   const unavailable = (phase: OxlintProcessResult): OxlintProcessResult => ({
@@ -85,6 +86,9 @@ export function mergeProjectOutput(
     }
     stdout = joinProjectJson(original.stdout, bridge.stdout, {
       ...totals,
+      ...(additionalOriginalFiles
+        ? { number_of_files: source.number_of_files + additionalOriginalFiles }
+        : {}),
       number_of_rules: source.number_of_rules + template.number_of_rules,
       threads_count: Math.max(source.threads_count, template.threads_count),
       start_time: source.start_time + template.start_time,

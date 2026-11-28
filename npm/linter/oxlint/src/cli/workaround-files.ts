@@ -1,13 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { isStandaloneHtmlFile, isTsrxFile } from "../file-kinds.ts";
 import { prepareWorkaroundSource } from "../workaround.ts";
 import type { BridgeLocations } from "./locations.js";
 
 export interface PreparedWorkaroundFiles {
   appendedArgs: string[];
   cleanup(): void;
+  assertCustody?(): void;
+  additionalOriginalFiles?: number;
   pathReplacements: ReadonlyMap<string, string>;
   locations: ReadonlyMap<string, BridgeLocations>;
   usedScriptlessWorkaround: boolean;
@@ -49,9 +51,10 @@ export function prepareScriptlessWorkaroundFiles(
         tempDir = created.tempDir;
         createdNodeModules = created.createdNodeModules;
       }
-      const tempBasename = isStandaloneHtml
-        ? `${path.basename(filename)}.vue`
-        : path.basename(filename);
+      const tempBasename =
+        isStandaloneHtml || isTsrxFile(filename)
+          ? `${path.basename(filename)}.vue`
+          : path.basename(filename);
       const tempFilename = path.join(tempDir, `${counter}-${tempBasename}`);
       counter += 1;
 

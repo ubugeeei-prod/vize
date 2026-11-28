@@ -181,6 +181,41 @@ pub(crate) fn select_with_root_decoder<T>(
     request: Request<'_>,
     decode: impl FnOnce(&Path, &[u8]) -> Result<(serde_json::Value, T), Refusal>,
 ) -> Result<(Selection, T), Refusal> {
+    select_with_extensions(request, decode, &["html", "htm"])
+}
+
+/// The same pinned original-path predicate, restricted to TSRX rather than HTML.
+/// Every existing profile refusal remains in force; this does not project configs.
+pub(crate) fn select_tsrx(request: Request<'_>, expected: &[u8]) -> Result<Selection, Refusal> {
+    select_with_extensions(
+        request,
+        |path, bytes| {
+            if bytes != expected {
+                return Err(Refusal::new(
+                    RefusalKind::ConfigIdentity,
+                    path,
+                    "root JSON differs from the original caller snapshot",
+                ));
+            }
+            serde_json::from_slice(bytes)
+                .map(|value| (value, ()))
+                .map_err(|error| Refusal {
+                    kind: RefusalKind::RootJsonSyntax,
+                    path: path.to_path_buf(),
+                    details: error.to_compact_string(),
+                    original_bytes: Some(bytes.to_vec()),
+                })
+        },
+        &["tsrx"],
+    )
+    .map(|(selection, ())| selection)
+}
+
+fn select_with_extensions<T>(
+    request: Request<'_>,
+    decode: impl FnOnce(&Path, &[u8]) -> Result<(serde_json::Value, T), Refusal>,
+    extensions: &[&str],
+) -> Result<(Selection, T), Refusal> {
     let admitted = envelope::admit(&request)?;
     let mut selection = Selection {
         host: request.host,
@@ -219,6 +254,7 @@ pub(crate) fn select_with_root_decoder<T>(
             &config,
             overrides,
             admitted.is_dir,
+            extensions,
             &mut selection,
         )?;
     }

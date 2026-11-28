@@ -21,6 +21,7 @@ mod file_collection;
 mod lint_options;
 mod oxlint_html;
 mod oxlint_html_binding;
+mod oxlint_tsrx_binding;
 mod rule_metadata;
 use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_attribute_ignore,
@@ -35,6 +36,7 @@ pub use oxlint_html_binding::dto::{
     OxlintHtmlRefusal, OxlintHtmlRule, OxlintHtmlSettings, OxlintHtmlSource,
 };
 pub use oxlint_html_binding::lint_oxlint_html;
+pub use oxlint_tsrx_binding::{OxlintTsrxOptions, OxlintTsrxSelection, select_oxlint_tsrx};
 use rule_metadata::collect_patina_rule_metadata;
 
 fn create_position_object(line: u32, column: u32, offset: u32) -> Value {

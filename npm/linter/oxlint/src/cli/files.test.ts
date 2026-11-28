@@ -62,3 +62,18 @@ void test("collectVueLikeFilesFromTargets ignores supported-extension directorie
     fs.rmSync(root, { force: true, recursive: true });
   }
 });
+
+void test("TSRX originals are discovered as carrier inputs without classifying them as host scripts", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tsrx-files-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "src"));
+  for (const name of ["Avatar.tsrx", "Original.tsx", "Original.jsx", "Original.vue"])
+    fs.writeFileSync(path.join(root, "src", name), "");
+  const originals = [path.join(root, "src/Avatar.tsrx"), path.join(root, "src/Original.vue")];
+  assert.deepEqual(collectVueLikeFilesFromTargets(root, ["src"]), originals);
+  assert.deepEqual(collectVueLikeFilesFromTargets(root, ["src/*.tsrx"]), originals.slice(0, 1));
+  assert.deepEqual(
+    collectVueLikeFilesFromTargets(root, ["src/Avatar.tsrx"]),
+    originals.slice(0, 1),
+  );
+});

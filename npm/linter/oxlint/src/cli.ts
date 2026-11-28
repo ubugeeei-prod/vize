@@ -48,6 +48,8 @@ async function main(): Promise<void> {
       vueFiles,
       (args) => runOxlint(process.execPath, [oxlintEntrypoint, ...args], cwd),
       candidates,
+      process.platform,
+      { version, entrypoint: oxlintEntrypoint },
     );
   } catch (error) {
     if (!html) throw error;
@@ -73,6 +75,7 @@ async function main(): Promise<void> {
     let merged: Awaited<ReturnType<typeof runOxlint>>;
     try {
       result = sourceResult ?? (await runOxlint(process.execPath, args, cwd));
+      prepared.assertCustody?.();
       const mappedStdout = rewriteReportedPaths(
         rewriteReportedLocations(result.stdout, prepared.locations),
         prepared.pathReplacements,
@@ -89,7 +92,12 @@ async function main(): Promise<void> {
         rawStderr: mappedStderr === result.stderr ? result.rawStderr : undefined,
       };
       if (transport?.originalResult)
-        merged = mergeProjectOutput(transport.originalResult, merged, forwardedArgs);
+        merged = mergeProjectOutput(
+          transport.originalResult,
+          merged,
+          forwardedArgs,
+          prepared.additionalOriginalFiles,
+        );
       if (html) merged = joinHtmlTargets(merged, html, forwardedArgs);
       if (requestsTypeAware(forwardedArgs, cwd))
         merged = await withVueTypeAwarePass(merged, cwd, oxlintEntrypoint, forwardedArgs, vueFiles);

@@ -2108,3 +2108,20 @@ export interface TypeProjectContextNapi {
   root: string;
   revision: string;
 }
+
+/** Original-path TSRX selection with the pinned Oxlint host ignore policies. */
+export declare function selectOxlintTsrx(options: OxlintTsrxOptions): OxlintTsrxSelection;
+export interface OxlintTsrxOptions {
+  cwd: string;
+  literalTargets: Array<string>;
+  rootJson: string;
+  rootBytes: Array<number>;
+  hostProfile: string;
+  noIgnore: boolean;
+  cliIgnorePatterns: Array<string>;
+  customIgnoreFilename: string;
+}
+export interface OxlintTsrxSelection {
+  originals: Array<OxlintHtmlOriginal>;
+  sources: Array<OxlintHtmlSource>;
+}

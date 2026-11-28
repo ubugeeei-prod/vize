@@ -11,10 +11,10 @@ import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-colle
 import { getPatinaRules, withHostGlobals } from "./binding.js";
 import { pluginRules } from "./plugin-rules.js";
 import { createOxlintDiagnostic, shouldReportForCurrentProgram } from "./report.js";
-import { getScriptMap, markDiagnosticAsReported } from "./file-state.js";
+import { getFileState, getScriptMap, markDiagnosticAsReported } from "./file-state.js";
 import type { PatinaRuleMeta } from "./model.js";
 import { getActivePreset, getVizeSettings, isIncrementalPreset, isPatinaFile } from "./settings.js";
-import { isPlainScriptFile } from "./file-kinds.js";
+import { isPlainScriptFile, isTsrxFile } from "./file-kinds.js";
 
 function createPatinaRule(ruleMeta: PatinaRuleMeta) {
   return defineRule({
@@ -31,6 +31,8 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
           if (!isPatinaFile(context.filename)) {
             return;
           }
+          if (ruleMeta.name === "parser/tsrx" && !isTsrxFile(getFileState(context).filename))
+            return;
           // A rule that can't report on a plain module skips it, so a file no active rule reads is never read
           if (ruleMeta.plainScripts === false && isPlainScriptFile(context.filename)) {
             return;
@@ -367,5 +369,16 @@ export default definePlugin({
   meta: {
     name: "vize",
   },
-  rules: { ...patinaRules, ...pluginRules },
+  rules: {
+    ...patinaRules,
+    ...pluginRules,
+    "parser/tsrx": createPatinaRule({
+      name: "parser/tsrx",
+      description: "Report TSRX syntax and unsupported lowering failures",
+      category: "correctness",
+      fixable: false,
+      defaultSeverity: "error",
+      presets: [],
+    }),
+  },
 });
