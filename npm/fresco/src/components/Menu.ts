@@ -22,9 +22,11 @@ interface MenuItemBase {
   separator?: boolean;
 }
 
+/** Command metadata paired with an explicit value or its string key. */
 export type MenuItem<Value = string> = MenuItemBase &
   ([Value] extends [string] ? { value?: Value } : { value: Value });
 
+/** Commands, focused index, viewport size, and keyboard ownership for Menu. */
 export interface MenuProps<Value = string> {
   /** Menu items */
   items: readonly MenuItem<Value>[];
@@ -48,6 +50,7 @@ export interface MenuProps<Value = string> {
   shortcutFg?: string;
 }
 
+/** Erased command shape used by the Vue runtime prop declaration. */
 export interface RuntimeMenuItem extends MenuItemBase {
   value?: unknown;
 }
@@ -56,6 +59,7 @@ function menuItemValue(item: RuntimeMenuItem): unknown {
   return Object.hasOwn(item, "value") ? item.value : item.key;
 }
 
+/** Navigate terminal commands and emit the selected command value. */
 export const Menu = defineComponent({
   name: "Menu",
   props: {

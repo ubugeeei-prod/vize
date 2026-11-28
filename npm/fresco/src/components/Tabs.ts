@@ -25,12 +25,16 @@ interface TabBase {
   disabled?: boolean;
 }
 
+/** Labelled tab metadata paired with its selected value or string key. */
 export type Tab<Value = string> = TabBase &
   ([Value] extends [string] ? { value?: Value } : { value: Value });
 
+/** Object property accepted as the active-tab comparison key. */
 export type TabsValueKey<Value> = CollectionValueKey<Value>;
+/** Property-key or callback policy for comparing active tab values. */
 export type TabsBy<Value> = CollectionBy<Value>;
 
+/** Tab definitions, active value, comparison policy, focus, and appearance. */
 export interface TabsProps<Value = string> {
   /** Tab definitions */
   tabs: readonly Tab<Value>[];
@@ -56,6 +60,7 @@ export interface TabsProps<Value = string> {
   underline?: boolean;
 }
 
+/** Erased tab shape used by the Vue runtime prop declaration. */
 export interface RuntimeTab extends TabBase {
   value?: unknown;
 }
@@ -64,6 +69,7 @@ function tabValue(tab: RuntimeTab): unknown {
   return Object.hasOwn(tab, "value") ? tab.value : tab.key;
 }
 
+/** Navigate enabled tabs and emit the active tab value. */
 export const Tabs = defineComponent({
   name: "Tabs",
   props: {

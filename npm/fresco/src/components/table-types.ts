@@ -1,7 +1,9 @@
 /** One table row addressable by string column keys. */
 export type TableRow = Readonly<Record<string, unknown>>;
 
+/** Horizontal alignment of content within a terminal table column. */
 export type TableAlignment = "left" | "center" | "right";
+/** Ascending or descending ordering requested for a table column. */
 export type TableSortDirection = "ascending" | "descending";
 
 /** Typed table column definition. */
@@ -26,6 +28,7 @@ export interface TableColumn<Row extends TableRow = TableRow> {
   compare?: (left: Row, right: Row) => number;
 }
 
+/** Visible and retained row-index bounds of a table viewport. */
 export interface TableViewportRange {
   readonly visibleStart: number;
   readonly visibleEnd: number;
@@ -64,6 +67,7 @@ export interface TableProps<Row extends TableRow = TableRow> {
   resizeStep?: number;
 }
 
+/** Row, column, value, and rendered text passed to a table cell slot. */
 export interface TableCellSlotProps<Row extends TableRow = TableRow> {
   readonly row: Row;
   readonly rowIndex: number;

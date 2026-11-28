@@ -12,9 +12,12 @@ import type {
   FrescoRenderStyle,
 } from "../protocol.js";
 
+/** Dimension shared with the canonical terminal layout protocol. */
 export type DimensionValue = FrescoDimension;
+/** Canonical border styles plus the round and bold compatibility names. */
 export type BorderStyleName = FrescoBorderStyle | "round" | "bold";
 
+/** Flex layout, spacing, border, appearance, and focus routing for a terminal box. */
 export interface BoxProps extends FrescoCanonicalStyle {
   /** Logical useFocus target routed to this host node. */
   focusId?: string;
@@ -75,6 +78,7 @@ function normalizeBorderStyle(style: BorderStyleName | undefined): BorderStyleNa
   return style;
 }
 
+/** Render a flex-layout container backed by a terminal box host node. */
 export const Box = defineComponent({
   name: "Box",
   props: {

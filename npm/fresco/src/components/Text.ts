@@ -8,6 +8,7 @@ import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnable
 import type { FrescoAppearance } from "../protocol.js";
 import { stringifyChildren } from "../utils/text.js";
 
+/** Wrapping and truncation policies accepted by terminal text nodes. */
 export type TextWrap =
   | boolean
   | "wrap"
@@ -19,6 +20,7 @@ export type TextWrap =
   | "end"
   | "middle";
 
+/** Text content, wrapping policy, and terminal appearance with compatibility aliases. */
 export interface TextProps extends FrescoAppearance {
   /** Text content (alternative to slot) */
   content?: string;
@@ -36,6 +38,7 @@ export interface TextProps extends FrescoAppearance {
   "aria-hidden"?: boolean;
 }
 
+/** Render terminal text from content or the default slot. */
 export const Text = defineComponent({
   name: "Text",
   props: {
@@ -94,6 +97,7 @@ export const Text = defineComponent({
  * Convenience components for common text styles
  */
 
+/** Render red terminal text for errors. */
 export const ErrorText = defineComponent({
   name: "ErrorText",
   props: {
@@ -104,6 +108,7 @@ export const ErrorText = defineComponent({
   },
 });
 
+/** Render yellow terminal text for warnings. */
 export const WarningText = defineComponent({
   name: "WarningText",
   props: {
@@ -114,6 +119,7 @@ export const WarningText = defineComponent({
   },
 });
 
+/** Render green terminal text for successful outcomes. */
 export const SuccessText = defineComponent({
   name: "SuccessText",
   props: {
@@ -124,6 +130,7 @@ export const SuccessText = defineComponent({
   },
 });
 
+/** Render blue terminal text for informational output. */
 export const InfoText = defineComponent({
   name: "InfoText",
   props: {
@@ -134,6 +141,7 @@ export const InfoText = defineComponent({
   },
 });
 
+/** Render terminal text with dim appearance. */
 export const MutedText = defineComponent({
   name: "MutedText",
   props: {

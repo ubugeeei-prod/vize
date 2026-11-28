@@ -4,8 +4,10 @@
 
 import { defineComponent, h, ref, onMounted, onUnmounted, type PropType, computed } from "vue";
 
+/** Elapsed-time or remaining-time presentation. */
 export type TimerMode = "countdown" | "stopwatch";
 
+/** Mode, initial seconds, automatic start, display style, and timer events. */
 export interface TimerProps {
   /** Timer mode */
   mode?: TimerMode;
@@ -25,6 +27,7 @@ export interface TimerProps {
   dangerFg?: string;
 }
 
+/** Display a stopwatch or countdown and release its interval when unmounted. */
 export const Timer = defineComponent({
   name: "Timer",
   props: {

@@ -10,6 +10,7 @@ import {
 } from "vue";
 import { useInput } from "./useInput.js";
 
+/** One normalized key chord with exact modifier matching. */
 export interface KeymapStroke {
   readonly key: string;
   readonly ctrl?: boolean;
@@ -18,33 +19,40 @@ export interface KeymapStroke {
   readonly meta?: boolean;
 }
 
+/** Command associated with a nonempty sequence of key chords. */
 export interface KeymapBinding<Command extends string = string> {
   readonly command: Command;
   readonly sequence: readonly [KeymapStroke, ...KeymapStroke[]];
 }
 
+/** Readonly collection of terminal command bindings. */
 export type Keymap<Command extends string = string> = readonly KeymapBinding<Command>[];
 
+/** Completed command and binding, or the current pending-prefix state. */
 export interface KeymapMatch<Command extends string> {
   readonly command?: Command;
   readonly binding?: KeymapBinding<Command>;
   readonly pending: boolean;
 }
 
+/** Stateful key-chord sequence matcher with explicit reset. */
 export interface KeymapResolver<Command extends string> {
   readonly pendingSequence: readonly KeymapStroke[];
   feed(stroke: KeymapStroke): KeymapMatch<Command>;
   reset(): void;
 }
 
+/** Keymap activation, partial-sequence deadline, and command delivery callback. */
 export interface UseKeymapOptions<Command extends string> {
   readonly keymap: MaybeRefOrGetter<Keymap<Command>>;
+  /** Whether this component receives command chords. @default true */
   readonly active?: MaybeRefOrGetter<boolean>;
-  /** Idle time before an incomplete multi-stroke sequence is cleared. */
+  /** Milliseconds before clearing an incomplete sequence; zero or negative values disable deadline clearing. @default 1000 */
   readonly sequenceTimeout?: number;
   readonly onCommand: (command: Command, binding: KeymapBinding<Command>) => void;
 }
 
+/** Effective activation, readonly pending chord sequence, and reset command. */
 export interface UseKeymapReturn {
   readonly isActive: Readonly<Ref<boolean>>;
   readonly pendingSequence: Readonly<Ref<readonly KeymapStroke[]>>;

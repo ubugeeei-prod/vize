@@ -4,6 +4,7 @@
 
 import { computed, defineComponent, h } from "vue";
 
+/** Number, gutter width, separator, and colors for a source-line label. */
 export interface LineNumberProps {
   /** Line number displayed in the gutter. */
   value: number;
@@ -28,6 +29,7 @@ function normalizeInteger(value: number, minimum: number): number {
   return Math.max(minimum, Math.trunc(value));
 }
 
+/** Render a padded source-line gutter before its default-slot content. */
 export const LineNumber = defineComponent({
   name: "LineNumber",
   props: {

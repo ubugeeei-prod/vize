@@ -1,5 +1,5 @@
 /**
- * Test-only mount harness for the Fresco JS layer.
+ * Mount harness for testing the Fresco JS layer.
  *
  * Fresco's renderer is pure JS up to the byte boundary that crosses into the
  * native module: `renderer.ts` imports only types from `@vizejs/fresco-native`,
@@ -8,7 +8,7 @@
  * same provide set `createApp`/`renderToString` install, so tests assert the
  * mounted `FrescoNode` output tree without a native build and without mocks.
  *
- * Not exported from the package entry points; `vp pack` does not ship it.
+ * Published through `@vizejs/fresco/testing` for application and component tests.
  */
 
 import {
@@ -35,15 +35,15 @@ import {
 
 /** Options for {@link mountFresco}. */
 export interface MountFrescoOptions {
-  /** Terminal width provided through the app context. Defaults to 80. */
+  /** Terminal width provided through the app context. @default 80 */
   width?: number;
-  /** Terminal height provided through the app context. Defaults to 24. */
+  /** Terminal height provided through the app context. @default 24 */
   height?: number;
-  /** Initial screen reader mode. Defaults to false. */
+  /** Initial screen-reader mode. @default false */
   screenReader?: boolean;
-  /** Observe host-tree mutations that require a native frame. */
+  /** Observe host-tree mutations that require a frame. @default undefined */
   onMutation?: () => void;
-  /** Observe host-node lifecycle transitions. */
+  /** Observe host-node lifecycle transitions. @default undefined */
   lifecycle?: FrescoNodeLifecycleHooks;
 }
 

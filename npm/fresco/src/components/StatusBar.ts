@@ -4,6 +4,7 @@
 
 import { defineComponent, h, type PropType, type VNode } from "vue";
 
+/** Labelled status content with per-item colors and alignment. */
 export interface StatusBarItem {
   key: string;
   content: string;
@@ -13,6 +14,7 @@ export interface StatusBarItem {
   align?: "left" | "right";
 }
 
+/** Status items, separators, and shared terminal appearance. */
 export interface StatusBarProps {
   /** Status bar items */
   items: StatusBarItem[];
@@ -24,6 +26,7 @@ export interface StatusBarProps {
   separator?: string;
 }
 
+/** Display left- and right-aligned terminal status items. */
 export const StatusBar = defineComponent({
   name: "StatusBar",
   props: {

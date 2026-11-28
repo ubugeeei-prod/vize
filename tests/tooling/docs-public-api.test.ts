@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
@@ -9,6 +10,14 @@ import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 
 const uiRoot = new URL("../../npm/ui/", import.meta.url);
 const npmRoot = new URL("../../npm/", import.meta.url);
+const frescoRoot = new URL("../../npm/fresco/", import.meta.url);
+const frescoManifest = JSON.parse(readFileSync(new URL("package.json", frescoRoot), "utf8")) as {
+  exports: Record<string, unknown>;
+};
+const frescoEntrypoints = Object.keys(frescoManifest.exports).map(
+  (subpath) =>
+    new URL(subpath === "." ? "src/index.ts" : `src/${subpath.slice(2)}/index.ts`, frescoRoot),
+);
 
 const packages = [
   {
@@ -29,7 +38,10 @@ const packages = [
   },
   {
     name: "@vizejs/fresco",
-    source: new URL("../../npm/fresco/src/", import.meta.url),
+    sourceRoot: new URL("src/", frescoRoot),
+    minimumDeclarations: 382,
+    minimumOptionalMembers: 83,
+    entrypoints: frescoEntrypoints,
   },
   {
     name: "@vizejs/marquette",

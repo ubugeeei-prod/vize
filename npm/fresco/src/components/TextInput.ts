@@ -29,6 +29,7 @@ import {
   type TextEditingState,
 } from "./text-editing.js";
 
+/** Controlled or initial single-line text, focus, validation, and editing events. */
 export interface TextInputProps {
   /** Input value (v-model) */
   modelValue?: string;
@@ -73,6 +74,7 @@ export interface TextInputProps {
   onCompositionEnd?: (text: string) => void;
 }
 
+/** Edit single-line terminal text with grapheme-aware selection and IME support. */
 export const TextInput = defineComponent({
   name: "TextInput",
   props: {

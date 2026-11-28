@@ -4,11 +4,13 @@
 
 import { defineComponent, h, type PropType } from "vue";
 
+/** Displayed key labels and the action they describe. */
 export interface KeyBinding {
   keys: string[];
   description: string;
 }
 
+/** Key bindings, layout direction, and colors for a shortcut legend. */
 export interface KeyHintProps {
   /** Key bindings to display */
   bindings: KeyBinding[];
@@ -24,6 +26,7 @@ export interface KeyHintProps {
   separator?: string;
 }
 
+/** Display key chords and their action descriptions. */
 export const KeyHint = defineComponent({
   name: "KeyHint",
   props: {

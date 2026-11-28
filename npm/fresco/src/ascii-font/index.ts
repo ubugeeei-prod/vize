@@ -2,6 +2,7 @@
 
 import { computed, defineComponent, h, type PropType } from "vue";
 
+/** Consumer-owned font renderer that produces a fixed number of terminal rows. */
 export interface AsciiFontProvider {
   /** Stable provider name used by diagnostics and devtools. */
   readonly name: string;
@@ -11,14 +12,19 @@ export interface AsciiFontProvider {
   render(text: string): readonly string[];
 }
 
+/** Named glyph table, fallback rows, spacing, and Unicode code-point normalization. */
 export interface GlyphAsciiFontOptions {
   name: string;
   glyphs: Readonly<Record<string, readonly string[]>>;
+  /** Rows for missing glyphs; the row count must match the glyph table. @default One "?" row per glyph height */
   fallback?: readonly string[];
+  /** Spaces between glyphs; finite values truncate and clamp to zero, nonfinite values use one. @default 1 */
   letterSpacing?: number;
+  /** Normalize each Unicode code point before looking up its glyph. @default character => character.toUpperCase() */
   normalize?: (character: string) => string;
 }
 
+/** Text, provider, and terminal appearance for a rendered ASCII font. */
 export interface AsciiFontProps {
   text: string;
   provider: AsciiFontProvider;

@@ -1,5 +1,7 @@
+/** Semantic style choices for terminal alerts. */
 export type AlertType = "info" | "success" | "warning" | "error";
 
+/** Alert message, semantic style, title, icon visibility, and terminal colors. */
 export interface AlertProps {
   /** Alert message */
   message: string;
@@ -21,8 +23,10 @@ export const alertConfigs: Record<AlertType, { icon: string; fg: string; title: 
   error: { icon: "✗", fg: "red", title: "Error" },
 };
 
+/** Presence state represented by an avatar status glyph. */
 export type AvatarStatus = "online" | "offline" | "away" | "busy";
 
+/** Name, initials, size, appearance, and optional presence state for an avatar. */
 export interface AvatarProps {
   /** User name used to generate initials */
   name?: string;
@@ -56,6 +60,7 @@ export const avatarStatusIcons: Record<AvatarStatus, string> = {
   busy: "⊘",
 };
 
+/** Stable identity and visible content for one navigation breadcrumb. */
 export interface BreadcrumbItem {
   /** Stable item key */
   key: string;
@@ -65,6 +70,7 @@ export interface BreadcrumbItem {
   icon?: string;
 }
 
+/** Breadcrumb items, separator, active-item color, and shared appearance. */
 export interface BreadcrumbProps {
   /** Breadcrumb items */
   items: BreadcrumbItem[];
@@ -78,6 +84,7 @@ export interface BreadcrumbProps {
   separatorFg?: string;
 }
 
+/** Heading, footer, border, spacing, and appearance for a terminal content card. */
 export interface CardProps {
   /** Card title */
   title?: string;
@@ -97,6 +104,7 @@ export interface CardProps {
   bg?: string;
 }
 
+/** Title, auxiliary content fallbacks, and terminal appearance for a header. */
 export interface HeaderProps {
   /** Header title */
   title: string;
@@ -116,8 +124,10 @@ export interface HeaderProps {
   borderBottom?: boolean;
 }
 
+/** Side of the anchor used to place a terminal tooltip. */
 export type TooltipPosition = "top" | "bottom" | "left" | "right";
 
+/** Tooltip text, visibility, placement, gap, and terminal appearance. */
 export interface TooltipProps {
   /** Tooltip text */
   text: string;

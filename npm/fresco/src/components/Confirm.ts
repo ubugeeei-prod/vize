@@ -5,6 +5,7 @@
 import { computed, defineComponent, h, ref } from "vue";
 import { useInput } from "../composables/useInput.js";
 
+/** Message, initial choice, appearance, and result events for a confirmation prompt. */
 export interface ConfirmProps {
   /** Confirmation message */
   message: string;
@@ -24,6 +25,7 @@ export interface ConfirmProps {
   selectedFg?: string;
 }
 
+/** Present a focused terminal choice between confirmation and cancellation. */
 export const Confirm = defineComponent({
   name: "Confirm",
   props: {

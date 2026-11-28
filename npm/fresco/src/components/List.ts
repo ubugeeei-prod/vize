@@ -25,12 +25,16 @@ interface ListItemBase {
   disabled?: boolean;
 }
 
+/** Display metadata paired with a selected value, or its key for string items. */
 export type ListItem<Value = string> = ListItemBase &
   ([Value] extends [string] ? { value?: Value } : { value: Value });
 
+/** Object property accepted as the list value-comparison key. */
 export type ListValueKey<Value> = CollectionValueKey<Value>;
+/** Property-key or callback policy for comparing selected list values. */
 export type ListBy<Value> = CollectionBy<Value>;
 
+/** Items, selection, comparison policy, focus, and viewport inputs for List. */
 export interface ListProps<Value = string> {
   /** List items */
   items: readonly ListItem<Value>[];
@@ -54,6 +58,7 @@ export interface ListProps<Value = string> {
   selectedBg?: string;
 }
 
+/** Erased item shape used by the Vue runtime prop declaration. */
 export interface RuntimeListItem extends ListItemBase {
   value?: unknown;
 }
@@ -62,6 +67,7 @@ function listItemValue(item: RuntimeListItem): unknown {
   return Object.hasOwn(item, "value") ? item.value : item.key;
 }
 
+/** Navigate and select items in a bounded terminal list. */
 export const List = defineComponent({
   name: "List",
   props: {

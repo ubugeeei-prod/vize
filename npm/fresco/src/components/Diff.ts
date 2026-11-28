@@ -12,8 +12,10 @@ import {
 } from "./diff-algorithm.js";
 import { LineNumber } from "./LineNumber.js";
 
+/** Unified or side-by-side layout for changed lines. */
 export type DiffView = "unified" | "split";
 
+/** Source texts, context, appearance, and viewport bounds for a terminal diff. */
 export interface DiffProps {
   oldText: string;
   newText: string;
@@ -41,6 +43,7 @@ function normalizedInteger(value: number | undefined, fallback: number): number 
   return Math.max(0, Math.trunc(value));
 }
 
+/** Render unified or split text differences within a bounded terminal viewport. */
 export const Diff = defineComponent({
   name: "Diff",
   props: {

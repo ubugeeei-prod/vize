@@ -59,6 +59,7 @@ export interface FormProps {
   focused?: boolean;
 }
 
+/** Coordinate named field slots with validation, focus, and submission. */
 export const Form = defineComponent({
   name: "Form",
   props: {

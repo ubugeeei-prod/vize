@@ -7,6 +7,7 @@ import { defineComponent, h, computed, type PropType } from "vue";
 import { Box } from "./Box.js";
 import { Text } from "./Text.js";
 
+/** Percentage, terminal width, label placement, and fill styles for progress. */
 export interface ProgressBarProps {
   /** Progress value (0-100) */
   value: number;
@@ -30,6 +31,7 @@ export interface ProgressBarProps {
   emptyFg?: string;
 }
 
+/** Render a determinate progress value from zero through one hundred. */
 export const ProgressBar = defineComponent({
   name: "ProgressBar",
   props: {

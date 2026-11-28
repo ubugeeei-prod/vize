@@ -5,6 +5,7 @@
 import { computed, defineComponent, h } from "vue";
 import { useInput } from "../composables/useInput.js";
 
+/** Checked state, focus, appearance, and change events for a terminal checkbox. */
 export interface CheckboxProps {
   /** Whether the checkbox is checked */
   modelValue?: boolean;
@@ -24,6 +25,7 @@ export interface CheckboxProps {
   checkedFg?: string;
 }
 
+/** Render a checkbox that responds to keyboard input while focused and enabled. */
 export const Checkbox = defineComponent({
   name: "Checkbox",
   props: {
