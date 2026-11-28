@@ -207,6 +207,7 @@ export function verifyPreparedTypecheckProvider(fixtureRoot, value, evidence) {
 
 if (
   process.argv[1] != null &&
+  existsSync(process.argv[1]) &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
 ) {
   const [command, fixtureRoot, provider, artifactPath] = process.argv.slice(2);
