@@ -161,10 +161,30 @@ fn full_entity_expansion_and_first_coexisting_label_keep_fixed_packets() {
 
 #[test]
 fn tsrx_runs_shared_id_semantics_with_the_complete_packet() {
-    let source = "export function Page() @{\n  <div id=\"x\"/><span id=\"x\"/>\n}\n";
+    let source = "export function Page() @{\n  <><div id=\"x\"/><span id=\"x\"/></>\n}\n";
     let expected = LintResult {
         filename: "Ids.tsrx".into(),
         diagnostics: vec![duplicate(source, "x", r#"id="x""#, r#"id="x""#)],
+        error_count: 1,
+        warning_count: 0,
+    };
+    let actual = linter(Box::new(IdDuplication)).lint_tsrx(source, "Ids.tsrx");
+    assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+}
+
+#[test]
+fn tsrx_unwrapped_siblings_keep_the_complete_parser_refusal_packet() {
+    let source = "export function Page() @{\n  <div id=\"x\"/><span id=\"x\"/>\n}\n";
+    let start = source.find("<span").unwrap() as u32;
+    let end = start + "<span id=\"x\"/>".len() as u32;
+    let expected = LintResult {
+        filename: "Ids.tsrx".into(),
+        diagnostics: vec![LintDiagnostic::error(
+            "parser/tsrx",
+            "TSRX2011: A code block renders a single node; wrap multiple nodes or text in a fragment '<>…</>'.",
+            start,
+            end,
+        )],
         error_count: 1,
         warning_count: 0,
     };
