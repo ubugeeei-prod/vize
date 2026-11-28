@@ -131,6 +131,29 @@ fn carries_what_a_used_type_names_in_turn_in_source_order() {
 }
 
 #[test]
+fn declaration_dependencies_keep_tabs_newlines_and_comments() {
+    let locals = collect_local_types(
+        "type\tWrapper<T> = Ref<T, Leaf>;\n\
+         interface\tLeaf { tail: Tail }\n\
+         declare\ttype Tail = End;\n\
+         declare/* ambient */type End = string;\n",
+    );
+    let used = [String::from("Wrapper")].into_iter().collect();
+    assert_eq!(
+        reachable_local_types(&locals, used)
+            .iter()
+            .map(|local| local.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["Wrapper", "Leaf", "Tail", "End"]
+    );
+    assert_eq!(locals[2].declaration.as_str(), "type Tail = End");
+    assert_eq!(
+        locals[3].declaration.as_str(),
+        "/* ambient */type End = string"
+    );
+}
+
+#[test]
 fn nuxt_component_members_keep_their_file_local_types() {
     let declarations = global_component_declarations_content(
         NUXT_COMPONENTS,

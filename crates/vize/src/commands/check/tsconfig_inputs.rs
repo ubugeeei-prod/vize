@@ -45,7 +45,7 @@ mod package_folder_tests;
 mod tests;
 
 pub(crate) use ambient::{
-    InstalledDeclarationGraph, collect_ambient_declaration_files,
+    DeclarationReference, InstalledDeclarationGraph, collect_ambient_declaration_files,
     collect_content_mapper_ambient_declarations, collect_declaration_reference_graph,
     collect_hidden_ambient_declaration_files,
     collect_installed_declaration_reference_graph_reading, collect_selected_nuxt_import_manifests,
@@ -60,7 +60,8 @@ pub(crate) use ownership::{
 };
 pub(crate) use spec::TsconfigDeclarationOptions;
 pub(crate) use type_references::{
-    collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
+    collect_tsconfig_type_packages, reference_attribute, reference_type_packages,
+    resolve_type_package_declaration_files,
 };
 
 #[cfg(test)]

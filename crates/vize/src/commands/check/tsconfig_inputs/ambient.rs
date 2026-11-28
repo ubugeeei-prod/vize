@@ -13,8 +13,8 @@ use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 use super::type_references::{
-    DeclarationContents, collect_tsconfig_type_packages, reference_directive_lines,
-    reference_type_packages, resolve_type_package_declaration_files,
+    DeclarationContents, collect_tsconfig_type_packages, reference_attribute,
+    reference_directive_lines, reference_type_packages, resolve_type_package_declaration_files,
     resolve_type_reference_declaration_files_reading,
 };
 
@@ -27,7 +27,7 @@ pub(crate) use content_mapper::{
     collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
 };
 pub(crate) use graph::{
-    InstalledDeclarationGraph, collect_declaration_reference_graph,
+    DeclarationReference, InstalledDeclarationGraph, collect_declaration_reference_graph,
     collect_installed_declaration_reference_graph_reading,
 };
 use realpaths::ReferenceRealpaths;
@@ -160,12 +160,15 @@ fn collect_ambient_declaration_files_from(
             Some(&project_root),
             false,
             &mut realpaths,
+            |_, _| {},
         ) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
         }
-        for referenced in reference_type_declaration_files(&path, &content, &mut contents) {
+        for referenced in
+            reference_type_declaration_files(&path, &content, &mut contents, |_, _| {})
+        {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -320,6 +323,7 @@ fn reference_path_declaration_files(
     project_root: Option<&Path>,
     installed: bool,
     realpaths: &mut ReferenceRealpaths,
+    mut record: impl FnMut(&str, &Path),
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
@@ -329,6 +333,7 @@ fn reference_path_declaration_files(
         .filter_map(|reference| {
             let spelled = base_dir.join(reference);
             let resolved = realpaths.resolve(&spelled);
+            record(reference, &resolved);
             if installed && path_has_component(&spelled, NODE_MODULES_DIR) {
                 realpaths.installed.insert(resolved.clone());
             }
@@ -345,6 +350,7 @@ fn reference_type_declaration_files(
     path: &Path,
     content: &str,
     contents: &mut DeclarationContents,
+    mut record: impl FnMut(&str, &[PathBuf]),
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
@@ -352,29 +358,19 @@ fn reference_type_declaration_files(
     reference_type_packages(content)
         .into_iter()
         .flat_map(|reference| {
-            resolve_type_reference_declaration_files_reading(base_dir, reference.as_str(), contents)
+            let targets = resolve_type_reference_declaration_files_reading(
+                base_dir,
+                reference.as_str(),
+                contents,
+            );
+            record(reference.as_str(), &targets);
+            targets
         })
         .collect()
 }
 
 fn reference_path_attribute(line: &str) -> Option<&str> {
-    let line = line.trim_start();
-    if !line.starts_with("///") || !line.contains("<reference") {
-        return None;
-    }
-    attribute_value(line, "path")
-}
-
-fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = vize_l0::cstr!("{name}=");
-    let start = line.find(needle.as_str())? + needle.len();
-    let quote = line.get(start..).unwrap_or_default().chars().next()?;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-    let value_start = start + quote.len_utf8();
-    let value_end = line.get(value_start..).unwrap_or_default().find(quote)? + value_start;
-    line.get(value_start..value_end)
+    reference_attribute(line, "path")
 }
 
 fn is_reference_manifest_declaration(content: &str) -> bool {

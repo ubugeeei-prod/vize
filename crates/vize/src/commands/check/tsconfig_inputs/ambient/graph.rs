@@ -42,6 +42,29 @@ pub(crate) struct InstalledDeclarationGraph {
     pub(crate) files: FxHashSet<PathBuf>,
     pub(crate) installed: FxHashSet<PathBuf>,
     pub(crate) references: FxHashMap<PathBuf, Vec<PathBuf>>,
+    pub(crate) directives: FxHashMap<PathBuf, Vec<DeclarationReference>>,
+}
+
+/// Directive targets resolved during the existing walk, including path targets
+/// outside the declaration-only graph. Snapshotting never resolves them again.
+pub(crate) enum DeclarationReference {
+    Path {
+        specifier: vize_l0::String,
+        target: PathBuf,
+    },
+    Types {
+        specifier: vize_l0::String,
+        targets: Vec<PathBuf>,
+    },
+}
+
+impl DeclarationReference {
+    pub(crate) fn key(&self) -> (&'static str, &str) {
+        match self {
+            Self::Path { specifier, .. } => ("path", specifier.as_str()),
+            Self::Types { specifier, .. } => ("types", specifier.as_str()),
+        }
+    }
 }
 
 pub(crate) fn collect_installed_declaration_reference_graph_reading(
@@ -63,24 +86,20 @@ fn reference_graph_reading(
     let mut files = configured_files.to_vec();
     // Configured roots may live outside the app (Nuxt's custom buildDir).
     // Their explicit references retain membership across that boundary.
-    let (mut installed, references) =
-        follow_declaration_references(installed, &mut files, &mut contents, &mut read);
-    let mut pending = installed.iter().cloned().collect::<Vec<_>>();
+    let mut graph = follow_declaration_references(installed, &mut files, &mut contents, &mut read);
+    let mut pending = graph.installed.iter().cloned().collect::<Vec<_>>();
     while let Some(parent) = pending.pop() {
-        for target in references.get(&parent).into_iter().flatten() {
-            if installed.insert(target.clone()) {
+        for target in graph.references.get(&parent).into_iter().flatten() {
+            if graph.installed.insert(target.clone()) {
                 pending.push(target.clone());
             }
         }
     }
-    InstalledDeclarationGraph {
-        files: files
-            .into_iter()
-            .filter(|path| is_declaration_file(path))
-            .collect(),
-        installed,
-        references,
-    }
+    graph.files = files
+        .into_iter()
+        .filter(|path| is_declaration_file(path))
+        .collect();
+    graph
 }
 
 fn follow_declaration_references(
@@ -88,10 +107,11 @@ fn follow_declaration_references(
     files: &mut Vec<PathBuf>,
     contents: &mut DeclarationContents,
     read: &mut dyn FnMut(&Path, &str),
-) -> (FxHashSet<PathBuf>, FxHashMap<PathBuf, Vec<PathBuf>>) {
+) -> InstalledDeclarationGraph {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut realpaths = ReferenceRealpaths::default();
     let mut edges = FxHashMap::default();
+    let mut directives = FxHashMap::default();
     if installed {
         realpaths.installed.extend(
             files
@@ -113,9 +133,31 @@ fn follow_declaration_references(
             continue;
         };
         read(&path, &content);
-        let mut referenced =
-            reference_path_declaration_files(&path, &content, None, installed, &mut realpaths);
-        let type_references = reference_type_declaration_files(&path, &content, contents);
+        let mut resolved = Vec::new();
+        let mut referenced = reference_path_declaration_files(
+            &path,
+            &content,
+            None,
+            installed,
+            &mut realpaths,
+            |specifier, target| {
+                if installed {
+                    resolved.push(DeclarationReference::Path {
+                        specifier: specifier.into(),
+                        target: target.to_path_buf(),
+                    });
+                }
+            },
+        );
+        let type_references =
+            reference_type_declaration_files(&path, &content, contents, |specifier, targets| {
+                if installed {
+                    resolved.push(DeclarationReference::Types {
+                        specifier: specifier.into(),
+                        targets: targets.to_vec(),
+                    });
+                }
+            });
         if installed {
             realpaths.installed.extend(type_references.iter().cloned());
         }
@@ -129,8 +171,16 @@ fn follow_declaration_references(
             }
         }
         if installed {
+            if !resolved.is_empty() {
+                directives.insert(path.clone(), resolved);
+            }
             edges.insert(path, referenced);
         }
     }
-    (realpaths.installed, edges)
+    InstalledDeclarationGraph {
+        files: FxHashSet::default(),
+        installed: realpaths.installed,
+        references: edges,
+        directives,
+    }
 }
