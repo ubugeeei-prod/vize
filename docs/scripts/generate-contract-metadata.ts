@@ -59,6 +59,7 @@ const evidence = {
     "docs/fresco/compatibility.md",
     "tests/tooling/docs-public-api.test.ts",
     "tests/tooling/fresco-public-docs.test.ts",
+    "tests/tooling/fresco-prop-defaults.test.ts",
     "tests/tooling/fresco-testing-node.test.ts",
   ],
   patina: [

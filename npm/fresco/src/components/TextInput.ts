@@ -31,46 +31,89 @@ import {
 
 /** Controlled or initial single-line text, focus, validation, and editing events. */
 export interface TextInputProps {
-  /** Input value (v-model) */
+  /** Text used initially and synchronized when a defined v-model value changes.
+   * @default undefined
+   */
   modelValue?: string;
-  /** Initial value when the input is uncontrolled. */
+  /** Initial text when modelValue is omitted; later changes do not reset editing.
+   * @default ""
+   */
   defaultValue?: string;
-  /** Placeholder text */
+  /** Placeholder text.
+   * @default ""
+   */
   placeholder?: string;
-  /** Whether input is focused */
+  /** Whether input is focused when the focused alias is omitted.
+   * @default false
+   */
   focus?: boolean;
-  /** Whether input is focused (Ink-style alias used by native nodes) */
+  /** Focus alias; a defined value takes precedence over focus, including false.
+   * @default undefined
+   */
   focused?: boolean;
-  /** Password mode (mask input) */
+  /** Password mode that masks displayed input.
+   * @default false
+   */
   mask?: boolean;
-  /** Mask character */
+  /** Character used to mask input.
+   * @default "*"
+   */
   maskChar?: string;
-  /** Input width */ width?: FrescoDimension;
-  /** Foreground color */
+  /** Input width.
+   * @default undefined
+   */
+  width?: FrescoDimension;
+  /** Foreground color.
+   * @default undefined
+   */
   fg?: string;
-  /** Background color */
+  /** Background color.
+   * @default undefined
+   */
   bg?: string;
-  /** Validate a candidate value; a string is exposed as its error message. */
+  /** Validate text; false or any string is invalid, and a string is its message.
+   * @default undefined
+   */
   validate?: (value: string) => boolean | string | null | undefined;
-  /** Called when value changes */
+  /** Called when local editing changes text.
+   * @default undefined
+   */
   "onUpdate:modelValue"?: (value: string) => void;
-  /** Called when submitted (Enter) */
+  /** Called on Enter when no IME composition is active.
+   * @default undefined
+   */
   onSubmit?: (value: string) => void;
-  /** Called when escape is pressed */
+  /** Called on Escape when no IME composition is active.
+   * @default undefined
+   */
   onCancel?: () => void;
-  /** Called whenever the selected grapheme range changes. */
+  /** Called with sorted grapheme bounds when the selection changes.
+   * @default undefined
+   */
   onSelectionChange?: (start: number, end: number) => void;
-  /** Called when the active selection is copied. */
+  /** Called with copied selection text; does not itself write a system clipboard.
+   * @default undefined
+   */
   onCopy?: (value: string) => void;
-  /** Called when the active selection is cut. */
+  /** Called with cut selection text; does not itself write a system clipboard.
+   * @default undefined
+   */
   onCut?: (value: string) => void;
-  /** Called when the current validation state changes. */
+  /** Called immediately and whenever the current validation result changes.
+   * @default undefined
+   */
   onValidationChange?: (valid: boolean, message?: string) => void;
-  /** Called when IME composition starts */
+  /** Listener for the start of IME composition.
+   * @default undefined
+   */
   onCompositionStart?: () => void;
-  /** Called when IME composition updates */
+  /** Listener for IME composition updates.
+   * @default undefined
+   */
   onCompositionUpdate?: (text: string, cursor: number) => void;
-  /** Called when IME composition ends */
+  /** Listener for the end of IME composition.
+   * @default undefined
+   */
   onCompositionEnd?: (text: string) => void;
 }
 

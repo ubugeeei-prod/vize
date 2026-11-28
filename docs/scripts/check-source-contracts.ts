@@ -9,6 +9,7 @@ export const documentationSourceContractTests = [
   "tests/tooling/docs-contract-metadata.test.ts",
   "tests/tooling/lib-reference-docs.test.ts",
   "tests/tooling/fresco-public-docs.test.ts",
+  "tests/tooling/fresco-prop-defaults.test.ts",
   "tests/tooling/patina-rule-documentation-metadata.test.ts",
   "tests/tooling/docs-executable-rust.test.ts",
   "tests/tooling/compiled-docs-inputs.test.ts",
