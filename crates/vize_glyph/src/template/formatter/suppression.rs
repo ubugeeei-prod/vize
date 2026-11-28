@@ -142,6 +142,12 @@ impl<'s> LineJoiner<'s> {
         self.opening = Some((start, end, name_len));
     }
 
+    /// The chunk just emitted was the last ordinary opening tag.
+    pub(super) fn follows_opening_tag(&self) -> bool {
+        self.opening
+            .is_some_and(|(_, end, _)| self.previous_end == Some(end))
+    }
+
     pub(super) fn locks_current_line(&self) -> bool {
         self.current.is_some()
     }

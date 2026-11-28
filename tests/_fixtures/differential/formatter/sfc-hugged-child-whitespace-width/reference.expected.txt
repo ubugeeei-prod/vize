@@ -5,9 +5,8 @@
       position="bottom-right"
       :class="{ intersecting: isIntersectingWithPanel }"
     ></Panel>
-    <el-button plain size="small" type="primary" @click="preview(true)"><i
-        class="el-icon-view-ab"
-      ></i>Prev</el-button>
+    <el-button plain size="small" type="primary" @click="preview(true)"
+      ><i class="el-icon-view-ab"></i>Prev</el-button>
     <div>
       <div>
         <span>{{
