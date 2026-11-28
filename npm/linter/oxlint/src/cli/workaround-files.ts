@@ -10,6 +10,7 @@ export interface PreparedWorkaroundFiles {
   cleanup(): void;
   assertCustody?(): void;
   additionalOriginalFiles?: number;
+  additionalBridgeRules?: number;
   pathReplacements: ReadonlyMap<string, string>;
   locations: ReadonlyMap<string, BridgeLocations>;
   usedScriptlessWorkaround: boolean;

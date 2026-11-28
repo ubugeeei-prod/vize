@@ -243,3 +243,26 @@ void test("original script rules stay enabled while only original carrier paths 
   ]);
   assert.deepEqual(split.bridge.value.rules, { "vize/a11y/alt-text": "warn" });
 });
+
+void test("shared source rules are counted once and only new TSRX originals/parser extend metadata", () => {
+  const report = (files: number, rules: number) => ({
+    status: 0,
+    stderr: "",
+    stdout: JSON.stringify({
+      diagnostics: [],
+      number_of_files: files,
+      number_of_rules: rules,
+      threads_count: 1,
+      start_time: 0,
+    }),
+  });
+  const source = report(4, 98),
+    bridge = report(7, 3);
+  const ordinary = JSON.parse(mergeProjectOutput(source, bridge, ["-f", "json"], 0, 0).stdout);
+  assert.equal(ordinary.number_of_files, 4);
+  assert.equal(ordinary.number_of_rules, 98);
+  const tsrx = JSON.parse(mergeProjectOutput(source, bridge, ["-f", "json"], 3, 1).stdout);
+  assert.equal(tsrx.number_of_files, 7);
+  assert.equal(tsrx.number_of_rules, 99);
+  assert.deepEqual(tsrx.diagnostics, []);
+});

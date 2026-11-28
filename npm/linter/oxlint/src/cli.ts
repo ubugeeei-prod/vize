@@ -97,6 +97,7 @@ async function main(): Promise<void> {
           merged,
           forwardedArgs,
           prepared.additionalOriginalFiles,
+          prepared.additionalBridgeRules,
         );
       if (html) merged = joinHtmlTargets(merged, html, forwardedArgs);
       if (requestsTypeAware(forwardedArgs, cwd))

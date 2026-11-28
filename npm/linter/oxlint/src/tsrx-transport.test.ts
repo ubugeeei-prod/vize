@@ -176,6 +176,11 @@ void test("installed hosts lint original TSRX through authenticated carriers and
     );
     assert.equal(after.number_of_files, before.number_of_files + 3);
     assert.equal(
+      after.number_of_rules,
+      before.number_of_rules + 1,
+      "only the operational parser rule is added to the authored rule count",
+    );
+    assert.equal(
       after.diagnostics.some((packet: Packet) =>
         /Ignored|Custom|Cli|Config/u.test(packet.filename),
       ),

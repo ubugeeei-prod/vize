@@ -205,6 +205,11 @@ async function prepareScopedSelectionInner(
   const bridgeOptions = bridgeProjectArgs(options, directoryTransport);
   projectOutputFormat(options);
   const phases = splitProjectConfig(config, directoryTransport, selectedVue);
+  const rootRules = config.value.rules as Record<string, unknown> | undefined;
+  const parserSetting = rootRules?.["vize/parser/tsrx"];
+  const parserSeverity = Array.isArray(parserSetting) ? parserSetting[0] : parserSetting;
+  const parserAlreadyEnabled =
+    parserSeverity != null && parserSeverity !== "off" && parserSeverity !== 0;
   validateScopedConfig(phases.bridge, bridgeOptions);
   let originalResult: OxlintProcessResult | undefined;
   let mirror: ReturnType<typeof createScopedMirror> | undefined;
@@ -263,6 +268,7 @@ async function prepareScopedSelectionInner(
         cleanup: mirror.cleanup,
         assertCustody: tsrx?.assertCustody,
         additionalOriginalFiles: selectedTsrx.length,
+        additionalBridgeRules: selectedTsrx.length > 0 && !parserAlreadyEnabled ? 1 : 0,
       },
     };
   } catch (error) {
