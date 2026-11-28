@@ -8,6 +8,7 @@
     "$ComponentNavigationProps",
     "$ComponentRawProps",
     "$ComponentRefCallback",
+    "$ComponentUsageProps",
     "$DomElement",
     "$EmitGateInput",
     "$EmitGateResolver",
@@ -131,15 +132,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+          "sha256": "8f06929044348506b9db616ed504f18422f422455e5d1adc11d9372a578c0586"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+          "sha256": "8f06929044348506b9db616ed504f18422f422455e5d1adc11d9372a578c0586"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+          "sha256": "8f06929044348506b9db616ed504f18422f422455e5d1adc11d9372a578c0586"
         }
       ]
     },
@@ -191,7 +192,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+          "sha256": "8f06929044348506b9db616ed504f18422f422455e5d1adc11d9372a578c0586"
         }
       ]
     },
@@ -239,7 +240,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+          "sha256": "8f06929044348506b9db616ed504f18422f422455e5d1adc11d9372a578c0586"
         }
       ]
     }

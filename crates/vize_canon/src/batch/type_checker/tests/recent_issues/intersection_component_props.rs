@@ -51,11 +51,7 @@ fn intersection_props_match_the_vue_tsc_negative_controls() {
         .diagnostics
         .iter()
         .map(|diagnostic| {
-            assert!(
-                diagnostic.file.ends_with("Invalid.vue"),
-                "{:#?}",
-                result.diagnostics
-            );
+            assert_eq!(diagnostic.file, root.join("Invalid.vue"));
             (diagnostic.line + 1, diagnostic.column + 1, diagnostic.code)
         })
         .collect();

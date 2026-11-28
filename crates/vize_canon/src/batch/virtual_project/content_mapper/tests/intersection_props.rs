@@ -6,7 +6,7 @@ use serde_json::{Value, json};
 use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
 };
-use crate::virtual_ts::helpers::SHARED_PREAMBLE_STRICT_DTS;
+use crate::virtual_ts::SHARED_PREAMBLE_STRICT_DTS;
 
 const FIXTURES: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
