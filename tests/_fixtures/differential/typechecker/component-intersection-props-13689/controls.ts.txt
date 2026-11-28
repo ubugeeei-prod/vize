@@ -120,3 +120,35 @@ const exposedUnknownUnion: Equal<Raw<typeof ExposedUnknown | typeof Emit>, Props
 const exposedNeverUnion: Equal<Raw<typeof ExposedNever | typeof Emit>, Props<typeof ExposedNever | typeof Emit>> = true;
 const generatedUnion: Equal<Raw<typeof Emit | typeof OwnLiteral>, Props<typeof Emit | typeof OwnLiteral>> = true;
 const generatedIndexUnion: Equal<Raw<typeof OwnLiteral | typeof OwnIndex>, Props<typeof OwnLiteral | typeof OwnIndex>> = true;
+
+// Semantic base keys include authored Options API and aliased/union/index exposes.
+import RawMethods from './RawMethods.vue';
+const RawMethodsRawPrecedence: Equal<Raw<typeof RawMethods>, Props<typeof RawMethods>> = true;
+import RawComputed from './RawComputed.vue';
+const RawComputedRawPrecedence: Equal<Raw<typeof RawComputed>, Props<typeof RawComputed>> = true;
+import RawSetup from './RawSetup.vue';
+const RawSetupRawPrecedence: Equal<Raw<typeof RawSetup>, Props<typeof RawSetup>> = true;
+import ExposedAlias from './ExposedAlias.vue';
+const ExposedAliasRawPrecedence: Equal<Raw<typeof ExposedAlias>, Props<typeof ExposedAlias>> = true;
+import ExposedUnion from './ExposedUnion.vue';
+const ExposedUnionRawPrecedence: Equal<Raw<typeof ExposedUnion>, Props<typeof ExposedUnion>> = true;
+import ExposedOpen from './ExposedOpen.vue';
+const ExposedOpenRawPrecedence: Equal<Raw<typeof ExposedOpen>, Props<typeof ExposedOpen>> = true;
+import ExposedPattern from './ExposedPattern.vue';
+const ExposedPatternRawPrecedence: Equal<Raw<typeof ExposedPattern>, Props<typeof ExposedPattern>> = true;
+import ExposedNoRawUnion from './ExposedNoRawUnion.vue';
+const ExposedNoRawUnionRawPrecedence: Equal<Raw<typeof ExposedNoRawUnion>, Props<typeof ExposedNoRawUnion>> = true;
+import OptionalSource from './OptionalSource.vue';
+const OptionalSourceRawPrecedence: Equal<Raw<typeof OptionalSource>, Props<typeof OptionalSource>> = true;
+const methodRawReturn: ReturnType<Raw<typeof RawMethods>> = { fromMethods: 1 };
+const computedRawValue: Raw<typeof RawComputed>['fromComputed'] = 1;
+// @ts-expect-error computed raw metadata retains its value type
+const computedRawWrong: Props<typeof RawComputed>['fromComputed'] = 'wrong';
+const setupRawValue: Raw<typeof RawSetup>['fromSetup'] = 1;
+// @ts-expect-error setup-exposed raw metadata retains its value type
+const setupRawWrong: Props<typeof RawSetup>['fromSetup'] = 'wrong';
+const exposedAlias: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 1 };
+// @ts-expect-error aliased expose raw metadata stays required
+const exposedAliasMissing: Props<typeof ExposedAlias> = { own: 'Ready' };
+// @ts-expect-error aliased expose raw metadata stays typed
+const exposedAliasWrong: Props<typeof ExposedAlias> = { own: 'Ready', fromAlias: 'wrong' };

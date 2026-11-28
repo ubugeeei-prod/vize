@@ -139,6 +139,7 @@ pub(super) fn emit_default_export_declaration(
     emits_info: &EmitsInfo,
     generic_component_params: Option<GenericComponentContract<'_>>,
     authored_default: AuthoredDefaultKind,
+    non_owned_instance_base: Option<&str>,
     static_raw_props_ref: Option<&str>,
     static_slots: bool,
     (fallthrough_props_ref, native_fallthrough_root, checks, hoist_shared_preamble): (
@@ -189,19 +190,31 @@ pub(super) fn emit_default_export_declaration(
             " readonly __vizeRawProps?: {props_ref};"
         );
         if generic_component_params.is_none() {
-            // Read the default instance directly, avoiding the generic input
-            // constructor while retaining global/exposed raw metadata. An
-            // authored constructor keeps the original fallback authoritative.
-            let raw = if authored_default == AuthoredDefaultKind::Component {
-                "unknown"
-            } else {
-                "$ComponentInstance extends { readonly __vizeRawProps?: infer __P } ? __P : unknown"
-            };
             // Callable identity stays separate for intersected components;
             // covariant fields retain each branch of a generated union.
+            component_contract_fields.push_str(
+                " readonly __vizeComponentSelf?: (() => typeof __vize_component__) & { readonly raw: ",
+            );
+            if authored_default == AuthoredDefaultKind::Component {
+                // An authored constructor remains authoritative even if its
+                // static raw metadata disagrees with its instance metadata.
+                component_contract_fields.push_str("unknown");
+            } else if let Some(base) = non_owned_instance_base {
+                // Inspect the exact source-owning Vue/expose base. Only reuse
+                // our own field when every base branch has no raw metadata;
+                // any, never, open indexes and alias/union exposes keep the
+                // original instance inference. Infer from an optional field
+                // in either branch, preserving exactOptionalPropertyTypes.
+                append!(
+                    component_contract_fields,
+                    "true extends ([({base})] extends [never] ? true : ({base}) extends infer __B ? __B extends unknown ? '__vizeRawProps' extends keyof __B ? true : false : never : never) ? ($ComponentInstance extends {{ readonly __vizeRawProps?: infer __P }} ? __P : unknown) : ({{ readonly __vizeRawProps?: {props_ref} }} extends {{ readonly __vizeRawProps?: infer __P }} ? __P : unknown)"
+                );
+            } else {
+                component_contract_fields.push_str("$ComponentInstance extends { readonly __vizeRawProps?: infer __P } ? __P : unknown");
+            }
             append!(
                 component_contract_fields,
-                " readonly __vizeComponentSelf?: (() => typeof __vize_component__) & {{ readonly raw: {raw}; readonly props: {props_ref} }};"
+                "; readonly props: {props_ref} }};"
             );
         }
     }

@@ -73,7 +73,10 @@ pub(super) fn emit_component_constructors<'a>(
     authored_generic: Option<&'a str>,
     legacy_vue2: bool,
     dialect: VueVersion,
-) -> Option<GenericComponentContract<'a>> {
+) -> (
+    Option<GenericComponentContract<'a>>,
+    Option<crate::virtual_ts::TextBuf>,
+) {
     let _profile = vize_l0::profiler::global_profiler()
         .global_span("canon.virtual_ts.emit_component_constructors");
     let legacy_component = needs_legacy_vue2_helpers(legacy_vue2, dialect);
@@ -99,16 +102,19 @@ pub(super) fn emit_component_constructors<'a>(
             names,
             setup_props_plan.component_props_type_ref(),
         );
-        return Some(GenericComponentContract {
-            // Alias defaults keep bare type references legal. Calls infer from
-            // the authored signature, including its genuine defaults only.
-            declaration: authored_generic,
-            names,
-            slots_is_generic: aliases.slots_is_generic,
-            public_type: "$GenericComponent",
-            props_type: setup_props_plan.component_props_type_ref(),
-            ref_resolver_type: Some("$GenericRefResolver"),
-        });
+        return (
+            Some(GenericComponentContract {
+                // Alias defaults keep bare type references legal. Calls infer from
+                // the authored signature, including its genuine defaults only.
+                declaration: authored_generic,
+                names,
+                slots_is_generic: aliases.slots_is_generic,
+                public_type: "$GenericComponent",
+                props_type: setup_props_plan.component_props_type_ref(),
+                ref_resolver_type: Some("$GenericRefResolver"),
+            }),
+            None,
+        );
     }
     ts.push_str("// ========== Default Export ==========\n");
     crate::virtual_ts::generated_names::push_lib_text(ts, instance_helper(legacy_vue2, dialect));
@@ -220,7 +226,9 @@ pub(super) fn emit_component_constructors<'a>(
         );
     }
 
-    let (generic_decl, generic_names) = aliases.generic_params?;
+    let Some((generic_decl, generic_names)) = aliases.generic_params else {
+        return (None, Some(base));
+    };
     let slots_ref = alias_ref(&slots, aliases.slots_is_generic, generic_names);
     let emits_ref = alias_ref(&emits, aliases.emits_is_generic, generic_names);
     let helper = crate::virtual_ts::generated_names::helper;
@@ -273,12 +281,15 @@ pub(super) fn emit_component_constructors<'a>(
         }
         #(" & $Vue2ComponentConstructorStatics;\n")
     }
-    Some(GenericComponentContract {
-        declaration: generic_decl,
-        names: generic_names,
-        slots_is_generic: aliases.slots_is_generic,
-        public_type: "$GenericComponentConstructor & $ComponentConstructor & $VueComponentOptions",
-        props_type: setup_props_plan.component_props_type_ref(),
-        ref_resolver_type: None,
-    })
+    (
+        Some(GenericComponentContract {
+            declaration: generic_decl,
+            names: generic_names,
+            slots_is_generic: aliases.slots_is_generic,
+            public_type: "$GenericComponentConstructor & $ComponentConstructor & $VueComponentOptions",
+            props_type: setup_props_plan.component_props_type_ref(),
+            ref_resolver_type: None,
+        }),
+        None,
+    )
 }

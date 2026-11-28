@@ -66114,6 +66114,11 @@
           "role": "regression-reproduction"
         },
         {
+          "path": "component-intersection-props-13689/ExposedAlias.vue.txt",
+          "sha256": "4243cab878ef0a56149978eb8314eb1e5297cd7fd1e5a2a71d1109d8fd6c7a3a",
+          "role": "regression-reproduction"
+        },
+        {
           "path": "component-intersection-props-13689/ExposedAny.vue.txt",
           "sha256": "eb7ff59270b7d79829f75947b3e0059b1b7f786d2ef504a0cc518a79259846c4",
           "role": "regression-reproduction"
@@ -66121,6 +66126,26 @@
         {
           "path": "component-intersection-props-13689/ExposedNever.vue.txt",
           "sha256": "b8ae859139dde73c6dbe346587f1a8a01dedbe31cdc3257a4e152fa6700ae91a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedNoRawUnion.vue.txt",
+          "sha256": "7b8420829381a6088f4f25ff5a1a7733f57528b48e43210564eaedbddf08f4fe",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedOpen.vue.txt",
+          "sha256": "72c702eac6e818c0aad21227efb8c9f38542aec7c2966efb481ea19122c13260",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedPattern.vue.txt",
+          "sha256": "2bc239ed3b2945f54d18cd24d197c91aafe07e520cf5d5118f15df6ddb6a8ffe",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/ExposedUnion.vue.txt",
+          "sha256": "d200a9caa068a20b1eb6875404dd9307f9802e23819665129c03f70277a1fa03",
           "role": "regression-reproduction"
         },
         {
@@ -66144,6 +66169,11 @@
           "role": "regression-reproduction"
         },
         {
+          "path": "component-intersection-props-13689/OptionalSource.vue.txt",
+          "sha256": "53e2d10b09724a5441de3a8f69db762c684405a1313f9f43994c8659ea8885e6",
+          "role": "regression-reproduction"
+        },
+        {
           "path": "component-intersection-props-13689/OwnIndex.vue.txt",
           "sha256": "ef14906c366a3a652c99b9fad037f0ae73dc056f579606317e6351dafb90a379",
           "role": "regression-reproduction"
@@ -66156,6 +66186,21 @@
         {
           "path": "component-intersection-props-13689/OwnPattern.vue.txt",
           "sha256": "bca588c7c9b8f9bade5af659f2c1d3b2fb3b59f2baabb45b4b0593daf1c00cf6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawComputed.vue.txt",
+          "sha256": "ab910d2015ccce7521212b38f48278dbe09580cfcf5550717753b39b3b8d743f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawMethods.vue.txt",
+          "sha256": "8ccf17afae945abd4d7f0aa4c03ea65ac35fe929a86b0f9d003337960be2a7bf",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/RawSetup.vue.txt",
+          "sha256": "572d21daeaff1159c512f4b581350efbc053afb73349210f02201567b4cecfea",
           "role": "regression-reproduction"
         },
         {
@@ -66190,7 +66235,7 @@
         },
         {
           "path": "component-intersection-props-13689/controls.ts.txt",
-          "sha256": "a1d16a0e5d810059b7e783826eb8a043600b42f3d63ccebcbc8974a7d4181098",
+          "sha256": "9318caf56bcbbca6e49bf430e1714b9a372e5335df4eb957b39493f49c78ad3e",
           "role": "regression-control"
         },
         {

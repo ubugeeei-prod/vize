@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{own:string}>();defineExpose({} as {first:number}|{second:number});</script>
