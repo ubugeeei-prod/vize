@@ -193,3 +193,26 @@ void test("a declared zero-Vue project records a zero-count artifact without pro
     ),
   );
 });
+
+void test("linter preflight accepts each unprepared Nuxt app notice once", () => {
+  const notice = (root: string, declarations = `${root}/.nuxt/types/imports.d.ts`) =>
+    `[vize] Skipping vue/no-undefined-refs in ${root}: Nuxt has not generated ${declarations} yet, so auto-imported names cannot be told from undefined ones. Run \`nuxi prepare\` to generate it.\n`;
+  const withNotices = (stderr: string) => {
+    const input = control();
+    input.rawLinterRuns.get("with-vue")!.value.stderr = stderr;
+    return () => assessLinterDeletionShard(input);
+  };
+  for (const stderr of [
+    notice("/tmp/checkout/apps/showcase") + notice("/tmp/checkout/apps/volt"),
+    notice("/tmp/checkout", "/tmp/checkout/build/types/imports.d.ts"),
+  ])
+    assert.doesNotThrow(withNotices(stderr));
+  for (const stderr of [
+    notice("/tmp/checkout").repeat(2),
+    notice("/tmp/checkout", "/tmp/elsewhere/.nuxt/types/imports.d.ts"),
+    notice("relative/app", "relative/app/.nuxt/types/imports.d.ts"),
+    notice("/tmp/checkout").trimEnd(),
+    notice("/tmp/checkout").replace("Skipping", "skipping"),
+  ])
+    assert.throws(withNotices(stderr), /raw linter stderr drifted/u);
+});

@@ -82,6 +82,26 @@ export function unmatchedPatternsLinterStderr(patterns: string[]): string {
   return patternDiagnostic(unmatchedPatternsPrefix, patterns);
 }
 
+// The linter's notice, printed once per Nuxt app while it lints, when the
+// app's generated auto-import declarations are absent: it then skips
+// vue/no-undefined-refs there rather than guess.
+const nuxtDeclarationsNotice =
+  /^\[vize\] Skipping vue\/no-undefined-refs in (\/[^\n:]+): Nuxt has not generated \1\/(?:[^\n/:]+\/)+types\/imports\.d\.ts yet, so auto-imported names cannot be told from undefined ones\. Run `nuxi prepare` to generate it\.$/u;
+
+/** The stderr without the notices for distinct unprepared Nuxt apps. */
+export function withoutNuxtDeclarationsNotices(stderr: string): string {
+  const roots = new Set<string>();
+  return stderr
+    .split(/(?<=\n)/u)
+    .filter((line) => {
+      const root = nuxtDeclarationsNotice.exec(line.replace(/\n$/u, ""))?.[1];
+      if (root === undefined || !line.endsWith("\n") || roots.has(root)) return true;
+      roots.add(root);
+      return false;
+    })
+    .join("");
+}
+
 export function assertSupportedLinterVueGlob(
   pattern: unknown,
   label: string,
@@ -404,7 +424,11 @@ export function validateRawLinterRun(
         : unmatchedPatterns.length > 0
           ? unmatchedPatternsLinterStderr(unmatchedPatterns)
           : "";
-  assert.equal(raw.stderr, expectedStderr, `${projectId}: raw linter stderr drifted`);
+  assert.equal(
+    withoutNuxtDeclarationsNotices(raw.stderr),
+    expectedStderr,
+    `${projectId}: raw linter stderr drifted`,
+  );
   const errors = raw.parsed.reduce(
     (sum, result) => sum + integer(result.errorCount, `${projectId}.parsed.errorCount`),
     0,
