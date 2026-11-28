@@ -66147,6 +66147,11 @@
           "path": "component-intersection-props-13689/tsconfig.json.txt",
           "sha256": "ca0b006d5729313973d4b5c50385be6159e6e97e5c9efeb24aa982c2ccc6abaf",
           "role": "regression-reproduction"
+        },
+        {
+          "path": "component-intersection-props-13689/tsconfig.oracle.json.txt",
+          "sha256": "e53efc679be6e155b46b99177af08ad03ae9a89699bcd5232acd9e3917081953",
+          "role": "regression-control"
         }
       ],
       "dialectCoverage": {

@@ -40,6 +40,7 @@ type $HasFallthroughProps = never
 type $FallthroughProps = never
 type $RequiredFallthroughProps = never
 type $ComponentRawProps = never
+type $ComponentUsageProps = never
 type $FallthroughValue = never
 type $ComponentEvents = never
 type $EmitOwnedKeys = never
@@ -176,6 +177,7 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         .content;
     let members = [
         "$ComponentRawProps",
+        "$ComponentUsageProps",
         "$PropChecker",
         "$PropValue",
         "$PropsResolver",
