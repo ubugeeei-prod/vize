@@ -9,9 +9,11 @@ use vize_relief::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode
 
 mod a11y;
 mod all_hooks;
+mod configured_headers;
 mod directives;
 mod fallback_ports;
 mod unsafe_url;
+mod vapor_inline;
 
 /// A rule with its markup entry hidden, so every lane drives its Relief hooks.
 struct ReliefOnly(Box<dyn Rule>);

@@ -201,7 +201,7 @@ type/return-await	L2 semantic	corsa	legacy-engine	-	-	opinionated/type_aware/ret
 type/strict-boolean-expressions	L2 semantic	corsa	legacy-engine	-	-	type_aware/strict_boolean_expressions.rs
 type/unbound-method	L2 semantic	corsa	legacy-engine	-	-	opinionated/type_aware/unbound_method.rs
 type/use-unknown-in-catch-callback-variable	L2 semantic	corsa	legacy-engine	-	-	opinionated/type_aware/use_unknown_in_catch_callback_variable.rs
-vapor/no-inline-template	L1 syntax	relief-visitor	legacy-rule	relief	-	opinionated/vapor/no_inline_template.rs
+vapor/no-inline-template	L1 syntax	markup-l2	legacy-rule	relief	yes	opinionated/vapor/no_inline_template.rs
 vapor/no-vue-lifecycle-events	L1 syntax	markup-l2	legacy-rule	relief	-	vapor/no_vue_lifecycle_events.rs
 vapor/prefer-static-class	L1 syntax	markup-l2	legacy-rule	armature,relief	-	opinionated/vapor/prefer_static_class.rs
 vapor/require-vapor-attribute	L1 syntax	relief-visitor	legacy-rule	relief	-	opinionated/vapor/require_vapor_attribute.rs
@@ -281,7 +281,7 @@ vue/no-restricted-component-options	L1 syntax	sfc-descriptor	legacy-engine	-	-	v
 vue/no-restricted-custom-event	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_custom_event.rs
 vue/no-restricted-html-elements	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_html.rs
 vue/no-restricted-props	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/restricted_props.rs
-vue/no-restricted-static-attribute	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_static_attribute.rs
+vue/no-restricted-static-attribute	L1 syntax	markup-l2	legacy-rule	relief	-	vue/configured/restricted_static_attribute.rs
 vue/no-restricted-syntax	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/restricted.rs
 vue/no-restricted-v-bind	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/template_rules/no_restricted_v_bind.rs
 vue/no-restricted-v-on	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_v_on.rs
