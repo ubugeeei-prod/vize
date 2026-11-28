@@ -1,137 +1,88 @@
-import "../../../../ci/lib/Actions.pkl" as ci
-
-name = "Shipped release-profile measure"
-
-// Dispatch-only measurement of the shipped release profile (fat LTO, one codegen
-// unit) for an exact base/head source pair: every level instruction row (stages,
-// formatter, SFC parsing) and the shipped `vize` CLI and `vize_vitrine` N-API
-// library bytes. Each side builds in a freshly emptied target as base, head,
-// base twin, head twin, all with SOURCE_DATE_EPOCH pinned to the base commit
-// time. The twins must reproduce their primary side's counts, sizes and bench
-// executable bytes exactly. The benches build through
-// [profile.ci-opt] with Cargo's profile environment
-// overrides, so no temporary branch edits Cargo.toml. Never on PRs or the queue.
-on {
-  workflow_dispatch {
-    inputs {
-      base_sha {
-        description = "Exact base commit (40 hex characters)"
-        required = true
-        type = "string"
+// Temporary driver for the actual Fresco signal handler; not a product source change.
+`name` = "Fresco signal dispatch comparison"
+`on` = new Dynamic {
+  `workflow_dispatch` = new Dynamic {
+    `inputs` = new Dynamic {
+      `base_sha` = new Dynamic {
+        `required` = true
+        `type` = "string"
       }
-      head_sha {
-        description = "Exact head commit (40 hex characters)"
-        required = true
-        type = "string"
-      }
-      runner {
-        description = "Linux runner size for the exact same measurement"
-        required = false
-        ["default"] = ci.linux
-        type = "choice"
-        options = List(ci.linux, "blacksmith-16vcpu-ubuntu-2404")
-      }
-      twins {
-        description = "Also build and measure an independent A/A twin of each side"
-        required = false
-        ["default"] = true
-        type = "boolean"
+      `head_sha` = new Dynamic {
+        `required` = true
+        `type` = "string"
       }
     }
   }
 }
-
-permissions { contents = "read" }
-concurrency {
-  group = "shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}"
-  `cancel-in-progress` = false
+`permissions` = new Dynamic {
+  `contents` = "read"
 }
-env {
-  CARGO_INCREMENTAL = "0"
-  CARGO_TERM_COLOR = "never"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
-  RUSTUP_TOOLCHAIN = "1.100.0"
-  BASE_SHA = "${{ inputs.base_sha }}"
-  HEAD_SHA = "${{ inputs.head_sha }}"
+`env` = new Dynamic {
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` = true
 }
-
-jobs {
-  measure {
-    name = "Release-profile instructions and sizes"
-    `runs-on` = "${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}"
-    `timeout-minutes` = 360
-    steps = new Listing {
-      ...ci.stageWorkflowScripts("shipped-profile-measure")
+`jobs` = new Dynamic {
+  `compare` = new Dynamic {
+    `runs-on` = "blacksmith-32vcpu-ubuntu-2404"
+    `timeout-minutes` = 60
+    `steps` = new Listing {
       new Dynamic {
-        uses = ci.checkout
-        with {
-          path = "driver"
+        `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+        `with` = new Dynamic {
           `persist-credentials` = false
         }
       }
       new Dynamic {
-        uses = ci.checkout
-        with {
-          path = "base"
-          ref = "${{ inputs.base_sha }}"
+        `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+        `with` = new Dynamic {
+          `ref` = "${{ inputs.base_sha }}"
+          `path` = "signal-base"
           `persist-credentials` = false
         }
       }
       new Dynamic {
-        uses = ci.checkout
-        with {
-          path = "head"
-          ref = "${{ inputs.head_sha }}"
+        `uses` = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+        `with` = new Dynamic {
+          `ref` = "${{ inputs.head_sha }}"
+          `path` = "signal-head"
           `persist-credentials` = false
         }
       }
       new Dynamic {
-        uses = ci.setupVp
-        with {
-          version = ci.vpVersion
-          `node-version-file` = "driver/package.json"
-          `run-install` = false
+        `uses` = "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38"
+        `with` = new Dynamic {
+          `node-version` = "24"
         }
       }
-      ci.command("Validate the source pair", "node driver/tools/benchmarks/scripts/release-measure.ts --validate-inputs")
       new Dynamic {
-        uses = "goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406"  // v2
-        with { version = "0.15.1" }
-      }
-      ci.use("./driver/.github/actions/setup-cargo-zigbuild")
-      ci.command("Install pinned Rust", "rustup toolchain install 1.100.0 --profile minimal --target x86_64-unknown-linux-gnu")
-      ci.command("Install Callgrind", ci.workflowScript("install-callgrind.sh"))
-      new Dynamic {
-        uses = "./driver/.github/actions/setup-wild-http-recovery"
-        with { `wild-version` = "0.9.0" }
-      }
-      ci.command("Test the report renderer", "node --test driver/tools/benchmarks/scripts/release-measure.test.ts")
-      new Dynamic {
-        name = "Measure base, head and twins"
-        env { TWINS = "${{ inputs.twins }}" }
-        run = "node driver/tools/benchmarks/scripts/release-measure.ts --actions"
+        `uses` = "dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0"
+        `with` = new Dynamic {
+          `toolchain` = "1.100.0"
+        }
       }
       new Dynamic {
-        name = "Publish the report"
+        `name` = "Install existing Callgrind identity"
+        `run` = ". \".github/scripts/workflows/shipped-profile-measure/install-callgrind.sh\""
+      }
+      new Dynamic {
+        `name` = "Build, verify native behavior, and compare instructions and static storage"
+        `env` = new Dynamic {
+          `SIGNAL_PROBE_ROOT` = "${{ github.workspace }}"
+          `SIGNAL_PROBE_BASE_SHA` = "${{ inputs.base_sha }}"
+          `SIGNAL_PROBE_HEAD_SHA` = "${{ inputs.head_sha }}"
+        }
+        `run` = "node tools/benchmarks/probes/fresco-signal-dispatch/driver.ts"
+      }
+      new Dynamic {
+        `name` = "Retain raw dumps, actual ELFs, source, dependency identity and receipt"
         `if` = "always()"
-        run = #"node driver/tools/benchmarks/scripts/release-measure.ts --publish "$RUNNER_TEMP/release-measure/out""#
-      }
-      new Dynamic {
-        uses = ci.uploadArtifact
-        `if` = "always()"
-        with {
-          name = "release-measure-${{ github.run_id }}"
-          path = """
-          ${{ runner.temp }}/release-measure/out/summary.md
-          ${{ runner.temp }}/release-measure/out/pair.json
-          ${{ runner.temp }}/release-measure/out/*/side.json
-          ${{ runner.temp }}/release-measure/out/*/*/measurement/measurement.json
-
-          """
-          `if-no-files-found` = "warn"
-          `retention-days` = 30
+        `uses` = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+        `with` = new Dynamic {
+          `name` = "fresco-signal-dispatch-${{ inputs.head_sha }}"
+          `if-no-files-found` = "error"
+          `path` = "signal-evidence/measurement.json\nsignal-evidence/environment.json\nsignal-evidence/authored/**\nsignal-evidence/*/package/**\nsignal-evidence/*/metadata.json\nsignal-evidence/*/build.jsonl\nsignal-evidence/*/symbols.txt\nsignal-evidence/*/sections.txt\nsignal-evidence/*/elf-symbols.txt\nsignal-evidence/*/default.stdout\nsignal-evidence/*/default.stderr\nsignal-evidence/*/run-*/**\nsignal-evidence/*/fresco_signal_dispatch_probe\n"
         }
       }
     }
   }
 }
+`run-name` = "Fresco native signal comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}"

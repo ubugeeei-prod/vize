@@ -112,7 +112,7 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.16 | Benchmark - VS Code startup            | [`03-vscode-startup.yml`](./03-vscode-startup.yml)                 |
 | 03.17 | Vue Benchmarks Replay                  | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)                 |
 | 03.18 | Level instruction counts               | [`level-instruction-counts.yml`](./level-instruction-counts.yml)   |
-| 03.19 | Shipped release-profile measure        | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
+| 03.19 | Fresco signal dispatch comparison      | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
 
 ## 04 Type checking and content mapping
 

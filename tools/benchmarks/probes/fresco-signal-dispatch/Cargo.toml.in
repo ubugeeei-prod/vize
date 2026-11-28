@@ -1,0 +1,22 @@
+[workspace]
+
+[package]
+name = "fresco_signal_dispatch_probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[features]
+default = ["instruction-counts"]
+instruction-counts = []
+
+[dependencies]
+vize_fresco = { path = "@REPO@/crates/vize_fresco", default-features = false }
+libc = "=0.2.190"
+errno = { version = "=0.3.14", default-features = false }
+serde_json = "=1.0.154"
+mimalloc = "=0.1.52"
+stacker = "=0.1.25"
+valgrind-requests = { version = "=1.2.0", default-features = false, features = ["act"] }
+
+# The driver appends the unchanged repository release and ci-opt profiles.

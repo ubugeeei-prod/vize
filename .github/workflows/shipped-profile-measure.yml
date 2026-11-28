@@ -1,108 +1,69 @@
 # DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/shipped-profile-measure.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
-name: Shipped release-profile measure
-
-# Dispatch-only measurement of the shipped release profile (fat LTO, one codegen
-# unit) for an exact base/head source pair: every level instruction row (stages,
-# formatter, SFC parsing) and the shipped `vize` CLI and `vize_vitrine` N-API
-# library bytes. Each side builds in a freshly emptied target as base, head,
-# base twin, head twin, all with SOURCE_DATE_EPOCH pinned to the base commit
-# time. The twins must reproduce their primary side's counts, sizes and bench
-# executable bytes exactly. The benches build through
-# [profile.ci-opt] with Cargo's profile environment
-# overrides, so no temporary branch edits Cargo.toml. Never on PRs or the queue.
+name: Fresco signal dispatch comparison
 on:
   workflow_dispatch:
     inputs:
       base_sha:
-        description: Exact base commit (40 hex characters)
         required: true
         type: string
       head_sha:
-        description: Exact head commit (40 hex characters)
         required: true
         type: string
-      runner:
-        description: Linux runner size for the exact same measurement
-        required: false
-        default: blacksmith-32vcpu-ubuntu-2404
-        type: choice
-        options:
-          - blacksmith-32vcpu-ubuntu-2404
-          - blacksmith-16vcpu-ubuntu-2404
-      twins:
-        description: Also build and measure an independent A/A twin of each side
-        required: false
-        default: true
-        type: boolean
-
-permissions: { contents: read }
-concurrency:
-  group: shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
-  cancel-in-progress: false
+permissions:
+  contents: read
 env:
-  CARGO_INCREMENTAL: "0"
-  CARGO_TERM_COLOR: never
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  RUSTUP_TOOLCHAIN: "1.100.0"
-  BASE_SHA: ${{ inputs.base_sha }}
-  HEAD_SHA: ${{ inputs.head_sha }}
-
 jobs:
-  measure:
-    name: Release-profile instructions and sizes
-    runs-on: ${{ inputs.runner || 'blacksmith-32vcpu-ubuntu-2404' }}
-    timeout-minutes: 360
+  compare:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
     steps:
-      - name: Check out the workflow's scripts
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.workflow_sha }}
-          path: .vize-workflow-tools
           persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |-
-            /.github/actions/stage-workflow-scripts/
-            /tools/ci/lib/scripts/
-            /.github/scripts/workflows/shipped-profile-measure/
-      - name: Stage scripts outside the source checkout
-        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { path: driver, persist-credentials: false }
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { path: base, ref: "${{ inputs.base_sha }}", persist-credentials: false }
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { path: head, ref: "${{ inputs.head_sha }}", persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { version: 1.8.0, node-version-file: driver/package.json, run-install: false }
-      - name: Validate the source pair
-        run: node driver/tools/benchmarks/scripts/release-measure.ts --validate-inputs
-      - uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
-        with: { version: 0.15.1 }
-      - uses: ./driver/.github/actions/setup-cargo-zigbuild
-      - name: Install pinned Rust
-        run: rustup toolchain install 1.100.0 --profile minimal --target x86_64-unknown-linux-gnu
-      - name: Install Callgrind
-        run: . "${{ env.VIZE_CI_FILES }}/install-callgrind.sh"
-      - uses: ./driver/.github/actions/setup-wild-http-recovery
-        with: { wild-version: "0.9.0" }
-      - name: Test the report renderer
-        run: node --test driver/tools/benchmarks/scripts/release-measure.test.ts
-      - name: Measure base, head and twins
-        env:
-          TWINS: ${{ inputs.twins }}
-        run: node driver/tools/benchmarks/scripts/release-measure.ts --actions
-      - name: Publish the report
-        if: always()
-        run: node driver/tools/benchmarks/scripts/release-measure.ts --publish "$RUNNER_TEMP/release-measure/out"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          name: release-measure-${{ github.run_id }}
+          ref: ${{ inputs.base_sha }}
+          path: signal-base
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ inputs.head_sha }}
+          path: signal-head
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - name: Install existing Callgrind identity
+        run: . ".github/scripts/workflows/shipped-profile-measure/install-callgrind.sh"
+      - name: Build, verify native behavior, and compare instructions and static storage
+        env:
+          SIGNAL_PROBE_ROOT: ${{ github.workspace }}
+          SIGNAL_PROBE_BASE_SHA: ${{ inputs.base_sha }}
+          SIGNAL_PROBE_HEAD_SHA: ${{ inputs.head_sha }}
+        run: node tools/benchmarks/probes/fresco-signal-dispatch/driver.ts
+      - name: Retain raw dumps, actual ELFs, source, dependency identity and receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: fresco-signal-dispatch-${{ inputs.head_sha }}
+          if-no-files-found: error
           path: |
-            ${{ runner.temp }}/release-measure/out/summary.md
-            ${{ runner.temp }}/release-measure/out/pair.json
-            ${{ runner.temp }}/release-measure/out/*/side.json
-            ${{ runner.temp }}/release-measure/out/*/*/measurement/measurement.json
-          if-no-files-found: warn
-          retention-days: 30
+            signal-evidence/measurement.json
+            signal-evidence/environment.json
+            signal-evidence/authored/**
+            signal-evidence/*/package/**
+            signal-evidence/*/metadata.json
+            signal-evidence/*/build.jsonl
+            signal-evidence/*/symbols.txt
+            signal-evidence/*/sections.txt
+            signal-evidence/*/elf-symbols.txt
+            signal-evidence/*/default.stdout
+            signal-evidence/*/default.stderr
+            signal-evidence/*/run-*/**
+            signal-evidence/*/fresco_signal_dispatch_probe
+run-name: Fresco native signal comparison ${{ inputs.base_sha }} → ${{ inputs.head_sha }}
