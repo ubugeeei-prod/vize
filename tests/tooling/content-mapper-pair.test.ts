@@ -192,3 +192,51 @@ test("mapper giant cells use the existing projects input without replacing ordin
   assert.throws(() => giantBlockSizes("giant:0"), /positive integer/);
   assert.throws(() => giantBlockSizes("giant:1.5"), /positive integer/);
 });
+
+test("stable mapper errors refuse the cell even when output changes are allowed", () => {
+  for (const head of [
+    {
+      bursts: [
+        { ...burst(100), errors: 1 },
+        { ...burst(110), errors: 1 },
+      ],
+      serials: [serial(), serial()],
+    },
+    {
+      bursts: [burst(100), burst(110)],
+      serials: [
+        { ...serial(), errors: 1 },
+        { ...serial(), errors: 1 },
+      ],
+    },
+  ]) {
+    const refused = cell(head, true);
+    assert.equal(refused.failure, "head returned JSON-RPC errors");
+    assert.deepEqual(refused.builds, []);
+    assert.doesNotMatch(JSON.stringify(refused), /burstWallMs|serialP50Ms/);
+    assert.doesNotMatch(markdown("x", [refused]), /\| head \|/);
+  }
+});
+
+test("a reference mapper error refuses its entire comparison cell", () => {
+  const refused = summarizeCell({
+    label: "linux-ext4",
+    sfcs: 2,
+    giantBlocks: 1000,
+    serialFiles: 2,
+    replicates: 1,
+    builds: ["base"],
+    references: ["vue"],
+    bursts: new Map([
+      ["base", [burst(200), burst(200)]],
+      ["vue", [{ ...burst(100), errors: 1 }]],
+    ]),
+    serials: new Map([
+      ["base", [serial(), serial()]],
+      ["vue", [serial()]],
+    ]),
+    allowOutputChange: true,
+  });
+  assert.equal(refused.failure, "vue returned JSON-RPC errors");
+  assert.deepEqual(refused.builds, []);
+});

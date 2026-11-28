@@ -224,6 +224,7 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
   const hash = createHash("sha256");
   let pending: Buffer = Buffer.alloc(0);
   let resolveReply: (() => void) | undefined;
+  let errors = 0;
   child.stdout.on("data", (chunk: Buffer) => {
     pending = pending.length === 0 ? chunk : Buffer.concat([pending, chunk]);
     for (;;) {
@@ -233,7 +234,9 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
         /Content-Length:\s*(\d+)/i.exec(pending.toString("ascii", 0, end))?.[1],
       );
       if (pending.length < end + 4 + length) return;
-      hash.update(pending.subarray(end + 4, end + 4 + length));
+      const body = pending.subarray(end + 4, end + 4 + length);
+      hash.update(body);
+      errors += errorReplies(body);
       pending = pending.subarray(end + 4 + length);
       const done = resolveReply;
       resolveReply = undefined;
@@ -252,7 +255,7 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
   child.stdin.end();
   const code = await new Promise<number | null>((done) => child.on("close", done));
   if (code !== 0) throw new Error(`${build.id} serial session exited with ${code}`);
-  return { latencies, outputSha: hash.digest("hex") };
+  return { latencies, errors, outputSha: hash.digest("hex") };
 }
 
 async function main(): Promise<void> {

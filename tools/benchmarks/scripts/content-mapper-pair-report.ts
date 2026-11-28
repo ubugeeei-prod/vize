@@ -10,7 +10,7 @@ export type BurstSample = {
   outputSha: string;
 };
 
-export type SerialSample = { latencies: number[]; outputSha: string };
+export type SerialSample = { latencies: number[]; outputSha: string; errors?: number };
 
 export type BuildSummary = {
   id: string;
@@ -120,12 +120,19 @@ export function summarizeCell(input: {
   // Each build must answer every run identically; builds may differ only when allowed.
   const unstable = [...perBuild].find(([, own]) => own.size !== 2);
   const outputsIdentical = shas.size === 2;
-  const failure = unstable
-    ? `${unstable[0]} answered runs differently`
-    : !outputsIdentical && !input.allowOutputChange
-      ? "builds answered differently"
-      : undefined;
   const references = input.references ?? [];
+  const errored = [...input.builds, ...references].find((id) =>
+    [...(input.bursts.get(id) ?? []), ...(input.serials.get(id) ?? [])].some(
+      (sample) => (sample.errors ?? 0) > 0,
+    ),
+  );
+  const failure = errored
+    ? `${errored} returned JSON-RPC errors`
+    : unstable
+      ? `${unstable[0]} answered runs differently`
+      : !outputsIdentical && !input.allowOutputChange
+        ? "builds answered differently"
+        : undefined;
   const builds = [...input.builds, ...references].map((id): BuildSummary => {
     const bursts = input.bursts.get(id) ?? [];
     const serials = input.serials.get(id) ?? [];
@@ -165,7 +172,7 @@ export function summarizeCell(input: {
     orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
     ordersPerReplicate: (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
     burstSamplesPerBuild: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
-    builds,
+    builds: failure ? [] : builds,
     outputsIdentical,
     failure,
   };
