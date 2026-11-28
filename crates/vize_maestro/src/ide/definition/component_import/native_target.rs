@@ -44,7 +44,9 @@ pub(crate) async fn resolve_native_component_file(
         .collect::<Vec<_>>();
     targets.sort();
     targets.dedup();
-    (targets.len() == 1).then(|| targets.remove(0))
+    let mut targets = targets.into_iter();
+    let selected = targets.next()?;
+    targets.next().is_none().then_some(selected)
 }
 
 #[cfg(test)]

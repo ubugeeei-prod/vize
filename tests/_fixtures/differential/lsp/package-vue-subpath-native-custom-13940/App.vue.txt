@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const unicode = '雪🌸';
+import Child from '@scope/ui/Level11.vue';
+</script>
+<template><Child :depth="1" /></template>

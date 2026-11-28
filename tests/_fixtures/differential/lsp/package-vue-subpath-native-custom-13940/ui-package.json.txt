@@ -1,0 +1,11 @@
+{
+  "name": "@scope/ui",
+  "type": "module",
+  "exports": {
+    "./*.vue": {
+      "custom": "./src/Custom.vue",
+      "types": "./src/Level11.vue",
+      "default": "./src/Wrong.vue"
+    }
+  }
+}
