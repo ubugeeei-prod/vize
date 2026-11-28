@@ -1,4 +1,5 @@
-//! Project admission reads the installed declarations of both real `5.4.0` packs.
+//! Project admission reads the installed declarations of the real `5.4.0` and
+//! `5.5.3` packs: published `5.4.0` stays the file-only control.
 
 use super::*;
 use std::fs;
@@ -48,8 +49,12 @@ fn snapshot(root: &Path) -> crate::CompilerConfigurationSnapshot {
 }
 
 #[test]
-fn only_the_source_built_declarations_admit_route_props() {
-    for (kind, admitted) in [("published", false), ("preview", true)] {
+fn only_declarations_with_the_helper_admit_route_props() {
+    for (kind, admitted) in [
+        ("published", false),
+        ("preview", true),
+        ("published-5.5.3", true),
+    ] {
         let (_guard, root) = project(kind, CONFIG);
         let captured = snapshot(&root);
         assert!(captured.typed_router_enabled());
@@ -93,9 +98,26 @@ fn opt_out_resolution_and_dependency_edits_revoke_the_admission() {
 }
 
 #[test]
+fn upgrading_and_downgrading_the_published_release_follow_its_declarations() {
+    let (_guard, root) = project("published", CONFIG);
+    let control = snapshot(&root);
+    assert!(!control.typed_router_route_props());
+    install(&root, "published-5.5.3");
+    assert!(!control.observations().changed_paths().is_empty());
+    let upgraded = snapshot(&root);
+    assert!(upgraded.typed_router_route_props());
+    assert!(!control.same_authority(&upgraded));
+    install(&root, "published");
+    assert!(!upgraded.observations().changed_paths().is_empty());
+    let downgraded = snapshot(&root);
+    assert!(!downgraded.typed_router_route_props());
+    assert!(control.same_authority(&downgraded));
+}
+
+#[test]
 fn admitted_pages_project_the_public_template_and_setup_contracts() {
     let mut generated = Vec::new();
-    for kind in ["published", "preview"] {
+    for kind in ["published", "preview", "published-5.5.3"] {
         let (_guard, root) = project(kind, CONFIG);
         let mut live = VirtualProject::new(&root).unwrap();
         live.set_tsconfig_path(Some(root.join("tsconfig.json")));
@@ -103,7 +125,7 @@ fn admitted_pages_project_the_public_template_and_setup_contracts() {
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         fs::write(&path, PAGE).unwrap();
         live.register_vue_file(&path, PAGE).unwrap();
-        assert_eq!(live.has_typed_router_imports(), kind == "preview");
+        assert_eq!(live.has_typed_router_imports(), kind != "published");
         let file = live
             .virtual_files_sorted()
             .into_iter()
@@ -113,6 +135,8 @@ fn admitted_pages_project_the_public_template_and_setup_contracts() {
     }
     let mut generated = generated.iter();
     let (published, preview) = (generated.next().unwrap(), generated.next().unwrap());
+    // Published `5.5.3` gets exactly the source build's projection.
+    assert_eq!(generated.next().unwrap(), preview);
     let helper = "import('vue-router/experimental')._RoutePropsForFilePath<\"src/pages/[id].vue\">";
     assert_eq!(
         line(published, "definePage<"),

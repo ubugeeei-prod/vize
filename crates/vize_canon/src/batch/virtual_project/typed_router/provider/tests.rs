@@ -1,4 +1,4 @@
-//! These payloads are unchanged members of the two actual same-version packs.
+//! These payloads are unchanged members of the actual `5.4.0` and `5.5.3` packs.
 
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
@@ -22,7 +22,12 @@ fn payloads(kind: &str, root: &Path) -> FxHashMap<PathBuf, String> {
         .find(|value| value["kind"] == kind)
         .unwrap();
     assert_eq!(provider["name"], "vue-router");
-    assert_eq!(provider["version"], "5.4.0");
+    let version = if kind == "published-5.5.3" {
+        "5.5.3"
+    } else {
+        "5.4.0"
+    };
+    assert_eq!(provider["version"], version);
     provider["files"]
         .as_array()
         .unwrap()
@@ -141,6 +146,79 @@ fn simultaneous_real_same_version_packages_have_distinct_type_capabilities() {
             preview_root.join("dist/index-BA_Jc-EQ.ts"),
             preview_root.join("dist/index-BA_Jc-EQ.tsx"),
             preview_root.join("dist/index-BA_Jc-EQ.d.ts"),
+        ]
+    );
+}
+
+#[test]
+fn published_5_5_3_declares_the_source_built_route_props_contract() {
+    let root = Path::new("/project/node_modules/vue-router");
+    let preview_root = Path::new("/project/preview/node_modules/vue-router");
+    let files = payloads("published-5.5.3", root);
+    let preview_files = payloads("preview", preview_root);
+    let reads = RefCell::new(Vec::new());
+    let mut graph = ExportGraph::new(root, |path: &Path| {
+        reads.borrow_mut().push(path.to_path_buf());
+        Ok(files.get(path).cloned())
+    });
+    let mut preview = ExportGraph::new(preview_root, |path: &Path| {
+        Ok(preview_files.get(path).cloned())
+    });
+    let entry = root.join("dist/experimental/index.d.ts");
+    let preview_entry = preview_root.join("dist/experimental/index.d.ts");
+    let helper = graph
+        .exported(&entry, "_RoutePropsForFilePath")
+        .unwrap()
+        .unwrap();
+    let page = graph.exported(&entry, "definePage").unwrap().unwrap();
+    assert_eq!(helper.kind, Kind::Alias);
+    assert_eq!(helper.path, root.join("dist/index-IHOZ_27k.d.ts"));
+    assert_eq!(
+        helper.sha256,
+        "5dd6c729adf7d0eba570b46f0e64e63dde7a2c0badb3ca44537074ce20db3ffc"
+    );
+    assert_eq!(helper.parameters.len(), 1);
+    assert!(helper.parameters.first().unwrap().string_constraint);
+    assert_eq!(page.kind, Kind::Function);
+    assert_eq!(page.path, helper.path);
+    assert_eq!(page.parameters.len(), 2);
+    assert!(page.parameters.first().unwrap().string_constraint);
+    assert!(page.parameters.last().unwrap().unconstrained);
+    let preview_helper = preview
+        .exported(&preview_entry, "_RoutePropsForFilePath")
+        .unwrap()
+        .unwrap();
+    let preview_page = preview
+        .exported(&preview_entry, "definePage")
+        .unwrap()
+        .unwrap();
+    let text = |files: &FxHashMap<PathBuf, String>, start: u32, end: u32, path: &Path| {
+        String::from(&files.get(path).unwrap()[start as usize..end as usize])
+    };
+    // The published release declares the same alias and macro the source build did.
+    for (published, source) in [(&helper, &preview_helper), (&page, &preview_page)] {
+        assert_eq!(
+            text(
+                &files,
+                published.start_byte,
+                published.end_byte,
+                &published.path
+            ),
+            text(
+                &preview_files,
+                source.start_byte,
+                source.end_byte,
+                &source.path
+            )
+        );
+    }
+    assert_eq!(
+        *reads.borrow(),
+        [
+            entry,
+            root.join("dist/index-IHOZ_27k.ts"),
+            root.join("dist/index-IHOZ_27k.tsx"),
+            root.join("dist/index-IHOZ_27k.d.ts"),
         ]
     );
 }

@@ -60,6 +60,35 @@
           "sha256": "9d2b61dbab3330606dcc98dd0c78a9bb95ac5ea593eb0b764d0d43ab93912a6b"
         }
       ]
+    },
+    {
+      "kind": "published-5.5.3",
+      "name": "vue-router",
+      "version": "5.5.3",
+      "archiveSha256": "91735d4d171b61c603bd088db9c478b94d12398e3638fce9cce70eebe45e3040",
+      "integrity": "sha512-F3uyE2siuOC8QLxR3YAdqtxTEgLM/+rc0Fvej7/DVo6YTY5RgLBQpm1+fYP26ITjD3Fg5rDWuzBKxIB6rjlt1w==",
+      "files": [
+        {
+          "path": "package.json",
+          "bytes": 6096,
+          "sha256": "306a3276e06189085b84c0430ff39593cee2b5c85fd06dd8d500cdd6ea9a5fc9"
+        },
+        {
+          "path": "dist/experimental/index.d.ts",
+          "bytes": 6708,
+          "sha256": "306aae51a3478a67b07a80ad76807e1fe926b5d934cf3c64051a12249f65e54c"
+        },
+        {
+          "path": "dist/vue-router.d.ts",
+          "bytes": 6872,
+          "sha256": "04cbd64c7bbac2d1d7e0e03df5c6d59f74ac9f7513e75a8a966d42910ac0454c"
+        },
+        {
+          "path": "dist/index-IHOZ_27k.d.ts",
+          "bytes": 150948,
+          "sha256": "5dd6c729adf7d0eba570b46f0e64e63dde7a2c0badb3ca44537074ce20db3ffc"
+        }
+      ]
     }
   ],
   "preview": {
@@ -72,6 +101,9 @@
   },
   "published": {
     "tarball": "https://registry.npmjs.org/vue-router/-/vue-router-5.4.0.tgz"
+  },
+  "published-5.5.3": {
+    "tarball": "https://registry.npmjs.org/vue-router/-/vue-router-5.5.3.tgz"
   },
   "qualificationCredit": false,
   "state": "source-payloads-only"
