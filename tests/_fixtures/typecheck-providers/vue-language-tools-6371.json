@@ -17,7 +17,7 @@
     "--filter",
     "vue-tsc...",
     "--filter",
-    ".",
+    "{.}",
     "install",
     "--frozen-lockfile",
     "--ignore-scripts",

@@ -95,7 +95,7 @@ test("the unpublished oracle is explicit and never substitutes an unknown provid
     "--filter",
     "vue-tsc...",
     "--filter",
-    ".",
+    "{.}",
     "install",
     "--frozen-lockfile",
     "--ignore-scripts",
