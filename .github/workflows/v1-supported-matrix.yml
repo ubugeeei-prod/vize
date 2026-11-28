@@ -64,9 +64,7 @@ jobs:
         run: node tools/commands/release/v1-support-matrix.ts --check
       - name: Verify closed support, boundary and identity inventories
         run: >-
-          node --test
-          tests/tooling/v1-supported-matrix.test.ts
-          tests/tooling/v1-exact-candidate.test.ts
+          node --test tests/tooling/v1-supported-matrix.test.ts tests/tooling/v1-exact-candidate.test.ts
       - name: Retain the complete exact-head coverage plan
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/retain-the-complete-exact-head-coverage-plan.sh"
@@ -80,3 +78,9 @@ jobs:
       - name: Enforce complete exact-candidate qualification
         if: ${{ inputs.enforce_complete }}
         run: node tools/commands/release/v1-support-matrix.ts --check --enforce-complete
+  admission:
+    needs: inventory-contract
+    uses: ./.github/workflows/02-v1-admission.yml
+    with:
+      candidate_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      enforce_complete: ${{ inputs.enforce_complete }}

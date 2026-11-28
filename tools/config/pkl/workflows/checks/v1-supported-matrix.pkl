@@ -80,4 +80,14 @@ jobs {
       }
     }
   }
+
+  // Exact-candidate admission of the same source, from the receipts this run uploads.
+  admission {
+    needs = "inventory-contract"
+    uses = "./.github/workflows/02-v1-admission.yml"
+    with {
+      candidate_sha = "${{ github.event.pull_request.head.sha || github.sha }}"
+      enforce_complete = "${{ inputs.enforce_complete }}"
+    }
+  }
 }

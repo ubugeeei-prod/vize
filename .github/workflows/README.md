@@ -28,7 +28,7 @@ surfaces and are not routine CI-refactor targets.
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 16        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 13        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 14        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 19        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
@@ -72,19 +72,20 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 
 | ID    | Workflow                          | File                                                           |
 | ----- | --------------------------------- | -------------------------------------------------------------- |
-| 02.01 | JSR package checks                | [`jsr-package.yml`](./jsr-package.yml)                         |
-| 02.02 | pkg.pr.new                        | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                           |
-| 02.03 | Published fresh project           | [`published-fresh-project.yml`](./published-fresh-project.yml) |
-| 02.04 | Release build cache               | [`release-build-cache.yml`](./release-build-cache.yml)         |
-| 02.05 | Release cadence                   | [`release-cadence.yml`](./release-cadence.yml)                 |
-| 02.06 | Release contracts                 | [`release-contracts.yml`](./release-contracts.yml)             |
-| 02.07 | Release glibc floor               | [`release-glibc-floor.yml`](./release-glibc-floor.yml)         |
-| 02.08 | Release JSR                       | [`release-jsr.yml`](./release-jsr.yml)                         |
-| 02.09 | Prepare npm first-publish handoff | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)     |
-| 02.10 | Release smoke contracts           | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml) |
-| 02.11 | Release verify                    | [`release-verify.yml`](./release-verify.yml)                   |
-| 02.12 | Release Zed host                  | [`release-zed-host.yml`](./release-zed-host.yml)               |
-| 02.13 | Release                           | [`release.yml`](./release.yml)                                 |
+| 02.01 | V1 qualification admission        | [`02-v1-admission.yml`](./02-v1-admission.yml)                 |
+| 02.02 | JSR package checks                | [`jsr-package.yml`](./jsr-package.yml)                         |
+| 02.03 | pkg.pr.new                        | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                           |
+| 02.04 | Published fresh project           | [`published-fresh-project.yml`](./published-fresh-project.yml) |
+| 02.05 | Release build cache               | [`release-build-cache.yml`](./release-build-cache.yml)         |
+| 02.06 | Release cadence                   | [`release-cadence.yml`](./release-cadence.yml)                 |
+| 02.07 | Release contracts                 | [`release-contracts.yml`](./release-contracts.yml)             |
+| 02.08 | Release glibc floor               | [`release-glibc-floor.yml`](./release-glibc-floor.yml)         |
+| 02.09 | Release JSR                       | [`release-jsr.yml`](./release-jsr.yml)                         |
+| 02.10 | Prepare npm first-publish handoff | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)     |
+| 02.11 | Release smoke contracts           | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml) |
+| 02.12 | Release verify                    | [`release-verify.yml`](./release-verify.yml)                   |
+| 02.13 | Release Zed host                  | [`release-zed-host.yml`](./release-zed-host.yml)               |
+| 02.14 | Release                           | [`release.yml`](./release.yml)                                 |
 
 ## 03 Benchmarks and profiling
 

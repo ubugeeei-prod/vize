@@ -1,0 +1,131 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "V1 qualification admission"
+
+// Admits one exact candidate from the receipts that lanes of the calling run upload.
+// Five-case bundles arrive as `v1-five-case-bundle-<candidate>-*` artifacts and host
+// receipt bundles as `v1-host-receipts-<candidate>-*`. Admission is fail-closed: with
+// enforce_complete, a missing selector or host row fails the run, and an invalid or
+// foreign receipt always fails it.
+local candidateInputs {
+  candidate_sha {
+    description = "Exact 40-character source candidate to admit"
+    required = true
+    type = "string"
+  }
+  enforce_complete {
+    description = "Reject any five-case selector or required host row without exact receipts"
+    required = false
+    type = "boolean"
+    ["default"] = true
+  }
+}
+
+on {
+  workflow_call { inputs = candidateInputs }
+  workflow_dispatch { inputs = candidateInputs }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "v1-admission-${{ inputs.candidate_sha }}-${{ github.run_id }}"
+  `cancel-in-progress` = false
+}
+
+jobs {
+  admission {
+    name = "Admit exact five-case and host receipts"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    env {
+      CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+      ENFORCE_COMPLETE = "${{ inputs.enforce_complete }}"
+      FIVE_CASE_BUNDLES = ".qualification/v1-five-case-bundles"
+      HOST_RECEIPTS = ".qualification/v1-host-receipts"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("02-v1-admission")
+      ci.checkoutAt("${{ inputs.candidate_sha }}")
+      new Dynamic {
+        name = "Verify the exact candidate checkout"
+        shell = "bash"
+        run = ci.workflowScript("verify-the-exact-candidate-checkout.sh")
+      }
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Plan the five-case selectors"
+        uses = "./.github/actions/v1-five-case-receipts"
+        with {
+          operation = "plan"
+          `source-sha` = "${{ inputs.candidate_sha }}"
+          `candidate-sha` = "${{ inputs.candidate_sha }}"
+          mode = "release"
+          `run-id` = "${{ github.run_id }}"
+          `run-attempt` = "${{ github.run_attempt }}"
+          `artifact-name` = "v1-five-case-plan-${{ inputs.candidate_sha }}-${{ github.run_attempt }}"
+        }
+      }
+      new Dynamic {
+        name = "Download the five-case receipt bundles of this run"
+        uses = ci.downloadArtifact
+        with {
+          pattern = "v1-five-case-bundle-${{ inputs.candidate_sha }}-*"
+          path = "${{ env.FIVE_CASE_BUNDLES }}"
+          `merge-multiple` = true
+        }
+      }
+      new Dynamic {
+        name = "Count the five-case receipt bundles"
+        id = "five-case-bundles"
+        shell = "bash"
+        run = ci.workflowScript("count-the-five-case-receipt-bundles.sh")
+      }
+      new Dynamic {
+        name = "Admit the five-case receipts"
+        // Without bundles there is nothing to admit; enforcement still runs and fails.
+        `if` = "${{ inputs.enforce_complete || steps.five-case-bundles.outputs.count != '0' }}"
+        uses = "./.github/actions/v1-five-case-receipts"
+        with {
+          operation = "admit"
+          `source-sha` = "${{ inputs.candidate_sha }}"
+          `candidate-sha` = "${{ inputs.candidate_sha }}"
+          mode = "release"
+          `run-id` = "${{ github.run_id }}"
+          `run-attempt` = "${{ github.run_attempt }}"
+          `bundles-directory` = "${{ env.FIVE_CASE_BUNDLES }}"
+          `enforce-complete` = "${{ inputs.enforce_complete }}"
+          `artifact-name` = "v1-five-case-admission-${{ inputs.candidate_sha }}-${{ github.run_attempt }}"
+        }
+      }
+      new Dynamic {
+        name = "Download the host receipt bundles of this run"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.downloadArtifact
+        with {
+          pattern = "v1-host-receipts-${{ inputs.candidate_sha }}-*"
+          path = "${{ env.HOST_RECEIPTS }}"
+          `merge-multiple` = true
+        }
+      }
+      new Dynamic {
+        name = "Admit every required host row"
+        `if` = "${{ !cancelled() }}"
+        shell = "bash"
+        run = ci.workflowScript("admit-every-required-host-row.sh")
+      }
+      new Dynamic {
+        name = "Preserve the admitted manifest"
+        `if` = "${{ !cancelled() && hashFiles('.qualification/v1-exact-candidate-manifest.json') != '' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "v1-exact-candidate-manifest-${{ inputs.candidate_sha }}-${{ github.run_attempt }}"
+          path = ".qualification/v1-exact-candidate-manifest.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

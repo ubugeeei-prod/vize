@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { appendFileSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
   admitV1ExactCandidate,
   admitV1ExactCandidateHost,
   buildV1ExactCandidateHostPlan,
+  V1_EXACT_CANDIDATE_BUNDLE_SCHEMA,
   type V1ExactCandidateHostAdmission,
   type V1ExactCandidateReceiptBundle,
 } from "../../support/compat/v1/exact-candidate.ts";
@@ -84,7 +85,7 @@ function validateHost(args: readonly string[]): void {
   );
 }
 
-function admissionFiles(directory: string): string[] {
+function jsonFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
     .map((entry) => path.join(directory, entry.name))
@@ -97,7 +98,7 @@ function admit(args: readonly string[]): void {
   const output = option(args, "--output");
   const run = positiveIntegerOption(args, "--run");
   const runAttempt = positiveIntegerOption(args, "--run-attempt");
-  const admissions = admissionFiles(admissionsDirectory).map((filename) =>
+  const admissions = jsonFiles(admissionsDirectory).map((filename) =>
     readJson<V1ExactCandidateHostAdmission>(filename),
   );
   const admitted = admitV1ExactCandidate(buildV1SupportMatrix(), candidate, admissions, {
@@ -116,6 +117,43 @@ function admit(args: readonly string[]): void {
   );
 }
 
+// Admits every host row of one run from the receipt bundles its lanes uploaded. A run
+// without bundles admits nothing, so every row stays a gap; an invalid or foreign
+// receipt fails even when completeness is not enforced. The manifest is written before
+// completeness is enforced, so a failing run still keeps what it admitted.
+function admitRun(args: readonly string[]): void {
+  const candidate = option(args, "--candidate");
+  const receiptsDirectory = option(args, "--receipts");
+  const output = option(args, "--output");
+  const runIdentity = {
+    run: positiveIntegerOption(args, "--run"),
+    runAttempt: positiveIntegerOption(args, "--run-attempt"),
+  };
+  const files = existsSync(receiptsDirectory) ? jsonFiles(receiptsDirectory) : [];
+  const receipts = files.flatMap((filename) => {
+    const bundle = readJson<V1ExactCandidateReceiptBundle>(filename);
+    assert.equal(bundle.schema, V1_EXACT_CANDIDATE_BUNDLE_SCHEMA, `${filename}: schema`);
+    return bundle.receipts;
+  });
+  const bundle = { schema: V1_EXACT_CANDIDATE_BUNDLE_SCHEMA, receipts };
+  const matrix = buildV1SupportMatrix();
+  const admissions = buildV1ExactCandidateHostPlan(matrix).map(({ id }) =>
+    admitV1ExactCandidateHost(matrix, bundle, candidate, id, runIdentity),
+  );
+  const admitted = admitV1ExactCandidate(matrix, candidate, admissions, runIdentity);
+  writeJson(output, admitted);
+  const { completeRequiredRows, requiredRows } = admitted.counts;
+  console.log(
+    `Admitted ${completeRequiredRows}/${requiredRows} required rows for ${candidate} from ${files.length} receipt bundles`,
+  );
+  if (args.includes("--enforce-complete"))
+    assert.equal(
+      completeRequiredRows,
+      requiredRows,
+      `exact candidate admitted ${completeRequiredRows}/${requiredRows} required rows`,
+    );
+}
+
 const [command, ...args] = process.argv.slice(2);
 switch (command) {
   case "plan":
@@ -127,8 +165,11 @@ switch (command) {
   case "admit":
     admit(args);
     break;
+  case "admit-run":
+    admitRun(args);
+    break;
   default:
     throw new Error(
-      "Usage: node tools/commands/release/v1-exact-candidate.ts <plan|validate-host|admit> [options]",
+      "Usage: node tools/commands/release/v1-exact-candidate.ts <plan|validate-host|admit|admit-run> [options]",
     );
 }

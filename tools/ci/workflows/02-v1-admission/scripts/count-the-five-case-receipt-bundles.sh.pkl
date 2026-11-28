@@ -1,0 +1,13 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  mkdir -p "$FIVE_CASE_BUNDLES"
+  count=$(( $(find "$FIVE_CASE_BUNDLES" -maxdepth 1 -type f -name '*.json' | wc -l) ))
+  echo "Found $count five-case receipt bundles"
+  echo "count=$count" >> "$GITHUB_OUTPUT"
+  """#
+}
