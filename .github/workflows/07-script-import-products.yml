@@ -1,0 +1,74 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/07-script-import-products/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Original import products
+on:
+  pull_request:
+    paths:
+      - .github/workflows/07-script-import-products.yml
+      - tools/ci/workflows/07-script-import-products/**
+      - davinci/vize_l2/src/query/script.rs
+      - davinci/vize_l2/src/query/script/**
+      - crates/vize_canon/Cargo.toml
+      - crates/vize_canon/src/virtual_ts.rs
+      - crates/vize_canon/src/virtual_ts/types.rs
+      - crates/vize_canon/src/virtual_ts/generator.rs
+      - crates/vize_canon/src/virtual_ts/generator/imports.rs
+      - crates/vize_canon/src/virtual_ts/generator/imports/**
+      - crates/vize_canon/src/virtual_ts/generator/entry.rs
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: original-import-products-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  original-import-products:
+    name: Original import document parity and paired resource measurements
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: 1.100.0
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/07-script-import-products/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: original-import-products
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Compare complete original documents and measure their resources
+        run: . "${{ env.VIZE_CI_FILES }}/measure-original-import-products.sh"
+      - name: Retain exact-source parity and raw paired measurements
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: original-import-products-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/original-import-products
+          if-no-files-found: error
+          retention-days: 30

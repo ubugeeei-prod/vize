@@ -90,6 +90,10 @@ mod types;
 mod unknown_props_tests;
 
 pub use generator::setup_helpers::owned_emit_navigation_source_ranges;
+#[cfg(feature = "original-import-products")]
+pub use generator::{
+    OriginalImportError, OriginalImportFacts, entry::generate_virtual_ts_with_original_imports,
+};
 pub use generator::{
     entry::generate_virtual_ts_with_generic, entry::generate_virtual_ts_with_split_offsets,
     generate_virtual_ts, generate_virtual_ts_with_offsets,

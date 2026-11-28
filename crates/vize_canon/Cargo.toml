@@ -58,6 +58,8 @@ davinci-differential = ["legacy-differential"]
 
 # Plan plain-script export bridges over the original checker grammar.
 plain-script-bridges = ["native", "vize_l2/script-declaration-queries"]
+# Share original L2 import declarations with explicitly requested full projections.
+original-import-products = ["native", "vize_l2/script-declaration-queries"]
 
 [dependencies]
 vize_carton.workspace = true

@@ -59,6 +59,8 @@ use self::imports::{
     ImportNames, collect_component_imported_names, emit_reference_path_directives,
     emit_reference_type_directives,
 };
+#[cfg(feature = "original-import-products")]
+pub use self::imports::{OriginalImportError, OriginalImportFacts};
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
 use self::options_api::emit_options_api_variables;
@@ -196,6 +198,14 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
             script_module::collect(parses, script, recover_lone_setup, generation_options)
         })
         .unwrap_or_default();
+    #[cfg(feature = "original-import-products")]
+    let imports = match (generation_options.original_imports, script_content) {
+        (Some(original), Some(script)) => {
+            ImportNames::from_original(summary, script, &module_plan.identifier_usage, original)
+        }
+        _ => ImportNames::collect(summary, script_content, &module_plan.identifier_usage),
+    };
+    #[cfg(not(feature = "original-import-products"))]
     let imports = ImportNames::collect(summary, script_content, &module_plan.identifier_usage);
     let (hoisted_generic_aliases, mut module_spans) = script_blocks.plan(
         summary,
@@ -309,6 +319,8 @@ pub(crate) fn generate_virtual_ts_with_shared_parses(
         options,
         global_components.enabled(),
         &syntactic_type_only_imported_names,
+        #[cfg(feature = "original-import-products")]
+        generation_options.original_imports,
     );
     let _component_aliases = super::component_aliases::cache_aliases(
         summary,

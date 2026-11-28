@@ -33,7 +33,7 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 4         |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 16        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 17        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 14        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 4         |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 3         |
@@ -180,8 +180,9 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.12 | Davinci authored source frames         | [`07-proofs-source-frames.yml`](./07-proofs-source-frames.yml)               |
 | 07.13 | Davinci Kani                           | [`07-proofs.yml`](./07-proofs.yml)                                           |
 | 07.14 | Davinci reference backends             | [`07-reference-backends.yml`](./07-reference-backends.yml)                   |
-| 07.15 | Style module products                  | [`07-style-module-products.yml`](./07-style-module-products.yml)             |
-| 07.16 | Level deletion readiness               | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)             |
+| 07.15 | Original import products               | [`07-script-import-products.yml`](./07-script-import-products.yml)           |
+| 07.16 | Style module products                  | [`07-style-module-products.yml`](./07-style-module-products.yml)             |
+| 07.17 | Level deletion readiness               | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)             |
 
 ## 08 Builders and framework integrations
 

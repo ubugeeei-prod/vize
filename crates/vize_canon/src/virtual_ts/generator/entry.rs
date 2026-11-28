@@ -75,6 +75,35 @@ pub fn generate_virtual_ts_with_offsets(
     )
 }
 
+/// Generate the complete ordinary Canon document while original L2 import
+/// declarations replace its compatibility import-slice parses. The facts must
+/// belong to this exact script buffer and every selected import statement.
+/// This explicit entry does not choose a production backend or admit a File.
+#[cfg(feature = "original-import-products")]
+pub fn generate_virtual_ts_with_original_imports(
+    summary: &Croquis,
+    script_content: &str,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    original: &super::OriginalImportFacts<'_>,
+) -> Result<VirtualTsOutput, super::OriginalImportError> {
+    original.validate(summary, Some(script_content))?;
+    Ok(generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        Some(script_content),
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            original_imports: Some(original),
+            ..Default::default()
+        },
+    ))
+}
+
 /// Generate virtual TypeScript for a Croquis analyzed on merged script text.
 ///
 /// `split_script_setup_offsets` is `(synthetic_setup_start, source_setup_start)`

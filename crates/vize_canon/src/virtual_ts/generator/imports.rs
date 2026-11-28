@@ -16,12 +16,18 @@ use vize_croquis::Croquis;
 
 use super::super::types::VirtualTsOptions;
 
+#[cfg(feature = "original-import-products")]
+mod original;
+#[cfg(feature = "original-import-products")]
+pub use original::{OriginalImportError, OriginalImportFacts};
+
 pub(super) fn collect_component_imported_names<'a>(
     summary: &Croquis,
     script_content: Option<&'a str>,
     options: &VirtualTsOptions,
     global_components_enabled: bool,
     type_only: &FxHashSet<CompactString>,
+    #[cfg(feature = "original-import-products")] original: Option<&OriginalImportFacts<'a>>,
 ) -> FxHashSet<&'a str> {
     // The template-scope unwrap set also needs it: an auto-import already
     // imported by a plain `<script>` must not gain a second shadow.
@@ -31,6 +37,10 @@ pub(super) fn collect_component_imported_names<'a>(
             && !vize_croquis::facts::component_usage_slice(summary).is_empty())
         || super::super::component_aliases::needs_imported_names(summary, type_only);
     if needed {
+        #[cfg(feature = "original-import-products")]
+        if let Some(original) = original {
+            return original.value_names(summary).collect();
+        }
         vize_carton::profile!(
             "canon.virtual_ts.extract_imported_names",
             collect_imported_names(summary, script_content)
@@ -130,6 +140,42 @@ pub(super) struct ImportNames<'a> {
 }
 
 impl<'a> ImportNames<'a> {
+    #[cfg(feature = "original-import-products")]
+    pub(super) fn from_original(
+        summary: &Croquis,
+        script_content: &'a str,
+        usage: &IdentifierUsage,
+        original: &OriginalImportFacts<'a>,
+    ) -> Self {
+        let bindings = crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            original
+                .value_names(summary)
+                .filter(|name| bindings.contains_binding(name))
+                .map(CompactString::new)
+                .collect::<FxHashSet<_>>()
+        });
+        let without_script_value_use = bindings
+            .iter()
+            .filter(|name| !usage.value_refs.contains(*name))
+            .map(|name| String::from(name.as_str()))
+            .collect();
+        Self {
+            values: ValueImportNames {
+                bindings,
+                without_script_value_use,
+            },
+            type_only: TypeOnlyImportPlan {
+                script_content: Some(script_content),
+                prepared: Some(
+                    original
+                        .type_names(summary)
+                        .map(CompactString::new)
+                        .collect(),
+                ),
+            },
+        }
+    }
+
     pub(super) fn collect(
         summary: &Croquis,
         script_content: Option<&'a str>,

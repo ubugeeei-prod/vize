@@ -3,8 +3,8 @@
 //! This demand reads statement heads and binding patterns. The containing
 //! source frame, parser grammar and diagnostics belong to the L1 owner.
 use oxc_ast::ast::{
-    BindingIdentifier, Declaration, ExportDefaultDeclarationKind, ImportDeclarationSpecifier,
-    Statement, TSModuleDeclarationName, VariableDeclarationKind,
+    BindingIdentifier, Declaration, ExportDefaultDeclarationKind, Statement,
+    TSModuleDeclarationName, VariableDeclarationKind,
 };
 use vize_l0::{SourceBlock, Span};
 use vize_l1::embed::authored_program::AuthoredProgram;
@@ -90,26 +90,13 @@ impl<'p, 'a> ScriptDeclarations<'p, 'a> {
         for statement in &self.original.parsed().program.body {
             match statement {
                 Statement::ImportDeclaration(import) => {
-                    for specifier in import.specifiers.iter().flatten() {
-                        let (id, type_only) = match specifier {
-                            ImportDeclarationSpecifier::ImportSpecifier(named) => {
-                                (&named.local, named.import_kind.is_type())
-                            }
-                            ImportDeclarationSpecifier::ImportDefaultSpecifier(default) => {
-                                (&default.local, false)
-                            }
-                            ImportDeclarationSpecifier::ImportNamespaceSpecifier(namespace) => {
-                                (&namespace.local, false)
-                            }
-                        };
+                    imports::visit_names(import, |id, type_only| {
                         name(
                             id,
-                            ScriptDeclarationKind::Import {
-                                type_only: import.import_kind.is_type() || type_only,
-                            },
+                            ScriptDeclarationKind::Import { type_only },
                             DeclarationExport::Local,
                         );
-                    }
+                    });
                 }
                 Statement::ExportNamedDeclaration(named) => {
                     if let Some(decl) = &named.declaration {
@@ -197,6 +184,9 @@ mod tests;
 
 mod declaration;
 pub use declaration::DeclarationStatement;
+
+mod imports;
+pub use imports::ScriptImportStatement;
 
 #[cfg(feature = "literal-assignments")]
 pub mod assignments;
