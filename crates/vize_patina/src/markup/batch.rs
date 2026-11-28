@@ -15,6 +15,7 @@ pub struct RankedMarkupRule<'r> {
     name: &'static str,
     traversal: MarkupTraversal,
     rule: &'r dyn MarkupRule,
+    requires_original_element_syntax: bool,
 }
 
 impl<'r> RankedMarkupRule<'r> {
@@ -25,6 +26,7 @@ impl<'r> RankedMarkupRule<'r> {
             name: rule.name(),
             traversal: rule.traversal(),
             rule,
+            requires_original_element_syntax: rule.requires_original_element_syntax(),
         }
     }
 
@@ -38,6 +40,10 @@ impl<'r> RankedMarkupRule<'r> {
     #[inline]
     pub fn name(&self) -> &'static str {
         self.name
+    }
+
+    pub(crate) fn requires_original_element_syntax(&self) -> bool {
+        self.requires_original_element_syntax
     }
 }
 
@@ -56,6 +62,7 @@ pub struct MarkupRules<'r> {
     directives: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
     conditionals: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
     has_bindings: bool,
+    requires_original_element_syntax: bool,
 }
 
 impl<'r> MarkupRules<'r> {
@@ -70,6 +77,7 @@ impl<'r> MarkupRules<'r> {
             directives: SmallVec::new(),
             conditionals: SmallVec::new(),
             has_bindings: false,
+            requires_original_element_syntax: false,
         };
         for entry in rules {
             let traversal = entry.traversal;
@@ -92,6 +100,7 @@ impl<'r> MarkupRules<'r> {
                 batch.conditionals.push(entry);
             }
             batch.has_bindings |= traversal.enters_bindings();
+            batch.requires_original_element_syntax |= entry.requires_original_element_syntax;
         }
         batch
     }
@@ -121,6 +130,18 @@ impl<'r> MarkupRules<'r> {
 impl MarkupRule for MarkupRules<'_> {
     fn name(&self) -> &'static str {
         ""
+    }
+
+    fn requires_original_element_syntax(&self) -> bool {
+        self.requires_original_element_syntax
+    }
+
+    fn needs_original_element_syntax(&self, ctx: &crate::context::LintContext<'_>) -> bool {
+        self.requires_original_element_syntax
+            && self
+                .rules
+                .iter()
+                .any(|rule| rule.requires_original_element_syntax && ctx.is_rule_enabled(rule.name))
     }
 
     fn traversal(&self) -> MarkupTraversal {

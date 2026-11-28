@@ -15,7 +15,11 @@ fn options(native: bool) -> LoweringOptions<'static> {
 }
 
 fn produced<'a>(arena: &'a Allocator, source: &'a str, native: bool) -> SyntaxLowerOutput<'a> {
-    lower_with_options(arena, arena.as_oxc(), source, JsxLang::Tsx, options(native))
+    if native {
+        super::lower_source_with_lint_syntax_for_vdom(arena, arena.as_oxc(), source, JsxLang::Tsx)
+    } else {
+        super::lower_source_with_lint_syntax(arena, arena.as_oxc(), source, JsxLang::Tsx)
+    }
 }
 
 fn component<'o, 'a>(root: SyntaxRoot<'o, 'a>) -> &'o ComponentOp<'a> {

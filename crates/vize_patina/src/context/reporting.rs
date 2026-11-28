@@ -84,6 +84,12 @@ impl<'a> LintContext<'a> {
         self.diagnostics.push(diagnostic);
     }
 
+    /// An input-capability refusal is operational and cannot be hidden by a
+    /// selected rule's warning severity or its inline suppression policy.
+    pub(crate) fn report_operational(&mut self, diagnostic: LintDiagnostic) {
+        self.report_directive(diagnostic);
+    }
+
     /// Report a diagnostic whose range already addresses the containing SFC.
     #[inline]
     pub fn report_in_sfc(&mut self, diagnostic: LintDiagnostic) {

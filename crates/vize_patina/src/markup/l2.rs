@@ -13,7 +13,7 @@
 //! the view is built, so a walk does not scan that table per interpolation.
 
 use crate::context::TemplateDocumentKind;
-use vize_atelier_jsx::l2::JsxL2Root;
+use vize_atelier_jsx::SyntaxRoot;
 use vize_croquis::drawer::LintTemplate;
 use vize_l0::Allocator;
 use vize_l0::side_table::SideTable;
@@ -30,6 +30,7 @@ use vize_l2::walk::{PageWalk, visit_nodes};
 pub(super) mod binding;
 pub(super) mod bound;
 pub(super) mod children;
+mod original;
 pub(super) mod surface;
 mod surface_index;
 pub(super) mod texts;
@@ -43,6 +44,10 @@ enum L2Origin {
     /// Markup inside a script module (a JSX/TSX render root, a TSRX region):
     /// no L1 surface, spans absolute in the module source.
     Embedded,
+    /// JSX projection whose original syntax requires its source-factory owner.
+    ProjectedJsx,
+    /// Region produced by the original TSRX source/prepared-module entry.
+    Tsrx,
 }
 
 /// A borrowed L2 artifact the markup facade views.
@@ -64,6 +69,7 @@ pub struct L2Markup<'a> {
     /// [`authored`](Self::authored); `None` keeps the root descent.
     surface_index: Option<&'a [surface_index::IndexedElement<'a>]>,
     authored_index: Option<&'a [surface_index::IndexedElement<'a>]>,
+    pub(super) jsx_syntax: Option<SyntaxRoot<'a, 'a>>,
 }
 
 impl<'a> L2Markup<'a> {
@@ -81,23 +87,7 @@ impl<'a> L2Markup<'a> {
             authored: None,
             surface_index: surface_index::build(lowered.allocator, surface),
             authored_index: None,
-        }
-    }
-
-    /// View one JSX/TSX render root's P2-16 L2 projection.
-    pub fn from_projected_root(root: &'a JsxL2Root<'a>) -> Self {
-        Self {
-            root: &root.root,
-            source: root.source,
-            op_count: root.op_count,
-            origin: L2Origin::Embedded,
-            texts: None,
-            text_index: texts::EMPTY,
-            allocator: None,
-            surface: None,
-            authored: None,
-            surface_index: None,
-            authored_index: None,
+            jsx_syntax: None,
         }
     }
 
@@ -117,6 +107,7 @@ impl<'a> L2Markup<'a> {
             authored: None,
             surface_index: None,
             authored_index: None,
+            jsx_syntax: None,
         }
     }
 

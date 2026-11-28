@@ -53,6 +53,10 @@ impl MarkupRule for AllHooks {
         self.markup().level()
     }
 
+    fn requires_original_element_syntax(&self) -> bool {
+        self.markup().requires_original_element_syntax()
+    }
+
     // Deliberately keep the default Full traversal. Forward every callback so
     // a missing traversal declaration cannot silently discard a future hook.
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {

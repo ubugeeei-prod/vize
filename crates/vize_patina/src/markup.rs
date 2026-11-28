@@ -84,6 +84,7 @@ mod jsx_child;
 mod jsx_names;
 mod jsx_roots;
 mod l2;
+pub(crate) mod lint_elements;
 pub(crate) mod lint_headers;
 pub(crate) mod lint_ids;
 mod node;
@@ -286,7 +287,26 @@ impl<'a> MarkupDocument<'a> {
     /// interpolation/expression nodes — without ever allocating a synthetic
     /// template AST.
     pub fn visit_with<R: MarkupRule + ?Sized>(&self, rule: &R, ctx: &mut MarkupContext<'_, 'a>) {
+        if rule.needs_original_element_syntax(ctx.lint())
+            && !self.has_original_element_syntax(ctx.lint().source)
+        {
+            ctx.lint().report_operational(crate::diagnostic::LintDiagnostic::error(
+                "parser/jsx",
+                "Original element syntax is unavailable for selected lint rules; use the source lint entry point.",
+                0,
+                0,
+            ));
+            return;
+        }
         MarkupDocumentVisitor::new(rule, ctx).run(self);
+    }
+
+    fn has_original_element_syntax(&self, source: &str) -> bool {
+        match self.inner {
+            MarkupDocumentInner::Relief(_) => true,
+            MarkupDocumentInner::Jsx { .. } => false,
+            MarkupDocumentInner::L2(markup) => markup.has_original_element_syntax(source),
+        }
     }
 }
 

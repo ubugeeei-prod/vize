@@ -81,7 +81,10 @@ pub use parse::{ParsedModule, parse_module};
 pub use scoped::ScopedStyle;
 pub use span::SpanMapper;
 pub use ssr::{SsrCompileOptions, SsrComponent, SsrOutput, compile_to_ssr};
-pub use syntax::{SyntaxLowerOutput, SyntaxRoot, lower_source_with_lint_syntax};
+pub use syntax::{
+    SyntaxLowerOutput, SyntaxRoot, lower_source_with_lint_syntax,
+    lower_source_with_lint_syntax_for_vdom,
+};
 pub use vapor::{VaporCompileOptions, VaporComponent, VaporOutput, compile_to_vapor};
 pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 
