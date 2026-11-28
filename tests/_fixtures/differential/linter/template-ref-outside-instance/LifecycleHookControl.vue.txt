@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import { computed, onMounted, useTemplateRef } from 'vue'
+
+const input = useTemplateRef<HTMLInputElement>('input')
+
+function init() {
+  return useTemplateRef<HTMLDivElement>('panel')
+}
+const panel = init()
+
+onMounted(() => {
+  const late = useTemplateRef('late')
+  input.value?.focus()
+  console.log(panel.value, late.value)
+})
+
+const label = computed(() => input.value?.value ?? '')
+
+function focus() {
+  input.value?.focus()
+}
+</script>
+
+<template>
+  <input ref="input" />
+  <div ref="panel">{{ label }}</div>
+  <button @click="focus">Focus</button>
+</template>

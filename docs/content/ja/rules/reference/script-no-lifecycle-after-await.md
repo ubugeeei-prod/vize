@@ -1,11 +1,11 @@
 ---
 title: "script/no-lifecycle-after-await"
-description: "setup() 内で await の後にライフサイクルフックを登録することを禁止します。"
+description: "setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止します。"
 ---
 
 # `script/no-lifecycle-after-await`
 
-setup() 内で await の後にライフサイクルフックを登録することを禁止します。
+setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止します。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |

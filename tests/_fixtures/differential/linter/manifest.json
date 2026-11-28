@@ -21035,17 +21035,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "5e991389e397533ef930f3885677bd24c8610353a95224fde18de8bf6610822b"
+            "sha256": "998e46a7f80fa2b4a3a26e23ba82b7931d176decb1cd49b064eeddc0e14deddb"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "481d5ae3c1fa8f76c698ba28bdf6b75df4ba614ac62ac3f5496a56f1b4ff97f9"
+            "sha256": "d93df0748198eac2b9a0e3683cf7c2b06afa1f2cc0c61a87ed40620f9f44ec58"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "c46b88f0437f5bf550da2a6a9e9ac462581a105b0c51b01047c6b9179af1dd0a"
+            "sha256": "b4a0a4755dc23f700b057ad1414fd7b8c81c81f6515feb53b8507e0f8e5974d7"
           }
         ]
       },
@@ -27279,6 +27279,53 @@
             "path": "rules.json",
             "role": "rule-options",
             "sha256": "173a3c5346c3c4ae69fdf8fe02b7e3fd2fe071f284600779029705be15fa68dc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/template-ref-outside-instance",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "template-ref-outside-instance",
+        "files": [
+          {
+            "path": "DeferredCallbacks.vue.txt",
+            "role": "template-ref-in-handler-timer-watch-and-promise-callbacks",
+            "sha256": "d05b3da68dce0915e5dbb7a9908b37d2299c1c7c35df2ef34b4dcf2eb4901073"
+          },
+          {
+            "path": "LifecycleHookControl.vue.txt",
+            "role": "setup-body-lifecycle-hook-and-reached-local-control",
+            "sha256": "dbdf3496908e92fecd4a15fa330bb6284e9a8746a23ef403cd462d8ef3ce7e51"
+          },
+          {
+            "path": "ModuleLevel.vue.txt",
+            "role": "module-level-template-ref",
+            "sha256": "0fbb3e0feba5811d3c0a0e85ed2c5bb4c52c14b26304d16915faff1350314e47"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "a8b2763b2f3ed78a33b316f0a9dc3d53dcc15d25d974671ab469e76b10aea07f"
           }
         ]
       },

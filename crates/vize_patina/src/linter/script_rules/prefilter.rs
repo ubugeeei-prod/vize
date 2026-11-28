@@ -41,6 +41,7 @@ pub(super) use markers::BlockMarkers;
 use ref_operand::source_may_contain_ref_operand;
 
 const RULE_CONSISTENT_TYPE_IMPORTS: &str = "script/consistent-type-imports";
+const RULE_NO_TEMPLATE_REF_OUTSIDE_INSTANCE: &str = "script/no-template-ref-outside-instance";
 
 #[cfg(test)]
 pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
@@ -148,6 +149,7 @@ pub(super) fn script_rule_may_match_in(rule_name: &str, markers: &BlockMarkers<'
             contains(markers, b"await") && contains(markers, b"setup")
         }
         RULE_NO_EXPOSE_AFTER_AWAIT => contains(markers, b"await") && contains(markers, b"xpose"),
+        RULE_NO_TEMPLATE_REF_OUTSIDE_INSTANCE => contains(markers, b"useTemplateRef"),
         RULE_NO_REF_AS_OPERAND => source_may_contain_ref_operand(markers.source()),
         RULE_RETURN_IN_COMPUTED_PROPERTY => {
             contains(markers, b"computed") && contains(markers, b"{")

@@ -125,7 +125,7 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | Desencorajar valores não padronizados de lang em scripts. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | Desencorajar o atributo src em blocos de SFCs. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | Desencorajar o atributo lang no bloco template. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Reportar refs de template (ref="x") nunca referenciadas em &lt;script&gt;. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Reportar refs de template (ref="x") que nenhuma variável de script, useTemplateRef() ou $refs lê. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | Proibir variáveis, importações e parâmetros de script não usados. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | Proibir interpolação com chaves duplas cuja expressão seja uma string literal constante. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | Proibir um v-bind cujo valor seja uma string literal simples. | `nuxt`, `opinionated` |  |

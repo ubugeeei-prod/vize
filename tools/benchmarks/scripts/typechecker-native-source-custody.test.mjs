@@ -18,7 +18,7 @@ import {
   INFRASTRUCTURE_PATHS,
 } from "./typechecker-native-source-custody.mjs";
 
-const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const WORKFLOW = ".github/workflows/04-typechecker-native-phases.yml";
 const PREFIX = "tools/benchmarks/scripts/";
 const ORIGINAL = [
   WORKFLOW,

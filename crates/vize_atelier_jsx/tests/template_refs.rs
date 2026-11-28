@@ -4,13 +4,22 @@
     reason = "tests assert by panicking; fixtures use std strings"
 )]
 
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
+use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
 use vize_l0::Allocator;
 
 fn component_code(src: &str, default_mode: JsxOutputMode) -> std::string::String {
+    compat_component_code(src, default_mode, JsxCompatMode::Native)
+}
+
+fn compat_component_code(
+    src: &str,
+    default_mode: JsxOutputMode,
+    compat: JsxCompatMode,
+) -> std::string::String {
     let bump = Allocator::new();
     let config = JsxCompileConfig {
         default_mode,
+        compat,
         ..Default::default()
     };
     let out = compile_jsx(&bump, src, JsxLang::Jsx, &config);
@@ -69,18 +78,43 @@ fn bare_ref_for_outside_a_loop_sets_the_vapor_flag() {
     let calls: Vec<&str> = code
         .lines()
         .map(str::trim)
-        .filter(|line| {
-            line.split_once('(')
-                .is_some_and(|(head, _)| head == "_setRef")
-        })
+        .filter(|line| line.contains("_setRef(n"))
         .collect();
-    assert_eq!(calls.len(), 1, "{code}");
     assert_eq!(
-        calls
-            .first()
-            .and_then(|call| call.rsplit_once(", "))
-            .map(|(_, flag)| flag),
-        Some("true)"),
+        calls,
+        ["_renderEffect(() => _setRef(n0, els, true))"],
         "{code}"
     );
+}
+
+/// A ref inside `.map()` collects every rendered element, as `v-for` + `ref`
+/// does: each lane marks it `ref_for`, Babel compatibility included.
+#[test]
+fn ref_inside_map_collects_into_an_array_on_every_lane() {
+    let src = "const App = () => <ul>{items.map((item) => <li ref=\"row\">{item}</li>)}</ul>;";
+    for (mode, compat, expected) in [
+        (
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Babel,
+            r#"return (_openBlock(), _createElementBlock("li", { ref_for: true, ref: "row" }, ["#,
+        ),
+        (
+            JsxOutputMode::Vdom,
+            JsxCompatMode::Native,
+            r#"return (_createElementVNode("li", { ref_for: true, ref: "row" }, ["#,
+        ),
+        (
+            JsxOutputMode::Vapor,
+            JsxCompatMode::Native,
+            r#"_setRef(n3, "row", true)"#,
+        ),
+    ] {
+        let code = compat_component_code(src, mode, compat);
+        let refs: Vec<&str> = code
+            .lines()
+            .map(str::trim)
+            .filter(|line| line.contains("\"row\""))
+            .collect();
+        assert_eq!(refs, [expected], "{mode:?}/{compat:?}\n{code}");
+    }
 }

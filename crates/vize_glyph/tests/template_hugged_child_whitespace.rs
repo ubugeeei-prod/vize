@@ -48,14 +48,13 @@ fn whitespace_only_child_after_an_inline_sibling() {
         "</template>\n",
     );
     // The whitespace-only `<i>` prints as an empty one. Its `></i>` makes the
-    // continued line overflow, so it takes the continued-tag layout that
-    // `<img>` and `<i>x</i>` in this position already get.
+    // continued line overflow, so the parent's `>` moves down and the `<i>`
+    // stays whole, as in Prettier.
     let expected = concat!(
         "<template>\n",
         "  <div>\n",
-        "    <el-button plain size=\"small\" type=\"primary\" @click=\"preview(true)\"><i\n",
-        "        class=\"el-icon-view-ab\"\n",
-        "      ></i>Prev</el-button>\n",
+        "    <el-button plain size=\"small\" type=\"primary\" @click=\"preview(true)\"\n",
+        "      ><i class=\"el-icon-view-ab\"></i>Prev</el-button>\n",
         "  </div>\n",
         "</template>\n",
     );

@@ -1,11 +1,11 @@
 ---
 title: "vue/no-unused-refs"
-description: "Reportar refs de template (ref=\"x\") nunca referenciadas em &lt;script&gt;."
+description: "Reportar refs de template (ref=\"x\") que nenhuma variável de script, useTemplateRef() ou $refs lê."
 ---
 
 # `vue/no-unused-refs`
 
-Reportar refs de template (ref="x") nunca referenciadas em &lt;script&gt;.
+Reportar refs de template (ref="x") que nenhuma variável de script, useTemplateRef() ou $refs lê.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |

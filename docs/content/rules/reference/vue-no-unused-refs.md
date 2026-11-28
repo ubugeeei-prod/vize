@@ -1,11 +1,11 @@
 ---
 title: "vue/no-unused-refs"
-description: "Report template refs (ref=\"x\") never referenced in <script>."
+description: "Report template refs (ref=\"x\") that no script binding, useTemplateRef() or $refs reads."
 ---
 
 # `vue/no-unused-refs`
 
-Report template refs (ref="x") never referenced in &lt;script&gt;.
+Report template refs (ref="x") that no script binding, useTemplateRef() or $refs reads.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |

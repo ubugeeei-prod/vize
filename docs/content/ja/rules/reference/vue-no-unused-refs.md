@@ -1,11 +1,11 @@
 ---
 title: "vue/no-unused-refs"
-description: "テンプレートに宣言しているのに参照しない ref を検出します。"
+description: "テンプレートに宣言しているのに、script の変数、useTemplateRef()、$refs のどれからも読まない ref を検出します。"
 ---
 
 # `vue/no-unused-refs`
 
-テンプレートに宣言しているのに参照しない ref を検出します。
+テンプレートに宣言しているのに、script の変数、useTemplateRef()、$refs のどれからも読まない ref を検出します。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |

@@ -2579,7 +2579,7 @@ Vue の内部モジュールからのインポートを禁止する
   import { ref, computed } from 'vue'
 === script/no-lifecycle-after-await
 script/no-lifecycle-after-await · lint ルール
-setup() 内で await の後にライフサイクルフックを登録することを禁止する
+setup() 内で await の後にライフサイクルフックや useTemplateRef() を呼ぶことを禁止する
 
 精度: exact
 対象: the syntax of <script> and <script setup> programs, without type information
@@ -2886,6 +2886,43 @@ Options API の computed ゲッターでの副作用を禁止する
       }
     }
   }
+=== script/no-template-ref-outside-instance
+script/no-template-ref-outside-instance · lint ルール
+コンポーネントのインスタンスがない場所での useTemplateRef() 呼び出しを禁止する
+
+精度: complete
+対象: Vue's useTemplateRef calls in script blocks and modules, placed by the code that runs them: module evaluation, callbacks of timers, watch, nextTick, promise reactions and DOM listeners, and setup-local functions only those or template v-on handlers use; code whose caller the script cannot determine is outside
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/script-no-template-ref-outside-instance.md
+
+不正な例:
+  <script setup lang="ts">
+  import { useTemplateRef } from 'vue'
+  function focus() {
+    useTemplateRef<HTMLInputElement>('input').value?.focus()
+  }
+  setTimeout(() => useTemplateRef('input'))
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
+
+正しい例:
+  <script setup lang="ts">
+  import { onMounted, useTemplateRef } from 'vue'
+  const input = useTemplateRef<HTMLInputElement>('input')
+  function focus() {
+    input.value?.focus()
+  }
+  onMounted(() => focus())
+  </script>
+  <template>
+    <input ref="input" />
+    <button @click="focus">Focus</button>
+  </template>
 === script/no-top-level-ref-in-script
 script/no-top-level-ref-in-script · lint ルール
 リクエスト間での状態汚染を防ぐため、トップレベルの ref・reactive を禁止する
@@ -5980,7 +6017,7 @@ defineProps で定義したのに使われない props を禁止する
   </template>
 === vue/no-unused-refs
 vue/no-unused-refs · lint ルール
-<script> で一度も参照されないテンプレート参照（ref="x"）を報告する
+スクリプトの変数、useTemplateRef()、$refs のどれからも読まれないテンプレート参照（ref="x"）を報告する
 
 精度: complete
 対象: bindings croquis resolves across <script setup> and the template; values reached through unresolved imports are outside

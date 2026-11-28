@@ -1,0 +1,10 @@
+<script setup>
+import { ref, useTemplateRef } from 'vue'
+const first = ref(true)
+const a = useTemplateRef('a')
+const b = useTemplateRef('b')
+function toggle() { first.value = !first.value }
+function referencedText() { return `${a.value?.textContent ?? 'null'}|${b.value?.textContent ?? 'null'}` }
+defineExpose({ toggle, referencedText })
+</script>
+<template><p :ref="first ? 'a' : 'b'">target</p></template>

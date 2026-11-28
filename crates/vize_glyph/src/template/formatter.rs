@@ -93,6 +93,9 @@ impl<'a> TemplateFormatter<'a> {
         let mut inline = InlineNode::None;
         // Lines a line-scoped lint suppression covers must not be split. (#3343)
         let mut joiner = LineJoiner::new(source);
+        // Prettier preset only: depth of the element whose opening `>` moved
+        // below its start tag, so its closing tag ends with `>` on its own line.
+        let mut moved_opening: Option<usize> = None;
 
         while pos < len {
             // Skip whitespace at line start (except newlines)
@@ -169,7 +172,12 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.push_str("</");
                     output.push_str(&tag_name);
+                    let moved = CANONICAL && moved_opening == Some(depth);
+                    if moved {
+                        moved_opening = None;
+                    }
                     if (CANONICAL && joiner.take_wrapped_text_close(pos))
+                        || (moved && join.is_continuation())
                         || (join.is_continuation()
                             && !joiner.locks_current_line()
                             && (self.closing_bracket_overflows(&output)
@@ -235,15 +243,24 @@ impl<'a> TemplateFormatter<'a> {
                     output.push('<');
                     output.push_str(&tag_name);
 
+                    // The byte before `<tag_name` changes only when the
+                    // attribute writer moves the parent's `>` down.
+                    let parent_bracket = output.len().wrapping_sub(tag_name.len() + 2);
+                    let follows_bracket =
+                        CANONICAL && output.as_bytes().get(parent_bracket) == Some(&b'>');
                     let mut closing_bracket_on_own_line = self
                         .write_opening_attributes_with_prefix(
                             &mut output,
                             &tag_name,
                             &sorted_attrs,
                             depth,
-                            join.is_continuation() && !joiner.locks_current_line(),
+                            (join.is_continuation() && !joiner.locks_current_line())
+                                .then_some(&joiner),
                             compact_suffix_width,
                         );
+                    if follows_bracket && output.as_bytes().get(parent_bracket) != Some(&b'>') {
+                        moved_opening = Some(depth.saturating_sub(1));
+                    }
                     if !closing_bracket_on_own_line
                         && hugged_inline_suffix.is_some_and(|suffix| {
                             self.hugged_inline_suffix_overflows(&output, suffix)

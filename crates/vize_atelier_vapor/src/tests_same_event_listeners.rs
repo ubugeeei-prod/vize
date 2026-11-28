@@ -159,7 +159,7 @@ fn listener_props_merge_into_a_spread() {
 /// key once the name resolves to `_ctx`, as upstream emits.
 #[test]
 fn destructuring_assignment_targets_keep_their_keys() {
-    let expected = "import { createTemplateRefSetter as _createTemplateRefSetter, on as _on, template as _template } from 'vue';\n\
+    let expected = "import { createTemplateRefSetter as _createTemplateRefSetter, on as _on, renderEffect as _renderEffect, template as _template } from 'vue';\n\
                     const t0 = _template(\"<a></a>\")\n\
                     const t1 = _template(\"<b></b>\")\n\n\
                     export function render(_ctx) {\n  \
@@ -167,7 +167,7 @@ fn destructuring_assignment_targets_keep_their_keys() {
                     const n0 = t0()\n  \
                     const n1 = t1()\n  \
                     _on(n0, \"click\", $event => (({ x: _ctx.x } = _ctx.y)))\n  \
-                    _setRef(n1, el => { ({ baz: _ctx.baz } = el) })\n  \
+                    _renderEffect(() => _setRef(n1, el => { ({ baz: _ctx.baz } = el) }))\n  \
                     return [n0, n1]\n}\n";
     for retained in [false, true] {
         let code = compile(

@@ -31,11 +31,15 @@ function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: 
   assert.match(path, /^(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+$/);
   assert.ok(typeof expected === "string");
   assert.match(expected, /^[a-f0-9]{64}$/);
-  const actual = read(side, path);
+  // The record names the workflow by its file name before the NN-subject rename.
+  const renamed = path === ".github/workflows/native-beta-diagnostic-dto.yml";
+  const actual =
+    read(side, path) ??
+    (renamed ? read(side, ".github/workflows/05-native-diagnostic-dto.yml") : null);
   assert.ok(actual, `missing ${side} phase contract input: ${path}`);
   const bytes =
-    path === ".github/workflows/native-beta-diagnostic-dto.yml" && hash(actual) !== expected
-      ? workflowPredecessor("native-beta-diagnostic-dto", actual, (file) => read(side, file))
+    renamed && hash(actual) !== expected
+      ? workflowPredecessor("05-native-diagnostic-dto", actual, (file) => read(side, file))
       : actual;
   assert.equal(hash(bytes), expected, `changed ${side} phase contract input: ${path}`);
   return bytes;

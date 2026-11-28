@@ -1,0 +1,68 @@
+import { defineVaporComponent as _defineVaporComponent } from 'vue'
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, createTemplateRefSetter as _createTemplateRefSetter, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+
+const t0 = _template("<li> </li>")
+const t1 = _template("<section><p>switch</p><p>callback</p><aside>panel</aside><i></i><b></b></section>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()
+  const n5 = t1()
+  const n0 = _child(n5)
+  const n1 = _next(n0)
+  const n2 = _next(n1)
+  const n3 = _next(n2)
+  const n4 = _next(n3)
+  _setRef(n5, "static")
+  _setRef(n4, 'literal')
+  _renderEffect(() => {
+    _setRef(n0, _ctx.first ? 'a' : 'b')
+    _setClass(n1, { on: _ctx.first })
+    _setRef(n1, _ctx.first ? _ctx.setFirst : _ctx.setSecond)
+    _setRef(n2, "panel")
+    _setRef(n3, "mutable")
+  })
+  _setInsertionState(n5, 5)
+  const n6 = _createFor(() => (_ctx.items), (_for_item0) => {
+    const n8 = t0()
+    const x8 = _txt(n8)
+    _renderEffect(() => {
+      _setRef(n8, _ctx.first ? 'a' : 'b', true)
+      _setText(x8, _toDisplayString(_for_item0.value))
+    })
+    return n8
+  }, (item) => (item), 8 /* IS_SINGLE_NODE */)
+  return n5
+}
+const __vaporRender = render
+
+import { ref, useTemplateRef } from 'vue'
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'Layout',
+  render: __vaporRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const first = ref(true);
+const panel = ref(null);
+let mutable = null;
+const a = useTemplateRef("a");
+const b = useTemplateRef("b");
+const items = ref(["x", "y"]);
+function setFirst(node) {}
+function setSecond(node) {}
+
+const vaporTemplateRefSetter = ((bindings) => {
+  const setRef = _createTemplateRefSetter()
+  return (element, value, refFor, refKey) => {
+    const bound = typeof value === 'string' && value in bindings
+    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)
+  }
+})({ __proto__: null, get first() { return first }, get a() { return a }, get mutable() { return mutable }, get items() { return items }, get panel() { return panel }, get b() { return b } })
+const __returned__ = { vaporTemplateRefSetter, first, useTemplateRef, a, setFirst, setSecond, ref, get mutable() { return mutable }, set mutable(v) { mutable = v }, items, panel, b }
+;({}).constructor.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

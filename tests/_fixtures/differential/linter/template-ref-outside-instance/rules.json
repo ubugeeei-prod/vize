@@ -1,0 +1,3 @@
+{
+  "script/no-template-ref-outside-instance": "error"
+}

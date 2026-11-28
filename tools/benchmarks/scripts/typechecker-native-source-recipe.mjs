@@ -12,14 +12,14 @@ import {
 } from "./typechecker-native-release-metadata.mjs";
 import { generatedBody, withoutGeneratedHeader } from "../../support/ci/generated-header.ts";
 
-export const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+export const WORKFLOW = ".github/workflows/04-typechecker-native-phases.yml";
 export const STEP =
   "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor";
 export const sourceFiles = {
   driver:
-    ".github/scripts/workflows/typechecker-native-phases/qualify-declared-template-emits-and-config-scoped-vue-helpers-in-the-sou.sh",
-  recipe: ".github/scripts/workflows/typechecker-native-phases/run-native-qualification.sh",
-  resolver: ".github/scripts/workflows/typechecker-native-phases/resolve-native-binary.ts",
+    "tools/ci/workflows/04-typechecker-native-phases/scripts/qualify-declared-template-emits-and-config-scoped-vue-helpers-in-the-sou.sh",
+  recipe: "tools/ci/workflows/04-typechecker-native-phases/scripts/run-native-qualification.sh",
+  resolver: "tools/ci/workflows/04-typechecker-native-phases/scripts/resolve-native-binary.ts",
 };
 const fileStep =
   '. "${{ env.VIZE_CI_FILES }}/qualify-declared-template-emits-and-config-scoped-vue-helpers-in-the-sou.sh"';

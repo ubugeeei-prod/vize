@@ -340,9 +340,9 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "vue/no-unused-refs.description",
-        "Report template refs (ref=\"x\") never referenced in <script>",
-        "<script> で一度も参照されないテンプレート参照（ref=\"x\"）を報告する",
-        "报告从未在 <script> 中引用的模板引用（ref=\"x\"）",
+        "Report template refs (ref=\"x\") that no script binding, useTemplateRef() or $refs reads",
+        "スクリプトの変数、useTemplateRef()、$refs のどれからも読まれないテンプレート参照（ref=\"x\"）を報告する",
+        "报告脚本绑定、useTemplateRef() 和 $refs 都不读取的模板引用（ref=\"x\"）",
     ),
     (
         "vue/no-unused-script-vars.description",

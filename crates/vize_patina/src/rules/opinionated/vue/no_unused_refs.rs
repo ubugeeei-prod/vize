@@ -76,7 +76,7 @@ use crate::rules::script::vue_object::VueObjects;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-refs",
-    description: "Report template refs (ref=\"x\") never referenced in <script>",
+    description: "Report template refs (ref=\"x\") that no script binding, useTemplateRef() or $refs reads",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,

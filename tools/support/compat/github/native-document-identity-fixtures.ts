@@ -26,12 +26,14 @@ function object(value: unknown): Record<string, unknown> {
 function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: unknown) {
   assert.ok(typeof path === "string");
   assert.ok(typeof expected === "string");
-  const actual = read(side, path);
+  // The record names the workflow by its file name before the NN-subject rename.
+  const renamed = path === ".github/workflows/native-beta-diagnostic-dto.yml";
+  const actual =
+    read(side, path) ??
+    (renamed ? read(side, ".github/workflows/05-native-diagnostic-dto.yml") : null);
   const bytes =
-    path === ".github/workflows/native-beta-diagnostic-dto.yml" &&
-    actual &&
-    hash(actual) !== expected
-      ? workflowPredecessor("native-beta-diagnostic-dto", actual, (file) => read(side, file))
+    renamed && actual && hash(actual) !== expected
+      ? workflowPredecessor("05-native-diagnostic-dto", actual, (file) => read(side, file))
       : actual;
   assert.ok(bytes, `missing ${side} identity source: ${path}`);
   assert.equal(hash(bytes), expected, `changed ${side} identity source: ${path}`);

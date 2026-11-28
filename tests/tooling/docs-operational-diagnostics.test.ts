@@ -67,10 +67,10 @@ void test("operational diagnostic references retain their own English/Japanese a
   }
 });
 
-void test("the operational pages preserve all 374 rule references and 66 project rules in every locale", () => {
+void test("the operational pages preserve all 375 rule references and 66 project rules in every locale", () => {
   for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"] as const) {
     const pages = expectedRulePages(locale);
-    assert.equal(pages.length, 440);
+    assert.equal(pages.length, 441);
     assert.deepEqual(
       pages.filter((page) => operationalDiagnosticPages.some(([id]) => id === page.id)),
       [],

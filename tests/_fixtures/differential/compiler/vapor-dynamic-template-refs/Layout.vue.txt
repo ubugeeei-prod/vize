@@ -1,0 +1,23 @@
+<script setup lang="ts" vapor>
+import { ref, useTemplateRef } from 'vue'
+
+const first = ref(true)
+const panel = ref<HTMLElement | null>(null)
+let mutable: HTMLElement | null = null
+const a = useTemplateRef('a')
+const b = useTemplateRef('b')
+const items = ref(['x', 'y'])
+function setFirst(node: unknown) {}
+function setSecond(node: unknown) {}
+</script>
+
+<template>
+  <section ref="static">
+    <p :ref="first ? 'a' : 'b'">switch</p>
+    <p :ref="first ? setFirst : setSecond" :class="{ on: first }">callback</p>
+    <aside :ref="panel">panel</aside>
+    <i :ref="mutable" />
+    <b :ref="'literal'" />
+    <li v-for="item in items" :key="item" :ref="first ? 'a' : 'b'">{{ item }}</li>
+  </section>
+</template>

@@ -1,11 +1,11 @@
 ---
 title: "script/no-lifecycle-after-await"
-description: "Interdire l’enregistrement de hooks de cycle de vie après un await dans setup()."
+description: "Interdire les hooks de cycle de vie et useTemplateRef() après un await dans setup()."
 ---
 
 # `script/no-lifecycle-after-await`
 
-Interdire l’enregistrement de hooks de cycle de vie après un await dans setup().
+Interdire les hooks de cycle de vie et useTemplateRef() après un await dans setup().
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |

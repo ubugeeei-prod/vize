@@ -11,7 +11,7 @@ import { rawPaths } from "../../tools/support/compat/github/native-phase-artifac
 
 const workflow = parse(
   readAutomationPrograms(
-    new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
+    new URL("../../.github/workflows/04-typechecker-native-phases.yml", import.meta.url),
   ),
 );
 const job = workflow.jobs["native-phases"];

@@ -100,7 +100,7 @@ export const frenchVue1 = {
     "Les deux props déclarées sont référencées par le template.",
   ],
   "vue/no-unused-refs": [
-    'Signaler les refs de template (ref="x") jamais référencées dans &lt;script&gt;',
+    'Signaler les refs de template (ref="x") qu’aucune liaison de script, aucun useTemplateRef() ni $refs ne lit',
     "Le template déclare le nom de ref unused sans liaison de référence correspondante dans le script.",
     "La ref de template inputEl possède une liaison ref du même nom dans script setup.",
   ],

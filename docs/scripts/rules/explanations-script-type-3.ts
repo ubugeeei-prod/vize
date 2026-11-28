@@ -155,6 +155,13 @@ export const scriptType3Explanations: readonly ExplanationRecord[] = [
     "最初の `await` より前にウォッチャーを作成するため、コンポーネントのアンマウント時に Vue が停止します。",
   ],
   [
+    "script/no-template-ref-outside-instance",
+    "`focus()` runs only as the button's click handler, and the `setTimeout` callback runs after setup has returned. Neither has a current component instance, so the refs they create are never set.",
+    "`useTemplateRef('input')` runs once in setup. The click handler and the `onMounted` callback only read `input.value`.",
+    "`focus()` はボタンのクリックハンドラーとしてだけ実行され、`setTimeout` のコールバックは setup が終わった後に実行されます。どちらにも現在のコンポーネントインスタンスがないため、作成した ref は設定されません。",
+    "`useTemplateRef('input')` を setup で一度だけ呼びます。クリックハンドラーと `onMounted` のコールバックは `input.value` を読むだけです。",
+  ],
+  [
     "script/no-computed-properties-in-data",
     "`data()` returns `this.doubled` while `doubled` is still a computed property, so the read happens before that computed value exists.",
     "`data()` returns a plain `value`, and `doubled` reads `this.value` only after initialization.",

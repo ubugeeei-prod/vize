@@ -24,6 +24,16 @@ const LOOP_ONLY: &str = include_str!(
     "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/loop-only.vue.txt"
 );
 
+const SWITCH: &str = include_str!(
+    "../../../../tests/_fixtures/differential/compiler/vapor-dynamic-template-refs/switch.vue.txt"
+);
+const BINDING: &str = include_str!(
+    "../../../../tests/_fixtures/differential/compiler/vapor-dynamic-template-refs/binding.vue.txt"
+);
+const SWITCHED_CALLBACK: &str = include_str!(
+    "../../../../tests/_fixtures/differential/compiler/vapor-dynamic-template-refs/callback.vue.txt"
+);
+
 fn element(tag: &str, attributes: Value, children: Value) -> Value {
     json!({"tag": tag, "attributes": attributes, "children": children})
 }
@@ -213,5 +223,63 @@ fn authored_object_binding_does_not_replace_ref_bootstrap_intrinsics() {
         ]),
         true,
         &["vapor"],
+    );
+}
+
+fn paragraph(text: &str, refs: &str) -> Value {
+    snapshot(
+        json!([element("p", json!({}), json!([text]))]),
+        json!(refs),
+        1,
+    )
+}
+
+#[test]
+fn dynamic_string_ref_moves_to_its_new_key() {
+    assert_modes(
+        "switch",
+        SWITCH,
+        json!([{"call": "toggle"}, {"call": "toggle"}]),
+        json!([
+            paragraph("target", "target|null"),
+            paragraph("target", "null|target"),
+            paragraph("target", "target|null"),
+            snapshot(json!([]), json!("null|null"), 0)
+        ]),
+        true,
+        &["vdom", "vapor"],
+    );
+}
+
+/// Vapor only: Vue's own separate-template VDOM render reads `$setup.element`
+/// unwrapped and binds nothing in development.
+#[test]
+fn bound_setup_ref_receives_the_element() {
+    assert_modes(
+        "binding",
+        BINDING,
+        json!([]),
+        json!([
+            paragraph("bound", "bound"),
+            snapshot(json!([]), Value::Null, 0)
+        ]),
+        true,
+        &["vapor"],
+    );
+}
+
+#[test]
+fn replaced_function_ref_reaches_the_new_callback() {
+    assert_modes(
+        "switched-callback",
+        SWITCHED_CALLBACK,
+        json!([{"call": "toggle"}]),
+        json!([
+            paragraph("target", "target|null"),
+            paragraph("target", "target|target"),
+            snapshot(json!([]), json!("target|null"), 0)
+        ]),
+        true,
+        &["vdom", "vapor"],
     );
 }

@@ -48,11 +48,11 @@ use vize_l0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-lifecycle-after-await",
-    description: "Disallow lifecycle hooks registered after an await in setup()",
+    description: "Disallow lifecycle hooks and useTemplateRef() after an await in setup()",
     default_severity: Severity::Error,
 };
 
-/// Disallow lifecycle hooks registered after an await in setup().
+/// Disallow lifecycle hooks and `useTemplateRef()` after an await in setup().
 pub struct NoLifecycleAfterAwait;
 
 impl ScriptRule for NoLifecycleAfterAwait {

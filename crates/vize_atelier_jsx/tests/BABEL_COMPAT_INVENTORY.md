@@ -179,7 +179,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | `props/on_merge_with_spread`     | `mergeProps({onClick: a}, p, {onClick: b})` | same                                    | no change            | ✅      |
 | `props/key`                      | `{key: k}`, no flag                         | same                                    | no change            | ✅      |
 | `props/ref`                      | `{ref: r}`                                  | same + `NEED_PATCH`                     | no change            | ✅      |
-| `props/ref_in_for`               | no `ref_for` emitted                        | no `ref_for` emitted                    | no change            | ✅      |
+| `props/ref_in_for`               | no `ref_for` emitted                        | `ref_for: true`, as template `v-for`    | no change            | ✅      |
 | `props/dollar_prefixed`          | `{$foo: 1}`                                 | same                                    | no change            | ✅      |
 
 ## Events

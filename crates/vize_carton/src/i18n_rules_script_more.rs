@@ -29,6 +29,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止在选项式 API 的计算属性 getter 中产生副作用",
     ),
     (
+        "script/no-template-ref-outside-instance.description",
+        "Disallow useTemplateRef() where no component instance runs it",
+        "コンポーネントのインスタンスがない場所での useTemplateRef() 呼び出しを禁止する",
+        "禁止在没有组件实例运行的位置调用 useTemplateRef()",
+    ),
+    (
         "script/no-top-level-ref-in-script.description",
         "Disallow top-level ref/reactive to prevent Cross-Request State Pollution",
         "リクエスト間での状態汚染を防ぐため、トップレベルの ref・reactive を禁止する",

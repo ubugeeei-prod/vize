@@ -1,10 +1,11 @@
 //! Each original directory/file stays open through fresh path traversal.
 use super::{ModuleTargetError, TargetOperation, TargetPolicy, candidate};
+use rustix::fs::{CWD, Mode, OFlags};
 use std::{
     ffi::{CString, OsStr},
     fs::File,
     os::{
-        fd::{AsRawFd, FromRawFd, RawFd},
+        fd::{AsFd, BorrowedFd},
         unix::{ffi::OsStrExt, fs::MetadataExt},
     },
     path::{Component, Path, PathBuf},
@@ -23,31 +24,34 @@ struct Handle {
 }
 impl Handle {
     fn open(
-        parent: RawFd,
+        parent: BorrowedFd<'_>,
         name: &OsStr,
         path: PathBuf,
         directory: bool,
     ) -> Result<Self, ModuleTargetError> {
         let name = CString::new(name.as_bytes())
             .map_err(|_| ModuleTargetError::Policy(TargetPolicy::Candidate))?;
-        let flags = libc::O_RDONLY
-            | libc::O_NOFOLLOW
-            | libc::O_CLOEXEC
-            | libc::O_NONBLOCK
-            | if directory { libc::O_DIRECTORY } else { 0 };
-        // SAFETY: the live parent FD and NUL-terminated name are retained for
-        // this synchronous syscall. No descriptor is closed or reused here.
-        let fd = unsafe { libc::openat(parent, name.as_ptr(), flags) };
-        if fd < 0 {
-            return Err(ModuleTargetError::Io {
-                operation: TargetOperation::Open,
-                path,
-                error: std::io::Error::last_os_error(),
-            });
-        }
-        // SAFETY: openat returned a fresh owned descriptor >= 0. This File
-        // takes its sole ownership and closes it on every subsequent failure.
-        let file = unsafe { File::from_raw_fd(fd) };
+        let flags = OFlags::RDONLY
+            | OFlags::NOFOLLOW
+            | OFlags::CLOEXEC
+            | OFlags::NONBLOCK
+            | if directory {
+                OFlags::DIRECTORY
+            } else {
+                OFlags::empty()
+            };
+        // rustix's `openat` borrows the parent descriptor for the call and
+        // returns the new descriptor owned; the `File` closes it on every
+        // later failure.
+        let fd =
+            rustix::fs::openat(parent, name.as_c_str(), flags, Mode::empty()).map_err(|error| {
+                ModuleTargetError::Io {
+                    operation: TargetOperation::Open,
+                    path: path.clone(),
+                    error: error.into(),
+                }
+            })?;
+        let file = File::from(fd);
         let metadata = file.metadata().map_err(|error| ModuleTargetError::Io {
             operation: TargetOperation::Metadata,
             path: path.clone(),
@@ -118,7 +122,7 @@ impl PhysicalTargets {
                     return Err(ModuleTargetError::Policy(TargetPolicy::SourceParent));
                 };
                 let handle = Handle::open(
-                    directory.file.as_raw_fd(),
+                    directory.file.as_fd(),
                     name,
                     directory.path.join(name),
                     true,
@@ -135,7 +139,7 @@ impl PhysicalTargets {
                 };
                 let is_directory = parts.peek().is_some();
                 let handle = Handle::open(
-                    directory.file.as_raw_fd(),
+                    directory.file.as_fd(),
                     name,
                     directory.path.join(name),
                     is_directory,
@@ -188,7 +192,7 @@ fn root_chain(path: &Path) -> Result<Vec<Handle>, ModuleTargetError> {
     if !path.is_absolute() {
         return Err(ModuleTargetError::Policy(TargetPolicy::Root));
     }
-    let root = Handle::open(libc::AT_FDCWD, OsStr::new("/"), PathBuf::from("/"), true)?;
+    let root = Handle::open(CWD, OsStr::new("/"), PathBuf::from("/"), true)?;
     let mut chain = vec![root];
     for component in path.components() {
         let name = match component {
@@ -199,7 +203,7 @@ fn root_chain(path: &Path) -> Result<Vec<Handle>, ModuleTargetError> {
         let parent = chain
             .last()
             .ok_or(ModuleTargetError::Policy(TargetPolicy::Root))?;
-        let handle = Handle::open(parent.file.as_raw_fd(), name, parent.path.join(name), true)?;
+        let handle = Handle::open(parent.file.as_fd(), name, parent.path.join(name), true)?;
         chain.push(handle);
     }
     Ok(chain)
