@@ -7,6 +7,10 @@ on:
       - .github/workflows/09-prettier-plugin.yml
       - tools/ci/workflows/09-prettier-plugin/scripts/**
       - npm/formatter/prettier/**
+      - examples/vite-musea/src/**
+      - examples/vite-musea/package.json
+      - examples/jsx-tsx/src/**
+      - examples/jsx-tsx/package.json
       - npm/native/**
       - crates/vize_glyph/**
       - crates/vize_vitrine/src/napi/format.rs
@@ -62,7 +66,7 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/build-exact-source-binding-and-package-exports.sh"
       - name: Check real host options, complete goldens, AST/render semantics and format counts
         run: node npm/native/scripts/test-preparation.mjs node --test npm/formatter/prettier/src/plugin.test.ts
-      - name: Install the tarball in a fresh consumer and exercise actual CLI and configuration
+      - name: Qualify the installed tarball on fresh consumers and real application sources
         run: . "${{ env.VIZE_CI_FILES }}/install-the-tarball-in-a-fresh-consumer-and-exercise.sh"
       - name: Install the declared minimum Node consumer runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
