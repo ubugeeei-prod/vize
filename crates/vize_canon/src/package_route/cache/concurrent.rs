@@ -104,6 +104,7 @@ impl PackageRouteResolver {
             &logical_importer_dir,
             specifier,
             options,
+            &key.3,
             &mut caches.search,
             &mut caches.canonical_paths,
         );
