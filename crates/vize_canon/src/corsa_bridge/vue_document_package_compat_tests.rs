@@ -99,17 +99,43 @@ void OptionsWidget; void ClassWidget; void PageWidget
     .unwrap();
 
     let options = mapped_code(&project, &package.join("Options.vue"));
-    assert!(options.contains("type $OptionsInstance<T>"), "{options}");
-    let class = mapped_code(&project, &package.join("Class.vue"));
-    assert!(class.contains("class Widget extends Vue"), "{class}");
-    let page = mapped_code(&project, &package.join("Page.vue"));
-    assert!(page.contains("definePageMeta({ title: 'Importer scoped SEO' })"));
-    // The project-local declaration is mirrored with the host and referenced there.
-    assert!(
-        page.contains("/.nuxt/types/page-meta.d.ts\" />")
-            && !page.contains(&nuxt_types.to_string_lossy().replace('\\', "/")),
-        "mirrored Nuxt reference path missing from package page:\n{page}"
+    assert_eq!(
+        lines_starting_with(options, "type $OptionsInstance<T>"),
+        [
+            "  type $OptionsInstance<T> = T extends abstract new (...args: any) => infer I ? I : any;"
+        ]
     );
+    let class = mapped_code(&project, &package.join("Class.vue"));
+    assert_eq!(
+        lines_starting_with(class, "class Widget"),
+        ["class Widget extends Vue {"]
+    );
+    let page = mapped_code(&project, &package.join("Page.vue"));
+    assert_eq!(
+        lines_starting_with(page, "definePageMeta("),
+        ["definePageMeta({ title: 'Importer scoped SEO' })"]
+    );
+    // The project-local declaration is mirrored with the host and referenced there.
+    let mirrored = project
+        .session_project_root
+        .as_deref()
+        .expect("session-private project")
+        .join(".nuxt/types/page-meta.d.ts");
+    let reference = vize_carton::cstr!(
+        "/// <reference path=\"{}\" />",
+        mirrored.to_string_lossy().replace('\\', "/")
+    );
+    assert_eq!(
+        lines_starting_with(page, "/// <reference path="),
+        [reference.as_str()]
+    );
+}
+
+/// Generated lines that begin with `prefix` after their indentation.
+fn lines_starting_with<'a>(code: &'a str, prefix: &str) -> Vec<&'a str> {
+    code.lines()
+        .filter(|line| line.trim_start().starts_with(prefix))
+        .collect()
 }
 
 fn mapped_code<'a>(
