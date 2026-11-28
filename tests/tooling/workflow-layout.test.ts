@@ -96,6 +96,20 @@ function workflowRunnerLabels(
       (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
     );
     if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
+    if (file === "03-vite-client-resolution.yml" && id === "measure") {
+      assert.equal(value["runs-on"], "${{ matrix.runner }}");
+      assert.ok(isRecord(value.strategy));
+      assert.equal(value.strategy["fail-fast"], false);
+      assert.deepEqual(value.strategy.matrix, {
+        node: ["24.14.0", "26.13.1"],
+        runner: [
+          "blacksmith-32vcpu-windows-2025",
+          "blacksmith-4vcpu-ubuntu-2404",
+          "blacksmith-16vcpu-ubuntu-2404",
+        ],
+      });
+      return [];
+    }
     if (file === "shipped-profile-measure.yml" && id === "measure") {
       assert.equal(typeof value["runs-on"], "string");
       assert.match(
@@ -215,6 +229,18 @@ test("the validation pool accepts only exact reviewed source job selectors", () 
     ])
       assert.throws(() => assert.deepEqual(workflowRunnerLabels(source!, [], filename), []));
   }
+});
+
+test("the diagnostic client-resolution matrix keeps every pinned runtime and worker cell", () => {
+  const file = "03-vite-client-resolution.yml";
+  const source = readRepoFile(`.github/workflows/${file}`);
+  assert.deepEqual(workflowRunnerLabels(source, [], file), []);
+  for (const changed of [
+    source.replace("blacksmith-16vcpu-ubuntu-2404", "unreviewed-runner"),
+    source.replace("26.13.1", "24.14.0"),
+    source.replace("fail-fast: false", "fail-fast: true"),
+  ])
+    assert.throws(() => workflowRunnerLabels(changed, [], file));
 });
 
 test("release measurement retains its default and restricts the explicit worker choice", () => {
