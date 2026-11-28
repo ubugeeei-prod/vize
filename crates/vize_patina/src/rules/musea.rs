@@ -332,12 +332,16 @@ fn art_rule_info(source: &str) -> ArtRuleInfo {
         .find("<art")
         .and_then(|start| source.get(start..))
         .unwrap_or("");
-    let inferred_targets = parsed
-        .import_sources
-        .keys()
-        .filter(|name| template_uses_component(art_source, name.as_str()))
-        .count();
-    let has_inferred_target = inferred_targets == 1;
+    // The target Musea itself infers: the one imported tag every variant
+    // renders. Several candidates are an error in Musea, so both stay missing.
+    let has_inferred_target = matches!(
+        vize_croquis::script_parser::infer_art_target(
+            &parsed.import_sources,
+            &variant_templates(art_source),
+            |template| *template,
+        ),
+        vize_croquis::script_parser::ArtTarget::One { .. }
+    );
 
     ArtRuleInfo {
         has_title: art.is_some_and(|art| art.title.is_some() || !art.component_name.is_empty())
@@ -347,24 +351,42 @@ fn art_rule_info(source: &str) -> ArtRuleInfo {
     }
 }
 
-fn template_uses_component(template: &str, name: &str) -> bool {
+/// The markup inside each `<variant>` of an `<art>` block; a self-closing
+/// variant renders nothing.
+fn variant_templates(art_source: &str) -> Vec<&str> {
+    let mut templates = Vec::new();
     let mut cursor = 0;
-    while let Some(relative) = template.get(cursor..).and_then(|rest| rest.find('<')) {
-        let start = cursor + relative + 1;
-        let Some(rest) = template.get(start..) else {
-            return false;
+    while let Some(relative) = art_source
+        .get(cursor..)
+        .and_then(|rest| rest.find("<variant"))
+    {
+        let open = cursor + relative + "<variant".len();
+        let Some(rest) = art_source.get(open..) else {
+            break;
         };
-        if rest.starts_with(name)
-            && rest
-                .as_bytes()
-                .get(name.len())
-                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
+        if !rest
+            .as_bytes()
+            .first()
+            .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
         {
-            return true;
+            cursor = open;
+            continue;
         }
-        cursor = start;
+        let Some(tag_end) = rest.find('>') else {
+            break;
+        };
+        let body_start = open + tag_end + 1;
+        if rest.get(..tag_end).is_some_and(|tag| tag.ends_with('/')) {
+            templates.push("");
+            cursor = body_start;
+            continue;
+        }
+        let body = art_source.get(body_start..).unwrap_or_default();
+        let body_end = body.find("</variant").unwrap_or(body.len());
+        templates.push(body.get(..body_end).unwrap_or_default());
+        cursor = body_start + body_end;
     }
-    false
+    templates
 }
 
 /// Extract the value of the name attribute from a tag (byte-level)

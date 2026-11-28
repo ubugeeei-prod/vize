@@ -9,29 +9,31 @@ description: "コンポーネント定義名を PascalCase または kebab-case 
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
-対象はファイル名です。PascalCase と kebab-case は許可され、混在する形式は検出されます。
+コンポーネント定義の静的な名前を検査します。name オプション、defineOptions({ name })、app.component() の第 1 引数が対象です。ファイル名は vue/component-file-name-casing が検査します。
 
 ## 悪い例
 
-ファイル名 myComponent.vue が先頭の小文字と途中の大文字を混在させ、PascalCase / kebab-case のどちらにもなっていません。
+defineOptions で宣言した名前 my_component は単語をアンダースコアで区切っており、PascalCase になっていません。
 
-`myComponent.vue`
-
-```vue
+```vue annotate="remove:2"
+<script setup lang="ts">
+defineOptions({ name: "my_component" });
+</script>
 <template><p>Content</p></template>
 ```
 
 ## 良い例
 
-ファイル名を PascalCase の MyComponent.vue に変更します。テンプレートの内容は同じです。
+宣言した名前 MyComponent は既定の PascalCase です。
 
-`MyComponent.vue`
-
-```vue
+```vue annotate="add:2"
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
 <template><p>Content</p></template>
 ```
 
@@ -45,6 +47,9 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/component-definition-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/component-definition-name-casing": "PascalCase"
     }
   },
 });
@@ -55,5 +60,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L45)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L68)

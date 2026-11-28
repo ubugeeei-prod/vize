@@ -8,7 +8,7 @@ Case {
     source: "<div>Content</div>",
     filename: "src/pages/job-board.vue",
     entry: "template",
-    rule: "vue/component-definition-name-casing",
+    rule: "vue/component-file-name-casing",
     vue_version: None,
     vapor: None,
     diagnostics: 0,

@@ -76,12 +76,12 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     assert.deepEqual(calls.at(-2), [
       "dlx",
       "-p",
-      "ovsx@^1.0.0",
+      "ovsx@1.4.0",
       "ovsx",
       "create-namespace",
       "ubugeeei",
     ]);
-    assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
+    assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@1.4.0", "ovsx", "publish", vsixPath]);
     assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [
       expectedLookup,
       expectedLookup,

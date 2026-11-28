@@ -95,7 +95,7 @@ pub(super) fn report_unused<'a>(
     );
     ctx.set_help_level(linter.help_level);
     ctx.set_no_inline_config(linter.no_inline_config);
-    ctx.set_type_sources(linter.type_sources.as_ref());
+    ctx.set_type_sources(linter.run_type_sources());
     ctx.set_sfc_descriptor(descriptor);
     ctx.set_analysis(summary);
     NoUnusedSetupBindings::report(&mut ctx, None);

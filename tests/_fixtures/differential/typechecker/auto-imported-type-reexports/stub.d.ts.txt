@@ -1,0 +1,7 @@
+// @vize-module-augmentation
+declare global {
+  export type { ColorName, Box, Box as Crate, Token } from '__PROJECT_ROOT__/src/states'
+  import('__PROJECT_ROOT__/src/states')
+  export type { Chip } from 'ui-kit'
+  import('ui-kit')
+}

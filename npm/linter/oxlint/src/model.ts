@@ -43,6 +43,8 @@ export interface PatinaRuleMeta {
   fixable: boolean;
   defaultSeverity: "error" | "warning";
   presets: PatinaPreset[];
+  /** Whether the rule can report on a plain `.js` or `.ts` module. Older bindings leave it out. */
+  plainScripts?: boolean;
 }
 
 /** Existing native parser geometry. Every offset and column is a UTF-8 byte count. */
@@ -97,6 +99,8 @@ export interface PatinaBinding {
       attributeHyphenationIgnoreTags?: string[];
       /** Full CLI-compatible per-rule option map. */
       ruleOptionsJson?: string;
+      /** Read imported type sources once per process, for a process that is one lint run. */
+      runScopedTypeSources?: boolean;
     },
   ): PatinaLintResult;
   getPatinaRules(): PatinaRuleMeta[];
@@ -193,6 +197,7 @@ export interface VizeRuleOptions {
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/html-quotes"?: HtmlQuotesConfig;
+  "vue/component-definition-name-casing"?: "PascalCase" | "kebab-case";
   "vue/mustache-interpolation-spacing"?: MustacheInterpolationSpacingStyle;
   "vue/v-on-event-hyphenation"?: HyphenationStyle | VOnEventHyphenationOptions;
   "vue/v-bind-style"?: VBindStyleConfig;

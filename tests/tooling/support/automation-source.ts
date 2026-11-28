@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import type { Node } from "yaml";
 
+import { sourceRunnersBefore } from "./source-validation-runners.ts";
 import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
 import { withoutGeneratedHeader } from "../../../tools/support/ci/generated-header.ts";
 
@@ -13,6 +14,10 @@ const actionScript = /^\. "\$GITHUB_ACTION_PATH\/scripts\/([\w.-]+\.(?:sh|ps1))"
 
 const workflowScript =
   /^\. "(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES)\/([\w.-]+\.(?:sh|ps1))"$/u;
+// An ush program runs from its committed build; its source is the text a contract reads.
+const actionProgram = /^sh "\$GITHUB_ACTION_PATH\/scripts\/compiled\/([\w.-]+)\.sh"$/u;
+const workflowProgramRun =
+  /^sh "(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES)\/compiled\/([\w.-]+)\.sh"$/u;
 
 const shellFiles = new Map<string, Set<string>>();
 
@@ -28,10 +33,31 @@ function shellBody(file: string): string {
   const body = withoutGeneratedHeader(readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"), "hash")
     .replace(/^#![^\n]*\n/u, "")
     .trimEnd();
+  return remember(body, file);
+}
+
+/** The source of the ush program `<directory>/<name>.ush`; its build runs in its place. */
+function ushBody(directory: string, name: string): string {
+  const body = readFileSync(path.join(directory, name + ".ush"), "utf8")
+    .replace(/\r\n?/gu, "\n")
+    .trimEnd();
+  return remember(body, path.join(directory, "compiled", name + ".sh"));
+}
+
+function remember(body: string, file: string): string {
   const files = shellFiles.get(body) ?? new Set<string>();
   files.add(file);
   shellFiles.set(body, files);
   return body;
+}
+
+/** The text a step runs: its shell script, or the source of its ush program. */
+function stepBody(command: string, directory: string): string | undefined {
+  const script = workflowScript.exec(command);
+  if (script) return shellBody(path.join(directory, script[1]!));
+  const program = workflowProgramRun.exec(command);
+  if (program) return ushBody(directory, program[1]!);
+  return undefined;
 }
 
 /** Execute the file that supplied a step's source-contract text. */
@@ -47,15 +73,20 @@ export function automationShellPath(body: string, owner?: string): string {
 export function readWorkflowShell(owner: string): string {
   assert.match(owner, /^[a-z0-9-]+$/u);
   const workflow = withoutGeneratedHeader(
-    readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8"),
+    sourceRunnersBefore(
+      `.github/workflows/${owner}.yml`,
+      readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8").replace(
+        /\r\n?/gu,
+        "\n",
+      ),
+    ),
     "hash",
   );
   return workflow.replace(
     /^( *)(- )?run: (.+)$/gmu,
     (line: string, indent: string, item: string | undefined, command: string) => {
-      const script = workflowScript.exec(command);
-      if (!script) return line;
-      const program = shellBody(path.join(root, workflowProgramsDirectory(owner), script[1]!));
+      const program = stepBody(command, path.join(root, workflowProgramsDirectory(owner)));
+      if (program === undefined) return line;
       const padding = indent + (item ?? "").replace("-", " ") + "  ";
       return (
         indent +
@@ -76,7 +107,10 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
   const file =
     parts[0] instanceof URL ? fileURLToPath(parts[0]) : path.resolve(root, ...(parts as string[]));
   const source = withoutGeneratedHeader(
-    readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"),
+    sourceRunnersBefore(
+      path.relative(root, file).split(path.sep).join("/"),
+      readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"),
+    ),
     "hash",
   );
   const { isMap, isScalar, isSeq, parseDocument } = createRequire(import.meta.url)(
@@ -185,18 +219,22 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
           isScalar(child) &&
           typeof child.value === "string"
         ) {
+          const actionDirectory = path.join(path.dirname(file), "scripts");
           const action = actionScript.exec(child.value);
-          const workflow = workflowScript.exec(child.value);
-          if (!action && !workflow) continue;
+          const program = actionProgram.exec(child.value);
+          const body = action
+            ? shellBody(path.join(actionDirectory, action[1]!))
+            : program
+              ? ushBody(actionDirectory, program[1]!)
+              : stepBody(
+                  child.value,
+                  path.join(
+                    root,
+                    workflowProgramsDirectory(path.basename(file, path.extname(file))),
+                  ),
+                );
+          if (body === undefined) continue;
           assert.ok(child.range && pair.key.range);
-          const script = action
-            ? path.join(path.dirname(file), "scripts", action[1]!)
-            : path.join(
-                root,
-                workflowProgramsDirectory(path.basename(file, path.extname(file))),
-                workflow![1]!,
-              );
-          const body = shellBody(script);
           const column = pair.key.range[0] - source.lastIndexOf("\n", pair.key.range[0]) - 1;
           const padding = " ".repeat(column + 2);
           const text = body
@@ -241,7 +279,8 @@ export function workflowProgram(owner: string, command: string, program: string)
   assert.match(program, /^[a-z0-9-]+\.(?:ts|cjs|jq)$/u);
   assert.ok(
     command.includes('"$VIZE_CI_FILES/' + program + '"') ||
-      command.includes('"${{ env.VIZE_CI_FILES }}/' + program + '"'),
+      command.includes('"${{ env.VIZE_CI_FILES }}/' + program + '"') ||
+      command.includes('(from_source "' + program + '")'),
     owner + " does not invoke " + program,
   );
   return withoutGeneratedHeader(

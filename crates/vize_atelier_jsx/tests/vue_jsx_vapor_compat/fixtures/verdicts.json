@@ -265,10 +265,8 @@
       "issue": 12312
     },
     "props/ref-callback": {
-      "verdict": "divergent",
-      "basis": "vue-jsx-vapor calls the function ref; Vize reads a template-ref setter from an undefined render context and throws",
-      "differs": ["dom", "text", "elementIdentities", "warnings"],
-      "issue": 12311
+      "verdict": "equivalent",
+      "basis": "the function ref runs on mount and the element stays live across the text update"
     },
     "options/on-object-value": {
       "verdict": "equivalent",
@@ -334,16 +332,15 @@
       "referenceConflicts": [4, 5, 6, 7, 8, 9]
     },
     "props/ref-value": {
-      "verdict": "divergent",
-      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
-      "differs": ["dom", "text", "elementIdentities", "warnings"],
-      "issue": 12311
+      "verdict": "equivalent",
+      "basis": "the ref value matrix mounts and updates the element in place like vue-jsx-vapor",
+      "referenceConflicts": [5, 6, 7, 8, 9]
     },
     "props/ref-in-for-value": {
       "verdict": "divergent",
-      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
-      "differs": ["dom", "text", "elementIdentities", "warnings"],
-      "issue": 12311
+      "basis": "refs inside the mapped list match; vue-jsx-vapor leaves a whitespace anchor text after the list",
+      "differs": ["dom", "text"],
+      "issue": 6885
     },
     "events/plain-value": {
       "verdict": "equivalent",
@@ -532,10 +529,9 @@
       "vdomIssue": 12324
     },
     "optimize/ref-value": {
-      "verdict": "divergent",
-      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
-      "differs": ["dom", "text", "elementIdentities", "warnings"],
-      "issue": 12311
+      "verdict": "equivalent",
+      "basis": "the ref value matrix mounts and updates the element in place like vue-jsx-vapor",
+      "referenceConflicts": [5, 6, 7, 8, 9]
     },
     "optimize/key-value": {
       "verdict": "equivalent",

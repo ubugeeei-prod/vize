@@ -75,14 +75,15 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         })
     }
 
-    /// A valueless JSX attribute is a boolean `true` in Babel's JSX
-    /// semantics. Native Vize lowering deliberately keeps its established
-    /// template-style empty-string value.
     /// Freeze the compat-rewritten attribute name into the compile arena.
     pub(super) fn intern_attr_name(&self, span: oxc_span::Span) -> &'a str {
         self.bump().alloc_str(&self.compat_attribute_name(span))
     }
 
+    /// A valueless JSX attribute is a boolean `true` in Babel's JSX
+    /// semantics. Native Vize lowering deliberately keeps its established
+    /// template-style empty-string value, except for `ref_for`: that flag is
+    /// read as a boolean, and an empty string would turn array collection off.
     pub(super) fn valueless_attr(
         &self,
         name: &'a str,
@@ -90,7 +91,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         name_loc: SourceLocation,
         loc: SourceLocation,
     ) -> PropNode<'a> {
-        if !self.uses_babel_compat() {
+        if !self.uses_babel_compat() && name != "ref_for" {
             return self.boolean_attr(name, name_loc, loc);
         }
 

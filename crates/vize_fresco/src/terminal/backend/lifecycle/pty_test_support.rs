@@ -4,7 +4,7 @@
 
 use std::{
     mem::MaybeUninit,
-    os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd},
+    os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd},
     process::Stdio,
     ptr,
 };
@@ -56,8 +56,8 @@ impl PtyFixture {
         self.original
     }
 
-    pub(super) fn take_terminal_fd(&mut self) -> RawFd {
-        self.terminal.take().unwrap().into_raw_fd()
+    pub(super) fn take_terminal_fd(&mut self) -> OwnedFd {
+        self.terminal.take().unwrap()
     }
 
     pub(super) fn take_child_stdin(&mut self) -> Stdio {

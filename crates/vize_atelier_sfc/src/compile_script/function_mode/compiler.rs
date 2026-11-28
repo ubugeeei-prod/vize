@@ -23,6 +23,7 @@ use super::super::props::{
     normalize_destructure_default_value_with_factory as normalize_default, runtime_prop_key,
     validate_macro_scope_and_props,
 };
+use super::super::returned_bindings::push_returned_binding;
 use super::expose::emit_expose;
 use super::helpers::{is_reserved_word, runtime_identifier_references};
 use super::imports::{dedupe_imports, insert_imports};
@@ -254,24 +255,18 @@ pub fn compile_script_setup(
         &model_binding_names,
     );
 
-    let returned_props: Vec<String> = returned_bindings
-        .iter()
-        .map(|name| {
-            if is_reserved_word(name) {
-                let mut entry = String::with_capacity(name.len() * 2 + 4);
-                entry.push('"');
-                entry.push_str(name);
-                entry.push_str("\": ");
-                entry.push_str(name);
-                entry
-            } else {
-                name.clone()
-            }
-        })
-        .collect();
-
     output.push_str("  const __returned__ = { ");
-    output.push_str(&returned_props.join(", "));
+    for (index, name) in returned_bindings.iter().enumerate() {
+        if index > 0 {
+            output.push_str(", ");
+        }
+        if is_reserved_word(name) {
+            output.push('"');
+            output.push_str(name);
+            output.push_str("\": ");
+        }
+        push_returned_binding(&mut output, name, &ctx);
+    }
     output.push_str(" }\n");
     output.push_str("  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
     output.push_str("  return __returned__\n");

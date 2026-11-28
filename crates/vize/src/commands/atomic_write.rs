@@ -27,6 +27,43 @@ pub fn atomic_write(path: &Path, contents: &[u8]) -> io::Result<()> {
     atomic_write_with(path, contents, &mut OsOperations)
 }
 
+/// [`atomic_write`] for a command that rewrites the project's own sources.
+///
+/// A symlink is rewritten only when the file it names is inside the project:
+/// the nearest ancestor of the working directory that holds `.git`, or the
+/// working directory itself. A link to a file elsewhere is left unchanged.
+pub(crate) fn atomic_write_in_project(path: &Path, contents: &[u8]) -> io::Result<()> {
+    if fs::symlink_metadata(path)?.file_type().is_symlink() {
+        refuse_link_out_of(path, &project_root()?)?;
+    }
+    atomic_write(path, contents)
+}
+
+fn project_root() -> io::Result<PathBuf> {
+    let current = fs::canonicalize(std::env::current_dir()?)?;
+    let root = current
+        .ancestors()
+        .find(|directory| directory.join(".git").exists())
+        .unwrap_or(&current)
+        .to_path_buf();
+    Ok(root)
+}
+
+fn refuse_link_out_of(path: &Path, root: &Path) -> io::Result<()> {
+    if fs::canonicalize(path)?.starts_with(root) {
+        return Ok(());
+    }
+    Err(io::Error::new(
+        io::ErrorKind::PermissionDenied,
+        vize_l0::cstr!(
+            "{} links to a file outside {}; it was left unchanged",
+            path.display(),
+            root.display()
+        )
+        .as_str(),
+    ))
+}
+
 fn atomic_write_with<O: AtomicWriteOperations>(
     path: &Path,
     contents: &[u8],
@@ -126,7 +163,9 @@ impl AtomicWriteOperations for OsOperations {
 
 #[cfg(test)]
 mod tests {
-    use super::{AtomicWriteOperations, OsOperations, atomic_write, atomic_write_with};
+    use super::{
+        AtomicWriteOperations, OsOperations, atomic_write, atomic_write_with, refuse_link_out_of,
+    };
     use std::fs::{self, File};
     use std::io::{self, Write};
     use std::path::Path;
@@ -231,6 +270,28 @@ mod tests {
         assert_eq!(fs::read(&link).unwrap(), REPLACEMENT);
         assert_no_temporary_files(&target_directory);
         assert_no_temporary_files(&link_directory);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_project_write_keeps_links_to_files_outside_the_project() {
+        use std::os::unix::fs::symlink;
+
+        let holder = tempfile::tempdir().unwrap();
+        let project = fs::canonicalize(holder.path()).unwrap().join("project");
+        let outside = fs::canonicalize(holder.path()).unwrap().join("outside.ts");
+        fs::create_dir_all(project.join("src")).unwrap();
+        fs::write(project.join("src/inner.ts"), ORIGINAL).unwrap();
+        fs::write(&outside, ORIGINAL).unwrap();
+        let inner_link = project.join("inner-link.ts");
+        let outer_link = project.join("outer-link.ts");
+        symlink(project.join("src/inner.ts"), &inner_link).unwrap();
+        symlink(&outside, &outer_link).unwrap();
+
+        assert!(refuse_link_out_of(&inner_link, &project).is_ok());
+        let error = refuse_link_out_of(&outer_link, &project).unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::PermissionDenied);
+        assert_eq!(fs::read(&outside).unwrap(), ORIGINAL);
     }
 
     #[test]

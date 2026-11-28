@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "lsp/regression/lint-hover-literal-message",
+  "provenance": {
+    "fixCommit": "55aac8bc813ec55804b7ec0cefee35cb1ac67688",
+    "inputOrigin": "Authored component whose reserved prop name contains Markdown link and image syntax, echoed by vue/no-reserved-props",
+    "contractOrigin": "Complete stdio lint hover: the echoed name is shown as written, the rule help keeps its code spans"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "af1b885311fdd875406f6ede2e1ca8e702ae745ef9f4d13ab3fc2ce4f3944b97"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "3f1112264c9fb1ecf6f14b7b741c57680f223f37b1c76b7757d413140c8acd26"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "dcb62e1ce9dd73d5834702de6acd2c12cacf91a4f189e2b763f17350b42013d4"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "scope": "Lint hover Markdown for a diagnostic message that echoes authored text"
+}

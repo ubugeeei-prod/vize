@@ -127,7 +127,10 @@ fn render_nuxt_composition_api_augmentation_stub() -> String {
     )
 }
 
-fn render_module_augmentation_stub(stub: &str) -> String {
+/// Mark `stub` for the module file of the virtual project. A stub without the
+/// marker lands in the global script, where `declare module` declares a new
+/// module instead of augmenting a resolved one and `declare global` is an error.
+pub(super) fn render_module_augmentation_stub(stub: &str) -> String {
     let mut rendered = String::from(MODULE_AUGMENTATION_STUB_PREFIX);
     rendered.push_str(stub);
     rendered

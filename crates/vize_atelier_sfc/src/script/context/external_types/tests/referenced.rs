@@ -163,9 +163,10 @@ fn referenced_merge_matches_the_full_merge_on_generated_graphs() {
 
             let mut lazy = ScriptCompileContext::new("");
             lazy.collect_types_from(&script);
-            let (lazy_imports, lazy_files, declarations) =
-                lazy.walk_imported_declarations(&roots, &base_file, None, Some(&shared));
-            lazy.merge_by_reference(&declarations, &[&script]);
+            let walked =
+                lazy.walk_imported_declarations(&roots, &[], &base_file, None, Some(&shared));
+            let (lazy_imports, lazy_files) = (walked.imports, walked.files);
+            lazy.merge_by_reference(&[], &walked.declarations, &[&script]);
 
             assert_eq!(lazy_imports, full_imports, "{label}");
             assert_eq!(lazy_files, full_files, "{label}");
@@ -206,16 +207,16 @@ fn an_escaped_identifier_merges_every_declaration() {
         ),
     ] {
         let mut ctx = ScriptCompileContext::new("");
-        let (_, _, declarations) =
-            ctx.walk_imported_declarations(&roots(script), &base_file, None, Some(&shared));
-        ctx.merge_referenced_declarations(&declarations, &[script]);
+        let walked =
+            ctx.walk_imported_declarations(&roots(script), &[], &base_file, None, Some(&shared));
+        ctx.merge_referenced_declarations(&[], &walked.declarations, &[script]);
         assert_eq!(ctx.interfaces.len(), expected, "{script}");
     }
 }
 
 /// Compile `source` as `path` with nothing shared, then in a batch, and
 /// return both results' observable output.
-fn compile_alone_and_in_batch(
+pub(super) fn compile_alone_and_in_batch(
     path: &Path,
     source: &str,
 ) -> (std::string::String, std::string::String) {
@@ -241,7 +242,7 @@ fn compile_alone_and_in_batch(
     (alone, in_batch)
 }
 
-fn write(dir: &Path, files: &[(&str, &str)]) {
+pub(super) fn write(dir: &Path, files: &[(&str, &str)]) {
     for (name, text) in files {
         let path = dir.join(name);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();

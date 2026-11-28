@@ -74,6 +74,7 @@ export default defineConfig({}).withVue({
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[], ignores?: string[] }` | 既定は `PascalCase` です。登録済みのコンポーネントだけを対象にし、追加のグローバル名と除外する名前は既定で空です。`ignores` に指定したタグは、登録の有無にかかわらず検査しません。書かれたタグ名そのもの、または Rust の正規表現構文を使う `/pattern/flags` を指定します。 |
 | `script/custom-event-name-casing` | `{ casing?: "lowercase" \| "camelCase" \| "kebab-case" }` | 既定は `camelCase` です。 |
 | `script/consistent-type-imports` | `{ prefer?: "type-imports" \| "no-type-imports"; fixStyle?: "separate-type-imports" \| "inline-type-imports"; disallowTypeAnnotations?: boolean; emitDecoratorMetadata?: boolean }` | 既定は `type-imports`、`separate-type-imports`、`true`、`true` です。最初の 3 つは typescript-eslint のオプションです。`emitDecoratorMetadata` には、プロジェクトがデコレーターのメタデータを出力するかどうかを指定します（lint は `tsconfig.json` を読みません）。`true` の場合、デコレーター付きのシグネチャが直列化する型を値としての使用に数えます。 |
+| `vue/component-definition-name-casing` | `"PascalCase" \| "kebab-case"` | 既定は eslint-plugin-vue と同じ `"PascalCase"` です。コンポーネント定義の静的な `name` と `app.component()` の第 1 引数を検査します。ファイル名は `vue/component-file-name-casing` が検査します。オプションだけではルールは有効になりません。 |
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | 既定は `camelCase` です。宣言した props 名を検査します。ルールは別に有効にし、公開 API の名前は手動で変更してください。 |
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | 既定は `camelCase` です。描画される `<slot>` outlet の静的な名前を検査します。提供側の `v-slot` と `#name` 構文はこのルールの対象外です。 |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | 既定は `always` で、代入した呼び出しと型付きの単独呼び出しを検査します。`only-when-assigned` は単独呼び出しを除外し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入はリアクティビティを保ちます。 |
@@ -287,6 +288,44 @@ export default defineConfig({}).withVue({
 ```vue
 <template><p>Item</p></template>
 ```
+
+## `vue/component-definition-name-casing`
+
+オプションは eslint-plugin-vue と同じ `"PascalCase"`（既定）または `"kebab-case"` です。
+`export default {}` や `defineComponent({})` などのコンポーネント定義の静的な `name`、
+`defineOptions({ name })`、`app.component(name, component)` の第 1 引数が対象です。
+ファイル名はオプションを持たない `vue/component-file-name-casing` が検査します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/component-definition-name-casing": "warn" },
+    ruleOptions: { "vue/component-definition-name-casing": "kebab-case" },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "MyComponent" });
+</script>
+```
+
+設定に沿った例：
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: "my-component" });
+</script>
+```
+
+計算で求める名前は検査しません。コンポーネント名を変えると `<KeepAlive include>` や
+再帰的な自己参照から見つからなくなるため、ルールは名前を書き換えず、変換後の表記を help に示します。
+オプションだけではルールを有効にしません。
 
 ## `vue/no-use-v-if-with-v-for`
 

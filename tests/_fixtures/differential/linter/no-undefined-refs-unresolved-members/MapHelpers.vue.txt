@@ -1,0 +1,24 @@
+<script>
+import { mapActions, mapGetters, mapState } from 'pinia'
+import { useCartStore } from '~/stores/cart'
+
+export default {
+  computed: {
+    ...mapState(useCartStore, ['items']),
+    ...mapGetters(useCartStore, ['itemCount']),
+    empty() {
+      return this.itemCount === 0
+    },
+  },
+  methods: {
+    ...mapActions(useCartStore, ['addItem']),
+  },
+}
+</script>
+
+<template>
+  <ul v-if="!empty">
+    <li v-for="item in items" :key="item.id">{{ item.name }}</li>
+  </ul>
+  <button @click="addItem">Add ({{ itemCount }})</button>
+</template>

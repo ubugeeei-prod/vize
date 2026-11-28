@@ -10,7 +10,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{with_shared_parse, with_shared_program_for_analysis};
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
@@ -255,6 +255,9 @@ fn read_helpers(
     configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
 ) -> SetupHelperPlan {
     if parsed.panicked {
+        if plan.active_template_ref {
+            plan.template_refs = recovered_template_refs(source, configured_global_template_ref);
+        }
         return plan;
     }
     let built = SemanticBuilder::new().build(&parsed.program);
@@ -289,6 +292,22 @@ fn read_helpers(
         );
     }
     plan
+}
+
+/// While the script has a syntax error, infer the `useTemplateRef` calls of
+/// the parse the analyzer recovers, as its other script facts do.
+fn recovered_template_refs(
+    source: &str,
+    ownership: crate::virtual_ts::TemplateRefOwnership,
+) -> TemplateRefUsage {
+    with_shared_program_for_analysis(source, SourceType::ts(), |parsed| {
+        if parsed.panicked {
+            return TemplateRefUsage::default();
+        }
+        let built = SemanticBuilder::new().build(&parsed.program);
+        TemplateRefUsage::collect(&parsed.program, built.semantic.scoping(), source, ownership)
+            .without_key_checks()
+    })
 }
 
 const GENERIC_PROPS_HOISTED: &str = r#"  const defineProps = __vize_defineProps as {

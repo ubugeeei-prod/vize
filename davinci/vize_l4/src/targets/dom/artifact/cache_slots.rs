@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::{String, ToCompactString};
+use vize_l0::{ToCompactString, string_builder::TextBuf};
 
 use super::EmitCx;
 
@@ -43,7 +43,7 @@ pub(super) fn renumber(cx: &mut EmitCx<'_>) {
     };
     cx.cache_sites
         .sort_unstable_by_key(|(offset, _, _)| *offset);
-    let mut out = String::with_capacity(cx.buf.code.len());
+    let mut out = TextBuf::with_capacity(cx.buf.code.len());
     let mut cursor = 0usize;
     // Sites are recorded offsets of ASCII slot numbers; one that does not
     // slice the buffer leaves the code as emitted.

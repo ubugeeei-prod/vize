@@ -37,11 +37,11 @@ impl Rule for AuditRule {
     fn run_on_template<'a>(&self, context: &mut LintContext<'a>, root: &RootNode<'a>) {
         context.warn_with_help(
             context.t_fmt(
-                "vue/component-definition-name-casing.message",
+                "vue/component-file-name-casing.message",
                 &[("name", self.marker)],
             ),
             &root.loc,
-            context.t("vue/component-definition-name-casing.help"),
+            context.t("vue/component-file-name-casing.help"),
         );
     }
 }
@@ -65,9 +65,9 @@ impl NativeTemplateRule for AuditRule {
         assert_eq!(context.requested_vapor_mode(), self.vapor);
         self.called.fetch_add(1, Ordering::SeqCst);
         context.warn_root_with_help(
-            "vue/component-definition-name-casing.message",
+            "vue/component-file-name-casing.message",
             &[("name", self.marker)],
-            "vue/component-definition-name-casing.help",
+            "vue/component-file-name-casing.help",
         );
         Ok(())
     }

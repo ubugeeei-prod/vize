@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const panel = useTemplateRef<HTMLElement>('box')
+</script>
+
+<template>
+  <section ref="box" />
+  <aside :ref="'box'" />
+  <p title="box" />
+</template>

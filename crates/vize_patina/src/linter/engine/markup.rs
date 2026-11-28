@@ -94,7 +94,7 @@ impl Linter {
         ctx.set_help_level(self.help_level);
         ctx.set_no_inline_config(self.no_inline_config);
         ctx.set_custom_elements(&self.custom_elements);
-        ctx.set_type_sources(self.type_sources.as_ref());
+        ctx.set_type_sources(self.run_type_sources());
         ctx
     }
 }

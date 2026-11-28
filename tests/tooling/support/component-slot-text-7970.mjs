@@ -231,8 +231,12 @@ async function observe(component, child, updates) {
 try {
   const { assembleComponentOutput } =
     await import("../../../npm/builder/vite/src/utils/component-output.ts");
+  // The native compiler returns each module with its shape; these rows carry
+  // the template compile alone, so the shape is derived from the same code.
+  const { withModuleShape } = await import("../../../npm/builder/vite/test/oxc-module-output.ts");
   const adapterSfc = (current) =>
-    assembleComponentOutput({ ...current, hasScoped: false, scopeId: "" }).emitted.code;
+    assembleComponentOutput(withModuleShape({ ...current, hasScoped: false, scopeId: "" })).emitted
+      .code;
   const seen = new Set();
   for (const row of input.cases) {
     const key = `${row.whitespace}/${row.comments}/${row.name}`;

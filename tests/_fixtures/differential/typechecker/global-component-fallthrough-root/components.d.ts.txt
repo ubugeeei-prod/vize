@@ -1,0 +1,7 @@
+declare module "vue" {
+  export interface GlobalComponents {
+    Foo: typeof import("./Foo.vue").default;
+  }
+}
+
+export {};

@@ -62,6 +62,7 @@
 pub mod document;
 pub mod ide;
 mod logging;
+mod loopback_peer;
 pub mod runtime;
 pub mod server;
 #[cfg(feature = "experimental-source-folding")]
@@ -155,7 +156,18 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     let listener = TcpListener::bind(addr.as_str())?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 
-    let (stream, addr) = runtime::accept_tcp("vize-lsp-tcp-accept", listener).await?;
+    let local = listener.local_addr()?;
+    let (stream, addr) = loop {
+        let (stream, addr) =
+            runtime::accept_tcp("vize-lsp-tcp-accept", listener.try_clone()?).await?;
+        if loopback_peer::opened_by_this_account(local, addr) {
+            break (stream, addr);
+        }
+        tracing::warn!(
+            "Closed a connection from {} opened by another account",
+            addr
+        );
+    };
     tracing::info!("Accepted connection from {}", addr);
 
     let _ = stream.set_nodelay(true);

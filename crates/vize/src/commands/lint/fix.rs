@@ -4,7 +4,7 @@ use std::path::Path;
 
 use super::collect::{is_plain_script_path, is_standalone_html_path};
 use super::tsrx::is_tsrx_path;
-use crate::commands::atomic_write::atomic_write;
+use crate::commands::atomic_write::atomic_write_in_project;
 use vize_l0::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
 
@@ -27,7 +27,7 @@ pub(super) fn lint_source_with_optional_fix(
     });
     let fixed = source != original;
     if fixed {
-        atomic_write(path, source.as_bytes()).inspect_err(|error| {
+        atomic_write_in_project(path, source.as_bytes()).inspect_err(|error| {
             global_profiler().record_fs_write_failure(source.len());
             eprintln!("Failed to write {}: {}", path.display(), error);
         })?;

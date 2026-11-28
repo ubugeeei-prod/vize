@@ -1,0 +1,17 @@
+import { Token as DirectToken } from "./states";
+
+export const color: ColorName = "pink";
+export const box: Box<number> = { value: 1 };
+export const labeled: Box<number, boolean> = { value: 1, label: true };
+export const crate: Crate<string> = { value: "a" };
+export const chip: Chip = { value: "a" };
+export const numbered: Chip<number> = { value: 1 };
+export const token: Token = new DirectToken();
+
+export const wrongColor: ColorName = "green";
+export const wrongBox: Box<number> = { value: "one" };
+export const wrongLabel: Box<number, boolean> = { value: 1, label: "yes" };
+export const wrongCrate: Crate<string> = { value: 1 };
+export const wrongChip: Chip<number> = { value: "one" };
+export const tooMany: Box<number, boolean, string> = { value: 1 };
+export const fakeToken: Token = { describe: () => "token" };

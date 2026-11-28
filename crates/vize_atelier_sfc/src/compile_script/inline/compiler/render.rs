@@ -4,7 +4,10 @@ use vize_carton::{FxHashSet, String};
 
 use crate::script::ScriptCompileContext;
 
-use super::super::super::{TemplateParts, import_utils::extract_import_identifiers};
+use super::super::super::{
+    TemplateParts, import_utils::extract_import_identifiers,
+    returned_bindings::push_returned_binding,
+};
 
 mod template_refs;
 
@@ -95,7 +98,7 @@ pub(super) fn emit_render_return(
                     output.push_str(", ");
                 }
                 binding_index += 1;
-                output.push_str(name);
+                push_returned_binding(output, name, ctx);
             }
             output.push_str(" }\n");
             if needs_template_ref_setter {
@@ -129,7 +132,7 @@ pub(super) fn emit_render_return(
                 if i > 0 {
                     output.push_str(", ");
                 }
-                output.push_str(name);
+                push_returned_binding(output, name, ctx);
             }
             output.push_str(" }\n");
             if !template.render_fn.is_empty() {

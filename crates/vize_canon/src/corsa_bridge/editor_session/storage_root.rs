@@ -12,6 +12,8 @@ use std::sync::OnceLock;
 const SHARED_NAME: &str = "vize-canon";
 
 struct Placement {
+    /// This user's directory directly under the temporary directory.
+    root: PathBuf,
     base: PathBuf,
     /// The numeric user that owns what this process creates. Unix only.
     user: Option<u32>,
@@ -25,6 +27,7 @@ fn placement() -> &'static Placement {
         let root = storage_root(&temporary, user);
         Placement {
             base: root.join("editor").join("sessions"),
+            root,
             user,
         }
     })
@@ -38,8 +41,18 @@ pub(super) fn sessions_base() -> PathBuf {
 /// Create the sessions directory, or adopt this user's existing one.
 pub(super) fn create_sessions_base() -> std::io::Result<PathBuf> {
     let placement = placement();
-    create_owned(&placement.base, placement.user)?;
+    create_owned(&placement.base, 3, placement.user)?;
     Ok(placement.base.clone())
+}
+
+/// Create, or adopt, this user's directory under the temporary directory.
+///
+/// Generated projects that cannot use the user's cache directory live here,
+/// beside the editor sessions, so they get the same owner and permissions.
+pub(crate) fn create_user_temporary_root() -> std::io::Result<PathBuf> {
+    let placement = placement();
+    create_owned(&placement.root, 1, placement.user)?;
+    Ok(placement.root.clone())
 }
 
 fn storage_root(temporary: &Path, user: Option<u32>) -> PathBuf {
@@ -90,10 +103,10 @@ fn free_or_owned_by(_path: &Path, _user: u32) -> bool {
     true
 }
 
-/// Make `base` and its two parents below the temporary directory, each a real
-/// directory of this user that nobody else can enter or change.
+/// Make `base` and the parents above it, `levels` directories in all, each a
+/// real directory of this user that nobody else can enter or change.
 #[cfg(unix)]
-fn create_owned(base: &Path, user: Option<u32>) -> std::io::Result<()> {
+fn create_owned(base: &Path, levels: usize, user: Option<u32>) -> std::io::Result<()> {
     use std::os::unix::fs::{DirBuilderExt, PermissionsExt};
     let user = user.ok_or_else(|| {
         std::io::Error::new(
@@ -101,7 +114,7 @@ fn create_owned(base: &Path, user: Option<u32>) -> std::io::Result<()> {
             "the temporary directory is not writable",
         )
     })?;
-    let mut levels: std::vec::Vec<&Path> = base.ancestors().take(3).collect();
+    let mut levels: std::vec::Vec<&Path> = base.ancestors().take(levels).collect();
     levels.reverse();
     for level in levels {
         match std::fs::DirBuilder::new().mode(0o700).create(level) {
@@ -124,7 +137,7 @@ fn create_owned(base: &Path, user: Option<u32>) -> std::io::Result<()> {
 }
 
 #[cfg(not(unix))]
-fn create_owned(base: &Path, _user: Option<u32>) -> std::io::Result<()> {
+fn create_owned(base: &Path, _levels: usize, _user: Option<u32>) -> std::io::Result<()> {
     std::fs::create_dir_all(base)
 }
 
@@ -189,11 +202,28 @@ mod tests {
         // An earlier, more open layout is adopted and closed.
         std::fs::create_dir(&root).unwrap();
         std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o775)).unwrap();
-        create_owned(&base, user).unwrap();
+        create_owned(&base, 3, user).unwrap();
         for level in [&root, &root.join("editor"), &base] {
             assert_eq!(mode(level), 0o700);
         }
-        create_owned(&base, user).unwrap();
+        create_owned(&base, 3, user).unwrap();
+    }
+
+    #[test]
+    fn the_user_root_alone_is_created_closed() {
+        let temporary = tempfile::tempdir().unwrap();
+        let user = creating_user(temporary.path());
+        let root = temporary.path().join("vize-canon");
+        std::fs::create_dir(&root).unwrap();
+        std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o755)).unwrap();
+        create_owned(&root, 1, user).unwrap();
+        assert_eq!(mode(&root), 0o700);
+        assert_eq!(mode(temporary.path()) & 0o700, 0o700);
+
+        // Another user's directory under the name is refused, not adopted.
+        let other = user.map(|user| user.wrapping_add(1));
+        let error = create_owned(&root, 1, other).unwrap_err();
+        assert_eq!(error.kind(), std::io::ErrorKind::PermissionDenied);
     }
 
     #[test]
@@ -206,7 +236,7 @@ mod tests {
         std::fs::create_dir(&elsewhere).unwrap();
         std::os::unix::fs::symlink(&elsewhere, root.join("editor")).unwrap();
 
-        let error = create_owned(&root.join("editor").join("sessions"), user).unwrap_err();
+        let error = create_owned(&root.join("editor").join("sessions"), 3, user).unwrap_err();
         assert_eq!(error.kind(), std::io::ErrorKind::PermissionDenied);
         assert!(std::fs::read_dir(&elsewhere).unwrap().next().is_none());
     }

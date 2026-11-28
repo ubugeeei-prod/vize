@@ -171,6 +171,7 @@ pub(crate) fn transform_element<'a>(
     element(ctx, el, block, true);
 }
 
+#[inline]
 pub(super) fn element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,

@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.rust-plan).differentialMatrix }}
     if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/pr-rust-differential"
@@ -45,7 +45,7 @@ jobs:
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false

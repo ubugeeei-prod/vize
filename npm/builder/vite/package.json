@@ -70,13 +70,13 @@
     "@vizejs/native": "workspace:*",
     "@vizejs/unplugin": "workspace:*",
     "jsonc-parser": "^3.3.1",
-    "oxc-parser": "catalog:oxc",
     "picomatch": "4.0.7",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "oxc-parser": "catalog:oxc",
     "oxfmt": "catalog:linting",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",

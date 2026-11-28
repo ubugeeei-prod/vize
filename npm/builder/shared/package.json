@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./generated-names": "./generated-names.ts",
     "./mapped-module": "./mapped-module.ts",
     "./module-output": "./module-output.ts",
     "./native-shape": "./native-shape.ts",
