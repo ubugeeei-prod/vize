@@ -272,22 +272,27 @@ void test("exceptions and interrupts stop subsequent tools", async () => {
   });
 });
 
-void test("published CLIs without the stdin marker are refused without a config file", async () => {
+void test("every CLI receives the task config over stdin, never as a temp file", async () => {
   await project(async () => {
     const native = path.resolve("legacy/bin/vize");
     mkdirSync(path.dirname(native), { recursive: true });
-    writeFileSync(native, "legacy native placeholder\n");
-    let spawned = false;
-    await assert.rejects(
-      runNative("check", ["App.vue"], { config: {}, options: {} }, native, async () => {
-        spawned = true;
+    writeFileSync(native, "native without the stdin marker\n");
+    let transported: string | undefined;
+    const status = await runNative(
+      "check",
+      ["App.vue"],
+      { config: {}, options: {} },
+      native,
+      async (_, args, stdin) => {
+        assert.deepEqual(args, [native, "check", "--config-stdin", "App.vue"]);
+        transported = stdin;
         return 0;
-      }),
-      {
-        message: `${native} predates --config-stdin; install the vize CLI version that matches @vizejs/vite-plugin.`,
       },
     );
-    assert.equal(spawned, false);
+    assert.equal(status, 0);
+    assert.deepEqual(JSON.parse(transported ?? ""), {
+      vue: { basePath: process.cwd(), entries: [] },
+    });
   });
 });
 

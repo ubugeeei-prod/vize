@@ -1,5 +1,4 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { glob } from "tinyglobby";
@@ -169,13 +168,6 @@ export function nativeBinary(): string {
   return path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
 }
 
-const CONFIG_STDIN_MARKER = "config-stdin-v1";
-
-/** Published CLI packages from before stdin transport lack this marker. */
-export function nativeSupportsConfigStdin(native: string): boolean {
-  return !existsSync(native) || existsSync(path.join(path.dirname(native), CONFIG_STDIN_MARKER));
-}
-
 export async function runNative(
   command: "check" | "lint" | "fmt",
   argv: string[],
@@ -205,10 +197,6 @@ export async function runNative(
           ...(metadata.lintHelpLevel ? ["--help-level", metadata.lintHelpLevel] : []),
         ]
       : [];
-  if (!nativeSupportsConfigStdin(native))
-    throw new Error(
-      `${native} predates --config-stdin; install the vize CLI version that matches @vizejs/vite-plugin.`,
-    );
   return spawn(
     process.execPath,
     [native, command, "--config-stdin", ...lintOptions, ...argv],
