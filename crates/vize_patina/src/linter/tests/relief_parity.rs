@@ -9,6 +9,7 @@ use vize_relief::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode
 
 mod a11y;
 mod all_hooks;
+mod configured_headers;
 mod directives;
 mod fallback_ports;
 mod unsafe_url;

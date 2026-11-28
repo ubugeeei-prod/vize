@@ -1,6 +1,8 @@
 //! [`MarkupAttribute`]: a written attribute.
 
-use super::jsx_names::{jsx_attribute_name, jsx_static_value, jsx_value_is_dynamic};
+use super::jsx_names::{
+    jsx_attribute_binding_kind, jsx_attribute_name, jsx_static_value, jsx_value_is_dynamic,
+};
 use super::l2::L2Markup;
 use super::l2::surface::{attr_span, attr_value, token_range};
 use super::{l2_range, loc_to_range, span_to_range};
@@ -37,6 +39,15 @@ pub struct MarkupAttribute<'a> {
 }
 
 impl<'a> MarkupAttribute<'a> {
+    pub(crate) fn is_plain_static(&self) -> bool {
+        match self.inner {
+            MarkupAttributeInner::Jsx { node, .. } => {
+                jsx_attribute_binding_kind(node) == super::MarkupBindingKind::Attribute
+            }
+            _ => true,
+        }
+    }
+
     const fn from_inner(inner: MarkupAttributeInner<'a>) -> Self {
         Self {
             inner,

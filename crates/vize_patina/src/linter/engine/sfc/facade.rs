@@ -102,6 +102,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/a11y-img-alt",
     "vue/no-unsafe-url",
     "vapor/no-inline-template",
+    "vue/no-restricted-static-attribute",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

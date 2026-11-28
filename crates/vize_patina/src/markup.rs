@@ -84,6 +84,7 @@ mod jsx_child;
 mod jsx_names;
 mod jsx_roots;
 mod l2;
+pub(crate) mod lint_headers;
 mod node;
 mod relief_children;
 mod relief_scopes;

@@ -281,7 +281,7 @@ vue/no-restricted-component-options	L1 syntax	sfc-descriptor	legacy-engine	-	-	v
 vue/no-restricted-custom-event	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_custom_event.rs
 vue/no-restricted-html-elements	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_html.rs
 vue/no-restricted-props	L1 syntax	sfc-descriptor	legacy-engine	-	-	vue/configured/restricted_props.rs
-vue/no-restricted-static-attribute	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_static_attribute.rs
+vue/no-restricted-static-attribute	L1 syntax	markup-l2	legacy-rule	relief	-	vue/configured/restricted_static_attribute.rs
 vue/no-restricted-syntax	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/restricted.rs
 vue/no-restricted-v-bind	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/compatibility_template/template_rules/no_restricted_v_bind.rs
 vue/no-restricted-v-on	L1 syntax	relief-visitor	legacy-rule	relief	-	vue/configured/restricted_v_on.rs
