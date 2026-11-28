@@ -1,0 +1,56 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-shipped-cli-nuxt/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Shipped CLI Nuxt consumer
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - .github/workflows/03-shipped-cli-nuxt.yml
+      - tools/ci/workflows/03-shipped-cli-nuxt/**
+      - tools/benchmarks/scripts/shipped-cli-nuxt*
+      - tests/_fixtures/tooling/shipped-cli-nuxt/**
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: shipped-cli-nuxt-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  qualify:
+    name: Exact release images and frozen Nuxt consumer
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 26.13.1
+          package-manager-cache: false
+      - name: Check provenance and refusal contracts
+        run: node --test tools/benchmarks/scripts/shipped-cli-nuxt.test.ts
+      - name: Download the exact retained release producer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/benchmarks/scripts/shipped-cli-nuxt.ts --download
+      - name: Restore frozen external-context inputs
+        run: node tools/benchmarks/scripts/shipped-cli-nuxt.ts --prepare
+      - name: Measure balanced independent images and compare complete output
+        run: node tools/benchmarks/scripts/shipped-cli-nuxt.ts --measure
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: shipped-cli-nuxt-${{ github.run_id }}
+          path: |-
+            ${{ runner.temp }}/shipped-cli-nuxt/*.json
+            ${{ runner.temp }}/shipped-cli-nuxt/*.stderr
+            ${{ runner.temp }}/shipped-cli-nuxt/*.log
+            ${{ runner.temp }}/shipped-cli-nuxt/summary.md
+            ${{ runner.temp }}/shipped-cli-nuxt/images/*/identity.json
+            ${{ runner.temp }}/shipped-cli-nuxt/images/*/side.json
+            ${{ runner.temp }}/shipped-cli-nuxt/images/*/elf-versions.txt
+          if-no-files-found: warn
+          retention-days: 30

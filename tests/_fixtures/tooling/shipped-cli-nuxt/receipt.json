@@ -1,0 +1,48 @@
+{
+  "schema": "vize.shipped-cli.nuxt.receipt.v1",
+  "scope": "Linux production CLI qualification of the frozen Nuxt scale consumer; equivalent platform workload, not identical Darwin execution",
+  "capturedAt": "2026-11-28",
+  "originalProject": "/private/tmp/vize-p1-nuxt-scale-consumer",
+  "originalDependencies": "/private/tmp/vize-p1-nuxt-final-consumer",
+  "snapshotSha256": "23fd62a5c0f1b6ab2b5a33ffdbf86e8df021e6ba91961854600a3885facf01e8",
+  "snapshotJsonSha256": "bdb4f31bddc6edaf6cbbc7f6b2e4a8856e2702964ac294d58f719d5335368c14",
+  "lockSha256": "f3935d1ce5c56fcac2997db7e31015fb7e1c87ac6efea17b1f3052fd57f4e103",
+  "packageSha256": "1641cb2899bebe3949ba2a41befaef2fef70203c655a3ff32fa6848c0fa3068e",
+  "fixtureFileCount": 1043,
+  "sfcCount": 1002,
+  "reportedFileCount": 1003,
+  "programInputCount": 1107,
+  "generatedGlobalScaleComponents": 1000,
+  "runtime": {
+    "node": "26.13.1",
+    "nuxt": "4.7.0",
+    "vue": "3.5.46",
+    "vue-router": "5.3.1",
+    "typescript": "6.0.3",
+    "@types/node": "26.6.11",
+    "nativeTypeScript": "7.0.2"
+  },
+  "producer": {
+    "repository": "ubugeeei-prod/vize",
+    "runId": 46121566596,
+    "driverSha": "632dddab5c6e08ccef72110c6b63db7aa71c2714",
+    "workflow": ".github/workflows/shipped-profile-measure.yml",
+    "artifactId": 15256126634,
+    "artifactName": "release-measure-46121566596",
+    "artifactSha256": "fa2e0882ef9313fee74081689b92204ea870d8b01001abe4facb1db3a62d79c2",
+    "baseSha": "65a280aca9684d4577ad04ef75da8da05ad235ff",
+    "headSha": "97cbd672a507a55a16e1d9855d9a86202106f562",
+    "sourceDateEpoch": "1795849088",
+    "target": "x86_64-unknown-linux-gnu.2.17",
+    "cli": {
+      "base": {
+        "sha256": "458e84f2d087394f39e2abbbcab4cff6f4cf49935f775e92efec9a017449c638",
+        "sizeBytes": 67121624
+      },
+      "head": {
+        "sha256": "92a39e44a545a74bd7e5a87aaf513ffcdc76977b3789eb0597b52638e772a0b4",
+        "sizeBytes": 67224600
+      }
+    }
+  }
+}
