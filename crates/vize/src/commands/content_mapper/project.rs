@@ -197,6 +197,7 @@ pub(super) fn resolve_open_project(
         Path::new(params.config_file_name.as_str()),
         &params.compiler_options,
     );
+    let emits_declarations = emits_declarations(&params.compiler_options);
     let mut watched_files = configuration.watched_files;
     watched_files.extend(
         ambient_declarations
@@ -230,6 +231,11 @@ pub(super) fn resolve_open_project(
     } else {
         config_identity
     };
+    let config_identity = if emits_declarations {
+        cstr!("{config_identity}:declarations:1")
+    } else {
+        config_identity
+    };
     let mode = ProjectionMode::resolve(
         explicit_mode,
         params.config_file_name.as_str(),
@@ -247,9 +253,17 @@ pub(super) fn resolve_open_project(
                 .with_options_api(options_api)
                 .with_preserve_unused_diagnostics(no_unused_locals)
                 .with_check_javascript(check_javascript)
-                .with_external_component_attrs_module(shared_helpers.core_types)
-                .with_external_component_type_helpers(shared_helpers.core_types)
-                .with_shared_virtual_module(shared_helpers.virtual_module)
+                // Declaration emit keeps a type alias the public surface names
+                // only when it is declared in the module: an imported or global
+                // helper would leave a published declaration that needs Vize.
+                .with_external_component_attrs_module(
+                    shared_helpers.core_types && !emits_declarations,
+                )
+                .with_external_component_type_helpers(
+                    shared_helpers.core_types && !emits_declarations,
+                )
+                .with_shared_virtual_module(shared_helpers.virtual_module && !emits_declarations)
+                .with_checker_globals_module(shared_helpers.virtual_module && emits_declarations)
                 .with_diagnostics_only(mode == ProjectionMode::Check),
         },
         OpenProjectResult {
@@ -258,4 +272,10 @@ pub(super) fn resolve_open_project(
             option_diagnostics: diagnostics,
         },
     ))
+}
+
+/// Whether the host writes declaration files for this project.
+fn emits_declarations(compiler_options: &Value) -> bool {
+    let enabled = |name: &str| compiler_options.get(name) == Some(&Value::Bool(true));
+    (enabled("declaration") || enabled("composite")) && !enabled("noEmit")
 }

@@ -19,6 +19,8 @@ pub(super) enum Mode {
     Inline,
     Core,
     Shared,
+    /// Embedded helpers with the installed checker globals.
+    Declarations,
 }
 
 pub(super) struct InstalledSdk {
@@ -78,7 +80,8 @@ impl InstalledSdk {
             .transform_options
             .with_external_component_attrs_module(core)
             .with_external_component_type_helpers(core)
-            .with_shared_virtual_module(matches!(mode, Mode::Shared));
+            .with_shared_virtual_module(matches!(mode, Mode::Shared))
+            .with_checker_globals_module(matches!(mode, Mode::Declarations));
         let expected = generate_vue_content_mapper_transform_with_project_context(
             Path::new("/project/Options.vue"),
             source,

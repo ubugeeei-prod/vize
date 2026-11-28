@@ -12,6 +12,9 @@ pub struct ContentMapperTransformOptions {
     pub(super) external_component_type_helpers: bool,
     /// Hoist repeated helpers into the installed `vize/virtual-ts` module.
     pub(super) shared_virtual_module: bool,
+    /// Load checker globals from the installed `vize/virtual-ts-checker`
+    /// module while helpers stay embedded in each module.
+    pub(in crate::batch::virtual_project) checker_globals_module: bool,
     /// Project only what diagnostics read, as `vize check` does.
     pub(super) diagnostics_only: bool,
     pub(in crate::batch::virtual_project) configured_global_template_ref:
@@ -31,6 +34,7 @@ impl Default for ContentMapperTransformOptions {
             external_component_attrs_module: false,
             external_component_type_helpers: false,
             shared_virtual_module: false,
+            checker_globals_module: false,
             diagnostics_only: false,
             configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
                 global: false,
@@ -96,6 +100,21 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn shared_virtual_module(self) -> bool {
         self.shared_virtual_module
+    }
+
+    /// Load the checker's globals from the installed `vize/virtual-ts-checker`
+    /// module through a type-only import that declaration emit drops, while
+    /// every helper stays embedded in the module, where declaration emit keeps
+    /// what the public surface names. Applies only without the shared module.
+    #[must_use]
+    pub const fn with_checker_globals_module(mut self, enabled: bool) -> Self {
+        self.checker_globals_module = enabled;
+        self
+    }
+
+    #[must_use]
+    pub const fn checker_globals_module(self) -> bool {
+        self.checker_globals_module
     }
 
     /// Drop editor-only navigation scaffolding for a host that never asks
