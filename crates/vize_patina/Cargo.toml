@@ -88,7 +88,7 @@ rayon.workspace = true
 vize_canon = { workspace = true, features = ["native"] }
 
 [target.'cfg(all(not(target_arch = "wasm32"), unix))'.dependencies]
-libc.workspace = true
+nix = { workspace = true, features = ["process", "signal"] }
 
 [dev-dependencies]
 insta.workspace = true

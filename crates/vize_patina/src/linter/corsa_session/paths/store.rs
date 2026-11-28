@@ -68,10 +68,15 @@ fn process_is_running(pid: u64) -> bool {
         return false;
     }
 
-    // SAFETY: signal 0 sends nothing; `kill` only checks that the process
-    // exists. The pid was range-checked into `pid_t` above.
-    let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
-    result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+    // `None` asks libc's signal-zero probe through Nix's safe wrapper. An
+    // owner that exists but cannot be signalled remains live (`EPERM`).
+    matches!(
+        nix::sys::signal::kill(
+            nix::unistd::Pid::from_raw(pid as i32),
+            None::<nix::sys::signal::Signal>,
+        ),
+        Ok(()) | Err(nix::errno::Errno::EPERM)
+    )
 }
 
 #[cfg(not(unix))]
