@@ -1,16 +1,16 @@
-//! Materialize batch dependency arrays with one JavaScript string per path.
+//! Reuse primitive strings from the preceding result's dependency list.
 //!
 //! The result arrays remain distinct and mutable. Their elements are primitive
-//! strings, which JavaScript cannot mutate, so equal paths may safely share a
-//! string handle. Handles and their Rust lookup keys live only for this call
-//! on its JavaScript thread; no environment-bound value enters a worker or a
+//! strings, which JavaScript cannot mutate, so equal paths may safely reuse
+//! their string handles. Only the preceding list is retained: distinct lists
+//! need no hash index or growing lookup. Handles live only for this call on
+//! its JavaScript thread; no environment-bound value enters a worker or a
 //! process-wide cache.
 
 use napi::{
     Env, JsString, Property,
     bindgen_prelude::{Array, Error, JsObjectValue, Object, Result, Status, ToNapiValue},
 };
-use vize_l0::FxHashMap;
 
 use super::batch_targets::BatchCompileTargetsResultNapi;
 use super::types::BatchCompileResultWithFilesNapi;
@@ -33,14 +33,14 @@ fn object<'env, T: ToNapiValue>(env: &'env Env, packet: T) -> Result<Object<'env
 
 struct DependencyStrings<'env> {
     env: &'env Env,
-    values: FxHashMap<String, JsString<'env>>,
+    previous: Option<(Vec<String>, Vec<JsString<'env>>)>,
 }
 
 impl<'env> DependencyStrings<'env> {
     fn new(env: &'env Env) -> Self {
         Self {
             env,
-            values: FxHashMap::default(),
+            previous: None,
         }
     }
 
@@ -49,17 +49,41 @@ impl<'env> DependencyStrings<'env> {
             .map_err(|_| Error::new(Status::InvalidArg, "too many dependency paths"))?;
         let env = self.env;
         let mut array = env.create_array(length)?;
-        for (index, path) in paths.into_iter().enumerate() {
-            let value = match self.values.get(path.as_str()) {
-                Some(value) => *value,
-                None => {
-                    let value = env.create_string(&path)?;
-                    self.values.insert(path, value);
-                    value
+        if let Some((previous, values)) = &self.previous
+            && previous == &paths
+        {
+            for (index, value) in values.iter().enumerate() {
+                array.set(index as u32, value)?;
+            }
+            return Ok(array);
+        }
+        // Dependency names are normally sorted. Merge against the preceding
+        // list to reuse a shared barrel even when a component's config probes
+        // differ. An unsorted list can miss reuse, but an exact equality is
+        // always required before a handle is reused, so order and duplicates
+        // remain unchanged for those lists too.
+        let previous = self.previous.take();
+        let mut cursor = 0;
+        let mut values = Vec::with_capacity(paths.len());
+        for (index, path) in paths.iter().enumerate() {
+            let reused = previous.as_ref().and_then(|(previous, values)| {
+                while previous.get(cursor).is_some_and(|old| old < path) {
+                    cursor += 1;
                 }
+                if previous.get(cursor) == Some(path) {
+                    values.get(cursor).copied()
+                } else {
+                    None
+                }
+            });
+            let value = match reused {
+                Some(value) => value,
+                None => env.create_string(path)?,
             };
             array.set(index as u32, &value)?;
+            values.push(value);
         }
+        self.previous = Some((paths, values));
         Ok(array)
     }
 
@@ -68,7 +92,7 @@ impl<'env> DependencyStrings<'env> {
             if let Some(paths) = paths {
                 let mut row: Object<'env> =
                     required(rows.get(index as u32)?, "compiled batch row is missing")?;
-                row.set("dependencies", self.array(paths)?)?;
+                row.set_c_named_property(c"dependencies", self.array(paths)?)?;
             }
         }
         Ok(())
