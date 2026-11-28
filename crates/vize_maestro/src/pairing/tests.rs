@@ -1,19 +1,22 @@
 use super::{PairingToken, Refusal, accept_client, read_paired_message};
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use vize_l0::cstr;
 
 fn token() -> PairingToken {
     PairingToken::new("k3y-from-the-launcher\n").unwrap()
 }
 
 fn frame(body: &str) -> Vec<u8> {
-    let mut bytes = format!("Content-Length: {}\r\n\r\n", body.len()).into_bytes();
+    let mut bytes = cstr!("Content-Length: {}\r\n\r\n", body.len())
+        .as_bytes()
+        .to_vec();
     bytes.extend_from_slice(body.as_bytes());
     bytes
 }
 
 fn initialize(options: &str) -> Vec<u8> {
-    frame(&format!(
+    frame(&cstr!(
         r#"{{"jsonrpc":"2.0","id":0,"method":"initialize","params":{{"capabilities":{{}},"initializationOptions":{options}}}}}"#
     ))
 }
