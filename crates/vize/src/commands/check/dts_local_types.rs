@@ -59,7 +59,15 @@ pub(super) fn collect_local_types(content: &str) -> Vec<LocalType> {
         // The caller declares these inside an ambient namespace, where a
         // `declare` of its own is redundant.
         let text = text.trim();
-        let text = text.strip_prefix("declare ").unwrap_or(text);
+        let text = text
+            .strip_prefix("declare")
+            .filter(|rest| {
+                rest.starts_with(char::is_whitespace)
+                    || rest.starts_with("/*")
+                    || rest.starts_with("//")
+            })
+            .map(str::trim_start)
+            .unwrap_or(text);
         locals.push(LocalType {
             name: name.to_compact_string(),
             declaration: text.trim_end_matches(';').to_compact_string(),

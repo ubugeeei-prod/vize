@@ -82,11 +82,15 @@ pub(crate) fn resolve_type_reference_declaration_files_reading(
 }
 
 fn reference_types_attribute(line: &str) -> Option<&str> {
+    reference_attribute(line, "types")
+}
+
+pub(crate) fn reference_attribute<'a>(line: &'a str, name: &str) -> Option<&'a str> {
     let line = line.trim_start();
     if !line.starts_with("///") || !line.contains("<reference") {
         return None;
     }
-    attribute_value(line, "types")
+    attribute_value(line, name)
 }
 
 fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
