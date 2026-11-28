@@ -59,6 +59,28 @@ If `tsconfig.json` is a solution-style root with `"files": []` and `references`,
 `tsc --runExternalCode --noEmit -p tsconfig.app.json`. See
 [Project references](./content-mapper.md#project-references-solution-style-tsconfig).
 
+### Declarations for a library
+
+Emit the `.d.ts` files you publish with Vize itself, not through the content mapper:
+
+```bash
+vize check src --declaration --declaration-dir dist
+```
+
+This checks the project and writes declarations for its `.vue` and TypeScript sources;
+`vize build --declaration` writes them for the SFCs it builds. The declarations depend
+only on `vue`: each `.vue.d.ts` imports Vize's helper types from a `__vize_helpers.d.ts`
+written next to it, so consumers type-check with vue-tsc or Vize without installing
+Vize, with or without `skipLibCheck`.
+
+Don't publish the declarations that `tsc --declaration --runExternalCode` (or tsdown's
+`dts.tsgo.runExternalCode`) writes for `.vue` files. The mapper projects each component
+with Vize's shared helper types, and the content mapper protocol gives a mapper no way to
+add to emitted declarations. Those files name helpers that only exist while Vize is
+checking, so a consumer reports `TS2304`, or types the component as `any` under
+`skipLibCheck`. Keep using `tsc --runExternalCode --noEmit` to check, and `vize check
+--declaration` to emit.
+
 ## tsrs
 
 Install tsrs and pass the same flag. The `contentMappers` entry does not change:
@@ -80,6 +102,7 @@ Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
 | `vue-tsc --noEmit`                      | `tsc --runExternalCode --noEmit` with the mapper above                                          |
 | `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                           |
 | `vue-tsc --build`                       | `tsc -b --runExternalCode` with the mapper in each referenced project                           |
+| `vue-tsc --declaration --emitDeclarationOnly` | `vize check --declaration` (see [Declarations for a library](#declarations-for-a-library))  |
 | the same project on tsrs                | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                          |
 | Vue - Official extension diagnostics    | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
 

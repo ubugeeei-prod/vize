@@ -61,6 +61,27 @@ tsc --runExternalCode --noEmit -p tsconfig.json
 実行してください。詳しくは
 [プロジェクト参照](./content-mapper.md#プロジェクト参照-ソリューション形式の-tsconfig)を参照してください。
 
+### ライブラリの型宣言
+
+公開する `.d.ts` は content mapper ではなく Vize 自身で出力します。
+
+```bash
+vize check src --declaration --declaration-dir dist
+```
+
+プロジェクトをチェックし、`.vue` と TypeScript のソースの型宣言を書き出します。
+`vize build --declaration` は、ビルドする SFC の型宣言を書き出します。出力された型宣言が依存するのは `vue` だけです。各 `.vue.d.ts` は、隣に書き出される
+`__vize_helpers.d.ts` から Vize のヘルパー型を import します。そのため利用側は Vize を
+入れなくても、`skipLibCheck` の有無にかかわらず、vue-tsc でも Vize でも型チェックできます。
+
+`tsc --declaration --runExternalCode`（または tsdown の `dts.tsgo.runExternalCode`）が `.vue`
+ファイルに対して書き出す型宣言は公開しないでください。マッパーは各コンポーネントを Vize の
+共有ヘルパー型で表現しますが、content mapper のプロトコルには、出力される型宣言にマッパーが
+追記する手段がありません。そのため出力には Vize のチェック中にしか存在しないヘルパーの名前が残り、
+利用側では `TS2304` になるか、`skipLibCheck` のもとでコンポーネントが `any` になります。
+チェックには引き続き `tsc --runExternalCode --noEmit` を、出力には `vize check --declaration` を
+使ってください。
+
 ## tsrs
 
 tsrs を入れ、同じフラグを渡します。`contentMappers` の指定は変えません。
@@ -82,6 +103,7 @@ tsrs --runExternalCode --noEmit -p tsconfig.json
 | `vue-tsc --noEmit`                      | 上のマッパーを入れて `tsc --runExternalCode --noEmit`                                                 |
 | `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                                 |
 | `vue-tsc --build`                       | 参照先の各プロジェクトにマッパーを入れて `tsc -b --runExternalCode`                                   |
+| `vue-tsc --declaration --emitDeclarationOnly` | `vize check --declaration`（[ライブラリの型宣言](#ライブラリの型宣言)を参照）                   |
 | 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                                |
 | Vue - Official 拡張機能の診断           | content mapper を有効にした TypeScript 7.1 ホスト、または [Vize の言語サーバー](./language-server.md) |
 
