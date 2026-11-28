@@ -1,9 +1,8 @@
-#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
-
 use std::{fs, path::PathBuf};
 
 use serde::Deserialize;
 use serde_json::{Value, json};
+use vize_carton::String;
 use vize_marquette::{
     ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA, APPLICATION_CONTRACT_JSON_SCHEMA,
     AdapterCapabilityManifest, ApplicationContract, negotiate_adapter_capabilities,
