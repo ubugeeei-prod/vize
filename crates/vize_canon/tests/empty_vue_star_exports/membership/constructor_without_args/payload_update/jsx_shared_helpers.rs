@@ -45,11 +45,12 @@ fn restore_source(path: &str, current: &str) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::serialized_island_props::source_before(path, current);
     restore_source(path, &current)
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    current.to_owned()
+    super::serialized_island_props::preamble_before(current)
 }
 
 #[cfg(test)]
@@ -67,7 +68,10 @@ mod tests {
             vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
         ] {
             let previous = preamble_before(current);
-            assert_eq!(previous, current);
+            assert_eq!(
+                previous,
+                super::super::serialized_island_props::preamble_before(current)
+            );
             assert_eq!(preamble_before(&previous), previous);
         }
     }

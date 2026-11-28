@@ -58,5 +58,26 @@
       "codeBytes": 34341,
       "codeSha256": "d7fdcf916c06cc225805d269088b1eac865269bea2d44d33bb226eac8acc9505"
     }
-  ]
+  ],
+  "receiptRole": "historical-base-capture-before-island-raw-prop-guard",
+  "expectedOutputRebase": {
+    "issue": 13820,
+    "qualification": false,
+    "kind": "authored-helper-guard-update",
+    "validation": "Existing unit producer comparisons pass locally; exact-source Actions remain required. Historical run, binary and projection hashes above are preserved.",
+    "from": "$IsAny<__P> extends true ? false : true : false : false;",
+    "to": "unknown extends __P ? false : true : false : false;",
+    "outputs": [
+      {
+        "name": "loose-targets",
+        "codeBytes": 69326,
+        "codeSha256": "133afc31400a7a1104944faf231be1fc9705e58945bbef1ff73d3b49234ea69a"
+      },
+      {
+        "name": "typed-parent",
+        "codeBytes": 38246,
+        "codeSha256": "6cdbae60c943b814b3c1cb918090feb67b3ad0d92a7077610097f0c932005e0a"
+      }
+    ]
+  }
 }

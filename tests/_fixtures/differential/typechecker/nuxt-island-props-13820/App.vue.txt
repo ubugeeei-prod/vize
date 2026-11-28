@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Plain from './ServerProps.server.vue'
+import type { IslandComponent } from './components'
+declare const ServerProps: IslandComponent<typeof Plain>
+</script>
+<template>
+  <Plain title="ok" />
+  <Plain :title="123" />
+  <Plain />
+  <ServerProps title="ok" />
+  <ServerProps :title="123" />
+  <ServerProps />
+</template>
