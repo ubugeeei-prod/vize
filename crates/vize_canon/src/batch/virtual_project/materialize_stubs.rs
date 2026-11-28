@@ -66,7 +66,10 @@ impl VirtualProject {
             if !is_module_augmentation_stub(stub) {
                 continue;
             }
-            content.push_str(stub.trim_start_matches(MODULE_AUGMENTATION_STUB_PREFIX));
+            self.push_mirrored_stub(
+                &mut content,
+                stub.trim_start_matches(MODULE_AUGMENTATION_STUB_PREFIX),
+            );
             content.push('\n');
         }
 
@@ -151,24 +154,17 @@ impl VirtualProject {
 }
 
 impl VirtualProject {
-    /// A global component typed by an authored script module (Nuxt's
-    /// `components.d.ts` can name a barrel such as `form/index.ts`) must load
-    /// its mirror. The original keeps unrewritten `.vue` imports, so loading it
-    /// reports TS2307 that vue-tsc never sees.
+    /// A stub that names an authored script module must load its mirror.
+    ///
+    /// A global component typed by a barrel (Nuxt's `components.d.ts` can name
+    /// `form/index.ts`) would otherwise load the original, which keeps
+    /// unrewritten `.vue` imports and reports TS2307 that vue-tsc never sees.
+    /// An auto-imported type re-exported `from` its module would otherwise be a
+    /// different module instance than the one a file imports directly.
     fn push_mirrored_stub(&self, content: &mut CompactString, stub: &str) {
         let mut copied = 0;
         let mut cursor = 0;
-        while let Some(found) = stub.get(cursor..).and_then(|rest| rest.find("import(")) {
-            let open = cursor + found + "import(".len();
-            cursor = open;
-            let Some(quote) = stub.get(open..open + 1).filter(|q| *q == "'" || *q == "\"") else {
-                continue;
-            };
-            let start = open + 1;
-            let Some(length) = stub.get(start..).and_then(|rest| rest.find(quote)) else {
-                break;
-            };
-            let end = start + length;
+        while let Some((start, end)) = next_module_specifier(stub, cursor) {
             cursor = end;
             let Some(mirror) = stub
                 .get(start..end)
@@ -191,24 +187,81 @@ impl VirtualProject {
             return None;
         }
         let relative = path.strip_prefix(&self.project_root).ok()?;
-        const EXTENSIONS: [&str; 6] = ["", ".ts", ".tsx", ".mts", "/index.ts", "/index.tsx"];
-        let mirrored = EXTENSIONS.iter().any(|extension| {
-            let mut candidate = path.as_os_str().to_os_string();
-            candidate.push(extension);
-            let candidate = std::path::PathBuf::from(candidate);
-            let mut virtual_candidate = self.virtual_root.join(relative).into_os_string();
-            virtual_candidate.push(extension);
-            candidate.is_file()
-                && self
-                    .original_index
-                    .get(&candidate)
-                    .is_some_and(|virtual_path| virtual_path.as_os_str() == virtual_candidate)
-        });
+        let mirrored = mirror_candidates(specifier)
+            .into_iter()
+            .any(|(stem, extension)| self.mirrors_at_same_path(stem, extension));
         mirrored.then(|| {
             let mut rendered = CompactString::from("./");
             rendered.push_str(&relative.to_string_lossy().replace('\\', "/"));
             rendered
         })
+    }
+
+    /// Whether the project file `{stem}{extension}` exists and is mirrored
+    /// at the same path under the virtual root.
+    fn mirrors_at_same_path(&self, stem: &str, extension: &str) -> bool {
+        let Ok(relative) = std::path::Path::new(stem).strip_prefix(&self.project_root) else {
+            return false;
+        };
+        let mut candidate = std::ffi::OsString::from(stem);
+        candidate.push(extension);
+        let candidate = std::path::PathBuf::from(candidate);
+        let mut virtual_candidate = self.virtual_root.join(relative).into_os_string();
+        virtual_candidate.push(extension);
+        candidate.is_file()
+            && self
+                .original_index
+                .get(&candidate)
+                .is_some_and(|virtual_path| virtual_path.as_os_str() == virtual_candidate)
+    }
+}
+
+/// The files a specifier can name, as `(stem, extension)`: the path itself,
+/// and the TypeScript files TypeScript resolves it to. A `.mjs` or `.cjs`
+/// specifier is how a `.mts` or `.cts` module, or its declaration, is
+/// imported; an extensionless one also names a `.d.ts`.
+fn mirror_candidates(specifier: &str) -> Vec<(&str, &'static str)> {
+    if let Some(stem) = specifier.strip_suffix(".mjs") {
+        return vec![(specifier, ""), (stem, ".mts"), (stem, ".d.mts")];
+    }
+    if let Some(stem) = specifier.strip_suffix(".cjs") {
+        return vec![(specifier, ""), (stem, ".cts"), (stem, ".d.cts")];
+    }
+    [
+        "",
+        ".ts",
+        ".tsx",
+        ".mts",
+        ".d.ts",
+        "/index.ts",
+        "/index.tsx",
+    ]
+    .into_iter()
+    .map(|extension| (specifier, extension))
+    .collect()
+}
+
+/// The byte range of the next quoted module specifier at or after `from`:
+/// the operand of `import(…)` or of a `from` clause.
+fn next_module_specifier(stub: &str, from: usize) -> Option<(usize, usize)> {
+    let mut cursor = from;
+    loop {
+        let rest = stub.get(cursor..)?;
+        let open = ["import(", " from "]
+            .into_iter()
+            .filter_map(|lead| Some(rest.find(lead)? + lead.len()))
+            .min()?
+            + cursor;
+        cursor = open;
+        let Some(quote) = stub
+            .get(open..open + 1)
+            .filter(|quote| *quote == "'" || *quote == "\"")
+        else {
+            continue;
+        };
+        let start = open + 1;
+        let length = stub.get(start..)?.find(quote)?;
+        return Some((start, start + length));
     }
 }
 

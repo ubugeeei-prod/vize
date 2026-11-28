@@ -45,7 +45,7 @@ jobs {
   `pr-rust-build` {
     name = "Clippy, doctests and feature lanes (${{ matrix.lane }})"
     `if` = "${{ inputs.run-rust }}"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxValidation
     `timeout-minutes` = 20
     strategy {
       `fail-fast` = false
@@ -226,6 +226,7 @@ jobs {
       new Dynamic {
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }

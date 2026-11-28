@@ -3547,6 +3547,52 @@
       }
     },
     {
+      "id": "lsp/regression/lint-hover-literal-message",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "lint-hover-literal-message",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "af1b885311fdd875406f6ede2e1ca8e702ae745ef9f4d13ab3fc2ce4f3944b97"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "sha256": "3f1112264c9fb1ecf6f14b7b741c57680f223f37b1c76b7757d413140c8acd26"
+          }
+        ]
+      },
+      "case": {
+        "path": "lint-hover-literal-message/case.json",
+        "sha256": "99286a816b2cd78fc9af35677a35ebf02d21237dcf84b757fe01edbf372b9cce"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/named-sfc-value-hover-11953",
       "state": "active",
       "targets": [
@@ -4910,6 +4956,47 @@
       }
     },
     {
+      "id": "lsp/regression/template-ref-key-bound-literal-references",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-ref-key-bound-literal-references",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "cb16ea5d161bbc05bd530a8d1a03132baf784705bd3ee725eb30b1220600dc91"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-ref-key-bound-literal-references/case.json",
+        "sha256": "19a72a6ec2aa8e317af591468c04a3caf0e7240254a7ec490e3fde3289cce625"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/template-ref-key-definition",
       "state": "active",
       "targets": [
@@ -4926,9 +5013,91 @@
       },
       "case": {
         "path": "template-ref-key-definition/case.json",
-        "sha256": "3c14993427e2cff26d80e0ce4dd66d7a8c97ac7219b9706aa3517fd052f1e5ad"
+        "sha256": "0f9df36fd8405838c5d8f6b3d6c11243e4a46845743e16bd65f985079c40a57c"
       },
       "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/template-ref-key-element-definitions",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-ref-key-element-definitions",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "d4b18f83721d3c478b1bb64ea6a74ce01bfb6d04b9b148b73a8dbffb87502612"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-ref-key-element-definitions/case.json",
+        "sha256": "226d4e343a3c89a02a875c389c023c00366f7c5e28b5f2e59f740388534c1fa8"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/template-ref-key-refs-rename",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-ref-key-refs-rename",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "38731fc3c18e346b5ec1345d8847541d7b562f45f658e472ed3ae538ab1be698"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-ref-key-refs-rename/case.json",
+        "sha256": "ec2b3821dee170b87f3b89bbd457963c52aab168eed4335e7cd13a6f5e4dd35b"
+      },
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
         "lint": false,

@@ -4953,6 +4953,48 @@
     "errors": 0
   },
   {
+    "id": "c3b-v-model-on-v-for-key-and-index-pattern-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<div v-for=\"(v, { k }, [i]) in obj\"><input v-model=\"k\" /><input v-model=\"i\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 2
+  },
+  {
+    "id": "c3b-v-model-on-v-for-key-pattern-property-valid",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<div v-for=\"(v, { k }) in obj\"><input v-model=\"k.x\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c3b-v-model-on-v-for-key-and-index-pattern-rejected-sfc",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<script setup lang=\"ts\">\nconst obj = { a: { k: 1 } } as Record<string, any>\n</script>\n\n<template>\n  <div v-for=\"(v, { k }, [i]) in obj\"><input v-model=\"k\" /><input v-model=\"i\" /></div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c3b-v-model-on-v-for-key-and-index-pattern-rejected-ssr",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<script setup lang=\"ts\">\nconst obj = { a: { k: 1 } } as Record<string, any>\n</script>\n\n<template>\n  <div v-for=\"(v, { k }, [i]) in obj\"><input v-model=\"k\" /><input v-model=\"i\" /></div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 1
+  },
+  {
     "id": "c3a-v-if-without-expression-1255",
     "history": "80b48da33433b29b1129ec2e5424b0b829401f6a",
     "source": "<div v-if>always</div>",
@@ -11916,6 +11958,51 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-v-pre-pascal-descendant-stays-element",
+    "history": "e32634d522796397159ce00ce9b4e2a616ee7e21",
+    "source": "<div v-pre><div><Child>{{ x }}</Child></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-v-pre-component-and-slot-spellings-stay-elements",
+    "history": "e32634d522796397159ce00ce9b4e2a616ee7e21",
+    "source": "<div v-pre><Child /><slot name=\"s\">f</slot><my-comp></my-comp></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-v-pre-pascal-descendant-stays-element-sfc",
+    "history": "e32634d522796397159ce00ce9b4e2a616ee7e21",
+    "source": "<template>\n  <div v-pre><div><Child>{{ x }}</Child><slot name=\"s\">f</slot></div></div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-v-pre-pascal-descendant-stays-element-ssr",
+    "history": "e32634d522796397159ce00ce9b4e2a616ee7e21",
+    "source": "<template>\n  <div v-pre><div><Child>{{ x }}</Child><slot name=\"s\">f</slot></div></div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 0
+  },
+  {
+    "id": "c6-v-pre-pascal-descendant-stays-element-vapor",
+    "history": "e32634d522796397159ce00ce9b4e2a616ee7e21",
+    "source": "<template>\n  <div v-pre><div><Child>{{ x }}</Child><slot name=\"s\">f</slot></div></div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
     "errors": 0
   },
   {

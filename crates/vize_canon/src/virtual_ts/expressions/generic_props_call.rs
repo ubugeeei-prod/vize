@@ -10,7 +10,9 @@ use super::super::scope::{append_chained_vif_guard_close, append_chained_vif_gua
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
 use super::constructor_instance;
-use super::props_literal::{append_inference_props_literal, append_props_literal};
+use super::props_literal::{
+    append_camelized_key_alias, append_inference_props_literal, append_props_literal,
+};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::cstr;
 use vize_croquis::croquis::ComponentUsage;
@@ -80,6 +82,13 @@ pub(super) fn generate_generic_props_call(
         expr_indent.as_str(),
     );
     ts.push_str(");\n");
+    append_camelized_key_alias(
+        ts,
+        usage,
+        source_context.template,
+        idx,
+        expr_indent.as_str(),
+    );
     let fallthrough_argument_range = check_spread_values.then(|| {
         vize_l0::emit_ts!(ts, "{expr_indent}const $FallthroughProps_{idx} = ");
         append_inference_props_literal(

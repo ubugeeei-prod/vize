@@ -1,8 +1,9 @@
 //! Component tags that resolve to a script binding
 //! (`CodegenContext::resolve_component_binding` /
 //! `push_component_binding_tag`, non-inline): the tag, its camelized and
-//! PascalCased spellings, with props bindings kept only as a fallback,
-//! and a dotted `Foo.Bar` suffix carried through.
+//! PascalCased spellings, with a prop kept only as a fallback (a renamed
+//! props destructure never resolves), and a dotted `Foo.Bar` suffix
+//! carried through.
 
 use vize_l0::{String, camelize, capitalize};
 
@@ -25,7 +26,10 @@ pub(in crate::targets::dom::template) fn resolve<'a>(
         Some((base, suffix)) => (base, Some(suffix)),
         None => (component, None),
     };
-    let (name, kind) = resolve_base(table, base)?;
+    let (mut name, mut kind) = resolve_base(table, base)?;
+    if kind == BindingKind::PropsAliased {
+        (name, kind) = first_prop_spelling(table, base)?;
+    }
     Some(ComponentBinding { name, kind, suffix })
 }
 
@@ -50,6 +54,10 @@ pub(in crate::targets::dom::template) fn push_tag(cx: &mut EmitCx<'_>, component
     // binding straight from the closure, through `_unref` when the script
     // may have rebound it.
     let inline = cx.scope.inline();
+    if binding.kind == BindingKind::Props {
+        push_prop_tag(cx, &binding, inline);
+        return true;
+    }
     let needs_unref = inline
         && matches!(
             binding.kind,
@@ -79,6 +87,40 @@ pub(in crate::targets::dom::template) fn push_tag(cx: &mut EmitCx<'_>, component
         cx.buf.push(suffix);
     }
     true
+}
+
+/// A prop used as a tag reads the props object (`__props` inline, `$props`
+/// otherwise) through `_unref`, as Vue does. Out of line: an ordinary tag
+/// never takes this path.
+#[cold]
+#[inline(never)]
+fn push_prop_tag(cx: &mut EmitCx<'_>, binding: &ComponentBinding<'_>, inline: bool) {
+    cx.buf.use_helper(Helper::Unref);
+    cx.buf.push(Helper::Unref.alias());
+    cx.buf
+        .push(if inline { "(__props[\"" } else { "($props[\"" });
+    cx.buf
+        .push(super::super::js::escape_js_string(binding.name.as_str()).as_str());
+    cx.buf.push("\"])");
+    if let Some(suffix) = binding.suffix {
+        cx.buf.push(".");
+        cx.buf.push(suffix);
+    }
+}
+
+/// A renamed props destructure (`{ icon: Icon }`) is not a setup reference
+/// (Vue's `resolveSetupReference`): only a plain prop under another spelling
+/// resolves, otherwise the tag is an asset. Out of line: reached only when
+/// the first props spelling of a tag is a renamed destructure.
+#[cold]
+#[inline(never)]
+fn first_prop_spelling(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    [name, camel.as_str(), pascal.as_str()]
+        .into_iter()
+        .find(|spelling| table.kind(spelling) == Some(BindingKind::Props))
+        .map(|spelling| (String::from(spelling), BindingKind::Props))
 }
 
 fn resolve_base(table: &BindingTable, name: &str) -> Option<(String, BindingKind)> {

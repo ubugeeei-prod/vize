@@ -6,7 +6,6 @@ path	digests	class	owners
 crates/vize/src/commands/check/imports/test_modules/tests.rs	sha256:22fea079d9cccfed91d6d0e51101ee5ad515155b56185f6f1c35e095cabc8cfb	record-only	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/imports_aliases.rs	sha256:56913b7e329b98466a4b39c1c46de5023ef82db91a70c5ee31065ccb0f515239	enforced	tools/benchmarks/scripts/canon-alias-collector.mjs
 crates/vize/src/commands/check/nuxt/generated_dir.rs	sha256:abd8560de8a6e90dfabe21379d1a9832ee1f3bf508e60bff1361ccbfecd6821d	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
-crates/vize/src/commands/check/nuxt/source_scan.rs	sha256:40d6b5eb02436cf8b2c1492458117d2bd7ee884e2c257f2bc9966555338b1afe	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs	sha256:087abeb4cd9b98dd57f211277eb6e8cf0311f2007a583ab91274acf2b283e79b	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/nuxt/virtual_modules.rs	sha256:736566277789ada9d2ff2132bec23c6f560a8ce78d8833ecf435cb66894e0a06	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
 crates/vize/src/commands/check/path_cache.rs	sha256:b67a0ec7e3111aeb956a29e08a2cadde977b8e88a77563a88bdfd43003df3bd6	enforced	tests/performance/support/warm-type-backed-path-host-manifest.json
@@ -151,7 +150,7 @@ crates/vize_canon/src/virtual_ts/generator/options_api_support.rs	sha256:002b0ba
 crates/vize_canon/src/virtual_ts/generator/setup_imports.rs	sha256:d3b59b4556e49a6b4e3b2193832768bd768b901cc6c97f0602c90149ce34b9cd	enforced	tests/_fixtures/tooling/typed-use-slots-13578.json
 crates/vize_canon/src/virtual_ts/generator/spans.rs	sha256:7134c27bebcaf3e59b736bbd086afbe10366867e70423c1b7c761146127bfa0b	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
 crates/vize_canon/src/virtual_ts/generator/standard_default.rs	sha256:ecd494141f1d2d06630438a115960964b5aad1be0adb4669da9ed4aba712bc24	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
-crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs	sha256:f2f8f92e1417061b1ba1a3faac3da003a82dec95542fc093f0a90d280fb00662	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
+crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs	sha256:60e67bba73bfcaed5258d5db7950a70ee139481934aee1a9cfc5e2201e0f24c7	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
 crates/vize_canon/src/virtual_ts/generator/template_ref_keys/lines.rs	sha256:75e55a2d65e21635a0b01a4a39ebc237ac0cd444fbd785af90a112df2993cbb9	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
 crates/vize_canon/src/virtual_ts/generator/template_ref_keys/lines/tsx.rs	sha256:448d2af2d89534fb05173bbf6f894b729c0b7e000935fda5c266020ed22e5ade	enforced	tests/_fixtures/tooling/default-export-projection-13693.json
 crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts	sha256:1113c30d009520b7bd8e5528c1e3a2627f7d0e64c10287808290950a72e71cd1	enforced	tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/constructor-without-args-update-20261031.json

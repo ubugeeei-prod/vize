@@ -1,0 +1,36 @@
+# GitHub Actions file commands: step outputs, the job's environment and PATH, and the
+# job summary. https://docs.github.com/actions/reference/workflow-commands-for-github-actions
+use std::fs::append_text
+use std::string::contains
+
+fn record(file: String, name: String, value: String) {
+  # A multi-line value is framed by this line, so it must not occur in the value.
+  let end = "VIZE_GITHUB_VALUE_END"
+  if !(contains $value "\n") {
+    append_text $file $"$name=$value\n"
+  } else if contains $value $end {
+    fail 1 $"The value of $name contains the line that would end it"
+  } else {
+    append_text $file $"$name<<$end\n$value\n$end\n"
+  }
+}
+
+# Sets a step output that later steps read as `steps.<id>.outputs.<name>`.
+pub fn output(name: String, value: String) {
+  record $env::GITHUB_OUTPUT $name $value
+}
+
+# Sets an environment variable for every later step of the job.
+pub fn export_env(name: String, value: String) {
+  record $env::GITHUB_ENV $name $value
+}
+
+# Puts a directory first on PATH for every later step of the job.
+pub fn add_path(directory: String) {
+  append_text $env::GITHUB_PATH $"$directory\n"
+}
+
+# Appends Markdown to the job summary.
+pub fn summary(markdown: String) {
+  append_text $env::GITHUB_STEP_SUMMARY $"$markdown\n"
+}

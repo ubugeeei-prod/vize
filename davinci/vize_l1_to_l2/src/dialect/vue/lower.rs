@@ -51,6 +51,7 @@ pub struct LowerPolicy {
     preserve_comments: bool,
     retain_consumed_expressions: bool,
     implied_table_sections: bool,
+    literal_v_pre_tags: bool,
 }
 
 impl LowerPolicy {
@@ -61,6 +62,7 @@ impl LowerPolicy {
             preserve_comments,
             retain_consumed_expressions: false,
             implied_table_sections: false,
+            literal_v_pre_tags: false,
         }
     }
 
@@ -82,10 +84,23 @@ impl LowerPolicy {
         }
     }
 
+    /// Keep every tag in a `v-pre` subtree the plain element Vue's compiler
+    /// keeps it as: a component or `<slot>` spelling there is not resolved.
+    /// The compiler lanes ask for it; other consumers keep the authored
+    /// classification.
+    #[must_use]
+    pub const fn with_literal_v_pre_tags(self) -> Self {
+        Self {
+            literal_v_pre_tags: true,
+            ..self
+        }
+    }
+
     const LINT: Self = Self {
         preserve_comments: true,
         retain_consumed_expressions: true,
         implied_table_sections: false,
+        literal_v_pre_tags: false,
     };
 }
 

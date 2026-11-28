@@ -283,7 +283,10 @@ pub(crate) fn element_core<'a>(
     let tag = cast.map_or(authored_tag, |(_, name)| name);
     let in_v_pre = cx.v_pre_suppressed() || analyzed.opens_v_pre;
     let frozen = cx.frozen_literal(element, in_v_pre);
-    if authored_tag == "slot" && !frozen {
+    // A custody-checked frozen opening, or a `v-pre` element under the
+    // compiler policy, keeps its tag: no component or `<slot>` resolution.
+    let literal_tag = frozen || (in_v_pre && cx.literal_v_pre_tags());
+    if authored_tag == "slot" && !literal_tag {
         return lower_slot(cx, element, analyzed, ns);
     }
     let own_ns = enter_ns(ns, authored_tag);
@@ -291,7 +294,7 @@ pub(crate) fn element_core<'a>(
     let span = element_span(cx, element);
     let node = cx.mint_op();
     let component =
-        !frozen && (cast.is_some() || (!is_platform_tag(tag) && !cx.is_custom_element(tag)));
+        !literal_tag && (cast.is_some() || (!is_platform_tag(tag) && !cx.is_custom_element(tag)));
 
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx

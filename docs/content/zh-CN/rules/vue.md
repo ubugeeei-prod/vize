@@ -69,7 +69,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | 要求 `v-slot` 指令有效。 |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | 要求 `v-text` 指令有效。 |  |
 
-## 默认 (28)
+## 默认 (29)
 
 由默认预设 `happy-path` 添加。
 
@@ -78,6 +78,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | 要求组件文件名使用 PascalCase 或 kebab-case。 |  |
 | <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | 要求显式书写 HTML 中可以省略的结束标签。 | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | 规范 HTML 属性的引号风格。 | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 要求双花括号插值内部的空格保持一致。 | ✓ |

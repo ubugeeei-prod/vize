@@ -79,7 +79,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   );
   assert.ok(
     japaneseReading.includes(
-      'node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"',
+      "node docs/scripts/verify-navigation-render.ts --routes $ja_reading_routes",
     ),
   );
   assert.ok(japaneseReading.includes("node docs/scripts/verify-ja-editorial-render.ts"));

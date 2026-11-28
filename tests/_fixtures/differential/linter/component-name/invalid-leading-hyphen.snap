@@ -8,7 +8,7 @@ Case {
     source: "<div>Content</div>",
     filename: "-my-component.vue",
     entry: "template",
-    rule: "vue/component-definition-name-casing",
+    rule: "vue/component-file-name-casing",
     vue_version: None,
     vapor: None,
     diagnostics: 1,
@@ -19,7 +19,7 @@ Observation {
         filename: "-my-component.vue",
         diagnostics: [
             LintDiagnostic {
-                rule_name: "vue/component-definition-name-casing",
+                rule_name: "vue/component-file-name-casing",
                 severity: Warning,
                 message: "Component file name '-my-component' should be PascalCase or kebab-case",
                 start: 0,
@@ -40,7 +40,7 @@ Observation {
             filename: "-my-component.vue",
             diagnostics: [
                 LintDiagnostic {
-                    rule_name: "vue/component-definition-name-casing",
+                    rule_name: "vue/component-file-name-casing",
                     severity: Warning,
                     message: "Component file name '-my-component' should be PascalCase or kebab-case",
                     start: 0,

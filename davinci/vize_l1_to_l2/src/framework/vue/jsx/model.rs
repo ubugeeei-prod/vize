@@ -204,13 +204,14 @@ fn input_type_admits_model(
 
 /// Whether `expression` can be written back to: an identifier, a member
 /// access or a private field, through parentheses and type-only wrappers.
+/// An optional chain is not: `a?.b = x` does not parse, so the legacy
+/// lowering reports it instead.
 fn is_assignable(expression: &Expression<'_>) -> bool {
     match expression {
         Expression::Identifier(_)
         | Expression::StaticMemberExpression(_)
         | Expression::ComputedMemberExpression(_)
-        | Expression::PrivateFieldExpression(_)
-        | Expression::ChainExpression(_) => true,
+        | Expression::PrivateFieldExpression(_) => true,
         Expression::ParenthesizedExpression(inner) => is_assignable(&inner.expression),
         Expression::TSAsExpression(inner) => is_assignable(&inner.expression),
         Expression::TSSatisfiesExpression(inner) => is_assignable(&inner.expression),

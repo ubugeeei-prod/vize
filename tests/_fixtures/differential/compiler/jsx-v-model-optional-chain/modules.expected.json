@@ -1,0 +1,42 @@
+[
+  {
+    "target": "vdom",
+    "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createBlock as _createBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"input\"))\n})(undefined, [])\n})();\nconst B = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp))\n})(undefined, [])\n})();\n",
+    "errors": [
+      "v-model target `state?.val` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference.",
+      "v-model target `model?.value` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor",
+    "code": "",
+    "errors": [
+      "v-model target `state?.val` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference.",
+      "v-model target `model?.value` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vdom-ssr",
+    "code": "",
+    "errors": [
+      "v-model target `state?.val` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference.",
+      "v-model target `model?.value` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor-ssr",
+    "code": "",
+    "errors": [
+      "v-model target `state?.val` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference.",
+      "v-model target `model?.value` is an optional chain, which cannot be assigned to; v-model needs a variable or property reference."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  }
+]

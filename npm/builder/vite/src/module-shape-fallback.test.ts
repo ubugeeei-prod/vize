@@ -1,19 +1,17 @@
 /**
- * `generateOutput` prefers the module shape the native compiler reports over
- * re-parsing the emitted module with oxc (#3425). Both arms are pinned here,
- * because the fallback is permanent: the native compiler reports no shape for
- * output it could not parse.
- *
- * The two arms must produce byte-identical output. If they ever diverge, the
- * plugin's behaviour would depend on whether a cache happened to be warm, which
- * is the kind of defect that only shows up in someone else's build.
+ * `generateOutput` assembles the component from the module shape the native
+ * compiler reports, and never parses the emitted module itself. The compiler
+ * reports no shape only for a module that parses as neither TypeScript nor
+ * TSX; such a module is bound only at an unambiguous scanned `export default`,
+ * and otherwise left alone.
  */
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { generateOutput } from "./utils/index.ts";
-import { analyzeModuleOutput } from "./utils/module-output.ts";
+import { unparsedModuleOutput } from "./utils/module-output.ts";
+import { analyzeModuleOutput } from "../test/oxc-module-output.ts";
 import type { CompiledModule } from "./types.ts";
 
 const OPTIONS = {
@@ -36,26 +34,6 @@ function compiled(code: string, overrides: Partial<CompiledModule> = {}): Compil
   } as CompiledModule;
 }
 
-/** The shapes the SFC compiler actually emits, one per `generateOutput` branch. */
-const MODULES: Array<[string, string]> = [
-  ["default export, no _sfc_main", "export default { name: 'App' }\n"],
-  ["_sfc_main already defined", "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n"],
-  ["named render export only", "export function render(_ctx, _cache) { return null }\n"],
-  ["named ssrRender export only", "export function ssrRender(_ctx, _push) {}\n"],
-  ["neither", "export const useThing = () => 1\n"],
-];
-
-void test("the reported shape and the re-parsed shape produce identical output", () => {
-  for (const [label, code] of MODULES) {
-    const reparsed = generateOutput(compiled(code), OPTIONS);
-    const reported = generateOutput(
-      compiled(code, { moduleShape: analyzeModuleOutput(code) }),
-      OPTIONS,
-    );
-    assert.equal(reported, reparsed, `${label}: using the reported shape must match re-parsing`);
-  }
-});
-
 void test("a module shape reported by the compiler is used as-is", () => {
   const code = "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n";
   // A shape that disagrees with the code proves the field is consulted rather
@@ -69,13 +47,27 @@ void test("a module shape reported by the compiler is used as-is", () => {
   );
 });
 
-void test("an absent module shape falls back to parsing", () => {
+void test("a shape-less module binds a lone scanned default export", () => {
   const code = "export default { name: 'App' }\n";
   const output = generateOutput(compiled(code), OPTIONS);
+  assert.deepEqual(unparsedModuleOutput(code), analyzeModuleOutput(code));
   assert.ok(
     output.includes('_sfc_main.__scopeId = "data-v-abc123"'),
-    `the fallback should still find the default export, got:\n${output}`,
+    `the scan should still find the default export, got:\n${output}`,
   );
+});
+
+void test("an unparseable shape-less module the scan cannot read is left alone", () => {
+  // Unparseable, as every shape-less module is: no scan can tell what it exports.
+  for (const code of [
+    "const _sfc_main = { name: 'App' }\nexport default _sfc_main\n) (\n",
+    "export function render(_ctx, _cache) { return null }\n) (\n",
+    "export { x as default }\n) (\n",
+  ]) {
+    assert.equal(generateOutput(compiled(code), OPTIONS), code);
+    // The oxc analysis this replaced could not parse them either.
+    assert.deepEqual(unparsedModuleOutput(code), analyzeModuleOutput(code));
+  }
 });
 
 console.log("✅ vite-plugin-vize module shape fallback tests passed!");

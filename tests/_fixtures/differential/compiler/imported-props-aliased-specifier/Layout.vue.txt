@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { Public as Alias } from './types'
+defineProps<Alias>()
+</script>
+<template><div>{{ value }}</div></template>

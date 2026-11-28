@@ -2,11 +2,12 @@
 
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, Level, NoCapture,
-    String, TemplateSyntaxMode, TransformOptions, VaporCompileResult,
+    Parser, String, TemplateSyntaxMode, TransformOptions, VaporCompileResult,
     VaporCompilerExperimentalOptions, VaporCompilerOptions, VaporL3BridgeOptions,
     VaporL3BridgeStatus, VaporSourceSpans, cstr, l3, native,
     parse_with_options_custom_elements_and_template_syntax, parser_options,
-    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id, vapor_lower,
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    transform_with_frozen_elements, vapor_lower,
 };
 
 pub(super) fn compile_vapor_inner<'a>(
@@ -227,13 +228,16 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         return (result, diagnostics);
     }
 
-    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
-        allocator,
-        source,
-        parser_options(&options),
-        custom_elements.clone(),
-        template_syntax,
-    );
+    // The spans of `v-pre` elements keep them plain through the transform.
+    let (mut root, errors, v_pre_elements) =
+        Parser::with_options_custom_elements_and_template_syntax(
+            allocator,
+            source,
+            parser_options(&options),
+            custom_elements.clone(),
+            template_syntax,
+        )
+        .parse_with_v_pre_elements();
     let parser_diagnostics = errors.to_vec();
 
     let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
@@ -299,7 +303,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         directive_contracts: experimental_options.directive_contracts.clone(),
         ..Default::default()
     };
-    let transform_errors =
+    let transform_errors = if v_pre_elements.is_empty() {
         transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
             allocator,
             &mut root,
@@ -308,7 +312,18 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
             custom_elements,
             template_syntax.is_quirks(),
             None,
-        );
+        )
+    } else {
+        transform_v_pre_template(
+            allocator,
+            source,
+            &mut root,
+            transform_opts,
+            custom_elements,
+            template_syntax.is_quirks(),
+            v_pre_elements,
+        )
+    };
     let fatal: Vec<_> = transform_errors
         .iter()
         .filter(|error| !error.is_recoverable())
@@ -380,4 +395,31 @@ fn generate(
         error_messages,
         warning_messages: Vec::new(),
     }
+}
+
+/// The transform for a template with `v-pre` elements: their spans keep each
+/// one a plain element, as Vue resolves no component inside a `v-pre`
+/// subtree. A template without `v-pre` keeps the ordinary transform call.
+#[cold]
+#[inline(never)]
+fn transform_v_pre_template<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    root: &mut vize_atelier_core::RootNode<'a>,
+    options: TransformOptions,
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    v_pre_elements: vize_atelier_core::parser::FrozenElements<'a>,
+) -> std::vec::Vec<CompilerError> {
+    transform_with_frozen_elements(
+        allocator,
+        source,
+        root,
+        options,
+        None,
+        custom_elements,
+        template_syntax_quirks,
+        None,
+        v_pre_elements,
+    )
 }

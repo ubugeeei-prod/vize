@@ -1,0 +1,23 @@
+import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
+
+
+export default {
+  __name: 'Layout',
+  props: {
+    myIcon: { type: null, required: true },
+    icon: { type: null, required: true }
+  },
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  const _component_Icon = _resolveComponent("Icon")
+
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createVNode(_unref(__props["myIcon"])),
+    _createVNode(_component_Icon)
+  ]))
+}
+}
+
+}

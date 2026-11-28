@@ -210,12 +210,12 @@ l4	-	davinci/vize_l4/src/targets/css.rs	0	0	1	4	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/css_rules.rs	0	0	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/template.rs	1	2	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/framework/vue/dom/budget/capture.rs	0	0	1	2	0	0	0	0
-l4	emit	davinci/vize_l4/src/targets/dom/template/buf.rs	1	8	1	8	0	0	0	0
+l4	emit	davinci/vize_l4/src/targets/dom/template/buf.rs	1	8	1	7	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/template/buf/helper_order.rs	1	5	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/template/buf/helper_order/tests.rs	0	0	1	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/template/buf/preamble.rs	0	0	1	3	0	0	0	0
-l4	emit	davinci/vize_l4/src/targets/dom/template/cache_slots.rs	1	2	1	1	0	0	0	0
-l4	-	davinci/vize_l4/src/targets/dom/template/component/binding.rs	0	0	1	6	0	0	0	0
+l4	emit	davinci/vize_l4/src/targets/dom/template/cache_slots.rs	1	2	0	0	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/dom/template/component/binding.rs	0	0	1	8	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/template/component/call_props.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/template/component/preamble.rs	1	1	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/template/constant_expr.rs	1	5	1	2	0	0	0	0

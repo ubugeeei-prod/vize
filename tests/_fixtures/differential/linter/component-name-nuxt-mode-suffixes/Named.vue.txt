@@ -1,0 +1,6 @@
+<script>
+export default { name: 'SearchBox' }
+</script>
+<template>
+  <input type="search" />
+</template>

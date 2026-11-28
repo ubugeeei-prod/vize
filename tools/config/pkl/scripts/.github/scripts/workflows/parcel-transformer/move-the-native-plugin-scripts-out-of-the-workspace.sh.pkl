@@ -1,0 +1,10 @@
+amends "../../../../../../../ci/lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"set -euo pipefail"#
+  #"mkdir -p "$RUNNER_TEMP/native-plugin""#
+  #"mv .parcel-native-plugin-scripts/.github/scripts/native-plugin/* "$RUNNER_TEMP/native-plugin/""#
+  #"rm -rf .parcel-native-plugin-scripts"#
+}

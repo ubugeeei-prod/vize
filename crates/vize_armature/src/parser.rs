@@ -134,6 +134,9 @@ pub struct Parser<'a> {
     in_v_pre: bool,
     /// Compiler opt-in custody; backing storage is reserved only for frozen tags.
     frozen_elements: Option<Vec<'a, vize_l0::Span>>,
+    /// The same frozen-element spans, recorded without custody: every other
+    /// parse decision stays the ordinary parse's.
+    v_pre_elements: Option<Vec<'a, vize_l0::Span>>,
     /// Demand-only syntax custody; native owners contain normally dropped diagnostics.
     template_syntax_facts: Option<template_syntax::TemplateSyntaxCapture<'a>>,
     open_table_count: usize,

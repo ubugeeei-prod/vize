@@ -10,7 +10,7 @@ runs:
   using: composite
   steps:
     - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-      with: { node-version-file: "package.json", cache: false, run-install: false }
+      with: { version: 1.8.0, node-version-file: "package.json", cache: false, run-install: false }
     - name: Require every full JS qualification job to succeed
       shell: bash
       env: { NEEDS_JSON: "${{ inputs.needs-json }}" }

@@ -11,6 +11,7 @@ pub(crate) mod constructor_vue_proof;
 mod diagnosing_configuration;
 mod disk_sweep;
 mod editor_session;
+pub(crate) use editor_session::create_user_temporary_root;
 #[cfg(test)]
 mod host_edit_import_tests;
 mod native_vue;

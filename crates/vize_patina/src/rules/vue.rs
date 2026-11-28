@@ -74,6 +74,8 @@ mod valid_v_text;
 
 // Strongly recommended rules
 mod component_definition_name_casing;
+mod component_definitions;
+mod component_file_name_casing;
 mod html_end_tags;
 mod html_quotes;
 mod mustache_interpolation_spacing;
@@ -195,7 +197,10 @@ pub use compatibility_template::{
     NoNegatedCondition, NoRestrictedSyntax, NoRestrictedVBind, NoSparseArrays, NoUselessConcat,
     ObjectShorthand, PreferTemplate, PreferVModel, QuoteProps, VIfElseKey,
 };
-pub use component_definition_name_casing::ComponentDefinitionNameCasing;
+pub use component_definition_name_casing::{
+    ComponentDefinitionNameCasing, ComponentDefinitionNameCasingOption,
+};
+pub use component_file_name_casing::ComponentFileNameCasing;
 pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
 pub use max_lines::MaxLines;

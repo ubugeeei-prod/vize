@@ -1,8 +1,6 @@
 /**
  * Unit tests for vite-plugin-vize utils
  *
- * Run with: npx tsx src/utils.test.ts
- *
  * These tests cover various edge cases and bug fixes.
  */
 
@@ -14,8 +12,9 @@ import path from "node:path";
 import { snapshot, test } from "node:test";
 import { resolveConfigExport } from "../../../cli/src/config.ts";
 import { compileFile } from "./compiler.ts";
-import { createFilter, generateOutput, generateScopeId } from "./utils/index.ts";
+import { createFilter, generateScopeId } from "./utils/index.ts";
 import { resolveCssImports } from "./utils/css.ts";
+import { generateOutput } from "../test/shaped-output.ts";
 
 snapshot.setDefaultSnapshotSerializers([
   (value) => (typeof value === "string" ? value : JSON.stringify(value, null, 2)),

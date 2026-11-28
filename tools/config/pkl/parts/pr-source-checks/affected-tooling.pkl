@@ -3,7 +3,7 @@ import "../../../../ci/lib/Actions.pkl" as ci
 name = "Affected tooling (${{ matrix.name }})"
 needs = List("pr-source-plan", "affected-tooling-cli")
 `if` = "${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}"
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 30
 strategy {
   `fail-fast` = false

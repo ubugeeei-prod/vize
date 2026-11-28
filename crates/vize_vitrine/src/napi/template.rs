@@ -27,11 +27,14 @@ use crate::{
 };
 use vize_atelier_core::{
     codegen::generate_with_experimental_options,
-    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    lane::{
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+        transform_with_frozen_elements,
+    },
     options::{
         CodegenExperimentalOptions, CodegenMode, CodegenOptions, ParserOptions, TransformOptions,
     },
-    parser::parse_with_options_custom_elements_and_template_syntax,
+    parser::{Parser, parse_with_options_custom_elements_and_template_syntax},
 };
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions,
@@ -68,13 +71,15 @@ fn compile_scoped(
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
-    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
-        &allocator,
-        &template,
-        parser_opts,
-        custom_elements.clone(),
-        template_syntax,
-    );
+    let (mut root, errors, v_pre_elements) =
+        Parser::with_options_custom_elements_and_template_syntax(
+            &allocator,
+            &template,
+            parser_opts,
+            custom_elements.clone(),
+            template_syntax,
+        )
+        .parse_with_v_pre_elements();
 
     let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
     if !fatal.is_empty() {
@@ -99,15 +104,30 @@ fn compile_scoped(
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
-    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-        &allocator,
-        &mut root,
-        transform_opts,
-        None,
-        custom_elements,
-        template_syntax.is_quirks(),
-        None,
-    );
+    if v_pre_elements.is_empty() {
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            &allocator,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+        );
+    } else {
+        // The spans of `v-pre` elements keep each one a plain element.
+        transform_with_frozen_elements(
+            &allocator,
+            &template,
+            &mut root,
+            transform_opts,
+            None,
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+            v_pre_elements,
+        );
+    }
 
     // Codegen
     let codegen_opts = CodegenOptions {

@@ -9,11 +9,8 @@ import {
   rewriteSfcTemplateAssetReferences,
 } from "@vizejs/native";
 import { MappedModule, parseSourceMap } from "@vizejs/builder-shared/mapped-module";
-import {
-  createGeneratedNameAllocator,
-  hmrImportSnapshot,
-  type ModuleImportInfo,
-} from "@vizejs/builder-shared/module-output";
+import { createGeneratedNameAllocator } from "@vizejs/builder-shared/generated-names";
+import { hmrImportSnapshot, type ModuleImportInfo } from "@vizejs/builder-shared/module-output";
 import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "@vizejs/builder-shared/hot-reload";
 import type { LoaderContext, SfcLoaderOptions } from "./types.ts";

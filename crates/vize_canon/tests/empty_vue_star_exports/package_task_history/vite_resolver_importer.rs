@@ -27,12 +27,11 @@ pub(crate) fn before_vite_resolver_importer(path: &str, body: &[u8]) -> Option<V
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
 
     #[test]
     fn exact_importer_inverse_preserves_the_whole_lock_and_history_composition() {
         let path = "pnpm-lock.yaml";
-        let current = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = super::super::current_lock_before_parser_free_builders();
         let previous = before_vite_resolver_importer(path, current.as_bytes()).unwrap();
         assert_eq!(ADDED.len(), 79);
         assert_eq!(current.len() - previous.len(), ADDED.len());
@@ -55,7 +54,7 @@ mod tests {
     #[test]
     fn missing_duplicate_foreign_and_unrelated_lock_bytes_cannot_use_the_importer_edge() {
         let path = "pnpm-lock.yaml";
-        let current = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = super::super::current_lock_before_parser_free_builders();
         assert!(before_vite_resolver_importer("foreign-lock.yaml", current.as_bytes()).is_none());
         for changed in [
             current.replacen(AFTER, BEFORE, 1),

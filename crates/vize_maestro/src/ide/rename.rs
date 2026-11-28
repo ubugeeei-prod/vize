@@ -57,6 +57,11 @@ pub struct RenameService;
 impl RenameService {
     /// Check if rename is valid at the given position.
     pub fn prepare_rename(ctx: &IdeContext) -> Option<PrepareRenameResponse> {
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return Some(PrepareRenameResponse::Range(
+                key.selected_range(&ctx.content),
+            ));
+        }
         crate::ide::references::structural::prepare_rename(ctx).map(PrepareRenameResponse::Range)
     }
 
@@ -69,6 +74,9 @@ impl RenameService {
     /// call sites, while references classified the same spans correctly by
     /// searching template *expressions* only (#3892).
     pub fn rename(ctx: &IdeContext, new_name: &str) -> Option<WorkspaceEdit> {
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return key.rename(ctx, new_name);
+        }
         if !Self::is_valid_identifier(new_name) || Self::is_keyword(new_name) {
             return None;
         }
@@ -93,8 +101,13 @@ impl RenameService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<PrepareRenameResponse> {
-        // A static attribute value (`ref="box"`) names no script symbol, even
-        // when a same-spelled binding exists.
+        if let Some(key) = crate::ide::template_ref::keys::key_at_offset(ctx) {
+            return Some(PrepareRenameResponse::Range(
+                key.selected_range(&ctx.content),
+            ));
+        }
+        // Any other static attribute value names no script symbol, even when
+        // a same-spelled binding exists.
         if ctx.is_in_template()
             && crate::ide::corsa_support::in_static_attribute_value(&ctx.content, ctx.offset)
         {

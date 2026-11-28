@@ -282,7 +282,7 @@ test("the workflow publishes only the prepared body for the release tag commit",
   const steps = job.steps ?? [];
   const node = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const notes = steps.findIndex((step) => step.name === "Generate release notes");
-  const create = steps.findIndex((step) => step.name === "Create Release");
+  const create = steps.findIndex((step) => step.name === "Upload assets to draft release");
   assert.equal(
     steps[notes]?.run,
     'node tools/support/release/github_release_notes.ts "$RELEASE_TAG" "$RELEASE_SHA" "$RUNNER_TEMP/release-notes.md"',

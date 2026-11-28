@@ -209,6 +209,8 @@ export const frenchVueNotes = {
     'Cette configuration autorise `@click.custom="handler"`. Les noms doivent correspondre exactement et sont sensibles à la casse ; les options complètent les noms intégrés et n’activent pas une règle désactivée. Les entrées par périmètre peuvent remplacer les noms hérités ou réinitialiser la liste avec `[]`.',
   "The keyboard table is adapted from the MIT-licensed [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json); its source and license are preserved alongside the implementation.":
     "La liste des alias clavier est adaptée des [alias clavier d’eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json), sous licence MIT ; le code source et la licence d’origine sont conservés avec l’implémentation.",
+  "Checks the static name of a component definition: the name option, defineOptions({ name }) and the first argument of app.component(). The file name is vue/component-file-name-casing.":
+    "Contrôle le nom statique d’une définition de composant : l’option name, defineOptions({ name }) et le premier argument de app.component(). Le nom de fichier relève de vue/component-file-name-casing.",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "Le nom de fichier du composant est contrôlé. PascalCase et kebab-case sont acceptés ; une casse mixte est signalée.",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":

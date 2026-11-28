@@ -89,7 +89,7 @@ jobs:
   wasm-release-check:
     name: WASM release build check
     needs: pr-source-plan
-    runs-on: ${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     env:
       CARGO_BUILD_JOBS: "24"
@@ -117,7 +117,7 @@ jobs:
     name: Affected tooling (${{ matrix.name }})
     needs: [pr-source-plan, affected-tooling-cli]
     if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -157,7 +157,7 @@ jobs:
   ci-selection-tests:
     name: CI selection tests
     needs: pr-source-plan
-    runs-on: ${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 5
     steps:
       - name: Check out the workflow's scripts
@@ -228,7 +228,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}
-    runs-on: ${{ matrix.lane != 'none' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ matrix.lane != 'none' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 15
     env:
       CARGO_BUILD_JOBS: "12"
@@ -255,7 +255,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ matrix.lane != 'none' }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false
@@ -332,7 +332,7 @@ jobs:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
-    runs-on: ${{ needs.pr-source-plan.outputs.playground == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: ${{ needs.pr-source-plan.outputs.playground == 'true' && 'blacksmith-16vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 60
     env:
       CARGO_BUILD_JOBS: "12"
@@ -378,7 +378,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: "package.json"
           cache: true
           cache-save: false

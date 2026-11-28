@@ -20,6 +20,12 @@ impl<'a> FrozenElements<'a> {
         Self { source, spans }
     }
 
+    /// Whether the parse froze no element: the template has no `v-pre`.
+    #[doc(hidden)]
+    pub fn is_empty(&self) -> bool {
+        self.spans.is_empty()
+    }
+
     /// Join only the original root and caller's exact borrowed source buffers.
     #[doc(hidden)]
     pub fn spans_for(&self, root_source: &str, caller_source: &str) -> Option<&'a [Span]> {
@@ -43,9 +49,38 @@ impl<'a> Parser<'a> {
         (root, errors, frozen)
     }
 
-    pub(in crate::parser) fn record_frozen_element(&mut self, span: Span, frozen: bool) {
-        if frozen && let Some(spans) = &mut self.frozen_elements {
-            spans.push(span);
+    /// Record the spans of elements frozen by own or inherited `v-pre`
+    /// without frozen custody: names, heads and diagnostics stay the ordinary
+    /// parse's. A compiler lane uses the spans to keep those elements plain.
+    #[doc(hidden)]
+    pub fn parse_with_v_pre_elements(
+        mut self,
+    ) -> (
+        RootNode<'a>,
+        std::vec::Vec<CompilerError>,
+        FrozenElements<'a>,
+    ) {
+        self.v_pre_elements = Some(Vec::new_in(&self.allocator));
+        let (root, errors, frozen, _) = self.parse_inner();
+        (root, errors, frozen)
+    }
+
+    /// An element that carries `v-pre` or sits in a `v-pre` subtree. Under
+    /// the compiler lanes its tag stays the plain element Vue keeps it as (a
+    /// component or `<slot>` spelling is not resolved), and an opted-in parse
+    /// records its span.
+    #[cold]
+    #[inline(never)]
+    pub(in crate::parser) fn freeze_element(&mut self, element: &mut vize_relief::ElementNode<'a>) {
+        if self.literal_v_pre_tags() {
+            element.tag_type = vize_relief::ElementType::Element;
+        }
+        if let Some(spans) = self
+            .frozen_elements
+            .as_mut()
+            .or(self.v_pre_elements.as_mut())
+        {
+            spans.push(element.loc.span);
         }
     }
 
@@ -65,6 +100,7 @@ impl<'a> Parser<'a> {
         let spans = self
             .frozen_elements
             .take()
+            .or_else(|| self.v_pre_elements.take())
             .map(Vec::into_arena_slice)
             .unwrap_or(&[]);
         let (root, errors) = self.into_result();
@@ -158,10 +194,33 @@ mod tests {
     }
 
     #[test]
+    fn v_pre_spans_without_custody_leave_the_ordinary_parse_unchanged() {
+        let source = "<div v-pre :x=\"1\" @y=\"z\"><Child>{{ a }}</Child></div><Child></Child>";
+        let arena = Allocator::new();
+        let (root, errors, frozen) = Parser::new(&arena, source).parse_with_v_pre_elements();
+        let (control, control_errors) = Parser::new(&arena, source).parse();
+        assert_eq!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
+        assert_eq!(
+            vize_l0::cstr!("{errors:?}"),
+            vize_l0::cstr!("{control_errors:?}")
+        );
+        assert_eq!(
+            frozen
+                .spans
+                .iter()
+                .map(|span| span.slice(source))
+                .collect::<std::vec::Vec<_>>(),
+            ["<div v-pre :x=\"1\" @y=\"z\">", "<Child>"],
+        );
+        assert_eq!(frozen.spans_for(root.source, source), Some(frozen.spans));
+    }
+
+    #[test]
     fn normal_opt_in_is_empty_and_default_parser_disables_collection() {
         let source = "<Child :id=\"active\"></Child>";
         let arena = Allocator::new();
         assert!(Parser::new(&arena, source).frozen_elements.is_none());
+        assert!(Parser::new(&arena, source).v_pre_elements.is_none());
         let (root, errors, frozen) = Parser::new(&arena, source).parse_with_frozen_elements();
         assert!(errors.is_empty(), "{errors:?}");
         assert_eq!(frozen.spans_for(root.source, source), Some(&[][..]));

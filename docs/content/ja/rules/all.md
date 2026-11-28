@@ -5,7 +5,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 
 # 全 lint ルール
 
-## Vue ルール (170)
+## Vue ルール (171)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | テンプレート式の識別子を camelCase に揃えます。 | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | テンプレート内の診断抑制コメントを扱い、設定に応じて未使用のコメントを検出します。 | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 | `happy-path` |  |
+| <span id="vue-component-file-name-casing"></span>[`vue/component-file-name-casing`](./reference/vue-component-file-name-casing.md) | コンポーネントのファイル名を PascalCase または kebab-case に揃えます。 | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | テンプレート内のコンポーネント名を指定した形式に揃えます。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | テンプレート式で静的なプロパティ参照にドット記法を使います。 | — |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | style ブロックを許可した属性モードに揃えます。 | — |  |

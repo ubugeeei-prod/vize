@@ -1,0 +1,4 @@
+type Unwrap<T> = T extends (infer U)[] ? U : never;
+
+export type Options = { label: string };
+export type Item = Unwrap<string[]>;

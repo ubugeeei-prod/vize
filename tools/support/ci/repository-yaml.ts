@@ -8,6 +8,8 @@ import {
   stringify,
   type Document,
   type Node,
+  type YAMLMap,
+  type YAMLSeq,
 } from "yaml";
 
 export type ConfigValue =
@@ -80,27 +82,126 @@ function sequenceSources(previous: ConfigValue[], next: ConfigValue[], ordered: 
   return indices;
 }
 
+const lineStart = (source: string, offset: number) => source.lastIndexOf("\n", offset - 1) + 1;
+
+// Render a new node at `indent`, the column its first line starts at.
+function indented(value: ConfigValue, indent: string): string {
+  const [first, ...rest] = stringify(value, { lineWidth: 0 }).trimEnd().split("\n");
+  return first + rest.map((line) => "\n" + indent + line).join("");
+}
+
+// A mapping that gains one key keeps its presentation: the new pair is written
+// in place, before the key that follows it in the new value.
+function insertedKey(
+  node: YAMLMap,
+  value: Record<string, ConfigValue>,
+  edits: ScalarEdit[],
+  source: string,
+): boolean {
+  const keys = Object.keys(value);
+  if (node.items.length === keys.length) return true;
+  const present = node.items.map((pair) => (isScalar(pair.key) ? pair.key.value : undefined));
+  const added = keys.filter((key) => !present.includes(key));
+  if (node.items.length + 1 !== keys.length || added.length !== 1) return false;
+  const key = added[0]!;
+  const child = value[key]!;
+  const following = node.items[keys.indexOf(key)];
+  const start = isScalar(following?.key) ? following.key.range?.[0] : undefined;
+  if (start === undefined) return false;
+  const indent = source.slice(lineStart(source, start), start);
+  const pair = indented({ [key]: child }, indent);
+  if (node.flow) {
+    if (/[\r\n]/u.test(pair)) return false;
+    edits.push({ start, end: start, text: pair + ", " });
+    return true;
+  }
+  if (!/^[ ]*$/u.test(indent)) return false;
+  edits.push({ start, end: start, text: pair + "\n" + indent });
+  return true;
+}
+
+// A sequence that gains or loses items keeps its presentation: a flow sequence
+// may gain trailing scalars, and a block sequence may drop or insert whole
+// items before an item it keeps.
+function resizedSequence(
+  node: YAMLSeq,
+  previous: ConfigValue[],
+  value: ConfigValue[],
+  edits: ScalarEdit[],
+  ordered: boolean,
+  source: string,
+): boolean {
+  const items = node.items as Node[];
+  if (node.flow) {
+    const last = items.at(-1)?.range?.[1];
+    const added = value.slice(items.length);
+    if (last === undefined || items.length > value.length) return false;
+    if (added.some((item) => item !== null && typeof item === "object")) return false;
+    const kept = value
+      .slice(0, items.length)
+      .every((child, index) =>
+        scalarEdits(items[index]!, previous[index]!, child, edits, ordered, source),
+      );
+    const text = added.map((item) => ", " + indented(item, "")).join("");
+    edits.push({ start: last, end: last, text });
+    return kept;
+  }
+  const sources = sequenceSources(previous, value, ordered);
+  const keptSources = sources.filter((index) => index !== undefined);
+  if (keptSources.some((index, at) => at > 0 && index <= keptSources[at - 1]!)) return false;
+  const itemStart = (index: number) => {
+    const start = items[index]?.range?.[0];
+    return start === undefined ? undefined : lineStart(source, start);
+  };
+  // Every removed or inserted item needs a kept item after it to anchor its line.
+  for (const index of previous.keys()) {
+    if (sources.includes(index)) continue;
+    const start = itemStart(index);
+    const end = itemStart(index + 1);
+    if (start === undefined || end === undefined) return false;
+    edits.push({ start, end, text: "" });
+  }
+  for (const [at, child] of value.entries()) {
+    const index = sources[at];
+    if (index !== undefined) {
+      if (!scalarEdits(items[index]!, previous[index]!, child, edits, ordered, source))
+        return false;
+      continue;
+    }
+    const anchor = sources.slice(at + 1).find((next) => next !== undefined);
+    const start = anchor === undefined ? undefined : itemStart(anchor);
+    const dash = anchor === undefined ? undefined : items[anchor]?.range?.[0];
+    if (start === undefined || dash === undefined) return false;
+    const indent = /^([ ]*)- $/u.exec(source.slice(start, dash))?.[1];
+    if (indent === undefined) return false;
+    edits.push({ start, end: start, text: indent + indented([child], indent) + "\n" });
+  }
+  return true;
+}
+
 function scalarEdits(
   node: Node | null,
   previous: ConfigValue,
   value: ConfigValue,
   edits: ScalarEdit[],
   ordered: boolean,
+  source: string,
 ): boolean {
   if (isMap(node) && isMapping(previous) && isMapping(value)) {
-    return (
-      node.items.length === Object.keys(value).length &&
-      node.items.every((pair) => {
-        if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
-        const key = pair.key.value;
-        return (
-          Object.hasOwn(value, key) &&
-          scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered)
-        );
-      })
-    );
+    if (!insertedKey(node, value, edits, source)) return false;
+    return node.items.every((pair) => {
+      if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
+      const key = pair.key.value;
+      return (
+        Object.hasOwn(value, key) &&
+        scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered, source)
+      );
+    });
   }
   if (isSeq(node) && Array.isArray(previous) && Array.isArray(value)) {
+    if (node.items.length !== value.length) {
+      return resizedSequence(node, previous, value, edits, ordered, source);
+    }
     const plainValues = node.items.every(
       (item) => isScalar(item) && !item.comment && !item.commentBefore && !item.anchor,
     );
@@ -109,7 +210,14 @@ function scalarEdits(
       (plainValues ||
         sequenceSources(previous, value, ordered).every((source, index) => source === index)) &&
       value.every((child, index) =>
-        scalarEdits(node.items[index] as Node | null, previous[index]!, child, edits, ordered),
+        scalarEdits(
+          node.items[index] as Node | null,
+          previous[index]!,
+          child,
+          edits,
+          ordered,
+          source,
+        ),
       )
     );
   }
@@ -135,8 +243,9 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
     if (existing !== undefined) {
       if (sameValue(existing, value, ordered)) return current;
       const edits: ScalarEdit[] = [];
-      if (scalarEdits(document.contents, existing, value, edits, ordered)) {
+      if (scalarEdits(document.contents, existing, value, edits, ordered, current)) {
         let text = current;
+        edits.sort((left, right) => left.start - right.start);
         for (const { start, end, text: replacement } of edits.reverse()) {
           text = text.slice(0, start) + replacement + text.slice(end);
         }

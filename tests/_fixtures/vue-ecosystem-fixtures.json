@@ -177,8 +177,16 @@
         "packageManagerVersion": "10.34.2",
         "lockfile": "pnpm-lock.yaml",
         "baseline": {
+          "inputOverlays": [
+            {
+              "source": "tests/_fixtures/typecheck-inputs/hoppscotch/backend-schema.gql",
+              "target": "gql-gen/backend-schema.gql",
+              "sha256": "cf6f69051eb11b7e6031522511b975da9073edc2299b94d5e19c13f72286e142"
+            }
+          ],
           "tsconfig": "packages/hoppscotch-common/tsconfig.json",
           "prepare": [
+            ["pnpm", "--filter", "@hoppscotch/common", "run", "gql-codegen"],
             ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
             ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
             ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],
@@ -9263,6 +9271,15 @@
       },
       "vueGlobs": [
         "src/**/*.vue"
+      ],
+      "sfcDialectRoutes": [
+        {
+          "id": "vue2",
+          "dialect": "2",
+          "globs": [
+            "src/**/*.vue"
+          ]
+        }
       ],
       "note": "Pug-template Quasar application (211 of 215 pinned SFCs use <template lang=\"pug\">).",
       "coverage": [

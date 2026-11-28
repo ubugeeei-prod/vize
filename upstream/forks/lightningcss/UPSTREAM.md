@@ -12,7 +12,8 @@ The adjacent LICENSE is the unchanged upstream MPL-2.0 license. Its SHA256 is
 Original author metadata and source notices are retained. The source-copy commit
 contains 121 byte-exact original files; `UPSTREAM-IMPORT.json` records every
 selected original file. Website, npm bindings and upstream automation are outside
-this Rust package's scope. No selected Rust source or original test is omitted.
+this Rust package's scope. Apart from the command-line binary described below,
+no selected Rust source or original test is omitted.
 
 Reproduce the source-only import from both authenticated archives with:
 
@@ -32,7 +33,8 @@ The following changes are deliberately separate from that import:
 - Package `vize_lightningcss`, with library name `lightningcss`, synchronized
   workspace version and an exact registry fallback. Its optional source-map
   dependency uses the corresponding `vize_parcel_sourcemap` alias. Original
-  features, bundler, CLI, tests and benchmarks remain available.
+  features other than `browserslist` and `cli`, the bundler, the library tests
+  and the benchmarks remain available.
 - `Percentage::parse` returns `InvalidValue` instead of executing `unreachable!()`
   when a calculation does not resolve to a percentage. No other calc body changes.
 - HSL-to-sRGB conversion retains the old finite normalization whenever it is in
@@ -52,21 +54,13 @@ The following changes are deliberately separate from that import:
 - An explicit vendor-policy compatibility commit applies the existing Oxc
   third-party Clippy policy to this implementation. `deny(missing_docs)` remains
   intact; all first-party check commands remain unchanged.
-- The optional CLI dependency moves from Clap3 to Clap4 (`^4.5`, locked4.6.6)
-  to retire the old atty/proc-macro-error advisory paths. Entire original CLI
-  source and tests are retained; all-features debug/release execution is required,
-  including any diagnostic wording differences observed during qualification.
-- After actual Clap4 failures, four internal CLI group references use distinct
-  group IDs while preserving flag/field names and output algorithms. The complete
-  original CLI source stays frozen in `tests/vize_fixtures/cli-original.rs.txt`
-  and authenticated against its original import hash. That group-only repair
-  preserved all27 test bodies; the distinct finite successor is recorded below.
-- The one original negative target/browserslist conflict prefix has an explicit
-  Clap4 casing successor (`The` to `the`), corroborated by its actual514 release
-  failure and official formatter. The entire original27-test authority remains
-  frozen as `cli-original-tests.rs.txt`; all other expectations stay byte-exact.
-  A separate authored law additionally asserts the complete current exit2,
-  stdout and stderr bytes. No runtime or oracle-wide normalization is applied.
+- The command-line binary (`src/main.rs`), its integration tests and the
+  `browserslist` and `cli` features are removed, together with their optional
+  `browserslist-rs`, `clap`, `serde_json` and `jemallocator` dependencies. No
+  Vize product enabled either feature; `browserslist-rs` was the only path to the
+  unmaintained `chrono`. Browser targets are passed as `Browsers` values, as the
+  library API always allowed. The original sources stay recorded in the import
+  record.
 
 Repository `Cargo.toml.orig` remains the original archive manifest. Its byte-exact
 copy `UPSTREAM-Cargo.toml` ships in the package because Cargo reserves and

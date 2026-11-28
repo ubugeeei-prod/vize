@@ -7,7 +7,7 @@ strategy {
   // tools/config/vite-plus/tested-package-groups.ts.
   matrix = "${{ fromJSON(inputs.js-plan).matrix }}"
 }
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 35
 env {
 
@@ -33,7 +33,7 @@ steps = new Listing {
     uses = ci.setupVp121
     `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false

@@ -15,7 +15,7 @@ if (probe.status !== 0) {
     "--ignore-workspace",
     "--lockfile-dir",
     ".",
-    "--no-lockfile",
+    "--frozen-lockfile",
     "--prefer-offline",
     "--ignore-scripts",
   ]);

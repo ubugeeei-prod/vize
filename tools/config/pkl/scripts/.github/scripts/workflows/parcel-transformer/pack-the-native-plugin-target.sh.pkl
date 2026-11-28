@@ -1,0 +1,11 @@
+amends "../../../../../../../ci/lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"node "$RUNNER_TEMP/native-plugin/pack-artifact.mjs" \"#
+  #"  --dir "$PLUGIN_DIR" \"#
+  #"  --target "$TARGET" \"#
+  #"  --library "$LIBRARY" \"#
+  #"  --out "$RUNNER_TEMP/artifacts""#
+}

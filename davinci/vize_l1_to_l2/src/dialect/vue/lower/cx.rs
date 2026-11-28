@@ -41,6 +41,8 @@ pub(crate) struct Cx<'a, P> {
     pub(crate) retain_consumed_expressions: bool,
     /// Whether direct table rows and cells gain implied `tbody`/`tr` owners.
     implied_table_sections: bool,
+    /// Whether a tag in a `v-pre` subtree stays a plain element.
+    literal_v_pre_tags: bool,
     pub diagnostics: Vec<Diagnostic>,
     /// Decisions, kept only when the consumer chose a recording sink.
     pub provenance: P,
@@ -89,6 +91,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             preserve_comments: policy.preserve_comments,
             retain_consumed_expressions: policy.retain_consumed_expressions,
             implied_table_sections: policy.implied_table_sections,
+            literal_v_pre_tags: policy.literal_v_pre_tags,
             diagnostics: Vec::new(),
             provenance: P::default(),
             scopes: SideTable::new(),
@@ -145,6 +148,10 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
 
     pub(crate) fn implied_table_sections(&self) -> bool {
         self.implied_table_sections
+    }
+
+    pub(crate) fn literal_v_pre_tags(&self) -> bool {
+        self.literal_v_pre_tags
     }
 
     /// Enter/leave a condense-suppressing `<pre>` around its children.

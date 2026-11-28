@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { parse } from "yaml";
+import { parse, parseDocument } from "yaml";
 import {
   validateAutomationSteps,
   automationProgramReferences,
@@ -21,6 +21,7 @@ import { parseTapCounts } from "../../tools/support/github/docs-preview-readines
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
 import { withoutGeneratedHeader } from "../../tools/support/ci/generated-header.ts";
+import { sourceRunnerChanges } from "./support/source-validation-runners.ts";
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -46,11 +47,28 @@ const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
   "01-rust-feature-tests.yml": ["rust-feature-plan"],
   "06-browser-oracles.yml": ["changes"],
+  "parcel-transformer.yml": ["native-plugin-matrix", "native-plugin-pack", "native-plugin-publish"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
 };
 const hostedZeroComputeRunner = "ubuntu-24.04";
+
+// Build-free planner and policy jobs take the smallest Blacksmith class: they
+// finish in seconds, and a 32-vCPU slot spent on them delays a build job at
+// the pool's concurrency cap. No Rust toolchain, sticky disk or build cache.
+const smallRunnerJobs: Readonly<Record<string, readonly string[]>> = {
+  "07-level-dependencies.yml": ["level-dependencies"],
+  "08-nuxt-styles.yml": ["plan"],
+  "08-vite-plus-types.yml": ["real-vite-plugin-types"],
+  "10-musea-browser.yml": ["plan"],
+  "11-zizmor.yml": ["plan", "zizmor"],
+  "cleanup-obsolete-merge-groups.yml": ["cleanup"],
+  "parcel-transformer.yml": ["packaging-changes"],
+  "release-smoke-contracts.yml": ["bun-planner", "node-planner-baseline"],
+  "title-policy.yml": ["issue-pr-title-policy"],
+};
+const smallRunner = "blacksmith-4vcpu-ubuntu-2404";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
@@ -68,11 +86,35 @@ function workflowRunnerLabels(
   source: string,
   hostedJobs: readonly string[] = [],
   file = "",
+  smallJobs: readonly string[] = [],
 ): string[] {
   const workflow = parse(source) as unknown;
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
   return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
+    const sourceRunner = sourceRunnerChanges.find(
+      (row) => row.workflow === `.github/workflows/${file}` && row.job === id,
+    );
+    if (sourceRunner && sourceRunner.after === value["runs-on"]) return [];
+    if (file === "shipped-profile-measure.yml" && id === "measure") {
+      assert.equal(typeof value["runs-on"], "string");
+      assert.match(
+        value["runs-on"] as string,
+        /^\$\{\{\s*inputs\.runner\s*\|\|\s*'blacksmith-32vcpu-ubuntu-2404'\s*\}\}$/u,
+      );
+      const on = workflow.on;
+      assert.ok(isRecord(on) && isRecord(on.workflow_dispatch));
+      const inputs = on.workflow_dispatch.inputs;
+      assert.ok(isRecord(inputs) && isRecord(inputs.runner));
+      assert.equal(inputs.runner.type, "choice");
+      assert.equal(inputs.runner.required, false);
+      assert.equal(inputs.runner.default, "blacksmith-32vcpu-ubuntu-2404");
+      assert.deepEqual(inputs.runner.options, [
+        "blacksmith-32vcpu-ubuntu-2404",
+        "blacksmith-16vcpu-ubuntu-2404",
+      ]);
+      return [];
+    }
     if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
@@ -80,6 +122,10 @@ function workflowRunnerLabels(
     }
     if (hostedJobs.includes(id)) {
       assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
+      return [];
+    }
+    if (smallJobs.includes(id)) {
+      assert.equal(value["runs-on"], smallRunner, id);
       return [];
     }
     // A planner-selected skip runs hosted; the selected path is the busy runner.
@@ -118,12 +164,12 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   }
 });
 
-test("non-release workflows use maximum Blacksmith runner classes", () => {
+test("non-release workflows use reviewed build, source validation and planner runners", () => {
   const violations = readWorkflowEntries(root)
     .filter(({ groupId }) => groupId !== "02")
     .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
+      return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file, smallRunnerJobs[file])
         .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });
@@ -153,6 +199,50 @@ jobs:
     workflowRunnerLabels(source).filter((runner) => !approvedRunnerLabels.has(runner)),
     ["blacksmith-8vcpu-ubuntu-2404"],
   );
+});
+
+test("the validation pool accepts only exact reviewed source job selectors", () => {
+  const missing = "jobs:\n  planner: {}\n";
+  assert.throws(() => workflowRunnerLabels(missing, ["planner"], "unreviewed.yml"));
+  assert.throws(() => workflowRunnerLabels(missing, [], "unreviewed.yml", ["planner"]));
+  for (const row of sourceRunnerChanges) {
+    const file = path.basename(row.workflow);
+    const job = (id: string) => `jobs:\n  ${id}:\n    runs-on: ${row.after}\n`;
+    assert.deepEqual(workflowRunnerLabels(job(row.job), [], file), []);
+    for (const [source, filename] of [
+      [job("unreviewed"), file],
+      [job(row.job), "unreviewed.yml"],
+    ])
+      assert.throws(() => assert.deepEqual(workflowRunnerLabels(source!, [], filename), []));
+  }
+});
+
+test("release measurement retains its default and restricts the explicit worker choice", () => {
+  const file = "shipped-profile-measure.yml";
+  const source = readRepoFile(`.github/workflows/${file}`);
+  assert.deepEqual(workflowRunnerLabels(source, [], file), []);
+  const whitespace = parseDocument(source);
+  whitespace.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{  inputs.runner  ||  'blacksmith-32vcpu-ubuntu-2404'  }}",
+  );
+  assert.deepEqual(workflowRunnerLabels(whitespace.toString(), [], file), []);
+  const changedRunner = parseDocument(source);
+  changedRunner.setIn(
+    ["jobs", "measure", "runs-on"],
+    "${{ inputs.unreviewed || 'blacksmith-32vcpu-ubuntu-2404' }}",
+  );
+  const changedDefault = parseDocument(source);
+  changedDefault.setIn(
+    ["on", "workflow_dispatch", "inputs", "runner", "default"],
+    "blacksmith-16vcpu-ubuntu-2404",
+  );
+  for (const changed of [
+    source.replace("blacksmith-16vcpu-ubuntu-2404", "unreviewed-runner"),
+    changedDefault.toString(),
+    changedRunner.toString(),
+  ])
+    assert.throws(() => workflowRunnerLabels(changed, [], file));
 });
 
 test("the line-start proof requires its Linux ARM64 runner", () => {
@@ -217,9 +307,22 @@ test("every action and workflow step invokes a named program", () => {
 });
 
 test("every named automation program is available in the same checkout as its caller", () => {
+  // The programs in a scripts directory, the builds of its ush programs included.
+  function programFiles(directory: string): string[] {
+    if (!fs.existsSync(directory)) return [];
+    return fs
+      .readdirSync(directory, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => path.join(entry.parentPath, entry.name));
+  }
   function check(directory: string, source: string) {
     for (const name of automationProgramReferences(source)) {
-      assert.match(name, /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/)?[\w.-]+$/u, name);
+      // A shared program, a program of its own, or the build of an ush program.
+      assert.match(
+        name,
+        /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/|compiled\/)?[\w.-]+$/u,
+        name,
+      );
       const program = path.join(directory, name);
       assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
     }
@@ -232,18 +335,16 @@ test("every named automation program is available in the same checkout as its ca
       ? moved
       : path.join(root, ".github/scripts/workflows", stem);
     check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
-    if (fs.existsSync(directory))
-      for (const program of fs.readdirSync(directory))
-        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+    for (const program of programFiles(directory))
+      check(directory, fs.readFileSync(program, "utf8"));
   }
   const actions = path.join(root, ".github/actions");
   for (const entry of fs.readdirSync(actions, { recursive: true, withFileTypes: true })) {
     if (entry.name !== "action.yml") continue;
     const directory = path.join(entry.parentPath, "scripts");
     check(directory, fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8"));
-    if (fs.existsSync(directory))
-      for (const program of fs.readdirSync(directory))
-        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+    for (const program of programFiles(directory))
+      check(directory, fs.readFileSync(program, "utf8"));
   }
 });
 

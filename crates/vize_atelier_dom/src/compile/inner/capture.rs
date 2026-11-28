@@ -6,7 +6,7 @@ use vize_atelier_core::{
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::TemplateSyntaxMode,
-    parser::parse_with_options_custom_elements_and_template_syntax,
+    parser::Parser,
     walk_probe::WalkCounts,
 };
 use vize_l0::dump::capture::{CaptureOutcome, CaptureSink};
@@ -36,15 +36,18 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
-    let (mut root, errors) = profile!(
+    // The spans of `v-pre` elements keep them plain through the transform:
+    // Vue resolves no component inside a `v-pre` subtree.
+    let (mut root, errors, v_pre_elements) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options_custom_elements_and_template_syntax(
+        Parser::with_options_custom_elements_and_template_syntax(
             allocator,
             source,
             parser_opts,
             custom_elements.clone(),
             template_syntax,
         )
+        .parse_with_v_pre_elements()
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -139,15 +142,29 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-            allocator,
-            &mut root,
-            transform_opts,
-            script_tables,
-            custom_elements,
-            template_syntax_quirks,
-            hoisted_scope_id,
-        )
+        if v_pre_elements.is_empty() {
+            transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+                allocator,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+            )
+        } else {
+            super::transform_v_pre_template(
+                allocator,
+                source,
+                &mut root,
+                transform_opts,
+                script_tables,
+                custom_elements,
+                template_syntax_quirks,
+                hoisted_scope_id,
+                v_pre_elements,
+            )
+        }
     );
     let template_walks = template_walk_before.map(|before| WalkCounts::snapshot().since(before));
 

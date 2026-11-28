@@ -2,7 +2,7 @@ use serde_json::{Value, json};
 use vize_carton::i18n::translator;
 use vize_patina::{HelpLevel, LintPreset, LintResult, Linter, Locale, Severity};
 
-pub const RULE: &str = "vue/component-definition-name-casing";
+pub const RULE: &str = "vue/component-file-name-casing";
 pub const SOURCE: &str = "<div>Content</div>";
 pub const LOCALES: [Locale; 3] = [Locale::En, Locale::Ja, Locale::Zh];
 
@@ -46,9 +46,9 @@ pub fn complete(result: &LintResult) -> Value {
 pub fn warning(locale: Locale, help: HelpLevel, stem: &str, severity: Severity) -> Value {
     json!({
         "rule_name": RULE, "severity": severity,
-        "message": translator().format(locale, "vue/component-definition-name-casing.message", &[("name", stem)]).as_str(),
+        "message": translator().format(locale, "vue/component-file-name-casing.message", &[("name", stem)]).as_str(),
         "start": 0, "end": 0,
-        "help": help.process(translator().get(locale, "vue/component-definition-name-casing.help").as_ref()).map(|help| help.to_string()),
+        "help": help.process(translator().get(locale, "vue/component-file-name-casing.help").as_ref()).map(|help| help.to_string()),
         "labels": [], "fix": null,
     })
 }

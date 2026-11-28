@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const items = useTemplateRef<HTMLLIElement[]>('item')
+</script>
+
+<template>
+  <ul>
+    <li v-for="n in 3" :key="n" ref="item">{{ n }}</li>
+  </ul>
+  <p :ref="'item'" />
+</template>
