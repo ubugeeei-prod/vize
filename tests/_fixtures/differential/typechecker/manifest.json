@@ -25030,13 +25030,18 @@
       },
       "packReference": {
         "path": "legacy-package-declarations-13298/cases.json",
-        "sha256": "cc71e8edaf2cebda87bc308ad4323fe213593ad3f7abc7dad80b4d5c7137c0e1"
+        "sha256": "7c43edc3693f4ab55f0fa490ec439d8fc2789154b3fd730552d5a31022991ca6"
       },
       "inputs": [
         {
           "file": "tsconfig.json",
           "path": "legacy-package-declarations-13298/tsconfig.json.txt",
-          "sha256": "633c35c9d31ecbed90df22ae3023beab1d1b3bc9fb4ce303dee9052b5c1c48a3"
+          "sha256": "e564a431e6dcf2c180e33a25db2a09e8774dd45d9e3e322228e68bab2d6211c1"
+        },
+        {
+          "file": "package.json",
+          "path": "legacy-package-declarations-13298/consumer-package.json.txt",
+          "sha256": "44107378db27df26707ff6c1947e029a347e857d7bf39b183e7e64b6bd6fb3f8"
         },
         {
           "file": "packages/sandbox/package.json",
@@ -25066,7 +25071,7 @@
         {
           "file": "src/App.vue",
           "path": "legacy-package-declarations-13298/valid.vue.txt",
-          "sha256": "878050ab53be8a86684d8afed6badf4b3459a104012385557a4c373344423f58"
+          "sha256": "a748e359d8012ccf242cb901942f1e030c6288ef621b38bd40571940ca4e50ac"
         }
       ],
       "dialectCoverage": {
@@ -25119,13 +25124,18 @@
       },
       "packReference": {
         "path": "legacy-package-declarations-13298/cases.json",
-        "sha256": "cc71e8edaf2cebda87bc308ad4323fe213593ad3f7abc7dad80b4d5c7137c0e1"
+        "sha256": "7c43edc3693f4ab55f0fa490ec439d8fc2789154b3fd730552d5a31022991ca6"
       },
       "inputs": [
         {
           "file": "tsconfig.json",
           "path": "legacy-package-declarations-13298/tsconfig.json.txt",
-          "sha256": "633c35c9d31ecbed90df22ae3023beab1d1b3bc9fb4ce303dee9052b5c1c48a3"
+          "sha256": "e564a431e6dcf2c180e33a25db2a09e8774dd45d9e3e322228e68bab2d6211c1"
+        },
+        {
+          "file": "package.json",
+          "path": "legacy-package-declarations-13298/consumer-package.json.txt",
+          "sha256": "44107378db27df26707ff6c1947e029a347e857d7bf39b183e7e64b6bd6fb3f8"
         },
         {
           "file": "packages/sandbox/package.json",
@@ -25155,7 +25165,7 @@
         {
           "file": "src/App.vue",
           "path": "legacy-package-declarations-13298/invalid.vue.txt",
-          "sha256": "7a83036375431b37ee90c9eb195e24f0fc9c2e243726af8ee086f6d47084500b"
+          "sha256": "1d2d56fa0865796368d147135d2063dc98139541a562caba25551d90ee25a894"
         }
       ],
       "dialectCoverage": {

@@ -6,7 +6,13 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "skipLibCheck": true,
-    "types": []
+    "types": [],
+    "resolveJsonModule": true,
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.vue"

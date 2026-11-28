@@ -42,6 +42,10 @@
           "source": "tsconfig.json.txt"
         },
         {
+          "file": "package.json",
+          "source": "consumer-package.json.txt"
+        },
+        {
           "file": "packages/sandbox/package.json",
           "source": "sandbox-package.json.txt"
         },
@@ -76,6 +80,10 @@
           "source": "tsconfig.json.txt"
         },
         {
+          "file": "package.json",
+          "source": "consumer-package.json.txt"
+        },
+        {
           "file": "packages/sandbox/package.json",
           "source": "sandbox-package.json.txt"
         },
@@ -103,7 +111,7 @@
       "diagnostics": [
         {
           "file": "src/App.vue",
-          "line": 3,
+          "line": 4,
           "column": 7,
           "severity": 1,
           "code": 2322,

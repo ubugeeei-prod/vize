@@ -32,6 +32,33 @@ pub(super) fn protect_control_file_aliases(
     shared_helpers: &str,
 ) {
     let mut overrides = Vec::new();
+    // A wildcard capture may contain `..`: `~/* -> src/*` also resolves
+    // `~/../package.json` to the authored root manifest. Keep JSON aliases on
+    // their original data inputs so such a capture cannot select Canon's
+    // same-named package boundary instead. Explicit JSON mappings stay owned
+    // by the project and keep their original priority.
+    for (alias, targets) in paths {
+        if !alias.ends_with('*') {
+            continue;
+        }
+        let json_alias = cstr!("{alias}.json");
+        if paths.contains_key(json_alias.as_str()) {
+            continue;
+        }
+        let Some(targets) = targets.as_array() else {
+            continue;
+        };
+        let json_targets = targets
+            .iter()
+            .filter_map(Value::as_str)
+            .filter_map(|target| target_onto_project_root(target, project_root))
+            .filter(|target| target.ends_with('*'))
+            .map(|target| Value::String(cstr!("{project_prefix}{target}.json").into()))
+            .collect::<Vec<_>>();
+        if json_targets.len() == targets.len() && !json_targets.is_empty() {
+            remapped.insert(json_alias.into(), Value::Array(json_targets));
+        }
+    }
     for (alias, targets) in paths {
         let Some(targets) = targets.as_array() else {
             continue;
@@ -130,6 +157,18 @@ mod tests {
     fn exact_package_target_uses_the_real_project_file() {
         let protected = protect(json!({ "manifest": ["./package.json"] }));
         assert_eq!(protected["manifest"], json!(["../../../package.json"]));
+    }
+
+    #[test]
+    fn parent_captures_in_json_aliases_keep_authored_data_inputs() {
+        let protected = protect(json!({ "~/*": ["./src/*"], "fallback/*": ["src/*", "data/*"] }));
+        assert_eq!(protected["~/*.json"], json!(["../../.././src/*.json"]));
+        assert_eq!(
+            protected["fallback/*.json"],
+            json!(["../../../src/*.json", "../../../data/*.json"])
+        );
+        let explicit = protect(json!({ "~/*": ["src/*"], "~/*.json": ["fixtures/*.json"] }));
+        assert_eq!(explicit["~/*.json"], json!(["fixtures/*.json"]));
     }
 
     #[test]
