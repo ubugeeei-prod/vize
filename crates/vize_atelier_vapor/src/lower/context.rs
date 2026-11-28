@@ -42,6 +42,10 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) merged_props_of: Option<(usize, bool)>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
+    /// Lower every child its parent's template string cannot hold from a
+    /// template of its own (see [`crate::nesting`]). Set only for a template
+    /// that has one, so every other template takes the ordinary paths.
+    pub(crate) split_nesting: bool,
 }
 
 impl<'a> TransformContext<'a> {
@@ -67,6 +71,7 @@ impl<'a> TransformContext<'a> {
             warnings: std::vec::Vec::new(),
             merged_props_of: None,
             template_spans: None,
+            split_nesting: false,
         }
     }
 
@@ -124,9 +129,20 @@ impl<'a> TransformContext<'a> {
     ) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
-            super::element::template::generate_element_template_spanned(root, scope_id, self.source)
+            super::element::template::generate_element_template_spanned(
+                root,
+                scope_id,
+                self.source,
+                self.split_nesting,
+            )
         } else {
-            super::element::template::generate_element_template(root, scope_id, self.source).into()
+            super::element::template::generate_element_template(
+                root,
+                scope_id,
+                self.source,
+                self.split_nesting,
+            )
+            .into()
         }
     }
 

@@ -1,9 +1,13 @@
-import { template as _template } from 'vue';
-const t0 = _template("<ul><li>a</li><li>b</li></ul>", true)
+import { insert as _insert, child as _child, template as _template } from 'vue';
+const t0 = _template("<li>b</li>")
+const t1 = _template("<ul><li>a</li></ul>", true)
 
 function render(_ctx, $props, $emit, $attrs, $slots) {
-  const n0 = t0()
-  return n0
+  const n1 = t1()
+  const n0 = _child(n1)
+  const n2 = t0()
+  _insert(n2, n0)
+  return n1
 }
 const _sfc_main = { __vapor: true }
 _sfc_main.render = render

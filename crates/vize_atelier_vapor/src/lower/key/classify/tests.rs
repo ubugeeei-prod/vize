@@ -234,7 +234,7 @@ fn original_directives_keep_once_precedence_key_identity_and_refusals() {
         if el.tag == "component" {
             assert_eq!(el.tag_type, ElementType::Component, "{source}");
         }
-        let facts = classify(el, inherited, own_key);
+        let facts = classify(el, inherited, own_key, false);
         assert_eq!(facts.should_lower_as_once, expected_once, "{source}");
         assert_eq!(facts.memo_warning, expected_error, "{source}");
         assert_eq!(facts.key.map(|key| key.content), expected_key, "{source}");

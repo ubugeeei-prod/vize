@@ -138,7 +138,7 @@ fn slot_property_walk_preserves_original_scope_fallback_ir_and_complete_outputs(
         let mut actual_block = BlockIRNode::new(&allocator);
         let mut original_block = BlockIRNode::new(&allocator);
         transform_slot(&mut actual, el, &mut actual_block);
-        let facts = classify(el, inherited, false);
+        let facts = classify(el, inherited, false, false);
         transform_classified_element(&mut original, el, &mut original_block, facts);
         assert_eq!(actual.is_key_non_reactive(), inherited, "{source}");
         assert_eq!(original.is_key_non_reactive(), inherited, "{source}");
@@ -274,7 +274,7 @@ fn original_slot_name_order_keeps_complete_props_fallback_modules_and_maps() {
         };
         assert_eq!(outlet.name.content, expected_name, "{source}");
         assert_eq!(outlet.name.is_static, expected_static, "{source}");
-        let facts = classify(el, false, false);
+        let facts = classify(el, false, false, false);
         transform_classified_element(&mut original, el, &mut original_block, facts);
         assert_eq!(
             output(actual, actual_block, &root, source),

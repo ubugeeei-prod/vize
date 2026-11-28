@@ -9,10 +9,11 @@
 
 use vize_carton::ensure_sufficient_stack;
 
-use super::template::is_template_backed_element;
-use super::{ElementType, TemplateChildNode};
+use super::template::{is_split_child, is_template_backed_element};
+use super::{ElementNode, ElementType, TemplateChildNode};
 
-fn collect_placeholders(
+fn collect_placeholders<const SPLIT: bool>(
+    parent: Option<&ElementNode<'_>>,
     children: &[TemplateChildNode<'_>],
     flags: &mut std::vec::Vec<bool>,
     rendered_after: &mut bool,
@@ -25,7 +26,8 @@ fn collect_placeholders(
             }
             TemplateChildNode::Element(el) if el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    collect_placeholders(
+                    collect_placeholders::<SPLIT>(
+                        None,
                         &el.children,
                         flags,
                         rendered_after,
@@ -33,7 +35,10 @@ fn collect_placeholders(
                     )
                 });
             }
-            TemplateChildNode::Element(el) if is_template_backed_element(el, non_reactive) => {
+            TemplateChildNode::Element(el)
+                if is_template_backed_element(el, non_reactive)
+                    && !(SPLIT && parent.is_some_and(|parent| is_split_child(parent, el))) =>
+            {
                 *rendered_after = true;
             }
             TemplateChildNode::Element(_)
@@ -46,13 +51,15 @@ fn collect_placeholders(
 
 /// For each block among `children` (template wrappers flattened, document
 /// order), whether it keeps a template placeholder because a
-/// template-rendered sibling follows it.
-pub(crate) fn block_placeholders(
+/// template-rendered sibling follows it. Under `SPLIT`, a child `parent`
+/// cannot hold in its template string is inserted like a block.
+pub(crate) fn block_placeholders<const SPLIT: bool>(
+    parent: Option<&ElementNode<'_>>,
     children: &[TemplateChildNode<'_>],
     non_reactive: bool,
 ) -> std::vec::Vec<bool> {
     let mut flags = std::vec::Vec::new();
-    collect_placeholders(children, &mut flags, &mut false, non_reactive);
+    collect_placeholders::<SPLIT>(parent, children, &mut flags, &mut false, non_reactive);
     flags.reverse();
     flags
 }
@@ -155,7 +162,7 @@ mod tests {
             let raw_original = original_block_placeholders(&root.children);
             assert_eq!(raw_original, raw_expected, "raw original: {source}");
             assert_eq!(
-                block_placeholders(&root.children, false),
+                block_placeholders::<false>(None, &root.children, false),
                 raw_original,
                 "raw: {source}"
             );
@@ -166,7 +173,7 @@ mod tests {
                 "transparent original: {source}"
             );
             assert_eq!(
-                block_placeholders(&root.children, false),
+                block_placeholders::<false>(None, &root.children, false),
                 transparent_original,
                 "transparent: {source}"
             );
@@ -214,7 +221,7 @@ mod tests {
             let (root, errors) = parse(&allocator, source);
             assert!(errors.is_empty(), "{errors:?}");
             assert_eq!(
-                block_placeholders(&root.children, non_reactive),
+                block_placeholders::<false>(None, &root.children, non_reactive),
                 expected,
                 "{source}"
             );

@@ -202,10 +202,18 @@ fn generate_block_guarded(
     }
 
     // Generate ChildRef/NextRef operations first (before text refs, since text refs
-    // may reference child nodes created by these operations)
+    // may reference child nodes created by these operations). An inserted
+    // element's own template is created here too, before its descendants'
+    // refs; the insertion itself stays in operation order.
     for op in block.operation.iter() {
-        if matches!(op, OperationNode::ChildRef(_) | OperationNode::NextRef(_)) {
-            generate_operation(ctx, op, element_template_map);
+        match op {
+            OperationNode::ChildRef(_) | OperationNode::NextRef(_) => {
+                generate_operation(ctx, op, element_template_map);
+            }
+            OperationNode::InsertNode(insert) => {
+                generate_inserted_templates(ctx, insert, element_template_map);
+            }
+            _ => {}
         }
     }
 
@@ -248,6 +256,25 @@ fn generate_block_guarded(
             ctx.push_line(&["return ", &returns].concat());
         } else {
             ctx.push_line(&["return [", &returns, "]"].concat());
+        }
+    }
+}
+
+#[cold]
+fn generate_inserted_templates(
+    ctx: &mut GenerateContext,
+    insert: &crate::ir::InsertNodeIRNode<'_>,
+    element_template_map: &FxHashMap<usize, usize>,
+) {
+    for element_id in insert.elements.iter() {
+        if let Some(&template_index) = element_template_map.get(element_id) {
+            let mut line = String::with_capacity(32);
+            line.push_str("const n");
+            line.push_str(&element_id.to_compact_string());
+            line.push_str(" = t");
+            line.push_str(&template_index.to_compact_string());
+            line.push_str("()");
+            ctx.push_line(&line);
         }
     }
 }
