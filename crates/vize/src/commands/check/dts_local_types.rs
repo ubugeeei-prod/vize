@@ -80,47 +80,26 @@ pub(super) fn qualify_local_references(
     namespace: &str,
     used: &mut FxHashSet<String>,
 ) -> String {
-    let mut out = String::with_capacity(text.len());
-    let mut chars = text.char_indices().peekable();
-    while let Some((start, ch)) = chars.next() {
-        if matches!(ch, '\'' | '"' | '`') {
-            out.push(ch);
-            let mut escaped = false;
-            for (_, inner) in chars.by_ref() {
-                out.push(inner);
-                if escaped {
-                    escaped = false;
-                } else if inner == '\\' {
-                    escaped = true;
-                } else if inner == ch {
-                    break;
-                }
-            }
-            continue;
-        }
-        if !is_identifier_start(ch) {
-            out.push(ch);
-            continue;
-        }
-        let mut end = start + ch.len_utf8();
-        while let Some(&(index, next)) = chars.peek() {
-            if !is_identifier_char(next) {
-                break;
-            }
-            end = index + next.len_utf8();
-            chars.next();
-        }
-        let ident = text.get(start..end).unwrap_or_default();
-        if names.contains(ident)
-            && previous_non_whitespace(text, start) != Some('.')
-            && !is_property_key(text.get(end..).unwrap_or_default())
-        {
-            out.push_str(namespace);
-            out.push('.');
-            used.insert(ident.to_compact_string());
-        }
-        out.push_str(ident);
+    if names.is_empty() {
+        return text.to_compact_string();
     }
+    let mut out = String::with_capacity(text.len());
+    let mut offset = 0;
+    for reference in super::dts_type_references::references(text) {
+        let name = reference.name.as_str();
+        if !names.contains(name) {
+            continue;
+        }
+        let start = reference.span.start as usize;
+        let end = reference.span.end as usize;
+        out.push_str(&text[offset..start]);
+        out.push_str(namespace);
+        out.push('.');
+        out.push_str(&text[start..end]);
+        used.insert(reference.name);
+        offset = end;
+    }
+    out.push_str(&text[offset..]);
     out
 }
 
@@ -136,14 +115,13 @@ pub(super) fn reachable_local_types(
         .collect::<FxHashSet<_>>();
     let mut pending = used.iter().cloned().collect::<Vec<_>>();
     while let Some(name) = pending.pop() {
-        let Some(local) = locals.iter().find(|local| local.name == name) else {
-            continue;
-        };
-        let mut named = FxHashSet::default();
-        qualify_local_references(local.declaration.as_str(), &names, "", &mut named);
-        for name in named {
-            if used.insert(name.clone()) {
-                pending.push(name);
+        for local in locals.iter().filter(|local| local.name == name) {
+            let mut named = FxHashSet::default();
+            qualify_local_references(local.declaration.as_str(), &names, "", &mut named);
+            for name in named {
+                if used.insert(name.clone()) {
+                    pending.push(name);
+                }
             }
         }
     }
@@ -151,27 +129,4 @@ pub(super) fn reachable_local_types(
         .iter()
         .filter(|local| used.contains(&local.name))
         .collect()
-}
-
-fn previous_non_whitespace(text: &str, index: usize) -> Option<char> {
-    text.get(..index)?
-        .chars()
-        .rev()
-        .find(|ch| !ch.is_whitespace())
-}
-
-/// Whether the identifier the text before `rest` ends with is a property key:
-/// `Name:` or `Name?:`, as opposed to the `?` of a conditional type.
-fn is_property_key(rest: &str) -> bool {
-    let rest = rest.trim_start();
-    let rest = rest.strip_prefix('?').map_or(rest, str::trim_start);
-    rest.starts_with(':')
-}
-
-fn is_identifier_start(ch: char) -> bool {
-    ch == '_' || ch == '$' || ch.is_ascii_alphabetic()
-}
-
-fn is_identifier_char(ch: char) -> bool {
-    is_identifier_start(ch) || ch.is_ascii_digit()
 }

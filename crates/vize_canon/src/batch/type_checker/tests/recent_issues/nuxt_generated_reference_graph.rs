@@ -52,7 +52,10 @@ fn nuxt_generated_reference_graph_reaches_the_program() {
     let project_root = vize_carton::path::canonicalize_non_verbatim(&root);
     let stub = fixture!("stub.d.ts.txt").replace(
         "__PROJECT_ROOT__",
-        project_root.to_str().expect("utf-8 test path"),
+        &project_root
+            .to_str()
+            .expect("utf-8 test path")
+            .replace('\\', "/"),
     );
     let options = BatchTypeCheckerOptions {
         virtual_ts_options: VirtualTsOptions {

@@ -128,7 +128,7 @@ fn rewrite_import_type_specifiers(
     rewrite: impl Fn(&str) -> String,
 ) -> Option<String> {
     let imports = collect_import_types(type_annotation)?;
-    let prefix_len = TYPE_ANNOTATION_PREFIX.len();
+    let prefix_len = import_type_prefix(type_annotation).len();
 
     let mut replacements = imports
         .into_iter()
@@ -164,8 +164,21 @@ fn rewrite_import_type_specifiers(
     Some(out)
 }
 
+fn import_type_prefix(source: &str) -> &'static str {
+    if source.trim_start().starts_with("declare namespace ") {
+        ""
+    } else {
+        TYPE_ANNOTATION_PREFIX
+    }
+}
+
 fn collect_import_types(type_annotation: &str) -> Option<Vec<ImportTypeSource>> {
-    let wrapped = cstr!("{TYPE_ANNOTATION_PREFIX}{type_annotation};");
+    let prefix = import_type_prefix(type_annotation);
+    let wrapped = if prefix.is_empty() {
+        type_annotation.to_compact_string()
+    } else {
+        cstr!("{prefix}{type_annotation};")
+    };
     let allocator = Allocator::default();
     let ret = Parser::new(&allocator, wrapped.as_str(), SourceType::d_ts()).parse();
     if ret.panicked || !ret.diagnostics.is_empty() {
