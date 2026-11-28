@@ -103,6 +103,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/no-unsafe-url",
     "vapor/no-inline-template",
     "vue/no-restricted-static-attribute",
+    "html/id-duplication",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
