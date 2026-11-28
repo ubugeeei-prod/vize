@@ -13,10 +13,14 @@ Following commits normalize standalone manifest dependencies and apply the
 reviewed PURE recovery correction. Supporting OXC crates stay at the original
 official pinned revision and share one AST/allocator/span identity.
 
-Recursive array expressions and TypeScript tuple types preserve their entire
-original parser bodies while using the existing pinned stacker stack-headroom
-guard. The tuple guard also covers nested tuple descent reached by expression
-type-argument speculation. No grammar, diagnostics or depth refusal is added.
+Every recursion cycle of the grammar (assignment expressions, unary, `await`,
+`new` and type-assertion operands, statement list items, binding patterns,
+destructuring-target conversion, JSX children, TypeScript types and type
+operators, array elements and tuple types) passes one stack-headroom check
+(`src/stack.rs`). The check compares the frame address with a window computed
+when the parser is created; outside it, the pinned `stacker` continues the
+descent on a heap segment, so how deep a source may nest no longer depends on
+the caller's stack. No grammar, diagnostics or depth refusal is added.
 
 The shared expression type-argument parser also memoizes failed speculative
 probes by source position and grammar context across rewinds. This bounds the

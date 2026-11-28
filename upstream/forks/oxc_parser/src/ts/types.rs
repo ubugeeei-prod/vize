@@ -15,10 +15,12 @@ use super::{super::js::FunctionKind, statement::CallOrConstructorSignature};
 
 impl<'a, C: Config> ParserImpl<'a, C> {
     pub(crate) fn parse_ts_type(&mut self) -> TSType<'a> {
-        self.memoize_failed_speculative_subproblem(
-            SpeculativeProduction::Type,
-            Self::parse_ts_type_uncached,
-        )
+        self.with_stack_headroom(|p| {
+            p.memoize_failed_speculative_subproblem(
+                SpeculativeProduction::Type,
+                Self::parse_ts_type_uncached,
+            )
+        })
     }
 
     fn parse_ts_type_uncached(&mut self) -> TSType<'a> {
@@ -320,7 +322,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let span = self.start_span();
         self.bump_any(); // bump operator
         let operator_span = self.end_span(span);
-        let ty = self.parse_type_operator_or_higher();
+        let ty = self.with_stack_headroom(Self::parse_type_operator_or_higher);
         if operator == TSTypeOperatorOperator::Readonly
             && !matches!(ty, TSType::TSArrayType(_))
             && !matches!(ty, TSType::TSTupleType(_))
@@ -1015,15 +1017,15 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 
     fn parse_tuple_type(&mut self) -> TSType<'a> {
         // Type-argument speculation can recurse through nested tuple types.
-        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || {
-            let span = self.start_span();
-            let opening_span = self.cur_token().span();
-            self.expect(Kind::LBrack);
+        self.with_stack_headroom(|p| {
+            let span = p.start_span();
+            let opening_span = p.cur_token().span();
+            p.expect(Kind::LBrack);
 
             let mut seen_rest_span: Option<Span> = None;
             let mut seen_optional_span: Option<Span> = None;
             let (elements, _) =
-                self.parse_delimited_list(Kind::RBrack, Kind::Comma, opening_span, |me| {
+                p.parse_delimited_list(Kind::RBrack, Kind::Comma, opening_span, |me| {
                     let tuple = me.parse_tuple_element();
                     // check for array type, because unknown types can be destructed, example of valid code:
                     // type C<T extends unknown[]> = [...string[], ...T];
@@ -1077,8 +1079,8 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 
                     tuple
                 });
-            self.expect(Kind::RBrack);
-            TSType::new_ts_tuple_type(self.end_span(span), elements, self)
+            p.expect(Kind::RBrack);
+            TSType::new_ts_tuple_type(p.end_span(span), elements, p)
         })
     }
 

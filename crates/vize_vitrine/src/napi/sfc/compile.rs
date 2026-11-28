@@ -21,6 +21,17 @@ pub fn compile_sfc(
     source: String,
     options: Option<SfcCompileOptionsNapi>,
 ) -> Result<SfcCompileResultNapi> {
+    // The call runs on the host's thread, whose stack may be far smaller than
+    // the CLI's worker stacks; a source too large for it compiles on one.
+    vize_l0::recursion::with_stack_for_source(source.len(), move || {
+        compile_sfc_on_current_stack(source, options)
+    })
+}
+
+fn compile_sfc_on_current_stack(
+    source: String,
+    options: Option<SfcCompileOptionsNapi>,
+) -> Result<SfcCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
         StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,

@@ -81,6 +81,7 @@ mod modifiers;
 mod module_record;
 mod observation;
 mod speculation;
+mod stack;
 mod state;
 
 mod js;
@@ -694,6 +695,9 @@ struct ParserImpl<'a, C: ParserConfig> {
 
     /// Grammar of host-embedded markup regions, if any (see [`markup`]).
     markup: Option<&'a dyn MarkupGrammar<'a>>,
+
+    /// Where recursive descent may proceed on the current stack (see [`stack`]).
+    stack: stack::StackWindow,
 }
 
 impl<'a, C: ParserConfig> ParserImpl<'a, C> {
@@ -727,6 +731,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             module_record_builder: ModuleRecordBuilder::new(allocator, source_type),
             is_ts: source_type.is_typescript(),
             markup: None,
+            stack: stack::StackWindow::current(),
         }
     }
 
