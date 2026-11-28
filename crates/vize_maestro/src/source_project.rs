@@ -15,6 +15,11 @@ pub use project::{ProjectQuery, ProjectQueryResult, SourceQueryProject};
 pub use query::{SourceQuery, SourceQueryResult};
 pub use snapshot::{SnapshotKey, SnapshotRefusal, SourceSnapshot, SourceSnapshotCache};
 
+#[cfg(feature = "experimental-template-operand-products")]
+mod template_products;
+#[cfg(feature = "experimental-template-operand-products")]
+pub use template_products::NativeTemplateQueryError;
+
 #[cfg(feature = "experimental-resident-blocks")]
 pub mod blocks;
 

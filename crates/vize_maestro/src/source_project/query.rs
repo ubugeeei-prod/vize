@@ -94,6 +94,24 @@ pub struct SourceQueryResult<T> {
     cancel: AbortHandle,
 }
 
+#[cfg(feature = "experimental-template-operand-products")]
+impl<T, E> SourceQueryResult<Result<T, E>> {
+    /// Keep the original revision and cancellation guards on successful work.
+    /// A refused computation drops its prepared data before publication.
+    pub fn transpose(self) -> Result<SourceQueryResult<T>, E> {
+        let Self {
+            snapshot,
+            value,
+            cancel,
+        } = self;
+        Ok(SourceQueryResult {
+            snapshot,
+            value: value?,
+            cancel,
+        })
+    }
+}
+
 impl<T> SourceQueryResult<T> {
     /// Borrow only this query's prepared data. This grants no freshness or
     /// publication; the original snapshot/cancellation and final guards remain.
