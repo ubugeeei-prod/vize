@@ -19,6 +19,7 @@ struct Coverage {
     files: usize,
     responses: usize,
     blocks: usize,
+    editor_programs_reused: usize,
     clean_checker_programs: usize,
     reused_from_incomplete_files: usize,
     diagnostics: usize,
@@ -70,6 +71,12 @@ fn compare(state: &ServerState, uri: &Url, source: &str, name: &str, counts: &mu
             counts.blocks += 1;
             let (frame, _) = script_frame(root, block).unwrap();
             if !frame.source().is_empty()
+                && matching_script(&owner, block).is_some_and(|syntax| syntax.program().is_some())
+            {
+                counts.editor_programs_reused += 1;
+                counts.reused_from_incomplete_files += usize::from(owner.admitted().is_none());
+            }
+            if !frame.source().is_empty()
                 && matching_script(&owner, block).is_some_and(|syntax| {
                     clean_checker_program(
                         syntax,
@@ -79,7 +86,6 @@ fn compare(state: &ServerState, uri: &Url, source: &str, name: &str, counts: &mu
                 })
             {
                 counts.clean_checker_programs += 1;
-                counts.reused_from_incomplete_files += usize::from(owner.admitted().is_none());
             }
         }
     }
@@ -91,6 +97,7 @@ fn exact_original_profiles_keep_complete_editor_and_public_checker_packets() {
     let uri = Url::parse("file:///native/Diagnostics.vue").unwrap();
     let mut counts = Coverage::default();
     for source in [
+        "<script setup>import { ref } from 'vue'; const value = ref(1); defineProps({title: String});</script><template>{{value}}</template>",
         "<script setup lang='ts'>import { ref } from 'vue'; const value = ref(1); defineProps<{ title: string }>();</script><template>{{value}}</template>",
         "<script lang='js'>const value: number = 1;</script><script setup lang='ts'>import Child from './Child.vue'; const title = '🌱';</script>",
         "<!-- 雪🌱 -->\r\n<script lang='tsx'>export const view = <span/>;</script>\r\n<script setup lang='ts'>const bad: = ;</script>",
@@ -126,7 +133,7 @@ fn exact_original_profiles_keep_complete_editor_and_public_checker_packets() {
         }
     }
     assert!(
-        counts.clean_checker_programs > 0
+        counts.editor_programs_reused > 0
             && counts.reused_from_incomplete_files > 0
             && counts.diagnostics > 0,
         "{counts:?}"
@@ -202,7 +209,7 @@ fn original_native_editor_and_checker_packets() {
     }
     assert!(
         counts.files > 0
-            && counts.clean_checker_programs > 0
+            && counts.editor_programs_reused > 0
             && counts.reused_from_incomplete_files > 0,
         "{counts:?}"
     );

@@ -1,16 +1,19 @@
 # Native editor and checker script reads
 
 `SourceSnapshot::script_query_products_with_diagnostics_from` composes Maestro's
-script outline and file-rename inputs with Canon's script syntax diagnostics
-after original native SFC lowering. It borrows the existing
+native script outline and file-rename inputs with Canon's script syntax
+diagnostics after original native SFC lowering. It borrows the existing
 `NativeSfcObservation`, including useful syntax in a File that cannot be admitted.
 Calls, macros, or an unsupported template do not prevent a clean original script
 Program from serving these syntax readers.
 
-The checker skips its parser only for an available original Program with the
-exact requested grammar, identical original source selection, and no diagnostics.
-The resulting checker packet is completely empty. Nonempty diagnostics, local
-holes, and differing grammars retain the existing diagnostic reader. When the
+The editor reuses matching original JavaScript Module Programs. Native TypeScript
+Programs request Module while the editor and checker request TS Unambiguous, so
+those reads keep their existing parser. The checker could skip its parser only
+for an exact requested profile with no diagnostics; current native Programs do
+not satisfy that condition. Coverage reports this count separately from editor
+Program reuse. Nonempty diagnostics, local holes, and differing grammars retain
+the existing diagnostic reader. When the
 native editor Program is unavailable, the existing combined editor/checker read
 keeps its shared parser schedule. Empty blocks keep their existing empty result.
 

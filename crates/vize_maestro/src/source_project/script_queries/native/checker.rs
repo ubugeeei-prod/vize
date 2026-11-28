@@ -1,4 +1,4 @@
-//! Canon diagnostics share the original compiler parse when its exact profile is clean.
+//! Compose native editor reads with Canon's original checking grammar.
 use super::{
     AuthoredProgram, NativeSfcObservation, ScriptQueryProducts, ScriptQueryRefusal, ServerState,
     SourceSnapshot, matching_script, script_frame,
@@ -9,9 +9,11 @@ use vize_l1::embed::syntax::EmbedSyntax;
 
 impl SourceSnapshot {
     /// Read editor script products and Canon's syntax diagnostics after native
-    /// lowering. A retained Program with this exact requested grammar and no
-    /// diagnostics supplies the checker's complete empty answer. Other profiles
-    /// and local holes keep their existing parser and recovery behavior. No
+    /// lowering. Editor reads reuse their exact original Program. Canon retains
+    /// its own parser when its requested profile differs; in particular native
+    /// TS Module and checker TS Unambiguous stay separate. A retained Program
+    /// supplies a complete empty checker answer only if that exact requested
+    /// profile is clean. Other profiles and holes keep their recovery behavior. No
     /// complete native File is required or admitted by this syntax-only read.
     pub fn script_query_products_with_diagnostics_from(
         &self,
