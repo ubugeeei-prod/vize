@@ -6,9 +6,10 @@
 
 use super::{Finding, nuxt_template_findings};
 
-const FIXTURE: &str =
-    include_str!("../../../../../tests/_fixtures/differential/nuxt/template-diagnostics/App.vue");
-/// Nuxt 4.7.0's own transform on `App.vue` through `@vue/compiler-sfc` 3.5,
+const FIXTURE: &str = include_str!(
+    "../../../../../tests/_fixtures/differential/nuxt/template-diagnostics/App.vue.txt"
+);
+/// Nuxt 4.7.0's own transform on `App.vue.txt` through `@vue/compiler-sfc` 3.5,
 /// with no page route matching and `ServerCard` as a server component.
 const NUXT_REFERENCE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/nuxt/template-diagnostics/nuxt-4.7.expected.txt"

@@ -43,6 +43,9 @@ const compileForTargetsExport =
 const formatFileExports =
   "module.exports.formatFile = nativeBinding.formatFile;\n" +
   "module.exports.formatFileSync = nativeBinding.formatFileSync;\n";
+// Nuxt mode hands Nuxt's template diagnostics the constructs it checks.
+const nuxtTemplateDiagnosticsExport =
+  "module.exports.nuxtTemplateDiagnostics = nativeBinding.nuxtTemplateDiagnostics;\n";
 const sha256 = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
 
 // native-binding.js gained load-failure diagnostics (the glibc floor, dlopen
@@ -194,6 +197,17 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       "source formatting exports retain their canonical initialization position",
     );
   }
+  if (text.includes(nuxtTemplateDiagnosticsExport)) {
+    assert.equal(
+      text.split(
+        "module.exports.normalizeVizeConfig = nativeBinding.normalizeVizeConfig;\n" +
+          nuxtTemplateDiagnosticsExport +
+          "module.exports.openPluginDocument = nativeBinding.openPluginDocument;\n",
+      ).length,
+      2,
+      "Nuxt template diagnostics export retains its canonical initialization position",
+    );
+  }
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -214,6 +228,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(registerPluginPlanExport, "")
       .replace(compileForTargetsExport, "")
       .replace(formatFileExports, "")
+      .replace(nuxtTemplateDiagnosticsExport, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");

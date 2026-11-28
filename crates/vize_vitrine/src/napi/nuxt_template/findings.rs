@@ -74,7 +74,9 @@ pub(crate) fn nuxt_template_findings(source: &str, server_tags: &[&str]) -> Vec<
         return Vec::new();
     };
     // Vue reuses the SFC's own template AST only for inline HTML templates.
-    if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {
+    if template.src.is_some()
+        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
+    {
         return Vec::new();
     }
     let content = template.content.as_ref();

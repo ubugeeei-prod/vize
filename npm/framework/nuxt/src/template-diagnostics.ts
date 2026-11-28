@@ -183,10 +183,10 @@ function mentionsCheckedTag(source: string, serverTags: readonly string[]): bool
 }
 
 interface TemplateDiagnosticsBridgeOptions {
-  getTransform(): NodeTransform | undefined;
-  getServerTags(): string[];
-  loadFinder(): Promise<FindTemplateFindings>;
-  readSource?(file: string): string;
+  getTransform: () => NodeTransform | undefined;
+  getServerTags: () => string[];
+  loadFinder: () => Promise<FindTemplateFindings>;
+  readSource?: (file: string) => string;
 }
 
 /** Report Nuxt's template diagnostics for each SFC Vize compiles, per environment. */
