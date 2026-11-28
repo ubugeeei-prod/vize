@@ -74,7 +74,7 @@ fn the_native_callback_preserves_whole_input_refusal() {
         r#"<div><p>日本語😀</p></div>"#,
     ] {
         let start = source.find("<p").unwrap() as u32;
-        let end = start + source[start as usize..].find('>').unwrap() as u32 + 1;
+        let end = start + source.get(start as usize..).unwrap().find('>').unwrap() as u32 + 1;
         assert_eq!(
             actual
                 .lint_native_template(source, "Vapor.vue")
