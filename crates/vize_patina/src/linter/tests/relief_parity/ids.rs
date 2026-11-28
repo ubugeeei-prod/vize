@@ -68,6 +68,13 @@ fn complete_vue_sfc_jsx_and_tsx_packets_match_the_frozen_original_rule() {
             );
         }
     }
+    for (source, lang, filename) in super::jsx_corpus() {
+        assert_eq!(
+            format!("{:?}", actual.lint_jsx(&source, filename, lang)),
+            format!("{:?}", baseline.lint_jsx(&source, filename, lang)),
+            "{filename}: {source}"
+        );
+    }
 }
 
 #[test]
@@ -133,6 +140,18 @@ fn full_entity_expansion_and_first_coexisting_label_keep_fixed_packets() {
     let expected = LintResult {
         filename: "Ids.vue".into(),
         diagnostics: vec![duplicate(source, "x", r#"id="x""#, r#"id="x""#)],
+        error_count: 1,
+        warning_count: 0,
+    };
+    let actual = linter(Box::new(IdDuplication)).lint_template(source, "Ids.vue");
+    assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+
+    // The earlier v-if ID cannot coexist with either v-else child. The
+    // diagnostic must skip it and label the first child of the same branch.
+    let source = r#"<div v-if="ok" id="x"/><section v-else><b id = "x"/><i id="x"/></section>"#;
+    let expected = LintResult {
+        filename: "Ids.vue".into(),
+        diagnostics: vec![duplicate(source, "x", r#"id = "x""#, r#"id="x""#)],
         error_count: 1,
         warning_count: 0,
     };
