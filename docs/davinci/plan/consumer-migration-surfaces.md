@@ -7,7 +7,7 @@
 # Consumer migration surfaces
 
 This inventory records where the user-facing consumers that must eventually
-sit on Davinci/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
+sit on L0–L4 still name stage crates, legacy AST/parser/Croquis
 crates, or raw OXC crates directly on current `origin/main`. It is an
 observational guard for planning only. It does not change rollout state.
 
@@ -19,7 +19,7 @@ observational guard for planning only. It does not change rollout state.
   means "this file directly names this surface", not necessarily that every
   mention is a runtime dependency edge.
 - Stage names are split into preferred physical names and compatibility
-  code-name aliases so L0/L1/L2 migration work is measurable without changing
+  code-name aliases so L0–L4 migration work is measurable without changing
   rollout state.
 - Carton is legacy host/compatibility infrastructure, not a level alias; its
   references remain visible separately and receive no native-stage credit.
@@ -38,6 +38,9 @@ observational guard for planning only. It does not change rollout state.
 | L1                        | stage | preferred: `vize_l1`<br>compat/code-name: `vize_sinopia`                                                                                           |
 | L2                        | stage | preferred: `vize_l2`<br>compat/code-name: `vize_disegno`                                                                                           |
 | L1->L2                    | stage | preferred: `vize_l1_to_l2`<br>compat/code-name: `vize_ricalco`                                                                                     |
+| L2->L3                    | stage | preferred: `vize_l2_to_l3`                                                                                                                         |
+| L3                        | stage | preferred: `vize_l3`<br>compat/code-name: `vize_impeto`                                                                                            |
+| L4                        | stage | preferred: `vize_l4`<br>compat/code-name: `vize_stesura`                                                                                           |
 | old AST/parser            | old   | legacy: `vize_relief`, `vize_armature`                                                                                                             |
 | Croquis analysis          | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
 | raw OXC                   | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |

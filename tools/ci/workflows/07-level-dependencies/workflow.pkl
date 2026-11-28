@@ -41,6 +41,10 @@ jobs {
         run = "node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.ts"
       }
       new Dynamic {
+        name = "Test every physical stage direction"
+        run = "node --test tests/tooling/davinci-stage-direction.test.ts"
+      }
+      new Dynamic {
         name = "Report and ratchet normal level dependencies"
         run = #"node tools/support/compat/davinci/level-dependencies.ts --base "$DEPENDENCY_BASE""#
       }

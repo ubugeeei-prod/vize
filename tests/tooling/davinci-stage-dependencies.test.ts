@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { stageDependencies } from "../../tools/support/compat/davinci/stage-dependencies.ts";
 
 import {
   assertL0AliasConsumer,
@@ -51,6 +52,7 @@ const publishedDavinciStages = new Set([
   "vize_l3",
   "vize_l1_to_l2",
   "vize_l2_to_l3",
+  "vize_l4",
 ]);
 
 test("host executable lookup does not enter normal or build level dependencies", () => {
@@ -85,21 +87,14 @@ test("Davinci crates import retained packages through stage aliases", () => {
 test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 1],
+    ["vize_l0_derive", 0],
     ["vize_l0", 0.5],
     ["vize_l1", 1],
     ["vize_l2", 2],
     ["vize_l3", 3],
     ["vize_l1_to_l2", 4],
     ["vize_l2_to_l3", 4],
-  ]);
-  const expectedEdges = new Map<string, string[]>([
-    ["vize_carton", ["vize_l0"]],
-    ["vize_l0", []],
-    ["vize_l1", ["vize_l0"]],
-    ["vize_l2", ["vize_l0", "vize_l1"]],
-    ["vize_l3", ["vize_l0", "vize_l2"]],
-    ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2"]],
-    ["vize_l2_to_l3", ["vize_l0", "vize_l2", "vize_l3"]],
+    ["vize_l4", 5],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -108,10 +103,10 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
       .filter((dependency) => dependency.kind === null && tiers.has(dependency.name))
       .map((dependency) => dependency.name)
       .sort();
-    assert.deepEqual(stageEdges, expectedEdges.get(packageName));
+    assert.deepEqual(stageEdges, stageDependencies[packageName]);
 
     for (const dependency of dependencies) {
-      if (dependency.kind !== null) continue;
+      if (dependency.kind === "dev") continue;
       const dependencyTier = tiers.get(dependency.name);
       if (dependencyTier === undefined) continue;
       assert.ok(
