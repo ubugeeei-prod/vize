@@ -10,7 +10,7 @@ export type BurstSample = {
   outputSha: string;
 };
 
-export type SerialSample = { latencies: number[]; outputSha: string };
+export type SerialSample = { latencies: number[]; outputSha: string; errors?: number };
 
 export type BuildSummary = {
   id: string;
@@ -35,6 +35,8 @@ export type BuildSummary = {
 export type Cell = {
   label: string;
   sfcs: number;
+  giantBlocks?: number;
+  corpusSha256?: string;
   serialFiles: number;
   replicates: number;
   orderSeed: number;
@@ -95,6 +97,8 @@ const defined = (values: (number | undefined)[]): number[] =>
 export function summarizeCell(input: {
   label: string;
   sfcs: number;
+  giantBlocks?: number;
+  corpusSha256?: string;
   serialFiles: number;
   replicates: number;
   orderSeed?: number;
@@ -106,22 +110,32 @@ export function summarizeCell(input: {
 }): Cell {
   const shas = new Set<string>();
   const perBuild = new Map<string, Set<string>>();
-  for (const id of input.builds) {
+  const references = input.references ?? [];
+  for (const id of [...input.builds, ...references]) {
     const own = new Set<string>();
     for (const sample of input.bursts.get(id) ?? []) own.add(`burst:${sample.outputSha}`);
     for (const sample of input.serials.get(id) ?? []) own.add(`serial:${sample.outputSha}`);
     perBuild.set(id, own);
-    for (const sha of own) shas.add(sha);
+    if (input.builds.includes(id)) {
+      for (const sha of own) shas.add(sha);
+    }
   }
-  // Each build must answer every run identically; builds may differ only when allowed.
+  // Every provider must be stable. References may differ from the compared
+  // builds, whose cross-build byte equality is separately required.
   const unstable = [...perBuild].find(([, own]) => own.size !== 2);
   const outputsIdentical = shas.size === 2;
-  const failure = unstable
-    ? `${unstable[0]} answered runs differently`
-    : !outputsIdentical && !input.allowOutputChange
-      ? "builds answered differently"
-      : undefined;
-  const references = input.references ?? [];
+  const errored = [...input.builds, ...references].find((id) =>
+    [...(input.bursts.get(id) ?? []), ...(input.serials.get(id) ?? [])].some(
+      (sample) => (sample.errors ?? 0) > 0,
+    ),
+  );
+  const failure = errored
+    ? `${errored} returned JSON-RPC errors`
+    : unstable
+      ? `${unstable[0]} answered runs differently`
+      : !outputsIdentical && !input.allowOutputChange
+        ? "builds answered differently"
+        : undefined;
   const builds = [...input.builds, ...references].map((id): BuildSummary => {
     const bursts = input.bursts.get(id) ?? [];
     const serials = input.serials.get(id) ?? [];
@@ -154,12 +168,14 @@ export function summarizeCell(input: {
   return {
     label: input.label,
     sfcs: input.sfcs,
+    giantBlocks: input.giantBlocks,
+    corpusSha256: input.corpusSha256,
     serialFiles: input.serialFiles,
     replicates: input.replicates,
     orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
     ordersPerReplicate: (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
     burstSamplesPerBuild: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
-    builds,
+    builds: failure ? [] : builds,
     outputsIdentical,
     failure,
   };
@@ -182,7 +198,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
         ? "AB+BA"
         : `${cell.ordersPerReplicate} position-balanced orders`;
     lines.push(
-      `**${cell.sfcs} SFCs**, ${cell.replicates} balanced replicates ` +
+      `**${cell.sfcs} SFCs${cell.giantBlocks ? ` (giant component with ${cell.giantBlocks} typed prop uses)` : ""}**, ${cell.replicates} balanced replicates ` +
         `(${schedule}, seed 0x${cell.orderSeed.toString(16)}): ` +
         `${cell.burstSamplesPerBuild} burst samples/build; ` +
         `${cell.builds[0]?.serialSessions ?? 0} serial sessions/build × ${cell.serialFiles} transforms ` +
@@ -194,6 +210,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
             : "Responses differ between builds (allowed)."),
       "",
     );
+    if (cell.corpusSha256) lines.push(`Input corpus SHA-256: \`${cell.corpusSha256}\`.`, "");
     if (cell.failure) continue;
     const first = cell.builds[0];
     lines.push(

@@ -21,7 +21,7 @@ for entry in "wsl2-ext4=$HOME/vize-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/pro
   label=${entry%%=*}
   node tools/benchmarks/scripts/content-mapper-pair.ts \
     --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" "${reference[@]}" \
-    --root "${entry#*=}" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
+    --root "${entry#*=}" --sizes "$SIZES" --projects "$PROJECTS" --runs "$RUNS" $ALLOW \
     --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
   cat "$WSL_MOUNT_ROOT/out/pair-$label.md" >> "$summary_path"
 done

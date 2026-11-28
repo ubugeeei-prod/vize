@@ -15,6 +15,6 @@ if [[ "$REFERENCE" == "true" ]]; then
 fi
 node tools/benchmarks/scripts/content-mapper-pair.ts \
   --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize "${reference[@]}" \
-  --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
+  --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --projects "$PROJECTS" --runs "$RUNS" $ALLOW \
   --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
 cat "$RUNNER_TEMP/pair-out/pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"

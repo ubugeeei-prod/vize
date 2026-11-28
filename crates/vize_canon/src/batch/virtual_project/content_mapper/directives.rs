@@ -7,9 +7,11 @@
 
 use std::ops::Range;
 
+mod echo_ranges;
 mod expectations;
-use expectations::expect_interval;
 mod semantic_diagnostics;
+use echo_ranges::EchoRanges;
+use expectations::expect_interval;
 
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::String as CompactString;
@@ -198,6 +200,12 @@ pub(super) fn with_component_prop_echoes(
         })
         .map(|candidate| &candidate.src_range)
         .collect::<Vec<_>>();
+    let indexed_owners = (literal_owners.len() > echo_ranges::INDEX_THRESHOLD).then(|| {
+        literal_owners
+            .iter()
+            .copied()
+            .collect::<vize_l0::FxHashSet<_>>()
+    });
     let mut echoes = Vec::new();
     for mapping in mappings {
         if protected.contains(&mapping.gen_range.start) {
@@ -227,9 +235,14 @@ pub(super) fn with_component_prop_echoes(
             ]));
             continue;
         }
-        let has_literal_owner = literal_owners
-            .iter()
-            .any(|source| **source == mapping.src_range);
+        let has_literal_owner = indexed_owners.as_ref().map_or_else(
+            || {
+                literal_owners
+                    .iter()
+                    .any(|source| **source == mapping.src_range)
+            },
+            |owners| owners.contains(&mapping.src_range),
+        );
         if has_literal_owner {
             echoes.push(ContentMapperDiagnosticDirective([
                 mapping.src_range.start,
@@ -248,13 +261,11 @@ pub(super) fn with_component_prop_echoes(
         unused_expect_directive_diagnostics: Vec::new(),
         directives: Vec::new(),
     });
+    let mut ranges = EchoRanges::new(&directives.directives, echoes.len());
     for echo in echoes {
         let [_, _, start, end, _, _] = echo.0;
-        let overlaps_existing = directives.directives.iter().any(|existing| {
-            let [_, _, existing_start, existing_end, _, _] = existing.0;
-            start < existing_end && existing_start < end
-        });
-        if !overlaps_existing {
+        if !ranges.overlaps(&directives.directives, start, end) {
+            ranges.insert(start, end);
             directives.directives.push(echo);
         }
     }

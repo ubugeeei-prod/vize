@@ -11,7 +11,7 @@ if ($env:REFERENCE -eq 'true') {
 }
 node tools/benchmarks/scripts/content-mapper-pair.ts `
   --bin "base=$PWD\pair-bin\base\vize.exe" --bin "head=$PWD\pair-bin\head\vize.exe" `
-  --root (Join-Path $env:RUNNER_TEMP 'pair') --sizes $env:SIZES --runs $env:RUNS @extra `
+  --root (Join-Path $env:RUNNER_TEMP 'pair') --sizes $env:SIZES --projects $env:PROJECTS --runs $env:RUNS @extra `
   --label windows-ntfs --out $out | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "pair failed" }
 Get-Content (Join-Path $out 'pair-windows-ntfs.md') | Add-Content $env:GITHUB_STEP_SUMMARY

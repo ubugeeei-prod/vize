@@ -147,7 +147,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
   }
   assert.match(
     workflow,
-    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
+    /WSLENV: PROJECTS\/u:SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
   assert.match(workflow, /AB\+BA replicates/);
@@ -169,4 +169,122 @@ test("the syscall census reads strace lines and collapses generated spellings", 
     pathShape("/p/src/features/f0024/Widget09.vue", "/p"),
     "<project>/src/features/fNNNN/Name.vue",
   );
+});
+
+test("the giant prop workload retains every distinct script value and typed child use", async () => {
+  const { giantComponentProps } =
+    await import("../../tools/benchmarks/scripts/content-mapper-pair-giant.ts");
+  const files = giantComponentProps(1000);
+  const app = files.get("src/App.vue") ?? "";
+  assert.equal(app.match(/const value\d+ = /g)?.length, 1000);
+  assert.equal(app.match(/<Child :count="value\d+" \/>/g)?.length, 1000);
+  assert.match(app, /const value999 = 999;/);
+  assert.match(files.get("src/Child.vue") ?? "", /count: number/);
+  assert.throws(() => giantComponentProps(0), /positive integer/);
+  assert.throws(() => giantComponentProps(1.5), /positive integer/);
+});
+
+test("mapper giant cells use the existing projects input without replacing ordinary sizes", async () => {
+  const { giantBlockSizes } =
+    await import("../../tools/benchmarks/scripts/content-mapper-pair-giant.ts");
+  assert.deepEqual(giantBlockSizes("vue:1000,monorepo:5000"), []);
+  assert.deepEqual(giantBlockSizes("giant:1000,giant:10000"), [1000, 10000]);
+  assert.throws(() => giantBlockSizes("giant:0"), /positive integer/);
+  assert.throws(() => giantBlockSizes("giant:1.5"), /positive integer/);
+});
+
+test("stable mapper errors refuse the cell even when output changes are allowed", () => {
+  for (const head of [
+    {
+      bursts: [
+        { ...burst(100), errors: 1 },
+        { ...burst(110), errors: 1 },
+      ],
+      serials: [serial(), serial()],
+    },
+    {
+      bursts: [burst(100), burst(110)],
+      serials: [
+        { ...serial(), errors: 1 },
+        { ...serial(), errors: 1 },
+      ],
+    },
+  ]) {
+    const refused = cell(head, true);
+    assert.equal(refused.failure, "head returned JSON-RPC errors");
+    assert.deepEqual(refused.builds, []);
+    assert.doesNotMatch(JSON.stringify(refused), /burstWallMs|serialP50Ms/);
+    assert.doesNotMatch(markdown("x", [refused]), /\| head \|/);
+  }
+});
+
+test("a reference mapper error refuses its entire comparison cell", () => {
+  const refused = summarizeCell({
+    label: "linux-ext4",
+    sfcs: 2,
+    giantBlocks: 1000,
+    serialFiles: 2,
+    replicates: 1,
+    builds: ["base"],
+    references: ["vue"],
+    bursts: new Map([
+      ["base", [burst(200), burst(200)]],
+      ["vue", [{ ...burst(100), errors: 1 }]],
+    ]),
+    serials: new Map([
+      ["base", [serial(), serial()]],
+      ["vue", [serial()]],
+    ]),
+    allowOutputChange: true,
+  });
+  assert.equal(refused.failure, "vue returned JSON-RPC errors");
+  assert.deepEqual(refused.builds, []);
+});
+
+test("unstable reference replies refuse all timing while stable distinct reference output is valid", () => {
+  for (const allowOutputChange of [false, true]) {
+    for (const mode of ["stable", "burst", "serial"] as const) {
+      const result = summarizeCell({
+        label: "linux-ext4",
+        sfcs: 2,
+        serialFiles: 2,
+        replicates: 1,
+        builds: ["base", "head"],
+        references: ["vue"],
+        bursts: new Map([
+          ["base", [burst(200), burst(220)]],
+          ["head", [burst(100), burst(110)]],
+          [
+            "vue",
+            [burst(300, "reference"), burst(330, mode === "burst" ? "changed" : "reference")],
+          ],
+        ]),
+        serials: new Map([
+          ["base", [serial(), serial()]],
+          ["head", [serial(), serial()]],
+          [
+            "vue",
+            [
+              serial("reference-serial"),
+              serial(mode === "serial" ? "changed" : "reference-serial"),
+            ],
+          ],
+        ]),
+        allowOutputChange,
+      });
+      assert.equal(result.outputsIdentical, true, "base and head still match exactly");
+      if (mode === "stable") {
+        assert.equal(result.failure, undefined);
+        assert.deepEqual(
+          result.builds.map((build) => build.id),
+          ["base", "head", "vue"],
+        );
+      } else {
+        assert.equal(result.failure, "vue answered runs differently");
+        assert.deepEqual(result.builds, []);
+        assert.doesNotMatch(JSON.stringify(result), /burstWallMs|serialP50Ms/);
+        assert.doesNotMatch(markdown("x", [result]), /\| (?:base|head|vue) \|/);
+      }
+    }
+  }
 });

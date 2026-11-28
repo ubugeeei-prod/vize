@@ -35,6 +35,7 @@ import {
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
+import { giantBlockSizes, giantComponentProps } from "./content-mapper-pair-giant.ts";
 import { COMPILER_OPTIONS, generateScaleProject, writeProject } from "./scale-project-generator.ts";
 import {
   type BurstSample,
@@ -223,6 +224,7 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
   const hash = createHash("sha256");
   let pending: Buffer = Buffer.alloc(0);
   let resolveReply: (() => void) | undefined;
+  let errors = 0;
   child.stdout.on("data", (chunk: Buffer) => {
     pending = pending.length === 0 ? chunk : Buffer.concat([pending, chunk]);
     for (;;) {
@@ -232,7 +234,9 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
         /Content-Length:\s*(\d+)/i.exec(pending.toString("ascii", 0, end))?.[1],
       );
       if (pending.length < end + 4 + length) return;
-      hash.update(pending.subarray(end + 4, end + 4 + length));
+      const body = pending.subarray(end + 4, end + 4 + length);
+      hash.update(body);
+      errors += errorReplies(body);
       pending = pending.subarray(end + 4 + length);
       const done = resolveReply;
       resolveReply = undefined;
@@ -251,7 +255,7 @@ async function serial(build: Build, project: string, messages: Message[]): Promi
   child.stdin.end();
   const code = await new Promise<number | null>((done) => child.on("close", done));
   if (code !== 0) throw new Error(`${build.id} serial session exited with ${code}`);
-  return { latencies, outputSha: hash.digest("hex") };
+  return { latencies, errors, outputSha: hash.digest("hex") };
 }
 
 async function main(): Promise<void> {
@@ -261,6 +265,7 @@ async function main(): Promise<void> {
       root: { type: "string" },
       sizes: { type: "string", default: "1000,5000" },
       runs: { type: "string", default: "5" },
+      projects: { type: "string", default: "" },
       "serial-files": { type: "string", default: "300" },
       label: { type: "string", default: process.platform },
       out: { type: "string" },
@@ -300,10 +305,27 @@ async function main(): Promise<void> {
   const runs = Number(values.runs);
   const serialFiles = Number(values["serial-files"]);
   mkdirSync(out, { recursive: true });
+  const shapes = values.sizes.split(",").map((size) => ({
+    id: `vue-${size}`,
+    sfcs: Number(size),
+    giantBlocks: 0,
+  }));
+  for (const giantBlocks of giantBlockSizes(values.projects))
+    shapes.push({ id: `giant-component-props-${giantBlocks}`, sfcs: 2, giantBlocks });
   const cells: Cell[] = [];
-  for (const sfcs of values.sizes.split(",").map(Number)) {
-    const project = join(root, `vue-${sfcs}`);
-    writeProject(project, generateScaleProject({ kind: "vue", sfcs }).files);
+  for (const shape of shapes) {
+    const { sfcs } = shape;
+    const project = join(root, shape.id);
+    const inputs =
+      shape.giantBlocks > 0
+        ? giantComponentProps(shape.giantBlocks)
+        : generateScaleProject({ kind: "vue", sfcs }).files;
+    const corpusSha = createHash("sha256");
+    for (const [file, text] of [...inputs].sort(([left], [right]) =>
+      left < right ? -1 : Number(left > right),
+    ))
+      corpusSha.update(`${file}\0${text}\0`);
+    writeProject(project, inputs);
     if (values.typescript) {
       mkdirSync(join(project, "node_modules"), { recursive: true });
       symlinkSync(
@@ -314,12 +336,12 @@ async function main(): Promise<void> {
     }
     const files = sfcFiles(project);
     const messages = sessionMessages(project, files);
-    const stream = join(root, `stream-${sfcs}.bin`);
+    const stream = join(root, `stream-${shape.id}.bin`);
     writeFileSync(
       stream,
       Buffer.concat(messages.map((m, i) => frame({ jsonrpc: "2.0", id: i + 1, ...m }))),
     );
-    const scratch = join(root, `scratch-${sfcs}`);
+    const scratch = join(root, `scratch-${shape.id}`);
     mkdirSync(scratch, { recursive: true });
     const all = [...builds, ...references];
     const bursts = new Map<string, BurstSample[]>(all.map((b) => [b.id, []]));
@@ -341,6 +363,8 @@ async function main(): Promise<void> {
     const cell = summarizeCell({
       label: values.label,
       sfcs,
+      giantBlocks: shape.giantBlocks || undefined,
+      corpusSha256: corpusSha.digest("hex"),
       serialFiles: serialMessages.length - 2,
       replicates: runs,
       orderSeed: PAIR_ORDER_SEED,

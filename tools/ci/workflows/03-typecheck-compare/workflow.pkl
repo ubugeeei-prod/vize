@@ -45,7 +45,7 @@ on {
         ["default"] = false
       }
       projects {
-        description = "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        description = "generated: vue:<sfcs> or monorepo:<sfcs>; content-mapper: optional giant:<typed prop uses>"
         type = "string"
         ["default"] = "vue:1000,vue:5000,monorepo:5000"
       }

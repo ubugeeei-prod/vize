@@ -34,7 +34,7 @@ on:
         type: boolean
         default: false
       projects:
-        description: "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        description: "generated: vue:<sfcs> or monorepo:<sfcs>; content-mapper: optional giant:<typed prop uses>"
         type: string
         default: vue:1000,vue:5000,monorepo:5000
       runtime:
@@ -567,6 +567,7 @@ jobs:
       - name: Measure
         env:
           SIZES: ${{ inputs.sizes }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -618,8 +619,9 @@ jobs:
       - name: Measure ext4 and the Windows mount
         shell: wsl-bash {0}
         env:
-          WSLENV: SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
+          WSLENV: PROJECTS/u:SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
           SIZES: ${{ inputs.sizes }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
@@ -652,6 +654,7 @@ jobs:
         shell: pwsh
         env:
           SIZES: ${{ inputs.sizes }}
+          PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
