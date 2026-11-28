@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/template-ref-key-refs-rename",
+  "provenance": {
+    "fixCommit": "7b56c699fefb018e351e4ac63d936897bcf27b8d",
+    "witnessPath": "crates/vize_maestro/src/ide/template_ref/keys/wire_tests.rs",
+    "witnessTest": "pinned_fixtures_answer_over_the_wire",
+    "inputOrigin": "repository-authored Options API SFC: one key spelled this.$refs.box, this.$refs['box'], ref=\"box\", $refs.box and $refs['box'], beside an unrelated title=\"box\"",
+    "contractOrigin": "complete prepare-rename and rename responses from the template $refs['box'] key: the rename rewrites every $refs and ref spelling and leaves the unrelated attribute"
+  },
+  "files": [
+    {
+      "runtimePath": "App.vue",
+      "source": "App.vue.txt",
+      "sha256": "38731fc3c18e346b5ec1345d8847541d7b562f45f658e472ed3ae538ab1be698"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "method": "textDocument/rename",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "72a4022971c963df6896ea828d9d8ab23302da113a7a2bf29a9bab4fed9b802f"
+  },
+  "scope": "standard legacy rename only; production stdio replay required; no native provider credit"
+}

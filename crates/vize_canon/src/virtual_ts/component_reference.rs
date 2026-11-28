@@ -362,7 +362,18 @@ pub(crate) fn global_component_type(
     component: impl Fn(&str) -> String,
     fallback: &str,
 ) -> String {
-    let registered = component("__C");
+    global_component_type_as(tag, "__C", component, fallback)
+}
+
+/// [`global_component_type`] with the registered type inferred as `name`, so
+/// that lookups for several tags can nest without shadowing each other.
+pub(crate) fn global_component_type_as(
+    tag: &str,
+    name: &str,
+    component: impl Fn(&str) -> String,
+    fallback: &str,
+) -> String {
+    let registered = component(name);
     let mut output = String::default();
     let mut previous: Option<String> = None;
     let mut branches = 0_usize;
@@ -374,7 +385,7 @@ pub(crate) fn global_component_type(
         super::helpers::push_ts_string_literal(&mut key_literal, key.as_str());
         vize_carton::append!(
             output,
-            "(import('vue').GlobalComponents extends {{ {key_literal}: infer __C }} ? {registered} : "
+            "(import('vue').GlobalComponents extends {{ {key_literal}: infer {name} }} ? {registered} : "
         );
         branches += 1;
         previous = Some(key);

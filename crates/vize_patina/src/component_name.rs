@@ -52,7 +52,14 @@ pub(crate) fn is_nuxt_route_file(filename: &str) -> bool {
 /// dotted stem, such as `page.block`, is kept whole so it stays reported.
 pub(crate) fn definition_name_stem(filename: &str) -> &str {
     let basename = filename.rsplit(['/', '\\']).next().unwrap_or(filename);
-    let mut name = basename.trim_end_matches(".vue");
+    strip_nuxt_mode_suffixes(basename.trim_end_matches(".vue"))
+}
+
+/// A file stem without Nuxt's mode suffixes, in the order
+/// [`definition_name_stem`] documents: `Foo.client` and `Foo.server.global`
+/// are both `Foo`. A stem that is only a suffix strips to the empty string.
+pub(crate) fn strip_nuxt_mode_suffixes(stem: &str) -> &str {
+    let mut name = stem;
     while let Some(rest) = name
         .strip_suffix(".global")
         .or_else(|| name.strip_suffix(".island"))

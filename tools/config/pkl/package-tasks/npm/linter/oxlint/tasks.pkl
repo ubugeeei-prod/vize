@@ -34,6 +34,7 @@ tasks {
       "src/cli/oxlint.test.ts",
       "src/cli/report-format.test.ts",
       "src/cli/type-aware-vue.test.ts",
+      "src/run-scope.test.ts",
     ))
     module.run("node", List("src/eslint-acceptance.test.mjs"))
     module.run("node", List("src/v-on-event-autofix-host.test.ts"))

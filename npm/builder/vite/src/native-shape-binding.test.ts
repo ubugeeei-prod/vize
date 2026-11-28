@@ -9,7 +9,7 @@ import { buildCompileFileOptions } from "./compile-options.ts";
 import { compileFile } from "./compiler.ts";
 import type { CompiledModule } from "./types.ts";
 import { generateOutput, generateScopeId } from "./utils/index.ts";
-import { analyzeModuleOutput, type ModuleOutputInfo } from "./utils/module-output.ts";
+import { analyzeModuleOutput, type ModuleOutputInfo } from "../test/oxc-module-output.ts";
 
 const TEXT = {
   cjk: "日本語",

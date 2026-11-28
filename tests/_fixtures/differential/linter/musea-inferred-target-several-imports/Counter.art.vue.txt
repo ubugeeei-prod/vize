@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+import Icon from "./Icon.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Default">
+    <Counter :initial="0">Increment</Counter>
+  </variant>
+  <variant name="WithIcon">
+    <Counter :initial="1"><Icon>+</Icon> Increment</Counter>
+  </variant>
+</art>

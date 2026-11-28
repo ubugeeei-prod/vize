@@ -130,6 +130,7 @@ jobs {
         name = "Setup stable Node"
         uses = ci.setupVp
         with {
+          version = ci.vpVersion
           `node-version-file` = "package.json"
           `run-install` = false
         }

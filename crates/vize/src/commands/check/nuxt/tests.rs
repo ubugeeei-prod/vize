@@ -361,14 +361,13 @@ export function packageRoute() {}
         "type-only exports should not become auto-import values: {:#?}",
         options.auto_import_stubs
     );
-    assert!(
-        options
-            .auto_import_stubs
-            .iter()
-            .any(|stub| stub == "type NPMXProfile = any;"),
-        "expected source type auto-import stub, got: {:#?}",
-        options.auto_import_stubs
+    let root = project_root.to_string_lossy().replace('\\', "/");
+    let is_types = |stub: &str| stub.starts_with("// @vize-module-augmentation");
+    let types = options.auto_import_stubs.iter().find(|stub| is_types(stub));
+    let expected = cstr!(
+        "// @vize-module-augmentation\ndeclare global {{\n  export type {{ NPMXProfile }} from '{root}/shared/types/social'\n  import('{root}/shared/types/social')\n  export type {{ Settings }} from '{root}/app/composables/useSettings'\n  import('{root}/app/composables/useSettings')\n}}\n"
     );
+    assert_eq!(types, Some(&expected), "real type re-exports, not `any`");
 
     std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
     std::fs::write(
@@ -401,14 +400,11 @@ export {}
         "source fallback should defer to generated import manifests: {:#?}",
         generated_options.auto_import_stubs
     );
-    assert!(
-        !generated_options
-            .auto_import_stubs
-            .iter()
-            .any(|stub| stub == "type NPMXProfile = any;"),
-        "source type fallback should defer to generated import manifests: {:#?}",
-        generated_options.auto_import_stubs
-    );
+    let types = generated_options
+        .auto_import_stubs
+        .iter()
+        .find(|stub| is_types(stub));
+    assert_eq!(types, None, "generated manifests are the type authority");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

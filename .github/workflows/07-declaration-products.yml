@@ -92,7 +92,7 @@ jobs:
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
         with:
-          version: latest
+          version: 1.8.0
           node-version-file: package.json
           cache: true
           cache-save: false

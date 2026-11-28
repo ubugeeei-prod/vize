@@ -59,7 +59,7 @@ void test("docs builds publish a deterministic machine-readable endpoint", () =>
   const rendered = renderDocumentationContractMetadata();
   assert.deepEqual(JSON.parse(rendered), documentationContractMetadata());
   assert.equal(rendered, renderDocumentationContractMetadata());
-  assert.match(documentationReleaseNote(), /8 product surfaces and 480 source-owned completion/u);
+  assert.match(documentationReleaseNote(), /8 product surfaces and 489 source-owned completion/u);
 
   const packageJson = JSON.parse(
     readFileSync(new URL("../../docs/package.json", import.meta.url), "utf8"),

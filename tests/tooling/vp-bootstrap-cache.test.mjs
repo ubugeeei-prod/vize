@@ -1,4 +1,5 @@
 import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
+import { pinnedVpVersion } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import { test } from "node:test";
@@ -144,6 +145,7 @@ void test("both Musea callers restore the bootstrap runtime before their unchang
         assert.equal(setup?.uses?.startsWith("voidzero-dev/setup-vp@"), true);
         assert.equal(step.if, setup.if);
         assert.deepEqual(setup.with, {
+          version: pinnedVpVersion,
           "node-version-file": "package.json",
           cache: true,
           "run-install": false,
@@ -200,7 +202,7 @@ function assertDependencyConsumer(
   );
   assert.equal(setup.with.cache, true, "consumers must retain restoration");
   assert.equal(setup.with["cache-save"], false, "consumers cannot publish the dependency store");
-  assert.equal(setup.with.version, "latest", "preserve the previous installer version policy");
+  assert.equal(setup.with.version, pinnedVpVersion, "consumers install the pinned Vite+ CLI");
   if (runtime === "matrix") {
     assert.deepEqual(job.strategy, {
       "fail-fast": false,
@@ -275,7 +277,7 @@ void test("one trusted main producer owns the selected Linux source dependency-s
   assert.equal(producer.needs, undefined, "seed independently of the expensive Rust builds");
   const setup = producer.steps.find((step) => step.uses === dependencyAction);
   assert.deepEqual(setup.with, {
-    version: "latest",
+    version: pinnedVpVersion,
     "node-version-file": "package.json",
     cache: true,
     "cache-save": true,

@@ -134,7 +134,7 @@ pub use lightningcss as css_ast;
 pub use linter::PreparedLint;
 pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
-pub use linter::{LintResult, Linter};
+pub use linter::{LintResult, Linter, SharedTypeSources, rule_runs_on_plain_scripts};
 pub use markup::{
     L2Markup, LintL2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
     MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,

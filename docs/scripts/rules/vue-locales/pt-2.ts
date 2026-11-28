@@ -194,6 +194,8 @@ export const portugueseVueNotes = {
     "Uma asserção de tipo não altera o valor que envolve; por isso, em um template, `(rows as string[]).push(x)` e `rows!.push(x)` são relatados como mutações da prop `rows`, enquanto o eslint-plugin-vue para na asserção.",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
     "Verifica o nome estático de um ponto de inserção de slot renderizado. A sintaxe de provedor v-slot e #name no componente pai fica fora desta regra.",
+  "Checks the static name of a component definition: the name option, defineOptions({ name }) and the first argument of app.component(). The file name is vue/component-file-name-casing.":
+    "Verifica o nome estático de uma definição de componente: a opção name, defineOptions({ name }) e o primeiro argumento de app.component(). O nome de arquivo é verificado por vue/component-file-name-casing.",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "O nome de arquivo do componente é verificado. PascalCase e kebab-case são aceitos; o uso misturado de maiúsculas e minúsculas é reportado.",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":

@@ -1,6 +1,6 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 `timeout-minutes` = 30
 env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }

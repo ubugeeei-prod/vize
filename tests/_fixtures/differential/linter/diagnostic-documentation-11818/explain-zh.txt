@@ -4599,6 +4599,33 @@ vue/comment-directive · lint 规则
 文档: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint 规则
+强制组件定义名称使用 PascalCase 或 kebab-case
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-component-definition-name-casing.md
+
+错误示例:
+  <script>
+  export default {
+    name: 'my_component'
+  }
+  </script>
+
+正确示例:
+  <script>
+  export default {
+    name: 'MyComponent'
+  }
+  </script>
+
+帮助:
+  请将组件名称改为 '{suggestion}'。
+=== vue/component-file-name-casing
+vue/component-file-name-casing · lint 规则
 强制组件文件名使用PascalCase或kebab-case
 
 精度层级: exact
@@ -4606,7 +4633,7 @@ vue/component-definition-name-casing · lint 规则
 严重级别: 警告
 类别: strongly-recommended
 自动修复: 不支持
-文档: docs/content/rules/reference/vue-component-definition-name-casing.md
+文档: docs/content/rules/reference/vue-component-file-name-casing.md
 
 错误示例:
   myComponent.vue      -> should be MyComponent.vue or my-component.vue

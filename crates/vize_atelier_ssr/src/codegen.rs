@@ -346,6 +346,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Push raw code to the buffer
+    #[inline(always)]
     pub(crate) fn push(&mut self, s: &str) {
         self.out.push_str(s);
     }

@@ -179,6 +179,7 @@ impl<'a> TransformContext<'a> {
     }
 
     /// Add a helper
+    #[inline]
     pub fn helper(&mut self, helper: RuntimeHelper) {
         self.helpers.add(helper);
     }
@@ -189,6 +190,7 @@ impl<'a> TransformContext<'a> {
     }
 
     /// Check if helper exists
+    #[inline]
     pub fn has_helper(&self, helper: RuntimeHelper) -> bool {
         self.helpers.contains(helper)
     }

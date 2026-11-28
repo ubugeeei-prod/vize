@@ -1,0 +1,843 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-parser-free-builders-successor",
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1123285,
+    "sha256": "0fe46333b6cb4321229547f803b1920d1223cfdb19d1a3f55ba63d4e59154380"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1105666,
+    "sha256": "29aa18559252209419271c9b24891fb910eb340294506e9e18767ac1df117384"
+  },
+  "lockReplacements": [
+    {
+      "offset": 19896,
+      "before": "        version: 1.4.5\n      oxc-parser:\n        specifier: catalog:oxc\n        version: 0.157.0\n",
+      "after": "        version: 1.4.5\n"
+    },
+    {
+      "offset": 21574,
+      "before": "        version: 9.0.0\n      oxc-parser:\n        specifier: catalog:oxc\n        version: 0.157.0\n",
+      "after": "        version: 9.0.0\n"
+    },
+    {
+      "offset": 22326,
+      "before": "        version: 7.1.5(@rspack/core@2.3.1(@swc/helpers@0.5.23))\n",
+      "after": "        version: 7.1.5(@rspack/core@2.3.1(@swc/helpers@0.5.23))\n      oxc-parser:\n        specifier: catalog:oxc\n        version: 0.157.0\n"
+    },
+    {
+      "offset": 29609,
+      "before": "        version: 3.3.1\n      oxc-parser:\n        specifier: catalog:oxc\n        version: 0.157.0\n",
+      "after": "        version: 3.3.1\n"
+    },
+    {
+      "offset": 30011,
+      "before": "        version: 25.9.2\n",
+      "after": "        version: 25.9.2\n      oxc-parser:\n        specifier: catalog:oxc\n        version: 0.157.0\n"
+    },
+    {
+      "offset": 46719,
+      "before": "        version: 4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72)\n",
+      "after": "        version: 4.6.4(@parcel/watcher@2.6.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(rolldown@1.2.16)(rollup@4.68.0)(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 617674,
+      "before": "    engines: {node: '>=14.18.0'}\n",
+      "after": "    engines: {node: '>=14.18.0'}\n    deprecated: 'Yuku is now one package with one core. Use \"yuku\" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'\n"
+    },
+    {
+      "offset": 618016,
+      "before": "    engines: {node: '>=14.18.0'}\n",
+      "after": "    engines: {node: '>=14.18.0'}\n    deprecated: 'Yuku is now one package with one core. Use \"yuku\" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'\n"
+    },
+    {
+      "offset": 622515,
+      "before": "  '@babel/core@7.29.13(supports-color@10.2.2)':\n",
+      "after": "  '@babel/core@7.29.13':\n"
+    },
+    {
+      "offset": 622677,
+      "before": "      '@babel/helper-module-transforms': 7.29.13(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n",
+      "after": "      '@babel/helper-module-transforms': 7.29.13(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 624638,
+      "before": "  '@babel/helper-create-class-features-plugin@7.29.13(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@babel/helper-create-class-features-plugin@7.29.13(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 624733,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 624809,
+      "before": "      '@babel/helper-member-expression-to-functions': 7.29.7(supports-color@10.2.2)\n",
+      "after": "      '@babel/helper-member-expression-to-functions': 7.29.7\n"
+    },
+    {
+      "offset": 624925,
+      "before": "      '@babel/helper-replace-supers': 7.29.7(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n      '@babel/helper-skip-transparent-expression-wrappers': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/helper-replace-supers': 7.29.7(@babel/core@7.29.13)\n      '@babel/helper-skip-transparent-expression-wrappers': 7.29.13\n"
+    },
+    {
+      "offset": 625266,
+      "before": "  '@babel/helper-member-expression-to-functions@7.29.7(supports-color@10.2.2)':\n",
+      "after": "  '@babel/helper-member-expression-to-functions@7.29.7':\n"
+    },
+    {
+      "offset": 626118,
+      "before": "  '@babel/helper-module-transforms@7.29.13(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@babel/helper-module-transforms@7.29.13(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 626202,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 626605,
+      "before": "  '@babel/helper-plugin-utils@8.0.1(@babel/core@7.29.13(supports-color@10.2.2))':\n",
+      "after": "  '@babel/helper-plugin-utils@8.0.1(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 626682,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 626712,
+      "before": "  '@babel/helper-replace-supers@7.29.7(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@babel/helper-replace-supers@7.29.7(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 626792,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n      '@babel/helper-member-expression-to-functions': 7.29.7(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n      '@babel/helper-member-expression-to-functions': 7.29.7\n"
+    },
+    {
+      "offset": 627049,
+      "before": "  '@babel/helper-skip-transparent-expression-wrappers@7.29.13(supports-color@10.2.2)':\n",
+      "after": "  '@babel/helper-skip-transparent-expression-wrappers@7.29.13':\n"
+    },
+    {
+      "offset": 628184,
+      "before": "  '@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.13(supports-color@10.2.2))':\n",
+      "after": "  '@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 628260,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 628533,
+      "before": "  '@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.13(supports-color@10.2.2))':\n",
+      "after": "  '@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 628616,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 628689,
+      "before": "  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@7.29.13(supports-color@10.2.2))':\n",
+      "after": "  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 628771,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n      '@babel/helper-plugin-utils': 8.0.1(@babel/core@7.29.13(supports-color@10.2.2))\n",
+      "after": "      '@babel/core': 7.29.13\n      '@babel/helper-plugin-utils': 8.0.1(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 628864,
+      "before": "  '@babel/plugin-transform-typescript@7.29.9(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@babel/plugin-transform-typescript@7.29.9(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 628950,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 629026,
+      "before": "      '@babel/helper-create-class-features-plugin': 7.29.13(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n",
+      "after": "      '@babel/helper-create-class-features-plugin': 7.29.13(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 629150,
+      "before": "      '@babel/helper-skip-transparent-expression-wrappers': 7.29.13(supports-color@10.2.2)\n      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@7.29.13(supports-color@10.2.2))\n",
+      "after": "      '@babel/helper-skip-transparent-expression-wrappers': 7.29.13\n      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 638078,
+      "before": "  '@dxup/nuxt@0.5.11(@nuxt/schema@4.6.4)(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(esbuild@0.28.1)(giget@3.3.1)(jiti@2.7.0)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))':\n",
+      "after": "  '@dxup/nuxt@0.5.11(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(jiti@2.7.0)(rolldown@1.2.16)(rollup@4.68.0)':\n"
+    },
+    {
+      "offset": 638451,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 638979,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 657156,
+      "before": "  '@mapbox/node-pre-gyp@2.0.3(supports-color@10.2.2)':\n",
+      "after": "  '@mapbox/node-pre-gyp@2.0.3':\n"
+    },
+    {
+      "offset": 657252,
+      "before": "      https-proxy-agent: 7.0.6(supports-color@10.2.2)\n",
+      "after": "      https-proxy-agent: 7.0.6\n"
+    },
+    {
+      "offset": 669168,
+      "before": "  '@nuxt/cli@4.0.3(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(oxc-parser@0.157.0)(rolldown@1.2.16)':\n",
+      "after": "  '@nuxt/cli@4.0.3(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(rolldown@1.2.16)':\n"
+    },
+    {
+      "offset": 670280,
+      "before": "      jiti: 2.7.0\n      oxc-parser: 0.157.0\n",
+      "after": "      jiti: 2.7.0\n"
+    },
+    {
+      "offset": 671669,
+      "before": "  '@nuxt/devtools-kit@3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))':\n",
+      "after": "  '@nuxt/devtools-kit@3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))':\n"
+    },
+    {
+      "offset": 672294,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 674334,
+      "before": "  '@nuxt/devtools@3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(db0@0.3.4)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))(vue@3.5.45(typescript@6.0.3))':\n",
+      "after": "  '@nuxt/devtools@3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.11.1)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))(vue@3.5.45(typescript@6.0.3))':\n"
+    },
+    {
+      "offset": 675012,
+      "before": "      '@nuxt/devtools-kit': 3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/devtools-kit': 3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 675660,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 676708,
+      "before": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))\n",
+      "after": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1)\n"
+    },
+    {
+      "offset": 676994,
+      "before": "      vite-plugin-inspect: 11.4.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))\n",
+      "after": "      vite-plugin-inspect: 11.4.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))\n"
+    },
+    {
+      "offset": 695549,
+      "before": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))\n",
+      "after": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1)\n"
+    },
+    {
+      "offset": 698901,
+      "before": "  '@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))':\n",
+      "after": "  '@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.3.0)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))':\n"
+    },
+    {
+      "offset": 699598,
+      "before": "      unctx: 3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      unctx: 3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.3.0)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))\n"
+    },
+    {
+      "offset": 700043,
+      "before": "      rolldown: 1.2.16\n",
+      "after": "      rolldown: 1.3.0\n"
+    },
+    {
+      "offset": 700136,
+      "before": "  '@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.3.0)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))':\n",
+      "after": "  '@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))':\n"
+    },
+    {
+      "offset": 700872,
+      "before": "      unctx: 3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.3.0)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))\n",
+      "after": "      unctx: 3.0.1(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 701260,
+      "before": "      '@nuxt/schema': 4.6.4\n      confbox: 0.3.2\n      dotenv: 17.4.2\n      giget: 3.3.1\n",
+      "after": "      '@nuxt/schema': 4.6.4\n"
+    },
+    {
+      "offset": 701306,
+      "before": "      mlly: 1.8.2\n      oxc-parser: 0.157.0\n      rolldown: 1.3.0\n",
+      "after": "      rolldown: 1.2.16\n"
+    },
+    {
+      "offset": 701400,
+      "before": "  '@nuxt/nitro-server@4.6.4(b085f71e38fbeca70bda7980726c0f30)':\n",
+      "after": "  '@nuxt/nitro-server@4.6.4(7fbbde8602ef51c280c6551b4c3c2bd7)':\n"
+    },
+    {
+      "offset": 701482,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n      '@unhead/vue': 3.4.3(@oxc-project/types@0.157.0)(@rspack/core@2.3.1)(@vitejs/devtools-kit@0.7.6(@devframes/agentic@1.3.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(cac@7.1.0)(srvx@0.11.15))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(lightningcss@1.33.0)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n      '@unhead/vue': 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))\n"
+    },
+    {
+      "offset": 702377,
+      "before": "      impound: 1.2.1(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      impound: 1.2.1(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 702958,
+      "before": "      nitropack: 2.13.4(@parcel/watcher@2.6.0)(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(bare-buffer@3.7.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(srvx@0.11.15)(supports-color@10.2.2)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      nitropack: 2.13.4(@parcel/watcher@2.6.0)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(rolldown@1.2.16)\n"
+    },
+    {
+      "offset": 703265,
+      "before": "      nuxt: 4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72)\n",
+      "after": "      nuxt: 4.6.4(@parcel/watcher@2.6.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(rolldown@1.2.16)(rollup@4.68.0)(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 704055,
+      "before": "      unctx: 3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      unctx: 3.0.1(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 704420,
+      "before": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))\n",
+      "after": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1)\n"
+    },
+    {
+      "offset": 704540,
+      "before": "      vue-devtools-stub: 0.1.0\n    optionalDependencies:\n      '@babel/plugin-syntax-typescript': 8.0.3(@babel/core@7.29.13(supports-color@10.2.2))\n",
+      "after": "      vue-devtools-stub: 0.1.0\n"
+    },
+    {
+      "offset": 706011,
+      "before": "  '@nuxt/telemetry@2.9.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))))':\n",
+      "after": "  '@nuxt/telemetry@2.9.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)))':\n"
+    },
+    {
+      "offset": 706428,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 716230,
+      "before": "  '@nuxt/vite-builder@4.6.4(90fb87982d2428cef0c7f7fc3265e21a)':\n",
+      "after": "  '@nuxt/vite-builder@4.6.4(ee60ba27cdd2295108af16317e4dcb4b)':\n"
+    },
+    {
+      "offset": 716312,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n      '@vitejs/plugin-vue': 6.0.10(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))\n      '@vitejs/plugin-vue-jsx': 5.1.6(supports-color@10.2.2)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n      '@vitejs/plugin-vue': 6.0.10(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))(vue@3.5.45(typescript@6.0.3))\n      '@vitejs/plugin-vue-jsx': 5.1.6(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))(vue@3.5.45(typescript@6.0.3))\n"
+    },
+    {
+      "offset": 717277,
+      "before": "      my-bad: 0.2.12(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))\n      nuxt: 4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72)\n",
+      "after": "      my-bad: 0.2.12(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))\n      nuxt: 4.6.4(@parcel/watcher@2.6.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(rolldown@1.2.16)(rollup@4.68.0)(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 718228,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n",
+      "after": "      unplugin: 3.7.0(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))\n      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n"
+    },
+    {
+      "offset": 718549,
+      "before": "      vite-plugin-checker: 0.14.5(eslint@10.14.0(jiti@1.21.7)(supports-color@10.2.2))(optionator@0.9.4)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(typescript@6.0.3)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue-tsc@3.3.14(typescript@6.0.3))\n",
+      "after": "      vite-plugin-checker: 0.14.5(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(typescript@6.0.3)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))\n"
+    },
+    {
+      "offset": 719029,
+      "before": "    optionalDependencies:\n      '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.13(supports-color@10.2.2))\n      rolldown: 1.2.16\n      rollup-plugin-visualizer: 7.1.2(rolldown@1.2.16)(rollup@4.68.0)\n",
+      "after": "    optionalDependencies:\n      rolldown: 1.2.16\n"
+    },
+    {
+      "offset": 719739,
+      "before": "  '@nuxt/vite-server@4.6.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(nuxt@4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72))(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))':\n",
+      "after": "  '@nuxt/vite-server@4.6.4(603616876e192b7099dcc8a9e93429a1)':\n"
+    },
+    {
+      "offset": 719820,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 720538,
+      "before": "      nuxt: 4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72)\n",
+      "after": "      nuxt: 4.6.4(@parcel/watcher@2.6.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(rolldown@1.2.16)(rollup@4.68.0)(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 816264,
+      "before": "      oxc-walker: 1.1.1(@oxc-project/types@0.157.0)(oxc-parser@0.157.0)(rolldown@1.2.16)\n",
+      "after": "      oxc-walker: 1.1.1(rolldown@1.2.16)\n"
+    },
+    {
+      "offset": 817337,
+      "before": "  '@unhead/bundler@3.4.3(f09e557f3093667b8248bc8068929f24)':\n",
+      "after": "  '@unhead/bundler@3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(unhead@3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))':\n"
+    },
+    {
+      "offset": 817962,
+      "before": "      oxc-walker: 1.1.1(@oxc-project/types@0.157.0)(oxc-parser@0.157.0)(rolldown@1.2.16)\n      unhead: 3.4.3(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n    optionalDependencies:\n      '@vitejs/devtools-kit': 0.7.6(@devframes/agentic@1.3.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(cac@7.1.0)(srvx@0.11.15)\n      esbuild: 0.28.1\n      lightningcss: 1.33.0\n      oxc-parser: 0.157.0\n",
+      "after": "      oxc-walker: 1.1.1(rolldown@1.2.16)\n      unhead: 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n    optionalDependencies:\n      esbuild: 0.28.1\n"
+    },
+    {
+      "offset": 818656,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n      webpack: 5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n"
+    },
+    {
+      "offset": 819084,
+      "before": "  '@unhead/vue@3.4.3(@oxc-project/types@0.157.0)(@rspack/core@2.3.1)(@vitejs/devtools-kit@0.7.6(@devframes/agentic@1.3.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(cac@7.1.0)(srvx@0.11.15))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(lightningcss@1.33.0)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))':\n",
+      "after": "  '@unhead/vue@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(vue@3.6.0-beta.10(typescript@6.0.3))':\n"
+    },
+    {
+      "offset": 819319,
+      "before": "      '@unhead/bundler': 3.4.3(f09e557f3093667b8248bc8068929f24)\n",
+      "after": "      '@unhead/bundler': 3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(unhead@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))\n"
+    },
+    {
+      "offset": 819700,
+      "before": "      unhead: 3.4.3(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      vue: 3.5.45(typescript@6.0.3)\n",
+      "after": "      unhead: 3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      vue: 3.6.0-beta.10(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 820391,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n      webpack: 5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n"
+    },
+    {
+      "offset": 820901,
+      "before": "  '@unhead/vue@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(vue@3.6.0-beta.10(typescript@6.0.3))':\n",
+      "after": "  '@unhead/vue@3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))':\n"
+    },
+    {
+      "offset": 821242,
+      "before": "      '@unhead/bundler': 3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(unhead@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)))\n",
+      "after": "      '@unhead/bundler': 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(unhead@3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 821849,
+      "before": "      unhead: 3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      vue: 3.6.0-beta.10(typescript@6.0.3)\n",
+      "after": "      unhead: 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      vue: 3.5.45(typescript@6.0.3)\n"
+    },
+    {
+      "offset": 822493,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n"
+    },
+    {
+      "offset": 824822,
+      "before": "  '@vercel/nft@1.11.1(rollup@4.68.0)(supports-color@10.2.2)':\n",
+      "after": "  '@vercel/nft@1.11.1(rollup@4.68.0)':\n"
+    },
+    {
+      "offset": 824879,
+      "before": "      '@mapbox/node-pre-gyp': 2.0.3(supports-color@10.2.2)\n",
+      "after": "      '@mapbox/node-pre-gyp': 2.0.3\n"
+    },
+    {
+      "offset": 827718,
+      "before": "  '@vitejs/plugin-vue-jsx@5.1.6(supports-color@10.2.2)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))':\n",
+      "after": "  '@vitejs/plugin-vue-jsx@5.1.6(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))(vue@3.5.45(typescript@6.0.3))':\n"
+    },
+    {
+      "offset": 827860,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@7.29.13(supports-color@10.2.2))\n      '@babel/plugin-transform-typescript': 7.29.9(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@7.29.13)\n      '@babel/plugin-transform-typescript': 7.29.9(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 828067,
+      "before": "      '@vue/babel-plugin-jsx': 2.0.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n",
+      "after": "      '@vue/babel-plugin-jsx': 2.0.1(@babel/core@7.29.13)\n      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n"
+    },
+    {
+      "offset": 829299,
+      "before": "  '@vitejs/plugin-vue@6.0.10(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))':\n",
+      "after": "  '@vitejs/plugin-vue@6.0.10(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0))(vue@3.5.45(typescript@6.0.3))':\n"
+    },
+    {
+      "offset": 829475,
+      "before": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n",
+      "after": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n"
+    },
+    {
+      "offset": 852119,
+      "before": "  '@vue/babel-plugin-jsx@2.0.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@vue/babel-plugin-jsx@2.0.1(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 852302,
+      "before": "      '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.13(supports-color@10.2.2))\n",
+      "after": "      '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 852532,
+      "before": "      '@vue/babel-plugin-resolve-type': 2.0.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)\n",
+      "after": "      '@vue/babel-plugin-resolve-type': 2.0.1(@babel/core@7.29.13)\n"
+    },
+    {
+      "offset": 852653,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 853181,
+      "before": "  '@vue/babel-plugin-resolve-type@2.0.1(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2)':\n",
+      "after": "  '@vue/babel-plugin-resolve-type@2.0.1(@babel/core@7.29.13)':\n"
+    },
+    {
+      "offset": 853296,
+      "before": "      '@babel/core': 7.29.13(supports-color@10.2.2)\n",
+      "after": "      '@babel/core': 7.29.13\n"
+    },
+    {
+      "offset": 883379,
+      "before": "  archiver@7.0.1(bare-buffer@3.7.1):\n",
+      "after": "  archiver@7.0.1:\n"
+    },
+    {
+      "offset": 883543,
+      "before": "      tar-stream: 3.2.2(bare-buffer@3.7.1)\n",
+      "after": "      tar-stream: 3.2.2\n"
+    },
+    {
+      "offset": 885011,
+      "before": "  bare-fs@4.8.4(bare-buffer@3.7.1):\n",
+      "after": "  bare-fs@4.8.4:\n"
+    },
+    {
+      "offset": 885094,
+      "before": "      bare-stream: 2.13.4(bare-buffer@3.7.1)(bare-events@2.9.2)\n",
+      "after": "      bare-stream: 2.13.4(bare-events@2.9.2)\n"
+    },
+    {
+      "offset": 885161,
+      "before": "      fast-fifo: 1.3.2\n    optionalDependencies:\n      bare-buffer: 3.7.1\n",
+      "after": "      fast-fifo: 1.3.2\n"
+    },
+    {
+      "offset": 885295,
+      "before": "  bare-stream@2.13.4(bare-buffer@3.7.1)(bare-events@2.9.2):\n",
+      "after": "  bare-stream@2.13.4(bare-events@2.9.2):\n"
+    },
+    {
+      "offset": 885411,
+      "before": "    optionalDependencies:\n      bare-buffer: 3.7.1\n",
+      "after": "    optionalDependencies:\n"
+    },
+    {
+      "offset": 920019,
+      "before": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))\n",
+      "after": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1)\n"
+    },
+    {
+      "offset": 926003,
+      "before": "  https-proxy-agent@7.0.6(supports-color@10.2.2):\n",
+      "after": "  https-proxy-agent@7.0.6:\n"
+    },
+    {
+      "offset": 926626,
+      "before": "  impound@1.2.1(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  impound@1.2.1(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0):\n"
+    },
+    {
+      "offset": 927021,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 933007,
+      "before": "  listhen@1.10.1(@parcel/watcher@2.6.0)(srvx@0.11.15):\n",
+      "after": "  listhen@1.10.1(@parcel/watcher@2.6.0):\n"
+    },
+    {
+      "offset": 945647,
+      "before": "  my-bad@0.2.12(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)):\n",
+      "after": "  my-bad@0.2.12(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)):\n"
+    },
+    {
+      "offset": 945836,
+      "before": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n",
+      "after": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n"
+    },
+    {
+      "offset": 947694,
+      "before": "  nitropack@2.13.4(@parcel/watcher@2.6.0)(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(bare-buffer@3.7.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(srvx@0.11.15)(supports-color@10.2.2)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  nitropack@2.13.4(@parcel/watcher@2.6.0)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(rolldown@1.2.16):\n"
+    },
+    {
+      "offset": 948410,
+      "before": "      '@vercel/nft': 1.11.1(rollup@4.68.0)(supports-color@10.2.2)\n      archiver: 7.0.1(bare-buffer@3.7.1)\n",
+      "after": "      '@vercel/nft': 1.11.1(rollup@4.68.0)\n      archiver: 7.0.1\n"
+    },
+    {
+      "offset": 949057,
+      "before": "      listhen: 1.10.1(@parcel/watcher@2.6.0)(srvx@0.11.15)\n",
+      "after": "      listhen: 1.10.1(@parcel/watcher@2.6.0)\n"
+    },
+    {
+      "offset": 949766,
+      "before": "      unimport: 6.5.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unimport: 6.5.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 950086,
+      "before": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2))\n",
+      "after": "      unstorage: 1.17.6(db0@0.3.4)(ioredis@5.11.1)\n"
+    },
+    {
+      "offset": 952140,
+      "before": "  nuxt@4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72):\n",
+      "after": "  nuxt@4.6.4(@parcel/watcher@2.6.0)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(rolldown@1.2.16)(rollup@4.68.0)(typescript@6.0.3):\n"
+    },
+    {
+      "offset": 952829,
+      "before": "      '@dxup/nuxt': 0.5.11(@nuxt/schema@4.6.4)(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(esbuild@0.28.1)(giget@3.3.1)(jiti@2.7.0)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      '@dxup/nuxt': 0.5.11(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(jiti@2.7.0)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 953200,
+      "before": "      '@nuxt/cli': 4.0.3(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(oxc-parser@0.157.0)(rolldown@1.2.16)\n",
+      "after": "      '@nuxt/cli': 4.0.3(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(jiti@2.7.0)(rolldown@1.2.16)\n"
+    },
+    {
+      "offset": 953525,
+      "before": "      '@nuxt/devtools': 3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(db0@0.3.4)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))(vue@3.5.45(typescript@6.0.3))\n      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n      '@nuxt/nitro-server': 4.6.4(b085f71e38fbeca70bda7980726c0f30)\n",
+      "after": "      '@nuxt/devtools': 3.4.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(db0@0.3.4)(ioredis@5.11.1)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))(vue@3.5.45(typescript@6.0.3))\n      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n      '@nuxt/nitro-server': 4.6.4(7fbbde8602ef51c280c6551b4c3c2bd7)\n"
+    },
+    {
+      "offset": 954665,
+      "before": "      '@nuxt/telemetry': 2.9.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))))\n      '@nuxt/vite-builder': 4.6.4(90fb87982d2428cef0c7f7fc3265e21a)\n      '@nuxt/vite-server': 4.6.4(@nuxt/schema@4.6.4)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(nuxt@4.6.4(23d417c1397db8fd1b3f9e7a2ef66b72))(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n      '@unhead/vue': 3.4.3(@oxc-project/types@0.157.0)(@rspack/core@2.3.1)(@vitejs/devtools-kit@0.7.6(@devframes/agentic@1.3.2)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(cac@7.1.0)(srvx@0.11.15))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(lightningcss@1.33.0)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      '@nuxt/telemetry': 2.9.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)))\n      '@nuxt/vite-builder': 4.6.4(ee60ba27cdd2295108af16317e4dcb4b)\n      '@nuxt/vite-server': 4.6.4(603616876e192b7099dcc8a9e93429a1)\n      '@unhead/vue': 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))\n"
+    },
+    {
+      "offset": 955891,
+      "before": "      impound: 1.2.1(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      impound: 1.2.1(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 956672,
+      "before": "      oxc-walker: 1.1.1(@oxc-project/types@0.157.0)(oxc-parser@0.157.0)(rolldown@1.2.16)\n",
+      "after": "      oxc-walker: 1.1.1(rolldown@1.2.16)\n"
+    },
+    {
+      "offset": 957099,
+      "before": "      unctx: 3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      unctx: 3.0.1(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 957462,
+      "before": "      unhead: 3.4.3(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      unimport: 7.0.2(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(acorn@8.19.0)(esbuild@0.28.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unhead: 3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      unimport: 7.0.2(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 958510,
+      "before": "      vue-router: 5.4.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(@vue/compiler-sfc@3.5.45)(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      vue-router: 5.4.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))\n"
+    },
+    {
+      "offset": 963946,
+      "before": "  oxc-walker@1.1.1(@oxc-project/types@0.157.0)(oxc-parser@0.157.0)(rolldown@1.2.16):\n    optionalDependencies:\n      '@oxc-project/types': 0.157.0\n      oxc-parser: 0.157.0\n",
+      "after": "  oxc-walker@1.1.1(rolldown@1.2.16):\n    optionalDependencies:\n"
+    },
+    {
+      "offset": 1019791,
+      "before": "  tar-stream@3.2.2(bare-buffer@3.7.1):\n",
+      "after": "  tar-stream@3.2.2:\n"
+    },
+    {
+      "offset": 1019846,
+      "before": "      bare-fs: 4.8.4(bare-buffer@3.7.1)\n",
+      "after": "      bare-fs: 4.8.4\n"
+    },
+    {
+      "offset": 1025705,
+      "before": "\n  unctx@3.0.1(magic-string@1.4.5)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))):\n    optionalDependencies:\n      magic-string: 1.4.5\n      oxc-parser: 0.157.0\n      rolldown: 1.2.16\n      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n\n",
+      "after": "\n"
+    },
+    {
+      "offset": 1026495,
+      "before": "\n",
+      "after": "\n  unctx@3.0.1(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)):\n    optionalDependencies:\n      magic-string: 1.4.5\n      rolldown: 1.2.16\n      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n\n"
+    },
+    {
+      "offset": 1027335,
+      "before": "  unhead@3.4.3(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unhead@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):\n"
+    },
+    {
+      "offset": 1027548,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n"
+    },
+    {
+      "offset": 1028019,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n"
+    },
+    {
+      "offset": 1028423,
+      "before": "  unhead@3.4.3(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):\n",
+      "after": "  unhead@3.4.3(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0):\n"
+    },
+    {
+      "offset": 1028749,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 1029067,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n"
+    },
+    {
+      "offset": 1031537,
+      "before": "  unimport@6.5.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unimport@6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1):\n"
+    },
+    {
+      "offset": 1032128,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin-utils: 0.3.2\n    optionalDependencies:\n      oxc-parser: 0.157.0\n      rolldown: 1.2.16\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin-utils: 0.3.2\n"
+    },
+    {
+      "offset": 1032764,
+      "before": "  unimport@6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1):\n",
+      "after": "  unimport@6.5.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0):\n"
+    },
+    {
+      "offset": 1033431,
+      "before": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2)))\n      unplugin-utils: 0.3.2\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n      unplugin-utils: 0.3.2\n    optionalDependencies:\n      rolldown: 1.2.16\n"
+    },
+    {
+      "offset": 1034009,
+      "before": "  unimport@7.0.2(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(acorn@8.19.0)(esbuild@0.28.1)(oxc-parser@0.157.0)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unimport@7.0.2(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0):\n"
+    },
+    {
+      "offset": 1034656,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 1034976,
+      "before": "    optionalDependencies:\n      acorn: 8.19.0\n      oxc-parser: 0.157.0\n",
+      "after": "    optionalDependencies:\n"
+    },
+    {
+      "offset": 1042739,
+      "before": "  unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):\n"
+    },
+    {
+      "offset": 1043363,
+      "before": "    optionalDependencies:\n      '@rspack/core': 2.3.1(@swc/helpers@0.5.24)\n      esbuild: 0.28.1\n      rolldown: 1.2.16\n",
+      "after": "    optionalDependencies:\n      esbuild: 0.28.1\n"
+    },
+    {
+      "offset": 1043432,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n      webpack: 5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))\n"
+    },
+    {
+      "offset": 1043819,
+      "before": "  unplugin@3.7.0(@rspack/core@2.3.1)(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0):\n"
+    },
+    {
+      "offset": 1044336,
+      "before": "    optionalDependencies:\n      '@rspack/core': 2.3.1(@swc/helpers@0.5.24)\n",
+      "after": "    optionalDependencies:\n"
+    },
+    {
+      "offset": 1044428,
+      "before": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n      webpack: 5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))\n",
+      "after": "      vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'\n"
+    },
+    {
+      "offset": 1044664,
+      "before": "  unplugin@3.7.0(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  unplugin@3.7.0(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)):\n"
+    },
+    {
+      "offset": 1045045,
+      "before": "      esbuild: 0.28.1\n",
+      "after": "      esbuild: 0.28.1\n      rolldown: 1.2.16\n"
+    },
+    {
+      "offset": 1045111,
+      "before": "      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'\n      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))\n",
+      "after": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n"
+    },
+    {
+      "offset": 1046527,
+      "before": "  unstorage@1.17.6(db0@0.3.4)(ioredis@5.11.1(supports-color@10.2.2)):\n",
+      "after": "  unstorage@1.17.6(db0@0.3.4)(ioredis@5.11.1):\n"
+    },
+    {
+      "offset": 1050954,
+      "before": "  vite-plugin-checker@0.14.5(eslint@10.14.0(jiti@1.21.7)(supports-color@10.2.2))(optionator@0.9.4)(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(typescript@6.0.3)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))(vue-tsc@3.3.14(typescript@6.0.3)):\n",
+      "after": "  vite-plugin-checker@0.14.5(oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@1.5.0(@types/node@25.9.2)(@vitest/ui@5.1.0)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@1.21.7)(playwright@1.65.0)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))))(typescript@6.0.3)(vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)):\n"
+    },
+    {
+      "offset": 1051642,
+      "before": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1)\n    optionalDependencies:\n      eslint: 10.14.0(jiti@1.21.7)(supports-color@10.2.2)\n      optionator: 0.9.4\n",
+      "after": "      vite: 8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)\n    optionalDependencies:\n"
+    },
+    {
+      "offset": 1052039,
+      "before": "      typescript: 6.0.3\n      vue-tsc: 3.3.14(typescript@6.0.3)\n",
+      "after": "      typescript: 6.0.3\n"
+    },
+    {
+      "offset": 1052064,
+      "before": "  vite-plugin-inspect@11.4.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))):\n",
+      "after": "  vite-plugin-inspect@11.4.1(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)))(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))):\n"
+    },
+    {
+      "offset": 1053402,
+      "before": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.157.0)(rolldown@1.2.16)(unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))))\n",
+      "after": "      '@nuxt/kit': 4.6.4(@nuxt/schema@4.6.4)(jiti@2.7.0)(magic-string@1.4.5)(rolldown@1.2.16)(unplugin@3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0))\n"
+    },
+    {
+      "offset": 1071493,
+      "before": "  vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1):\n",
+      "after": "  vite@8.3.6(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0):\n"
+    },
+    {
+      "offset": 1071868,
+      "before": "      jiti: 2.7.0\n      sass: 1.108.1\n      terser: 5.51.2\n      tsx: 4.23.15\n      yaml: 2.9.1\n",
+      "after": "      jiti: 2.7.0\n"
+    },
+    {
+      "offset": 1085018,
+      "before": "  vue-router@5.4.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(@vue/compiler-sfc@3.5.45)(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))):\n",
+      "after": "  vue-router@5.4.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(vue@3.5.45(typescript@6.0.3)):\n"
+    },
+    {
+      "offset": 1085805,
+      "before": "      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2)))\n",
+      "after": "      unplugin: 3.7.0(@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3)))(esbuild@0.28.1)(rolldown@1.2.16)(rollup@4.68.0)\n"
+    },
+    {
+      "offset": 1086161,
+      "before": "    optionalDependencies:\n      '@vue/compiler-sfc': 3.5.45\n",
+      "after": "    optionalDependencies:\n"
+    }
+  ],
+  "nativeAcceptanceCredit": false,
+  "scope": "Authorize only the pnpm 12.1.0 re-resolution after @vizejs/vite-plugin and @vizejs/rspack-plugin moved oxc-parser to devDependencies and @vizejs/parcel-transformer dropped it. The complete predecessor lockfile remains reconstructible byte for byte."
+}

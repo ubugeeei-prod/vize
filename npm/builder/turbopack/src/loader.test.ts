@@ -7,7 +7,7 @@ import { compileTurbopackSfc } from "./loader.ts";
 import { withVize, vizeTurbopack } from "./index.ts";
 import styleLoader from "./style-loader.ts";
 import scopeLoader from "./scope-loader.ts";
-import { createGeneratedNameAllocator } from "@vizejs/builder-shared/module-output";
+import { createGeneratedNameAllocator } from "@vizejs/builder-shared/generated-names";
 import type { LoaderContext, SfcLoaderOptions } from "./types.ts";
 
 const filename = "/fixture/组件 space.vue";

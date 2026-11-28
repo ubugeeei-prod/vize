@@ -15,8 +15,11 @@
 
 use vize_l0::{Span, String};
 
+use self::text::Text;
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
+
+mod text;
 
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,7 +51,7 @@ impl SpanLink {
 /// Generated text plus the links from its bytes to the authored source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EmitDocument {
-    text: String,
+    text: Text,
     links: Vec<SpanLink>,
     recording: bool,
 }
@@ -63,11 +66,7 @@ impl Default for EmitDocument {
 impl From<String> for EmitDocument {
     /// A recording fragment holding `text` with no links.
     fn from(text: String) -> Self {
-        Self {
-            text,
-            links: Vec::new(),
-            recording: true,
-        }
+        Self::from_parts(text, Vec::new())
     }
 }
 
@@ -80,7 +79,7 @@ impl EmitDocument {
     /// An empty document with room for `capacity` bytes of text.
     pub fn with_capacity(capacity: usize, recording: bool) -> Self {
         Self {
-            text: String::with_capacity(capacity),
+            text: Text::with_capacity(capacity),
             links: Vec::new(),
             recording,
         }
@@ -120,18 +119,18 @@ impl EmitDocument {
 
     /// The generated text, dropping the links.
     pub fn into_string(self) -> String {
-        self.text
+        self.text.into_compact()
     }
 
     pub fn into_parts(self) -> (String, Vec<SpanLink>) {
-        (self.text, self.links)
+        (self.text.into_compact(), self.links)
     }
 
     /// A recording fragment from text and links over it, the inverse of
     /// [`Self::into_parts`].
     pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
         Self {
-            text,
+            text: Text::Fragment(text),
             links,
             recording: true,
         }
@@ -161,7 +160,7 @@ impl EmitDocument {
     }
 
     /// Append one unlinked character.
-    #[inline]
+    #[inline(always)]
     pub fn push_char(&mut self, ch: char) {
         self.text.push(ch);
     }

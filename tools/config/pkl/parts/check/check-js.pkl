@@ -1,6 +1,6 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
-`runs-on` = ci.linux
+`runs-on` = ci.linuxValidation
 `timeout-minutes` = 15
 permissions {
   contents = "read"
@@ -18,7 +18,7 @@ steps = new Listing {
   new Dynamic {
     uses = ci.setupVp121
     with {
-      version = "latest"
+      version = ci.vpVersion
       `node-version-file` = "package.json"
       cache = true
       `cache-save` = false
@@ -47,6 +47,10 @@ steps = new Listing {
     }
   }
   ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+  new Dynamic {
+    name = "Install ush"
+    uses = "./.github/actions/setup-ush"
+  }
   ci.command("Check Pkl repository configuration", "node tools/commands/generate/repository-config.ts --check")
   new Dynamic {
     name = "Check JS/TS"

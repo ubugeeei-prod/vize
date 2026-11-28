@@ -1,16 +1,5 @@
-import { parseSync } from "oxc-parser";
-import { findExportDefaultKeywordEnd } from "../../../shared/native-shape.ts";
-
-const OUTPUT_PARSE_ID = "vize-output.tsx";
 const SFC_MAIN_NAME = "_sfc_main";
 const EXPORT_DEFAULT = "export default";
-
-type AstNode = {
-  type?: string;
-  start?: number;
-  end?: number;
-  [key: string]: unknown;
-};
 
 /** The native `moduleShape`: offsets are UTF-8 bytes into the module. */
 export type ModuleOutputInfo = {
@@ -26,109 +15,28 @@ export type ModuleOutputInfo = {
   defaultExportIsSfcMain: boolean;
 };
 
-/** oxc and string indices count UTF-16 units; the native shape counts UTF-8 bytes. */
-function byteOffset(code: string, index: number | null): number | null {
-  return index == null ? null : Buffer.byteLength(code.slice(0, index));
+const NO_EXPORTS: ModuleOutputInfo = {
+  hasDefaultExport: false,
+  hasSfcMainDefined: false,
+  hasNamedRenderExport: false,
+  hasNamedSsrRenderExport: false,
+  defaultExportKeywordEnd: null,
+  defaultExportStart: null,
+  defaultExportEnd: null,
+  defaultExportIsSfcMain: false,
+};
+
+/** String indices count UTF-16 units; the native shape counts UTF-8 bytes. */
+function byteOffset(code: string, index: number): number {
+  return Buffer.byteLength(code.slice(0, index));
 }
 
-function isNode(value: unknown): value is AstNode {
-  return value != null && typeof value === "object" && typeof (value as AstNode).type === "string";
-}
-
-function getNodeStart(node: AstNode | null | undefined): number | null {
-  return typeof node?.start === "number" ? node.start : null;
-}
-
-function getNodeEnd(node: AstNode | null | undefined): number | null {
-  return typeof node?.end === "number" ? node.end : null;
-}
-
-function getNodeName(node: AstNode | null | undefined): string | null {
-  return isNode(node) && typeof node.name === "string" ? node.name : null;
-}
-
-function isSfcMainDefaultExport(defaultExport: AstNode | null | undefined): boolean {
-  const declaration = isNode(defaultExport?.declaration) ? defaultExport.declaration : null;
-  return isIdentifierNamed(declaration, SFC_MAIN_NAME);
-}
-
-function parseProgram(code: string): AstNode | null {
-  try {
-    const result = parseSync(OUTPUT_PARSE_ID, code) as unknown;
-    if (result != null && typeof result === "object") {
-      const errors = (result as { errors?: unknown }).errors;
-      if (Array.isArray(errors) && errors.length > 0) {
-        return null;
-      }
-
-      const program = (result as { program?: unknown }).program;
-      if (isNode(program)) {
-        return program;
-      }
-    }
-
-    return isNode(result) ? result : null;
-  } catch {
-    return null;
-  }
-}
-
-function getProgramBody(program: AstNode | null): AstNode[] {
-  if (!program || !Array.isArray(program.body)) {
-    return [];
-  }
-
-  return program.body.filter(isNode);
-}
-
-function isIdentifierNamed(node: AstNode | null | undefined, name: string): boolean {
-  return getNodeName(node) === name;
-}
-
-function getVariableDeclarationNames(statement: AstNode): string[] {
-  const declarations = Array.isArray(statement.declarations) ? statement.declarations : [];
-  return declarations
-    .filter(isNode)
-    .map((declaration) => (isNode(declaration.id) ? getNodeName(declaration.id) : null))
-    .filter((name): name is string => name != null);
-}
-
-function getExportedNames(statement: AstNode): string[] {
-  const declaration = isNode(statement.declaration) ? statement.declaration : null;
-  const names: string[] = [];
-
-  if (declaration?.type === "FunctionDeclaration" || declaration?.type === "ClassDeclaration") {
-    const name = isNode(declaration.id) ? getNodeName(declaration.id) : null;
-    if (name) names.push(name);
-  }
-
-  if (declaration?.type === "VariableDeclaration") {
-    names.push(...getVariableDeclarationNames(declaration));
-  }
-
-  const specifiers = Array.isArray(statement.specifiers) ? statement.specifiers : [];
-  for (const specifier of specifiers) {
-    if (!isNode(specifier)) {
-      continue;
-    }
-
-    const exported = isNode(specifier.exported) ? specifier.exported : null;
-    const local = isNode(specifier.local) ? specifier.local : null;
-    const name = getNodeName(exported) ?? getNodeName(local);
-    if (name) names.push(name);
-  }
-
-  return names;
-}
-
-function findDefaultExport(program: AstNode | null): AstNode | null {
-  return (
-    getProgramBody(program).find((statement) => statement.type === "ExportDefaultDeclaration") ??
-    null
-  );
-}
-
-function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
+/**
+ * Find a lone `export default` by scanning. Only a module without `_sfc_main`,
+ * a named render export or an `export {` list qualifies, so the match cannot
+ * be a component the module assembles some other way.
+ */
+export function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
   if (
     code.includes(SFC_MAIN_NAME) ||
     code.includes("export function render") ||
@@ -155,43 +63,22 @@ function analyzeFastDefaultOutput(code: string): ModuleOutputInfo | null {
     hasNamedSsrRenderExport: false,
     defaultExportStart: byteOffset(code, defaultExportStart),
     defaultExportKeywordEnd: byteOffset(code, defaultExportStart + EXPORT_DEFAULT.length),
-    // The fast path is only taken when `_sfc_main` does not occur anywhere in
-    // the module, so the default export cannot be that identifier and no caller
+    // The scan only matches when `_sfc_main` does not occur anywhere in the
+    // module, so the default export cannot be that identifier and no caller
     // needs the statement's end offset.
     defaultExportEnd: null,
     defaultExportIsSfcMain: false,
   };
 }
 
-export function analyzeModuleOutput(code: string): ModuleOutputInfo {
-  const fastOutput = analyzeFastDefaultOutput(code);
-  if (fastOutput) {
-    return fastOutput;
-  }
-
-  const program = parseProgram(code);
-  const body = getProgramBody(program);
-  const defaultExport = findDefaultExport(program);
-  const defaultExportStart = getNodeStart(defaultExport);
-  const defaultExportKeywordEnd =
-    defaultExportStart != null ? findExportDefaultKeywordEnd(code, defaultExportStart) : null;
-  const exportedNames = body
-    .filter((statement) => statement.type === "ExportNamedDeclaration")
-    .flatMap(getExportedNames);
-
-  return {
-    hasDefaultExport: defaultExport != null,
-    hasSfcMainDefined: body.some((statement) => {
-      return (
-        statement.type === "VariableDeclaration" &&
-        getVariableDeclarationNames(statement).includes(SFC_MAIN_NAME)
-      );
-    }),
-    hasNamedRenderExport: exportedNames.includes("render"),
-    hasNamedSsrRenderExport: exportedNames.includes("ssrRender"),
-    defaultExportKeywordEnd: byteOffset(code, defaultExportKeywordEnd),
-    defaultExportStart: byteOffset(code, defaultExportStart),
-    defaultExportEnd: byteOffset(code, getNodeEnd(defaultExport)),
-    defaultExportIsSfcMain: isSfcMainDefaultExport(defaultExport),
-  };
+/**
+ * The shape of a module the native compiler reported none for.
+ *
+ * The native compiler parses every module it emits as TypeScript, then as TSX,
+ * and reports no shape only when both fail. Nothing here could parse that
+ * module either, so only the scan's unambiguous `export default` is bound and
+ * any other module is left as it is.
+ */
+export function unparsedModuleOutput(code: string): ModuleOutputInfo {
+  return analyzeFastDefaultOutput(code) ?? { ...NO_EXPORTS };
 }

@@ -102,11 +102,15 @@ export function restoreCheckJsCasePacket(job: Job, original: Job) {
   assert(steps);
   const install = steps.findIndex((step) => step.name === "Install JS dependencies");
   assert(install >= 0);
-  assert.deepEqual(steps[install + 1], {
-    name: "Check Pkl repository configuration",
-    run: "node tools/commands/generate/repository-config.ts --check",
-  });
-  steps.splice(install + 1, 1);
+  // The generator check came later, with the ush compiler that it needs.
+  assert.deepEqual(steps.slice(install + 1, install + 3), [
+    { name: "Install ush", uses: "./.github/actions/setup-ush" },
+    {
+      name: "Check Pkl repository configuration",
+      run: "node tools/commands/generate/repository-config.ts --check",
+    },
+  ]);
+  steps.splice(install + 1, 2);
   restoreSmallNodeAction(job, original, "Check fast JS/TS", {
     suite: "check-js",
     job: "check-js",

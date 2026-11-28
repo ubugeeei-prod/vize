@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const propName = 'some-message'
+const count = 1
+</script>
+
+<template>
+  <Child :[propName]="count" />
+</template>

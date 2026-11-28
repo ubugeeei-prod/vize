@@ -16,6 +16,11 @@ export const frenchVue0 = {
   ],
   "vue/component-definition-name-casing": [
     "Imposer PascalCase ou kebab-case aux noms de définition des composants",
+    "Le nom my_component déclaré avec defineOptions sépare ses mots par un tiret bas au lieu d’utiliser PascalCase.",
+    "Le nom déclaré MyComponent utilise PascalCase, la casse par défaut.",
+  ],
+  "vue/component-file-name-casing": [
+    "Imposer PascalCase ou kebab-case aux noms de fichier des composants",
     "Le nom de fichier myComponent.vue combine une initiale minuscule et une majuscule interne au lieu d’utiliser PascalCase ou kebab-case.",
     "Renommer le fichier en MyComponent.vue adopte PascalCase ; le contenu de son template reste inchangé.",
   ],

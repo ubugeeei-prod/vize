@@ -16,6 +16,11 @@ export const chineseVue0: Record<string, readonly [purpose: string, bad: string,
   ],
   "vue/component-definition-name-casing": [
     "要求组件定义名称使用 PascalCase 或 kebab-case",
+    "通过 defineOptions 声明的名称 my_component 用下划线分隔单词，不是 PascalCase。",
+    "声明的名称 MyComponent 使用默认的 PascalCase。",
+  ],
+  "vue/component-file-name-casing": [
+    "要求组件文件名使用 PascalCase 或 kebab-case",
     "文件名 myComponent.vue 以小写字母开头，却在内部使用大写字母，既不是 PascalCase，也不是 kebab-case。",
     "将文件重命名为 MyComponent.vue 即采用 PascalCase；模板内容无需更改。",
   ],

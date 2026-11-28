@@ -42,8 +42,26 @@ pub fn resolve_css_imports(
     is_dev: bool,
     dev_url_base: Option<&str>,
 ) -> String {
+    resolve_css_imports_in(css, importer, alias_rules, is_dev, dev_url_base, None)
+}
+
+/// [`resolve_css_imports`] for a dev server that serves only `readable_roots`.
+///
+/// An `@import` is inlined, and a `url()` rewritten to `/@fs/`, only for a file
+/// inside one of the roots (Vite's `server.fs.allow`). Anything else is left
+/// as authored, for Vite's own resolver and its `server.fs` rules. `None`
+/// reads every file the stylesheet names, as a build does.
+pub fn resolve_css_imports_in(
+    css: &str,
+    importer: &str,
+    alias_rules: &[CssAliasRule],
+    is_dev: bool,
+    dev_url_base: Option<&str>,
+    readable_roots: Option<&[PathBuf]>,
+) -> String {
+    let readable = Readable::new(readable_roots);
     let mut custom_media: SmallVec<[CustomMedia; 4]> = SmallVec::new();
-    let mut result = inline_css_imports(css, importer, alias_rules, &mut custom_media);
+    let mut result = inline_css_imports(css, importer, alias_rules, &readable, &mut custom_media);
 
     parse_custom_media(result.as_str(), &mut custom_media);
     result = replace_regex_all(CUSTOM_MEDIA_LINE_RE.as_ref(), result.as_str(), "");
@@ -57,11 +75,43 @@ pub fn resolve_css_imports(
     }
 
     if is_dev {
-        result = resolve_dev_urls(result.as_str(), importer, alias_rules, dev_url_base);
+        result = resolve_dev_urls(
+            result.as_str(),
+            importer,
+            alias_rules,
+            &readable,
+            dev_url_base,
+        );
     }
 
     result = css_scope::unwrap_deep_selectors(result.as_str());
     collapse_excess_blank_lines(result.as_str())
+}
+
+/// The files a stylesheet may read: all of them, or those inside some roots.
+struct Readable {
+    roots: Option<std::vec::Vec<PathBuf>>,
+}
+
+impl Readable {
+    fn new(roots: Option<&[PathBuf]>) -> Self {
+        let roots = roots.map(|roots| {
+            roots
+                .iter()
+                .map(|root| std::fs::canonicalize(root).unwrap_or_else(|_| root.clone()))
+                .collect()
+        });
+        Self { roots }
+    }
+
+    /// Whether `path` names an existing file this stylesheet may read.
+    fn allows(&self, path: &Path) -> bool {
+        let Some(roots) = &self.roots else {
+            return path.exists();
+        };
+        std::fs::canonicalize(path)
+            .is_ok_and(|real| roots.iter().any(|root| real.starts_with(root)))
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -74,6 +124,7 @@ fn inline_css_imports(
     css: &str,
     importer: &str,
     alias_rules: &[CssAliasRule],
+    readable: &Readable,
     custom_media: &mut SmallVec<[CustomMedia; 4]>,
 ) -> String {
     let mut output = String::with_capacity(css.len());
@@ -92,7 +143,7 @@ fn inline_css_imports(
         };
 
         let replacement = resolve_css_path(import_path, importer, alias_rules)
-            .filter(|path| path.exists())
+            .filter(|path| readable.allows(path))
             .and_then(|path| std::fs::read_to_string(path).ok());
 
         output.push_str(css.get(last..matched.start()).unwrap_or_default());
@@ -137,6 +188,7 @@ fn resolve_dev_urls(
     css: &str,
     importer: &str,
     alias_rules: &[CssAliasRule],
+    readable: &Readable,
     dev_url_base: Option<&str>,
 ) -> String {
     let bytes = css.as_bytes();
@@ -163,7 +215,7 @@ fn resolve_dev_urls(
         }
 
         let replacement = resolve_css_path(trimmed, importer, alias_rules)
-            .filter(|path| path.exists())
+            .filter(|path| readable.allows(path))
             .map(|path| {
                 let normalized = normalize_path_for_url(&path);
                 let base = dev_url_base.unwrap_or("/");
@@ -399,36 +451,4 @@ fn collapse_excess_blank_lines(input: &str) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn resolves_custom_media_and_deep_selectors() {
-        let css = "@custom-media --mobile (max-width: 768px);\n.foo { color: red; }\n@media (--mobile) { .foo :deep(.bar) { color: blue; } }";
-        let result = resolve_css_imports(css, "/project/Component.vue", &[], false, None);
-
-        assert!(!result.contains("@custom-media"));
-        assert!(result.contains("@media (max-width: 768px)"));
-        assert!(result.contains(".foo .bar"));
-    }
-
-    #[test]
-    fn resolves_css_imports_preserves_utf8_when_collapsing_blank_lines() {
-        let css = ".icon::before { content: \"→\"; }\n\n\n.日本語 { color: red; }";
-        let result = resolve_css_imports(css, "/project/Component.vue", &[], false, None);
-
-        assert_eq!(
-            result,
-            ".icon::before { content: \"→\"; }\n\n.日本語 { color: red; }"
-        );
-    }
-
-    #[test]
-    fn string_alias_does_not_match_package_prefix() {
-        assert_eq!(
-            matched_alias_suffix("@/asset.svg", "@").as_deref(),
-            Some("asset.svg")
-        );
-        assert_eq!(matched_alias_suffix("@scope/icon.svg", "@"), None);
-    }
-}
+mod tests;

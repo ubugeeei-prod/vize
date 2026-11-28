@@ -76,6 +76,7 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     /// Attribute name as written in source.
+    #[inline]
     pub fn name(&self) -> &str {
         match self.inner {
             MarkupAttributeInner::Relief(node) => node.name,
@@ -86,6 +87,7 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     /// Whether this attribute matches a normalized HTML attribute name.
+    #[inline]
     pub fn name_eq(&self, expected: &str) -> bool {
         self.name().eq_ignore_ascii_case(expected)
     }

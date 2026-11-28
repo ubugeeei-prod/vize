@@ -19,7 +19,7 @@ env {
 jobs {
   cli {
     name = "Build original full-suite CLI and SFC oracle"
-    `runs-on` = ci.linux
+    `runs-on` = ci.linuxValidation
     `timeout-minutes` = 30
     outputs {
       sha256 = "${{ steps.pack.outputs.sha256 }}"

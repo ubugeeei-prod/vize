@@ -254,6 +254,7 @@ impl<'a> GenerateContext<'a> {
         }
     }
 
+    #[inline(always)]
     pub(crate) fn push(&mut self, s: &str) {
         self.out.push_str(s);
     }

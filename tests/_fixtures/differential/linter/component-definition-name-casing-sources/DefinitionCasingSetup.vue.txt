@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineOptions({ name: "definition_casing_setup" });
+</script>
+<template><div /></template>
