@@ -91,3 +91,16 @@ not introduce formatting support for additional Art engines or languages.
 Prettier's debug AST check observes this adapter's formatted document; it is
 not an independent Vue or Art semantic validator. The package's consumer tests
 separately compare parsed script/style structure and actual Vue rendering.
+
+## Application conformance
+
+The source-native consumer workflow installs the packed public adapter in an
+isolated project and formats every SFC from the Vite Musea and JSX/TSX example
+applications. The shared native formatter supplies the exact output oracle.
+Installed API output, CLI writes, repeat formatting, and rejected-option writes
+are checked, and complete source/output packets must agree on Node 22.0.0 and
+24.14.0 using the same adapter tarball and authenticated native image.
+
+The workflow retains per-file hashes, complete inputs and outputs, and observed
+API/native/CLI timings. This covers the listed application sources and host
+versions; the package remains experimental on the formatter's independent v0 line.

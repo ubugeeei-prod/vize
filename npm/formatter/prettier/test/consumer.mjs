@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { qualifyRealProjects } from "./real-projects.mjs";
 import {
   nativePreparationIsActive,
   readActiveNativePreparation,
@@ -245,6 +246,18 @@ assert.equal(execute(["--write", "src/App.vue"]).status, 2);
 
 const prettier = require("prettier");
 const plugin = await import(pathToFileURL(installedPlugin).href);
+const realProjects =
+  mode === "source-native"
+    ? await qualifyRealProjects({
+        root,
+        consumer,
+        output,
+        prettier,
+        plugin,
+        native: require("@vizejs/native"),
+        execute,
+      })
+    : null;
 if (mode === "source-native") {
   // The published-binding leg intentionally uses the historical native package.
   // Exercise new policies against the authenticated source addon and packed plugin.
@@ -296,6 +309,7 @@ const report = {
   runtimeNativePackageVersion: require("@vizejs/native/package.json").version,
   sourcePreparation: preparation,
   objectWrapSourceRegression: mode === "source-native",
+  realProjects,
   nativePackage: require.resolve("@vizejs/native"),
   nativeDependencyInstalledVersion: nativeVersion,
   nativeTransport:

@@ -23,5 +23,10 @@ const identity = (value) => ({
   golden: value.golden,
   art: value.art,
   ignored: value.ignored,
+  realProjects: value.realProjects,
 });
+assert.ok(
+  current.realProjects,
+  "real application qualification must execute on the source binding",
+);
 assert.deepEqual(identity(minimum), identity(current));
