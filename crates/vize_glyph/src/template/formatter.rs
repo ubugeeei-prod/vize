@@ -23,7 +23,6 @@ mod inline_breaks;
 mod interpolation;
 pub(crate) mod nesting;
 mod opening_attributes;
-use opening_attributes::Continued;
 mod preserved_text;
 mod suppression;
 mod tags;
@@ -94,6 +93,9 @@ impl<'a> TemplateFormatter<'a> {
         let mut inline = InlineNode::None;
         // Lines a line-scoped lint suppression covers must not be split. (#3343)
         let mut joiner = LineJoiner::new(source);
+        // Prettier preset only: depth of the element whose opening `>` moved
+        // below its start tag, so its closing tag ends with `>` on its own line.
+        let mut moved_opening: Option<usize> = None;
 
         while pos < len {
             // Skip whitespace at line start (except newlines)
@@ -170,11 +172,12 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.push_str("</");
                     output.push_str(&tag_name);
-                    // Prettier closes a hugged element whose opening `>` moved
-                    // down with `>` on its own line too.
-                    let moved_opening = joiner.take_moved_opening_bracket(depth);
+                    let moved = CANONICAL && moved_opening == Some(depth);
+                    if moved {
+                        moved_opening = None;
+                    }
                     if (CANONICAL && joiner.take_wrapped_text_close(pos))
-                        || (CANONICAL && moved_opening && join.is_continuation())
+                        || (moved && join.is_continuation())
                         || (join.is_continuation()
                             && !joiner.locks_current_line()
                             && (self.closing_bracket_overflows(&output)
@@ -236,29 +239,28 @@ impl<'a> TemplateFormatter<'a> {
                         None if is_self_closing => 3,
                         None => 1,
                     };
-                    let continued = if !join.is_continuation() || joiner.locks_current_line() {
-                        Continued::No
-                    } else if joiner.follows_opening_bracket(pos) {
-                        Continued::AfterOpeningBracket
-                    } else {
-                        Continued::Line
-                    };
                     self.open_chunk(&mut output, depth, join);
                     output.push('<');
                     output.push_str(&tag_name);
 
-                    let line = self.write_opening_attributes_with_prefix(
-                        &mut output,
-                        &tag_name,
-                        &sorted_attrs,
-                        depth,
-                        continued,
-                        compact_suffix_width,
-                    );
-                    if line.moved_parent_bracket {
-                        joiner.moved_opening_bracket(depth.saturating_sub(1));
+                    // The byte before `<tag_name` changes only when the
+                    // attribute writer moves the parent's `>` down.
+                    let parent_bracket = output.len().wrapping_sub(tag_name.len() + 2);
+                    let follows_bracket =
+                        CANONICAL && output.as_bytes().get(parent_bracket) == Some(&b'>');
+                    let mut closing_bracket_on_own_line = self
+                        .write_opening_attributes_with_prefix(
+                            &mut output,
+                            &tag_name,
+                            &sorted_attrs,
+                            depth,
+                            (join.is_continuation() && !joiner.locks_current_line())
+                                .then_some(&joiner),
+                            compact_suffix_width,
+                        );
+                    if follows_bracket && output.as_bytes().get(parent_bracket) != Some(&b'>') {
+                        moved_opening = Some(depth.saturating_sub(1));
                     }
-                    let mut closing_bracket_on_own_line = line.bracket_on_own_line;
                     if !closing_bracket_on_own_line
                         && hugged_inline_suffix.is_some_and(|suffix| {
                             self.hugged_inline_suffix_overflows(&output, suffix)

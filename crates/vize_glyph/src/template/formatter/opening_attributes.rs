@@ -1,5 +1,6 @@
 //! Shared emission of already parsed template attributes.
 use super::TemplateFormatter;
+use super::suppression::LineJoiner;
 use crate::template::attributes::{
     AttributeLayout, ParsedAttribute, render_attribute, should_use_multiline_attrs,
     write_rendered_attributes,
@@ -18,18 +19,11 @@ impl TemplateFormatter<'_> {
         sorted_attrs: &[ParsedAttribute],
         depth: usize,
     ) -> bool {
-        self.write_opening_attributes_with_prefix(
-            output,
-            tag_name,
-            sorted_attrs,
-            depth,
-            Continued::No,
-            1,
-        )
-        .bracket_on_own_line
+        self.write_opening_attributes_with_prefix(output, tag_name, sorted_attrs, depth, None, 1)
     }
 
-    /// A continued tag also owns the already emitted text on its physical line.
+    /// A continued tag (`continued` carries its line joiner) also owns the
+    /// already emitted text on its physical line.
     #[inline]
     pub(super) fn write_opening_attributes_with_prefix(
         &self,
@@ -37,40 +31,33 @@ impl TemplateFormatter<'_> {
         tag_name: &str,
         sorted_attrs: &[ParsedAttribute],
         depth: usize,
-        continued: Continued,
+        continued: Option<&LineJoiner<'_>>,
         compact_suffix_width: usize,
-    ) -> OpeningLine {
-        let mut line = OpeningLine::default();
+    ) -> bool {
+        let mut closing_bracket_on_own_line = false;
         if !sorted_attrs.is_empty() {
             // Render each attribute exactly once; both the
             // multiline decision and emission below reuse this.
             let mut rendered: Vec<String> = Vec::with_capacity(sorted_attrs.len());
             rendered.extend(sorted_attrs.iter().map(render_attribute));
 
-            let start_column = (depth + self.base_depth) * self.options.tab_width as usize;
-            let mut use_multiline = should_use_multiline_attrs(
+            let use_multiline = should_use_multiline_attrs(
                 self.options,
                 tag_name,
                 sorted_attrs,
                 &rendered,
-                start_column,
+                (depth + self.base_depth) * self.options.tab_width as usize,
                 compact_suffix_width,
-            );
-            if !use_multiline
-                && continued != Continued::No
-                && self.continued_attributes_overflow(output, &rendered, compact_suffix_width)
-            {
-                // Prettier keeps a hugged child tag whole and moves its
-                // parent's `>` down instead, when the tag then fits there.
-                line.moved_parent_bracket = continued == Continued::AfterOpeningBracket
-                    && self.move_parent_bracket(
-                        output,
-                        tag_name,
-                        depth,
-                        start_column + 1 + attributes_width(&rendered) + compact_suffix_width,
-                    );
-                use_multiline = !line.moved_parent_bracket;
-            }
+            ) || continued.is_some_and(|joiner| {
+                self.continued_attributes_overflow(
+                    output,
+                    tag_name,
+                    &rendered,
+                    depth,
+                    compact_suffix_width,
+                    joiner,
+                )
+            });
 
             if use_multiline {
                 let max_per_line = if self.options.single_attribute_per_line {
@@ -98,7 +85,7 @@ impl TemplateFormatter<'_> {
                 if !self.options.bracket_same_line {
                     output.push_str(self.newline);
                     self.write_indent(output, depth);
-                    line.bracket_on_own_line = true;
+                    closing_bracket_on_own_line = true;
                 }
             } else {
                 for attr in &rendered {
@@ -107,17 +94,48 @@ impl TemplateFormatter<'_> {
                 }
             }
         }
-        line
+        closing_bracket_on_own_line
     }
 
-    /// Move the parent's `>` that directly precedes `<tag_name` to its own line
-    /// at `depth`, when the line it then starts fits `line_width` plus the tag.
+    /// Whether a continued tag's attributes must wrap. An overflowing tag
+    /// that directly follows its parent's `>` stays whole when moving that
+    /// `>` down makes it fit, as Prettier does.
+    fn continued_attributes_overflow(
+        &self,
+        output: &mut TextBuf,
+        tag_name: &str,
+        rendered: &[String],
+        depth: usize,
+        compact_suffix_width: usize,
+        joiner: &LineJoiner<'_>,
+    ) -> bool {
+        let line = super::current_line(output);
+        let indent_width = self.options.tab_width as usize;
+        let column = line.split('\t').map(str::width).sum::<usize>()
+            + line.bytes().filter(|byte| *byte == b'\t').count() * indent_width
+            + self.base_depth * indent_width;
+        let attributes = rendered.iter().map(|attr| 1 + attr.width()).sum::<usize>();
+        column + attributes + compact_suffix_width > self.options.print_width as usize
+            && !(joiner.follows_opening_tag()
+                && self.move_parent_bracket(
+                    output,
+                    tag_name,
+                    depth,
+                    attributes + compact_suffix_width,
+                ))
+    }
+
+    /// Move the parent's `>` that directly precedes `<tag_name` to its own
+    /// line at `depth`, when the tag, `tail_width` columns wide after its
+    /// name, then fits there.
+    #[cold]
+    #[inline(never)]
     fn move_parent_bracket(
         &self,
         output: &mut TextBuf,
         tag_name: &str,
         depth: usize,
-        line_width: usize,
+        tail_width: usize,
     ) -> bool {
         let Some(bracket) = output.len().checked_sub(tag_name.len() + 2) else {
             return false;
@@ -125,9 +143,10 @@ impl TemplateFormatter<'_> {
         let Some(head) = output.get(..bracket) else {
             return false;
         };
+        let start_column = (depth + self.base_depth) * self.options.tab_width as usize;
         if output.as_bytes().get(bracket) != Some(&b'>')
             || super::current_line(head).trim().is_empty()
-            || line_width + 1 + tag_name.width() > self.options.print_width as usize
+            || start_column + 2 + tag_name.width() + tail_width > self.options.print_width as usize
         {
             return false;
         }
@@ -138,44 +157,4 @@ impl TemplateFormatter<'_> {
         output.push_str(tag_name);
         true
     }
-
-    fn continued_attributes_overflow(
-        &self,
-        output: &str,
-        rendered: &[String],
-        compact_suffix_width: usize,
-    ) -> bool {
-        let line = super::current_line(output);
-        let indent_width = self.options.tab_width as usize;
-        let column = line.split('\t').map(str::width).sum::<usize>()
-            + line.bytes().filter(|byte| *byte == b'\t').count() * indent_width
-            + self.base_depth * indent_width;
-        column + attributes_width(rendered) + compact_suffix_width
-            > self.options.print_width as usize
-    }
-}
-
-/// How the attribute writer laid out an opening tag's line.
-#[derive(Clone, Copy, Default)]
-pub(super) struct OpeningLine {
-    /// The tag's own `>` starts a new line below its attributes.
-    pub(super) bracket_on_own_line: bool,
-    /// The parent's `>` moved down so the tag could stay whole.
-    pub(super) moved_parent_bracket: bool,
-}
-
-/// How an opening tag sits on its output line.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum Continued {
-    /// The tag starts its own line.
-    No,
-    /// The tag continues a line that other output already fills.
-    Line,
-    /// The tag directly follows its parent's opening `>`.
-    AfterOpeningBracket,
-}
-
-#[inline]
-fn attributes_width(rendered: &[String]) -> usize {
-    rendered.iter().map(|attr| 1 + attr.width()).sum()
 }
