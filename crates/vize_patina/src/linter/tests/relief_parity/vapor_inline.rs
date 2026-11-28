@@ -48,8 +48,8 @@ fn the_checked_native_callback_keeps_the_complete_legacy_packet() {
     let actual = linter(Box::new(NoInlineTemplate));
     for source in [
         r#"<div inline-template/>"#,
-        r#"<div inline-template><p INLINE-TEMPLATE/></div>"#,
-        r#"<div><p>日本語😀</p></div>"#,
+        r#"<div inline-template><span INLINE-TEMPLATE/></div>"#,
+        r#"<div><span>日本語😀</span></div>"#,
     ] {
         let native = actual.lint_native_template(source, "Vapor.vue").unwrap();
         let legacy = actual.lint_template(source, "Vapor.vue");
@@ -67,6 +67,23 @@ fn the_checked_native_callback_keeps_the_complete_legacy_packet() {
 #[test]
 fn the_native_callback_preserves_whole_input_refusal() {
     let actual = linter(Box::new(NoInlineTemplate));
+    // Paragraph owners remain outside the strict native grammar, including
+    // after an earlier sibling/header would already have emitted a finding.
+    for source in [
+        r#"<div inline-template><p INLINE-TEMPLATE/></div>"#,
+        r#"<div><p>日本語😀</p></div>"#,
+    ] {
+        let start = source.find("<p").unwrap() as u32;
+        let end = start + source[start as usize..].find('>').unwrap() as u32 + 1;
+        assert_eq!(
+            actual
+                .lint_native_template(source, "Vapor.vue")
+                .unwrap_err(),
+            NativeTemplateLintRefusal::UnsupportedContext {
+                span: vize_l0::Span::new(start, end),
+            }
+        );
+    }
     assert!(matches!(
         actual.lint_native_template("<div inline-template/><!-- comment -->", "Vapor.vue"),
         Err(NativeTemplateLintRefusal::Comment { .. })
