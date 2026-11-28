@@ -56,7 +56,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn read_current(path: &str) -> String {
     source_before(
         path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
+        fs::read_to_string(support::reviewed_source(path)).unwrap(),
     )
 }
 
@@ -69,7 +69,7 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = fs::read_to_string(support::reviewed_source(path)).unwrap();
             let current = super::super::authored_component_infer::before_metadata(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = read_current(path);

@@ -27,6 +27,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use vize_carton::{FxHashSet, cstr};
+use vize_croquis::script_parser::ScriptParses;
 use vize_croquis::types::ResolvedTypeWorld;
 use vize_croquis::types::world::{TypeExportBinding, TypeModule, TypeModuleReference};
 
@@ -97,6 +98,19 @@ impl ScriptCompileContext {
         is_tsx: bool,
         sources: &TypeSourceSnapshot,
     ) -> ResolvedTypeWorld {
+        self.resolve_type_world_with_parses(None, filename, normal_script, is_tsx, sources)
+    }
+
+    /// [`Self::resolve_type_world_with_sources`], reading the root script
+    /// through the projection's shared parses when given.
+    pub fn resolve_type_world_with_parses(
+        &self,
+        parses: Option<&ScriptParses<'_>>,
+        filename: &str,
+        normal_script: Option<&str>,
+        is_tsx: bool,
+        sources: &TypeSourceSnapshot,
+    ) -> ResolvedTypeWorld {
         let path = sources.public_identity(Path::new(filename));
         let root_module = path_key(&path);
         let source = normal_script.map_or_else(
@@ -110,7 +124,8 @@ impl ScriptCompileContext {
         // Root text belongs to this caller, including unsaved buffers and
         // combined normal/setup scripts. Never reuse it by path. Immutable
         // snapshot dependencies share one resolved module per snapshot.
-        let (module, needed_imports) = parse::parse_shared_module(&source, source_type(is_tsx));
+        let (module, needed_imports) =
+            parse::parse_shared_module(parses, &source, source_type(is_tsx));
         let root = Arc::new(resolve_module_targets(
             module,
             &needed_imports,

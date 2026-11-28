@@ -6,16 +6,17 @@ use oxc_allocator::Allocator;
 use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use vize_carton::profile;
-use vize_croquis::script_parser::{SharedProgram, parse_original_for_analysis, shared_program};
+use vize_croquis::script_parser::{ScriptParses, SharedProgram, parse_original_for_analysis};
 
 use crate::{SfcDescriptor, SfcScriptBlock};
 
 /// A descriptor's script blocks, each parsed at most once, on first read, in
-/// the language its consumer reads it as. Inside a `SharedParseScope` the
-/// block reads the projection's shared parse of its text.
-pub struct SfcScriptParses<'a> {
+/// the language its consumer reads it as. Given the projection's
+/// [`ScriptParses`], a block reads its shared parse of the block's text.
+pub struct SfcScriptParses<'a, 'p> {
     descriptor: &'a SfcDescriptor<'a>,
     allocator: &'a Allocator,
+    shared: Option<&'a ScriptParses<'p>>,
     script: Option<Block<'a>>,
     script_setup: Option<Block<'a>>,
 }
@@ -26,10 +27,10 @@ struct Block<'a> {
     parsed: OnceCell<BlockParse<'a>>,
 }
 
-/// A block's parse: the projection's shared parse inside a
-/// `SharedParseScope`, otherwise one in this value's arena.
+/// A block's parse: the projection's shared parse, otherwise one in this
+/// value's arena.
 enum BlockParse<'a> {
-    Shared(SharedProgram),
+    Shared(SharedProgram<'a>),
     Own(Box<ParserReturn<'a>>),
 }
 
@@ -42,12 +43,14 @@ impl BlockParse<'_> {
     }
 }
 
-impl<'a> SfcScriptParses<'a> {
-    /// Parse each block of `descriptor` as `language(lang)` when first read.
+impl<'a, 'p> SfcScriptParses<'a, 'p> {
+    /// Parse each block of `descriptor` as `language(lang)` when first read,
+    /// through `shared` when the projection shares its parses.
     pub fn new(
         allocator: &'a Allocator,
         descriptor: &'a SfcDescriptor<'a>,
         language: fn(Option<&str>) -> SourceType,
+        shared: Option<&'a ScriptParses<'p>>,
     ) -> Self {
         let block = |block: &'a SfcScriptBlock<'_>| Block {
             source: block.content.as_ref(),
@@ -57,6 +60,7 @@ impl<'a> SfcScriptParses<'a> {
         Self {
             descriptor,
             allocator,
+            shared,
             script: descriptor.script.as_ref().map(block),
             script_setup: descriptor.script_setup.as_ref().map(block),
         }
@@ -76,6 +80,11 @@ impl<'a> SfcScriptParses<'a> {
     /// The descriptor these blocks belong to.
     pub fn descriptor(&self) -> &'a SfcDescriptor<'a> {
         self.descriptor
+    }
+
+    /// The projection's shared parses, if any.
+    pub fn shared(&self) -> Option<&'a ScriptParses<'p>> {
+        self.shared
     }
 
     /// The `<script>` block's authored parse.
@@ -104,16 +113,16 @@ impl<'a> SfcScriptParses<'a> {
             .get_or_init(|| {
                 profile!(
                     "atelier.sfc.script_parse",
-                    shared_program(block.source, block.source_type).map_or_else(
-                        || {
-                            BlockParse::Own(Box::new(parse_original_for_analysis(
-                                self.allocator,
-                                block.source,
-                                block.source_type,
-                            )))
-                        },
-                        BlockParse::Shared,
-                    )
+                    match self.shared {
+                        Some(shared) => {
+                            BlockParse::Shared(shared.program(block.source, block.source_type))
+                        }
+                        None => BlockParse::Own(Box::new(parse_original_for_analysis(
+                            self.allocator,
+                            block.source,
+                            block.source_type,
+                        ))),
+                    }
                 )
             })
             .get()

@@ -41,6 +41,11 @@ pub(super) fn measure(
     iterations: u128,
 ) -> bool {
     let block = parsed.0.block();
+    // In the real checker another reader may have already warmed the
+    // projection's shared parses. Give the original collectors that same
+    // opportunity.
+    let shared_arena = oxc_allocator::Allocator::default();
+    let shared = vize_croquis::script_parser::ScriptParses::new(&shared_arena);
     let run = |joined| {
         let plan = if joined && cold {
             let fresh = Allocator::new();
@@ -49,13 +54,10 @@ pub(super) fn measure(
         } else if joined {
             PlainScriptBridge::new(black_box(descriptor), black_box(parsed.0), parsed.1).unwrap()
         } else {
-            previous(black_box(block))
+            previous(Some(&shared), black_box(block))
         };
         finish(plan, summary)
     };
-    // In the real checker another reader may have already warmed its scoped
-    // Program cache. Give the original collectors that same opportunity.
-    let _scope = vize_croquis::script_parser::SharedParseScope::enter();
     assert_eq!(run(false), run(true));
     let old = alloc::measure(|| run(false)).unwrap();
     let new = alloc::measure(|| run(true)).unwrap();

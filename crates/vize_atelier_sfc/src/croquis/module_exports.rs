@@ -6,7 +6,7 @@ use super::analysis::{
 use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
-use vize_croquis::script_parser::AuthoredModuleExport;
+use vize_croquis::script_parser::{AuthoredModuleExport, ScriptParses};
 
 /// Analyze the same original blocks and return separate empty-export metadata.
 /// Existing public option/result models and their serialized forms are unchanged.
@@ -19,6 +19,7 @@ pub fn analyze_sfc_descriptor_with_empty_module_exports(
     legacy_vue2: bool,
 ) -> (SfcCroquisAnalysis, bool) {
     let (analysis, exports) = analyze_sfc_descriptor_with_module_exports(
+        None,
         descriptor,
         root,
         options,
@@ -34,6 +35,7 @@ pub fn analyze_sfc_descriptor_with_empty_module_exports(
 /// exactly these exports instead of also exposing generated declarations.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_module_exports(
+    parses: Option<&ScriptParses<'_>>,
     descriptor: &SfcDescriptor<'_>,
     root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
@@ -42,7 +44,12 @@ pub fn analyze_sfc_descriptor_with_module_exports(
 ) -> (SfcCroquisAnalysis, Option<Vec<AuthoredModuleExport>>) {
     let mut exports = None;
     let allocator = oxc_allocator::Allocator::default();
-    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    let scripts = SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        SfcScriptParses::compile_language,
+        parses,
+    );
     let analysis = analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
         root,

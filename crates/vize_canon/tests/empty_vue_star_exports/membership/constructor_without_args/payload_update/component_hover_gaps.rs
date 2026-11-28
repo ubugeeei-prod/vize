@@ -54,7 +54,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn read_current(path: &str) -> String {
     source_before(
         path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
+        fs::read_to_string(support::reviewed_source(path)).unwrap(),
     )
 }
 
@@ -71,7 +71,7 @@ mod tests {
                 path,
                 super::super::shared_usage_gates::source_before(
                     path,
-                    fs::read_to_string(support::repository().join(path)).unwrap(),
+                    fs::read_to_string(support::reviewed_source(path)).unwrap(),
                 ),
             );
             let current = super::super::check_mode_generator::source_before(path, current);

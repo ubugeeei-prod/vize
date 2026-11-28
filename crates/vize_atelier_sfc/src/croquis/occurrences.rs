@@ -20,7 +20,12 @@ pub fn analyze_sfc_descriptor_with_occurrences(
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let allocator = oxc_allocator::Allocator::default();
-    let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
+    let scripts = SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        SfcScriptParses::compile_language,
+        None,
+    );
     analyze_sfc_descriptor_with_occurrences_and_template_reuse(&scripts, root, options, None)
 }
 
@@ -28,7 +33,7 @@ pub fn analyze_sfc_descriptor_with_occurrences(
 /// grammar owners. The reuse packet cannot seed or replace editor witnesses.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
@@ -39,7 +44,7 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
 /// Capture authored reads while drawing the completed Davinci artifact.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
@@ -50,7 +55,7 @@ pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
 /// `sources` shares one disk view across calls; `None` reads a fresh one.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     filename: &str,
@@ -67,7 +72,7 @@ pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
 }
 
 fn analyze_sfc_descriptor_with_occurrences_impl(
-    scripts: &SfcScriptParses<'_>,
+    scripts: &SfcScriptParses<'_, '_>,
     template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,

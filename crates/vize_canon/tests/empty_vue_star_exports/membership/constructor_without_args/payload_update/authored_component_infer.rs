@@ -166,7 +166,7 @@ mod tests {
     fn assert_exact_producers(record: &Value, newer: fn(&str, String) -> String) {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = fs::read_to_string(support::reviewed_source(path)).unwrap();
             let current = newer(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = restore_producer(path, current.clone(), record);
@@ -194,7 +194,7 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = fs::read_to_string(support::reviewed_source(path)).unwrap();
             let current = before_metadata(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());

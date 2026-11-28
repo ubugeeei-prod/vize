@@ -13,7 +13,7 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_atelier_sfc::croquis::SfcScriptParses;
 
 /// The descriptor's script parses, in the lint language.
-pub(crate) type SfcScripts<'a> = SfcScriptParses<'a>;
+pub(crate) type SfcScripts<'a> = SfcScriptParses<'a, 'a>;
 
 /// Lint reads JSX in every block except `lang="ts"` (#9222).
 fn lint_language(lang: Option<&str>) -> SourceType {
@@ -28,7 +28,7 @@ pub(crate) fn lint_scripts<'a>(
     allocator: &'a Allocator,
     descriptor: &'a SfcDescriptor<'_>,
 ) -> SfcScripts<'a> {
-    SfcScriptParses::new(allocator, descriptor, lint_language)
+    SfcScriptParses::new(allocator, descriptor, lint_language, None)
 }
 
 /// The shared parses, as a lint context holds them.
@@ -45,7 +45,7 @@ pub(crate) trait ScriptParses {
     }
 }
 
-impl ScriptParses for SfcScriptParses<'_> {
+impl ScriptParses for SfcScriptParses<'_, '_> {
     fn script(&self) -> Option<&ParserReturn<'_>> {
         SfcScriptParses::script(self)
     }

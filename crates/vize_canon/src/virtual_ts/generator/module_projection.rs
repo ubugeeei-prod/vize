@@ -129,7 +129,7 @@ mod tests {
     ) {
         let prefix = "// 日本 🧭\n";
         let script = format!("{prefix}{text}");
-        let facts = analyze_options_api_script(&script, true, false);
+        let facts = analyze_options_api_script(None, &script, true, false);
         let mut ts = crate::virtual_ts::TextBuf::from_text("header\n");
         let mut mappings = Vec::new();
         let span = (prefix.len() as u32, script.len() as u32);
@@ -206,7 +206,7 @@ mod tests {
     fn later_export_containing_default_does_not_rebase_an_earlier_target() {
         let script =
             "export default { name: '雪' };\r\nexport interface Props { defaultValue: string }\r\n";
-        let facts = analyze_options_api_script(script, true, false);
+        let facts = analyze_options_api_script(None, script, true, false);
         assert!(facts.default_export.object.is_some());
         let start = script.find("export interface").unwrap();
         let text = &script[start..];
@@ -238,7 +238,7 @@ mod tests {
             map_generated_offset_to_source, mapping_for_generated_offset,
         };
         let text = "export /* 日本 */\r\ndefault { name: 'A' }; const after: number = 'bad';";
-        let facts = analyze_options_api_script(text, true, false);
+        let facts = analyze_options_api_script(None, text, true, false);
         let mut ts = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         assert!(emit(
@@ -269,7 +269,7 @@ mod tests {
             map_generated_offset_to_source, mapping_for_generated_offset,
         };
         let text = "export /* { name: 'A' } */ default { name: 'A' };";
-        let facts = analyze_options_api_script(text, true, false);
+        let facts = analyze_options_api_script(None, text, true, false);
         let mut ts = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         assert!(emit(

@@ -57,7 +57,7 @@ fn run(profile: bool) {
             Err(other) => panic!("{name}: {other:?}"),
         };
         let summary = analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full());
-        compare_plans(&plan, &previous(block), &summary);
+        compare_plans(&plan, &previous(None, block), &summary);
         if profile {
             for cold in [false, true] {
                 if !super::profile::measure(

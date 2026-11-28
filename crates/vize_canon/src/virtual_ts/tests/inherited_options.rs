@@ -88,10 +88,11 @@ fn test_options_api_unresolved_extends_keeps_the_fallback_when_the_script_has_pa
     use crate::virtual_ts::scope::authored_instance_declares_unknown_names;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
-    assert!(authored_instance_declares_unknown_names(None));
-    assert!(authored_instance_declares_unknown_names(Some(
-        "import BaseButton from './BaseButton.vue'\nexport default { extends: BaseButton }\n"
-    )));
+    assert!(authored_instance_declares_unknown_names(None, None));
+    assert!(authored_instance_declares_unknown_names(
+        None,
+        Some("import BaseButton from './BaseButton.vue'\nexport default { extends: BaseButton }\n")
+    ));
 
     // `await` outside an async function is an early error oxc reports without
     // abandoning the parse, so the options analysis still sees the imported
@@ -105,7 +106,10 @@ export default {
     extends: BaseButton
 }
 "#;
-    assert!(!authored_instance_declares_unknown_names(Some(script)));
+    assert!(!authored_instance_declares_unknown_names(
+        None,
+        Some(script)
+    ));
     let template = r#"<span v-if="label">{{ label }}</span>"#;
 
     let allocator = vize_carton::Allocator::new();

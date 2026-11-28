@@ -3,7 +3,7 @@
 use oxc_ast::ast::{ExportDefaultDeclarationKind, Program, Statement};
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String};
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 
 use super::{
     component_options_from_program, computed::writable_computed_names, has_unresolved_extends,
@@ -17,8 +17,33 @@ pub(in crate::virtual_ts::generator) struct OptionsApiScriptFacts {
     pub has_unresolved_extends: bool,
 }
 
+/// [`analyze_options_api_script`] of the script that holds the default export,
+/// when the generator wants either fact.
+pub(in crate::virtual_ts::generator) fn analyze_options_script_source(
+    parses: Option<&ScriptParses<'_>>,
+    script: Option<&str>,
+    classify_default_export: bool,
+    collect_options_facts: bool,
+) -> OptionsApiScriptFacts {
+    if !classify_default_export && !collect_options_facts {
+        return OptionsApiScriptFacts::default();
+    }
+    vize_carton::profile!(
+        "canon.virtual_ts.find_default_export_targets",
+        script
+            .map(|script| analyze_options_api_script(
+                parses,
+                script,
+                classify_default_export,
+                collect_options_facts
+            ))
+            .unwrap_or_default()
+    )
+}
+
 /// Derive the Options API facts from the existing default-export parse.
 pub(in crate::virtual_ts::generator) fn analyze_options_api_script(
+    parses: Option<&ScriptParses<'_>>,
     script: &str,
     classify_default_export: bool,
     options_api: bool,
@@ -28,7 +53,7 @@ pub(in crate::virtual_ts::generator) fn analyze_options_api_script(
     if !options_api && (!script.contains("export") || !script.contains("default")) {
         return facts;
     }
-    with_shared_parse(script, SourceType::ts(), |parsed| {
+    with_shared_parse(parses, script, SourceType::ts(), |parsed| {
         if parsed.panicked {
             return facts;
         }
@@ -89,7 +114,7 @@ pub(in crate::virtual_ts::generator) struct DefaultExportTargets {
 pub(in crate::virtual_ts::generator) fn find_default_export_targets(
     script: &str,
 ) -> DefaultExportTargets {
-    analyze_options_api_script(script, true, false).default_export
+    analyze_options_api_script(None, script, true, false).default_export
 }
 
 fn default_export_targets(_script: &str, program: &Program<'_>) -> DefaultExportTargets {
@@ -154,7 +179,7 @@ export default {
     computed: { own: { get() { return 3 }, set(value) {} }, local() { return 4 } }
 }
 "#;
-        let facts = analyze_options_api_script(script, true, true);
+        let facts = analyze_options_api_script(None, script, true, true);
         let (export_start, start, end) = facts.default_export.object.unwrap();
         assert_eq!(&script[export_start..start], "export default ");
         assert_eq!(&script[start..end], script[start..].trim_end());
@@ -170,11 +195,11 @@ export default {
     #[test]
     fn rewrite_and_options_binding_gates_remain_independent() {
         let script = "export default { extends: ImportedBase, computed: { ratio: { set(v) {} } } }";
-        let rewrite_only = analyze_options_api_script(script, true, false);
+        let rewrite_only = analyze_options_api_script(None, script, true, false);
         assert!(rewrite_only.default_export.object.is_some());
         assert!(rewrite_only.writable_computed.is_empty());
         assert!(!rewrite_only.has_unresolved_extends);
-        let options_only = analyze_options_api_script(script, false, true);
+        let options_only = analyze_options_api_script(None, script, false, true);
         assert!(options_only.default_export.object.is_none());
         assert!(options_only.default_export.class.is_none());
         assert!(options_only.default_export.expr.is_none());
@@ -191,7 +216,7 @@ export default {
             let script = format!(
                 "{keyword} {{ extends: ImportedBase, computed: {{ ratio: {{ set(v) {{}} }} }} }}"
             );
-            let facts = analyze_options_api_script(&script, true, true);
+            let facts = analyze_options_api_script(None, &script, true, true);
             assert_eq!(
                 facts.writable_computed,
                 FxHashSet::from_iter([String::from("ratio")])

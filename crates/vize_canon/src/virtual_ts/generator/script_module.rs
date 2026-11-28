@@ -13,7 +13,7 @@ use oxc_ast::ast::{
 use oxc_parser::ParserReturn;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet};
-use vize_croquis::script_parser::with_shared_program_for_analysis;
+use vize_croquis::script_parser::{ScriptParses, with_shared_program_for_analysis};
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
 pub(super) use navigation::mapped_binding_range;
@@ -82,11 +82,12 @@ impl ScriptModulePlan {
 
 /// Descriptor-owned syntax boundaries keep invalid TSX source diagnostic-only.
 pub(super) fn collect(
+    parses: Option<&ScriptParses<'_>>,
     script: &str,
     recover_lone_setup: bool,
     generation_options: crate::virtual_ts::types::VirtualTsGenerationOptions<'_>,
 ) -> ScriptModulePlan {
-    let mut plan = collect_script_module_plan(script, recover_lone_setup);
+    let mut plan = collect_script_module_plan(parses, script, recover_lone_setup);
     if !generation_options.script_syntax_boundaries.is_empty() {
         plan.tsx_arrows.clear();
         plan.complete_type_bindings = false;
@@ -95,32 +96,39 @@ pub(super) fn collect(
 }
 
 pub(super) fn collect_script_module_plan(
+    parses: Option<&ScriptParses<'_>>,
     script: &str,
     recover_lone_setup: bool,
 ) -> ScriptModulePlan {
-    with_shared_program_for_analysis(script, SourceType::ts().with_module(true), |parsed| {
-        let tsx_arrows = if !parsed.panicked && parsed.diagnostics.is_empty() {
-            tsx_arrows::collect(&parsed.program, script)
-        } else {
-            Vec::new()
-        };
-        // Recovery may parse only a terminated import prefix. Its facts still
-        // support existing projection, but cannot prove the full script unbound.
-        let original_parse_complete = !parsed.panicked && parsed.diagnostics.is_empty();
-        if parsed.panicked {
-            let retry_source = recover_lone_setup
-                .then(|| super::glued_import::terminated_lone_import_prefix(script))
-                .flatten()
-                .unwrap_or(script);
-            with_shared_program_for_analysis(
-                retry_source,
-                SourceType::tsx().with_module(true),
-                |parsed| plan_from_parse(script, parsed, tsx_arrows, original_parse_complete),
-            )
-        } else {
-            plan_from_parse(script, parsed, tsx_arrows, original_parse_complete)
-        }
-    })
+    with_shared_program_for_analysis(
+        parses,
+        script,
+        SourceType::ts().with_module(true),
+        |parsed| {
+            let tsx_arrows = if !parsed.panicked && parsed.diagnostics.is_empty() {
+                tsx_arrows::collect(&parsed.program, script)
+            } else {
+                Vec::new()
+            };
+            // Recovery may parse only a terminated import prefix. Its facts still
+            // support existing projection, but cannot prove the full script unbound.
+            let original_parse_complete = !parsed.panicked && parsed.diagnostics.is_empty();
+            if parsed.panicked {
+                let retry_source = recover_lone_setup
+                    .then(|| super::glued_import::terminated_lone_import_prefix(script))
+                    .flatten()
+                    .unwrap_or(script);
+                with_shared_program_for_analysis(
+                    parses,
+                    retry_source,
+                    SourceType::tsx().with_module(true),
+                    |parsed| plan_from_parse(script, parsed, tsx_arrows, original_parse_complete),
+                )
+            } else {
+                plan_from_parse(script, parsed, tsx_arrows, original_parse_complete)
+            }
+        },
+    )
 }
 
 fn plan_from_parse(
@@ -256,21 +264,30 @@ fn plan_from_parse(
     }
 }
 
-pub(super) fn collect_named_value_export_starts(script: &str) -> Vec<u32> {
+pub(super) fn collect_named_value_export_starts(
+    parses: Option<&ScriptParses<'_>>,
+    script: &str,
+) -> Vec<u32> {
     if !script.contains("export") {
         return Vec::new();
     }
-    with_shared_program_for_analysis(script, SourceType::ts().with_module(true), |parsed| {
-        if parsed.panicked || !parsed.diagnostics.is_empty() {
-            with_shared_program_for_analysis(
-                script,
-                SourceType::tsx().with_module(true),
-                named_value_export_starts,
-            )
-        } else {
-            named_value_export_starts(parsed)
-        }
-    })
+    with_shared_program_for_analysis(
+        parses,
+        script,
+        SourceType::ts().with_module(true),
+        |parsed| {
+            if parsed.panicked || !parsed.diagnostics.is_empty() {
+                with_shared_program_for_analysis(
+                    parses,
+                    script,
+                    SourceType::tsx().with_module(true),
+                    named_value_export_starts,
+                )
+            } else {
+                named_value_export_starts(parsed)
+            }
+        },
+    )
 }
 
 fn named_value_export_starts(parsed: &ParserReturn<'_>) -> Vec<u32> {
@@ -384,7 +401,7 @@ mod tests {
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
         let script = "const before = 1;\n// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";\nconst after = 2;\n";
-        let spans = collect_script_module_plan(script, false).spans;
+        let spans = collect_script_module_plan(None, script, false).spans;
 
         assert_eq!(spans.len(), 1);
         assert_eq!(
@@ -396,7 +413,7 @@ mod tests {
     #[test]
     fn collect_import_span_leaves_regular_comments_in_script_body() {
         let script = "// import note\nimport Chart from \"chart.js/auto/auto\";\n";
-        let spans = collect_script_module_plan(script, false).spans;
+        let spans = collect_script_module_plan(None, script, false).spans;
 
         assert_eq!(spans.len(), 1);
         assert_eq!(
@@ -411,7 +428,7 @@ mod tests {
             "export default { name: 'ObjectComponent' };",
             "export default defineComponent({ name: 'CallComponent' });",
         ] {
-            let plan = collect_script_module_plan(script, false);
+            let plan = collect_script_module_plan(None, script, false);
 
             assert!(plan.shares_listener_relations(None), "{script}");
         }
@@ -423,7 +440,7 @@ mod tests {
             "export default class Component {}",
             "export default interface Component {}",
         ] {
-            let plan = collect_script_module_plan(script, false);
+            let plan = collect_script_module_plan(None, script, false);
 
             assert!(!plan.shares_listener_relations(None), "{script}");
         }
@@ -433,7 +450,7 @@ mod tests {
     fn named_value_export_starts_exclude_nested_enum_members() {
         let script =
             "enum Modes {\n  export = 'export',\n}\nexport const selected = Modes.export;\n";
-        let starts = collect_named_value_export_starts(script);
+        let starts = collect_named_value_export_starts(None, script);
 
         assert_eq!(starts.len(), 1);
         assert!(starts.contains(&(script.find("export const").unwrap() as u32)));
@@ -442,7 +459,7 @@ mod tests {
     #[test]
     fn inline_exports_preserve_every_other_byte() {
         let script = "const text = 'export const x'; /* export */ export/*keep*/const café = 1; export const next = café;\nexport\nconst last = next;";
-        let starts = collect_named_value_export_starts(script);
+        let starts = collect_named_value_export_starts(None, script);
         assert_eq!(starts.len(), 3);
         let mut offset = 0;
         let mut lines = Vec::new();

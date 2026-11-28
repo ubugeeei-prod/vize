@@ -340,7 +340,7 @@ fn irregular_exports_compose_callee_and_props_assertion_mappings() {
     ] {
         let script = vize_carton::cstr!("{import}\n{line}");
         let line_start = import.len() + 1;
-        let facts = analyze_options_api_script(&script, true, false);
+        let facts = analyze_options_api_script(None, &script, true, false);
         let rewrite = IrregularDefault::new(&script, &facts).unwrap();
         let mut assertions = PropsConstAssertions::new(&script, true);
         let offsets = assertions.take_line_offsets(line_start, script.len());

@@ -5,7 +5,7 @@ use oxc_ast::ast::{Expression, PropertyKey, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::String;
-use vize_croquis::script_parser::with_shared_parse;
+use vize_croquis::script_parser::{ScriptParses, with_shared_parse};
 
 use crate::script::ScriptCompileContext;
 use crate::types::SfcError;
@@ -47,10 +47,21 @@ pub fn validate_script_setup_semantics_located(
     block_start: usize,
     sfc_source: &str,
 ) -> Result<(), SfcError> {
+    validate_script_setup_semantics_with_parses(None, script_setup_content, block_start, sfc_source)
+}
+
+/// [`validate_script_setup_semantics_located`] reading the script through
+/// the projection's shared parses.
+pub fn validate_script_setup_semantics_with_parses(
+    parses: Option<&ScriptParses<'_>>,
+    script_setup_content: &str,
+    block_start: usize,
+    sfc_source: &str,
+) -> Result<(), SfcError> {
     if script_setup_content.is_empty() {
         return Ok(());
     }
-    with_shared_parse(script_setup_content, SourceType::ts(), |parsed| {
+    with_shared_parse(parses, script_setup_content, SourceType::ts(), |parsed| {
         let mut ctx = ScriptCompileContext::new(script_setup_content);
         ctx.analyze_program(&parsed.program, script_setup_content);
         validate_macro_scope_references_in_program(&ctx, &parsed.program, block_start, sfc_source)?;

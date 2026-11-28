@@ -20,7 +20,10 @@ pub use runtime_type::{
 pub use text_resolve::extract_prop_types_from_type;
 pub use types::PropTypeInfo;
 pub use validation::script_setup_has_semantic_validator_candidates;
-pub use validation::{validate_script_setup_semantics, validate_script_setup_semantics_located};
+pub use validation::{
+    validate_script_setup_semantics, validate_script_setup_semantics_located,
+    validate_script_setup_semantics_with_parses,
+};
 
 pub(crate) use ast_resolve::split_skip_check;
 #[cfg(test)]

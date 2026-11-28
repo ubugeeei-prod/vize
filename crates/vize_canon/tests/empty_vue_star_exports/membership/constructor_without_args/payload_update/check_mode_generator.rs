@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn check_mode_generator_restores_its_exact_predecessor() {
-        let current = fs::read_to_string(support::repository().join(PATH)).unwrap();
+        let current = fs::read_to_string(support::reviewed_source(PATH)).unwrap();
         let after_template_refs =
             super::super::template_ref_targets::source_before(PATH, current.clone());
         assert_eq!(support::hash(after_template_refs.as_bytes()), AFTER.1);

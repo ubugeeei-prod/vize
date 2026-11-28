@@ -84,7 +84,7 @@ mod tests {
                 path,
                 super::super::entry_package_exports::source_before(
                     path,
-                    fs::read_to_string(support::repository().join(path)).unwrap(),
+                    fs::read_to_string(support::reviewed_source(path)).unwrap(),
                 ),
             );
             assert!(is_after(&current, file), "{path}");

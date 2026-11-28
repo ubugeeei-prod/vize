@@ -8,7 +8,7 @@ use vize_carton::{String as CompactString, cstr};
 
 use vize_atelier_sfc::{
     SfcDescriptor, SfcError, script_setup_has_semantic_validator_candidates,
-    validate_script_setup_semantics_located,
+    validate_script_setup_semantics_with_parses,
 };
 
 use crate::batch::source_map::SfcBlockRange;
@@ -20,6 +20,7 @@ use crate::batch::{Diagnostic, SfcBlockType};
 /// #675). The validator covers the diagnostics TypeScript cannot derive on its
 /// own; retained TypeScript scripts are parsed by the native checker.
 pub(super) fn collect_sfc_compile_diagnostic(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor,
@@ -34,7 +35,8 @@ pub(super) fn collect_sfc_compile_diagnostic(
         return None;
     }
 
-    match validate_script_setup_semantics_located(
+    match validate_script_setup_semantics_with_parses(
+        parses,
         &script_setup.content,
         script_setup.loc.start,
         source,
@@ -107,6 +109,7 @@ pub(super) struct ScriptDiagnosticPlan {
 }
 
 pub(super) fn collect_script_parse_fallbacks(
+    parses: Option<&vize_croquis::script_parser::ScriptParses<'_>>,
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor,
@@ -121,6 +124,7 @@ pub(super) fn collect_script_parse_fallbacks(
     ] {
         let Some(block) = block else { continue };
         let errors = crate::script_parse::collect_script_parse_diagnostics(
+            parses,
             &block.content,
             block.loc.start as u32,
             block.lang.as_deref(),
