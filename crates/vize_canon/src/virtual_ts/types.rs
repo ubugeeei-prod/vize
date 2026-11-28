@@ -240,7 +240,7 @@ impl TemplateRefOwnership {
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
     #[cfg(feature = "original-import-products")]
-    pub(crate) original_imports: Option<&'a super::generator::OriginalImportFacts<'a>>,
+    pub(crate) original_imports: Option<&'a super::generator::entry::OriginalImportFacts<'a>>,
     pub(crate) diagnostic_ownership:
         Option<&'a super::diagnostic_ownership::DiagnosticOwnershipCollector>,
     /// Shared parser-owned generic metadata, prepared once by a high-level caller.

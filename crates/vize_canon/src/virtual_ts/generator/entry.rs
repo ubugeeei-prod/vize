@@ -8,6 +8,8 @@ use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput};
 
 use super::generate_virtual_ts_with_shared_parses;
+#[cfg(feature = "original-import-products")]
+pub use super::imports::{OriginalImportError, OriginalImportFacts};
 
 /// [`generate_virtual_ts_with_shared_parses`] with every script read parsed
 /// privately, for callers outside a projection that shares its parses.
@@ -87,8 +89,8 @@ pub fn generate_virtual_ts_with_original_imports(
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
-    original: &super::OriginalImportFacts<'_>,
-) -> Result<VirtualTsOutput, super::OriginalImportError> {
+    original: &OriginalImportFacts<'_>,
+) -> Result<VirtualTsOutput, OriginalImportError> {
     original.validate(summary, Some(script_content))?;
     Ok(generate_virtual_ts_with_offsets_and_checks(
         summary,

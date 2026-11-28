@@ -1,5 +1,7 @@
 //! Original L2 import selections reused by the complete Canon projection.
+use super::{IdentifierUsage, ImportNames, TypeOnlyImportPlan, ValueImportNames};
 use oxc_span::SourceType;
+use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
 use vize_l0::SourceBlock;
 use vize_l1::embed::authored_program::AuthoredProgram;
@@ -128,6 +130,43 @@ impl<'a> OriginalImportFacts<'a> {
         summary: &'f Croquis,
     ) -> impl Iterator<Item = &'a str> + 'f {
         self.names(summary, true)
+    }
+}
+
+impl<'a> ImportNames<'a> {
+    pub(in crate::virtual_ts::generator) fn from_original(
+        summary: &Croquis,
+        script_content: &'a str,
+        usage: &IdentifierUsage,
+        original: &OriginalImportFacts<'a>,
+    ) -> Self {
+        let bindings = crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            original
+                .value_names(summary)
+                .filter(|name| bindings.contains_binding(name))
+                .map(CompactString::new)
+                .collect::<FxHashSet<_>>()
+        });
+        let without_script_value_use = bindings
+            .iter()
+            .filter(|name| !usage.value_refs.contains(*name))
+            .map(|name| String::from(name.as_str()))
+            .collect();
+        Self {
+            values: ValueImportNames {
+                bindings,
+                without_script_value_use,
+            },
+            type_only: TypeOnlyImportPlan {
+                script_content: Some(script_content),
+                prepared: Some(
+                    original
+                        .type_names(summary)
+                        .map(CompactString::new)
+                        .collect(),
+                ),
+            },
+        }
     }
 }
 
