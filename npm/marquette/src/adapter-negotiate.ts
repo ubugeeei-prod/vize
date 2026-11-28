@@ -44,7 +44,7 @@ function mismatch(
 ): AdapterCapabilityMismatch[] {
   const requirement = marquette.capabilities?.[id];
   if (requirement === undefined) return [problem("unknown-requirement", id)];
-  const requiredVersion = requirement.version ?? 1;
+  const requiredVersion = requirement.version === undefined ? 1 : requirement.version;
   if (!Number.isInteger(requiredVersion) || requiredVersion < 1 || requiredVersion > 0xffff_ffff) {
     return [problem("invalid-requirement-version", id)];
   }

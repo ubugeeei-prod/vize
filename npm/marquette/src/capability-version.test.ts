@@ -12,7 +12,7 @@ import { validateApplicationMarquette } from "./validate.js";
 
 interface VersionBoundary {
   readonly name: string;
-  readonly version: number;
+  readonly version: number | null;
   readonly parsed: boolean;
   readonly valid: boolean;
 }
@@ -40,7 +40,9 @@ void test("matches portable numeric fixtures shared with native contract consume
     ),
   ) as VersionBoundary[];
   for (const fixture of cases) {
-    const value = manifest(fixture.version);
+    // The fixture deliberately crosses the typed boundary with malformed JSON values.
+    const version = fixture.version as number;
+    const value = manifest(version);
     if (fixture.parsed) {
       assert.deepEqual(parseAdapterCapabilityManifest(value), value, fixture.name);
     } else {
@@ -52,18 +54,17 @@ void test("matches portable numeric fixtures shared with native contract consume
       fixture.name,
     );
     assert.equal(
-      validateApplicationMarquette(application(fixture.version)).length === 0,
+      validateApplicationMarquette(application(version)).length === 0,
       fixture.valid,
       fixture.name,
     );
     assert.equal(
-      negotiateAdapterCapabilities(application(fixture.version), ["native.feature"], value)
-        .compatible,
+      negotiateAdapterCapabilities(application(version), ["native.feature"], value).compatible,
       fixture.valid,
       fixture.name,
     );
     assert.equal(
-      negotiateAdapterCapabilities(application(fixture.version), ["native.feature"], {
+      negotiateAdapterCapabilities(application(version), ["native.feature"], {
         adapter: "native.fixture",
         capabilities: [{ id: "native.feature", minVersion: 1, maxVersion: 0xffff_ffff }],
       }).compatible,

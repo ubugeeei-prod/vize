@@ -61,7 +61,7 @@ export function validateApplicationMarquette(
         error("VIZE_MARQUETTE_004", path, "capability map key must equal capability.id"),
       );
     }
-    const version = capability.version ?? 1;
+    const version = capability.version === undefined ? 1 : capability.version;
     if (!Number.isInteger(version) || version < 1 || version > 0xffff_ffff) {
       diagnostics.push(
         error(
