@@ -209,13 +209,21 @@ mod tests {
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/fixtures/typechecker/experimental-router-project-capability/published/package.json.txt"
     ));
+    const PUBLISHED_5_5_3: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/fixtures/typechecker/experimental-router-project-capability/published-5.5.3/package.json.txt"
+    ));
 
     #[test]
-    fn both_real_same_version_manifests_have_one_explicit_type_target() {
-        for manifest in [PUBLISHED, PREVIEW] {
+    fn every_real_manifest_has_one_explicit_type_target() {
+        for (manifest, version) in [
+            (PUBLISHED, "5.4.0"),
+            (PREVIEW, "5.4.0"),
+            (PUBLISHED_5_5_3, "5.5.3"),
+        ] {
             assert_eq!(
                 serde_json::from_str::<serde_json::Value>(manifest).unwrap()["version"],
-                "5.4.0"
+                version
             );
             for conditions in [
                 &["types", "import"][..],

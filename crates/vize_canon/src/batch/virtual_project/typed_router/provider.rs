@@ -1,5 +1,6 @@
 //! Project-owned admission for the real experimental route-props declarations.
-//! Both packages report `5.4.0`, so only the resolved declarations decide.
+//! The resolved declarations decide, never the version: the published `5.4.0`
+//! and a `5.4.0` source build differ, and published `5.5.3` matches the source build.
 
 mod export_graph;
 mod manifest;
